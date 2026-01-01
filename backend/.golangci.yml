@@ -1,0 +1,29 @@
+version: 2
+
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - revive
+  settings:
+    revive:
+      rules:
+        - name: atomic
+        - name: unhandled-error
+          severity: error
+        - name: var-naming
+        - name: receiver-naming
+        - name: indent-error-flow
+        - name: bare-return
+        - name: if-return
+        - name: range-val-in-closure
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
