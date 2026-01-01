@@ -16,6 +16,9 @@ dev:
 lint:
 	golangci-lint run ./...
 
+api-doc:
+	swag init -g ./cmd/main.go --output ./docs
+
 migrate-create:
 	@mkdir -p $(MIGRATIONS_DIR)
 	goose -dir $(MIGRATIONS_DIR) create $(name) sql

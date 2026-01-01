@@ -1,0 +1,22 @@
+basePath: /
+host: localhost:8000
+info:
+  contact: {}
+  description: Toggo API
+  title: Toggo API
+  version: "1.0"
+paths:
+  /healthcheck:
+    get:
+      description: Returns OK if the server is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      summary: Healthcheck endpoint
+      tags:
+      - example
+swagger: "2.0"
