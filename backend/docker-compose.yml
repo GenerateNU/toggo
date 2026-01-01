@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-dev_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_DATABASE:-dev_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
