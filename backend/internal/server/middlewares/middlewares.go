@@ -19,7 +19,7 @@ func SetUpMiddlewares(app *fiber.App, config *config.Configuration) {
 		TimeFormat: "02-Jan-2006 15:04:05",
 		TimeZone:   "Local",
 	}))
-	app.Use("", func(c *fiber.Ctx) error {
+	app.Use("/docs", func(c *fiber.Ctx) error {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.yaml",
 			CustomOptions: scalar.CustomOptions{
