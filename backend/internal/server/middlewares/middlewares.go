@@ -23,7 +23,7 @@ func SetUpMiddlewares(app *fiber.App, config *config.Configuration) {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.yaml",
 			CustomOptions: scalar.CustomOptions{
-				PageTitle: "Simple API",
+				PageTitle: "Toggo API",
 			},
 			DarkMode: true,
 		})
