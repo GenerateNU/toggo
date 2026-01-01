@@ -25,7 +25,7 @@ func main() {
 	cfg := mustLoadConfig()
 
 	ctx := context.Background()
-	db := mustConnectDB(ctx)
+	db := mustConnectDB(ctx, cfg)
 	defer closeDB(db)
 
 	fiberApp := server.CreateApp(cfg, db)
@@ -33,7 +33,6 @@ func main() {
 
 	go handleShutdown(fiberApp)
 
-	log.Printf("Starting server on port %d...", cfg.App.Port)
 	if err := fiberApp.Listen(port); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
@@ -47,13 +46,8 @@ func mustLoadConfig() *config.Configuration {
 	return cfg
 }
 
-func mustConnectDB(ctx context.Context) *bun.DB {
-	dbConfig, err := config.LoadDatabaseConfig()
-	if err != nil {
-		log.Fatalf("Failed to load database configuration: %v", err)
-	}
-
-	db, err := database.NewDB(ctx, dbConfig.DSN())
+func mustConnectDB(ctx context.Context, cfg *config.Configuration) *bun.DB {
+	db, err := database.NewDB(ctx, cfg.Database.DSN())
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
