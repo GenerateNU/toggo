@@ -24,8 +24,7 @@ import (
 func main() {
 	cfg := mustLoadConfig()
 
-	ctx := context.Background()
-	db := mustConnectDB(ctx, cfg)
+	db := mustConnectDB(context.Background(), cfg)
 	defer closeDB(db)
 
 	fiberApp := server.CreateApp(cfg, db)
