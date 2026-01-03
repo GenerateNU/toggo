@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "autoprefixer": "10.4.14",
+    "expo": "~54.0.30",
+    "expo-router": "~6.0.21",
+    "expo-status-bar": "~3.0.9",
+    "nativewind": "2.0.11",
+    "postcss": "8.4.27",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-svg": "15.12.1",
+    "tailwindcss": "3.3.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "react-native-svg-transformer": "^1.5.2",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
