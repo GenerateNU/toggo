@@ -21,7 +21,7 @@ func SetUpMiddlewares(app *fiber.App, config *config.Configuration) {
 	}))
 	app.Use("/docs", func(c *fiber.Ctx) error {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
-			SpecURL: "./docs/swagger.yaml",
+			SpecURL: "./openapi.yaml",
 			CustomOptions: scalar.CustomOptions{
 				PageTitle: "Toggo API",
 			},

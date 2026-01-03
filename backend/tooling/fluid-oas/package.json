@@ -1,0 +1,19 @@
+{
+  "name": "fluid-oas",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "bun run src/index.ts && bun format",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "fluid-oas": "^0.4.11"
+  }
+}

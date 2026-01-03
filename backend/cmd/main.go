@@ -1,6 +1,6 @@
 // @title Toggo API
 // @version 1.0
-// @description Toggo API
+// @description Toggo is a chat-based app that helps trips make it out of the group chat. It focuses on the people, not the planning overload, with an easy interface to share ideas, catch up on summaries, and manage RSVPs and dates, making trip planning simpler and more collaborative.
 // @host localhost:8000
 // @BasePath /
 package main

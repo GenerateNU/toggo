@@ -17,7 +17,7 @@ lint:
 	golangci-lint run ./...
 
 api-doc:
-	swag init -g ./cmd/main.go --output ./docs
+	cd tooling/fluid-oas && bun run generate
 
 migrate-create:
 	@mkdir -p $(MIGRATIONS_DIR)

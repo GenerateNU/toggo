@@ -1,0 +1,47 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "description": " Toggo is a chat-based app that helps trips make it out of the group chat. It focuses on the people, not the planning overload, with an easy interface to share ideas, catch up on summaries, and manage RSVPs and dates, making trip planning simpler and more collaborative.",
+    "title": "Toggo API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/healthcheck": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successfully Retrieved User!",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "description": "Health status of the service",
+                      "example": "OK",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

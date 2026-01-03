@@ -13,7 +13,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o experiment ./cmd/server
+RUN go build -o togo ./cmd/server
 
 # -------------------------
 # 2. Runtime Stage
@@ -22,8 +22,8 @@ FROM alpine:latest
 
 WORKDIR /root/
 
-COPY --from=builder /app/experiment .
+COPY --from=builder /app/toggo .
 
 EXPOSE 8080
 
-CMD ["./experiment"]
+CMD ["air", "-c", ".air.toml"]
