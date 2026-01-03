@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,21 +13,43 @@ import (
 )
 
 func NewDB(ctx context.Context, dsn string) (*bun.DB, error) {
-	pool, err := pgxpool.New(ctx, dsn)
+	poolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
+		log.Printf("Failed to parse database config: %v", err)
 		return nil, err
 	}
 
-	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
+	if err != nil {
+		log.Printf("Failed to create connection pool: %v", err)
+		return nil, err
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	if err := pool.Ping(pingCtx); err != nil {
+
+	log.Println("Pinging database...")
+	conn, err := pool.Acquire(pingCtx)
+	if err != nil {
+		log.Printf("Failed to acquire database connection: %v", err)
+		pool.Close()
+		return nil, err
+	}
+	defer conn.Release()
+
+	if err := conn.Conn().Ping(pingCtx); err != nil {
+		log.Printf("Database ping failed: %v", err)
 		pool.Close()
 		return nil, err
 	}
 
+	log.Println("Successfully pinged database")
+
 	sqlDB := stdlib.OpenDBFromPool(pool)
 
 	bunDB := bun.NewDB(sqlDB, pgdialect.New())
+
+	log.Println("Database connection established successfully")
 
 	return bunDB, nil
 }
