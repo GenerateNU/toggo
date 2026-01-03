@@ -1,0 +1,54 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # Command to build your app
+  cmd = "go build -o ./tmp/app ./cmd/main.go"
+
+  # Binary that Air will run
+  bin = "./tmp/app"
+
+  # File extensions to watch
+  include_ext = ["go", "tpl", "tmpl", "html", "env", "yaml", "yml", "toml"]
+
+  # Directories to watch for changes
+  watch = [
+    ".",
+    "./cmd",
+    "./internal",
+    "./config"
+  ]
+
+  # Directories to ignore
+  exclude_dir = [
+    "tmp", 
+    "vendor", 
+    ".git", 
+    "tooling", 
+    "docs",
+    ".docker",
+    ".vscode",
+    ".idea"
+  ]
+
+  # Stop running the old binary before rebuilding
+  stop_on_error = true
+
+  # Delay (in ms) before rebuilding
+  delay = 1000
+
+[log]
+  time = true
+  color = true
+
+[color]
+  main = "cyan"
+  watcher = "yellow"
+  build = "green"
+  runner = "magenta"
+
+[misc]
+  clean_on_exit = true
+
+[run]
+  cmd = "doppler run --project backend --config dev -- ./tmp/app"

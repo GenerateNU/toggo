@@ -10,8 +10,10 @@ build:
 clean:
 	rm -f $(BINARY_NAME)
 
+.PHONY: dev
+
 dev:
-	doppler run -- wgo run $(MAIN_FILE)
+	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) docker-compose up --build
 
 lint:
 	golangci-lint run ./...
