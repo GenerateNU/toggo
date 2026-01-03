@@ -1,9 +1,10 @@
-import { View, Text } from 'react-native';
+import { Box } from "@/design-system/base/box";
+import { Text } from "@/design-system/base/text";
 
 export default function HomeScreen() {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Welcome to Toggo 🌆🚌✈️</Text>
-    </View>
+    <Box backgroundColor="sandyBeige" flex={1} alignItems="center" justifyContent="center">
+      <Text color="forestGreen" variant="bodyLargeBold">Welcome to Toggo 🌆🚌✈️!</Text>
+    </Box>
   );
 }
