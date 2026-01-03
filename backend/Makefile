@@ -11,7 +11,7 @@ clean:
 	rm -f $(BINARY_NAME)
 
 dev:
-	doppler run -- wgo run $(MAIN_FILE)
+	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) docker-compose up --build
 
 lint:
 	golangci-lint run ./...
@@ -53,4 +53,4 @@ install-lint:
 	@echo "Installing golangci-lint..."
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.59.0
 
-.PHONY: build clean lint format install-lint
+.PHONY: build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc
