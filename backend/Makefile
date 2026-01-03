@@ -17,7 +17,7 @@ lint:
 	golangci-lint run ./...
 
 api-doc:
-	cd tooling/fluid-oas && bun run generate
+	cd tooling/api && bun run generate
 
 migrate-create:
 	@mkdir -p $(MIGRATIONS_DIR)
@@ -46,6 +46,9 @@ db-connect:
 		PGPASSWORD=$$DB_PASSWORD psql -h $$DB_HOST -p $$DB_PORT -U $$DB_USER -d $$DB_DATABASE; \
 	fi'
 
+tidy:
+	go mod tidy
+
 format:
 	gofmt -s -w .
 
@@ -53,4 +56,14 @@ install-lint:
 	@echo "Installing golangci-lint..."
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.59.0
 
-.PHONY: build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc
+generate-api:
+	@echo "Generating API code from OpenAPI specification..."
+
+	@mkdir -p internal/codegen
+
+	@oapi-codegen -config oapi-config.yaml openapi.yaml
+
+	@echo "API generation complete! ✅"
+
+
+.PHONY: build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc generate-api tidy

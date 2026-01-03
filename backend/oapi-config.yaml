@@ -1,0 +1,6 @@
+package: codegen
+generate:
+  - fiber-server
+  - models
+  - types
+output: internal/codegen/codegen.go

@@ -6,9 +6,7 @@ import {
   String,
   Object,
   MediaType,
-  SecurityRequirement,
 } from "fluid-oas";
-import { addBearerAuthToOperation } from "../utilities/auth";
 
 const healthcheckSchema = Object.addProperties({
   status: String.addExample("OK").addDescription(
@@ -23,7 +21,5 @@ const getHealthcheckResponses = Responses({
 });
 
 export const getHealthcheck = PathItem.addMethod({
-  get: addBearerAuthToOperation(Operation).addResponses(
-    getHealthcheckResponses,
-  ),
+  get: Operation.addResponses(getHealthcheckResponses),
 });
