@@ -14,6 +14,10 @@ dev:
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) docker-compose up --build
 	migrate-up
 
+dev-down:
+	docker compose down -v
+	docker volume prune -f
+
 lint:
 	golangci-lint run ./...
 

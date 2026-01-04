@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -43,33 +44,47 @@ func (r *userRepository) Find(ctx context.Context, id uuid.UUID) (*models.User, 
 }
 
 func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.UpdateUserRequest) (*models.User, error) {
-	u := &models.User{}
-	query := r.db.NewUpdate().
-		Model(u).
-		Where("id = ?", id).
-		Returning("*")
+	updateQuery := r.db.NewUpdate().
+		Model(&models.User{}).
+		Where("id = ?", id)
+
+	updates := make(map[string]interface{})
 
 	if req.Name != nil {
-		query = query.Set("name = ?", *req.Name)
+		updates["name"] = *req.Name
+		updateQuery = updateQuery.Set("name = ?", *req.Name)
 	}
+
 	if req.Email != nil {
-		query = query.Set("email = ?", *req.Email)
+		updates["email"] = *req.Email
+		updateQuery = updateQuery.Set("email = ?", *req.Email)
 	}
 
-	res, err := query.Exec(ctx)
+	result, err := updateQuery.Exec(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update user: %w", err)
 	}
 
-	rows, err := res.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to check update result: %w", err)
 	}
-	if rows == 0 {
+
+	if rowsAffected == 0 {
 		return nil, errs.ErrNotFound
 	}
 
-	return u, nil
+	updatedUser := &models.User{}
+	err = r.db.NewSelect().
+		Model(updatedUser).
+		Where("id = ?", id).
+		Scan(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch updated user: %w", err)
+	}
+
+	return updatedUser, nil
 }
 
 func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {

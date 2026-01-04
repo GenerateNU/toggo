@@ -1,29 +1,6 @@
 version: "3.9"
 
 services:
-  api:
-    build: 
-      context: .
-      dockerfile: dev.Dockerfile
-    environment:
-      - DOPPLER_TOKEN=${DOPPLER_TOKEN}
-      - APP_PORT=8000
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=dev_user
-      - DB_PASSWORD=password
-      - DB_DATABASE=dev_db
-    volumes:
-      - .:/app
-      - /app/tmp
-      - /app/.git
-    ports:
-      - "8000:8000"
-    depends_on:
-      - postgres
-    networks:
-      - backend_network
-
   postgres:
     image: postgres:16
     container_name: database
@@ -32,10 +9,39 @@ services:
       POSTGRES_USER: dev_user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: dev_db
+      DB_HOST: postgres
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev_user -d dev_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    environment:
+      DOPPLER_TOKEN: ${DOPPLER_TOKEN}
+      APP_PORT: 8000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: dev_user
+      DB_PASSWORD: password
+      DB_DATABASE: dev_db
+    volumes:
+      - .:/app
+      - /app/tmp
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - backend_network
 

@@ -47,7 +47,7 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	}
 
 	if err := utilities.Validate(u.validator, req); err != nil {
-		return err
+		return errs.BadRequest(err)
 	}
 
 	user, err := u.userService.CreateUser(c.Context(), req, userID)
@@ -79,11 +79,11 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
-		return err
+		return errs.BadRequest(err)
 	}
 
 	if err := utilities.Validate(u.validator, req); err != nil {
-		return err
+		return errs.BadRequest(err)
 	}
 
 	updatedUser, err := u.userService.UpdateUser(c.Context(), id, req)
@@ -107,7 +107,7 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 func (u *UserController) GetUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
-		return err
+		return errs.BadRequest(err)
 	}
 
 	user, err := u.userService.GetUser(c.Context(), id)
