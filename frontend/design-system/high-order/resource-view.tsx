@@ -49,22 +49,33 @@ const ResourceView = ({
   if (!resourceState) return emptyComponent;
 
   // helper functions
-  const hasData = (resource: Resource<unknown>): boolean => resource.data != null;
-  const hasError = (resource: Resource<unknown>): boolean => resource.error != null;
-  const isLoading = (resource: Resource<unknown>): boolean => resource.loading !== false;
+  const hasData = (resource: Resource<unknown>): boolean =>
+    resource.data != null;
+  const hasError = (resource: Resource<unknown>): boolean =>
+    resource.error != null;
+  const isLoading = (resource: Resource<unknown>): boolean =>
+    resource.loading !== false;
 
-  const isEmpty = (resources: Resource<unknown> | Resource<unknown>[]): boolean => {
+  const isEmpty = (
+    resources: Resource<unknown> | Resource<unknown>[],
+  ): boolean => {
     if (Array.isArray(resources)) {
       return resources.every(
         (resource) =>
-          !resource.data || (Array.isArray(resource.data) && resource.data.length === 0),
+          !resource.data ||
+          (Array.isArray(resource.data) && resource.data.length === 0),
       );
     }
-    return !resources.data || (Array.isArray(resources.data) && resources.data.length === 0);
+    return (
+      !resources.data ||
+      (Array.isArray(resources.data) && resources.data.length === 0)
+    );
   };
 
   // separated handling for multiple resources
-  const handleMultipleResources = (resources: Resource<unknown>[]): ReactElement | null => {
+  const handleMultipleResources = (
+    resources: Resource<unknown>[],
+  ): ReactElement | null => {
     const anyLoading = resources.some(isLoading);
     const anyError = resources.some(hasError);
     const someDataMissing = resources.some((res) => !hasData(res));
@@ -94,7 +105,9 @@ const ResourceView = ({
   };
 
   // separated handling for single resource
-  const handleSingleResource = (resource: Resource<unknown>): ReactElement | null => {
+  const handleSingleResource = (
+    resource: Resource<unknown>,
+  ): ReactElement | null => {
     const isResourceLoading = isLoading(resource);
     const hasResourceData = hasData(resource);
     const hasResourceError = hasError(resource);
@@ -102,7 +115,8 @@ const ResourceView = ({
 
     // handle loading state
     if (isResourceLoading) {
-      const shouldShowLoading = !doNotShowLoadingIfDataAvailable || !hasResourceData;
+      const shouldShowLoading =
+        !doNotShowLoadingIfDataAvailable || !hasResourceData;
       if (shouldShowLoading) {
         return loadingComponent;
       }

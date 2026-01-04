@@ -7,7 +7,7 @@ import { ButtonVariants } from "../variants/button";
 import { FontVariants } from "./text";
 
 const getTheme = () => {
-  const theme = createTheme({   
+  const theme = createTheme({
     colors: ColorPalette,
     spacing: Spacing,
     borderRadii: BorderRadius,
