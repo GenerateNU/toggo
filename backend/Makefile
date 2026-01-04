@@ -44,8 +44,11 @@ db-connect:
 format:
 	gofmt -s -w .
 
+tidy:
+	go mod tidy
+
 install-lint:
 	@echo "Installing golangci-lint..."
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.59.0
 
-.PHONY: build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc
+.PHONY: tidy build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc
