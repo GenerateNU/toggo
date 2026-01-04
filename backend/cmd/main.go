@@ -18,11 +18,15 @@ import (
 	"toggo/internal/server"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
 func main() {
 	cfg := mustLoadConfig()
+
+	fmt.Println(GenerateJWT(uuid.New().String(), cfg.Auth.JWTSecretKey))
 
 	db := mustConnectDB(context.Background(), cfg)
 	defer closeDB(db)
@@ -81,4 +85,20 @@ func handleShutdown(fiberApp *fiber.App) {
 
 	log.Println("Server exited gracefully")
 	os.Exit(0)
+}
+
+func GenerateJWT(subject string, secret string) (string, error) {
+	claims := jwt.MapClaims{
+		"sub": subject,
+		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"iat": time.Now().Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signed, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", err
+	}
+
+	return signed, nil
 }

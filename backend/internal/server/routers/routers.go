@@ -1,21 +1,20 @@
 package routers
 
 import (
-	"toggo/internal/config"
 	"toggo/internal/controllers"
+	"toggo/internal/types"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/uptrace/bun"
 )
 
-func SetUpRoutes(app *fiber.App, cfg *config.Configuration, db *bun.DB, middlewares ...fiber.Handler) {
+func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...fiber.Handler) {
 	app.Get("/healthcheck", controllers.HealthcheckHandler)
+
 	apiGroup := app.Group("/api")
+	apiV1Group := apiGroup.Group("/v1", middlewares...)
+	UserRoutes(apiV1Group, routeParams)
 
-	// TODO: more routes will be added here
-	_ = apiGroup.Group("/v1", middlewares...)
-
-	// 404 handler
+	// 404 handler for routes not matched
 	setUpNotFoundHandler(app)
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func AuthRequired(cfg *config.Configuration) fiber.Handler {
@@ -24,6 +25,7 @@ func AuthRequired(cfg *config.Configuration) fiber.Handler {
 
 		tokenString := parts[1]
 
+		// Parse the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fiber.ErrUnauthorized
@@ -35,12 +37,30 @@ func AuthRequired(cfg *config.Configuration) fiber.Handler {
 			return unauthorized(c, "invalid or expired token")
 		}
 
+		// Extract claims
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return unauthorized(c, "invalid token claims")
 		}
 
-		c.Locals("claims", claims)
+		userIDRaw, ok := claims["sub"]
+		if !ok {
+			return unauthorized(c, "missing user ID in token")
+		}
+
+		userIDStr, ok := userIDRaw.(string)
+		if !ok || userIDStr == "" {
+			return unauthorized(c, "invalid user ID in token")
+		}
+
+		// Validate UUID
+		userID, err := uuid.Parse(userIDStr)
+		if err != nil {
+			return unauthorized(c, "user ID is not a valid UUID")
+		}
+
+		// Forward valid UUID as string
+		c.Locals("userID", userID.String())
 
 		return c.Next()
 	}
