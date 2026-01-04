@@ -8,7 +8,10 @@ interface AvatarProps {
   variant: "xsmall" | "small" | "medium" | "big" | "huge";
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ profilePhoto, variant = "small" }) => {
+export const Avatar: React.FC<AvatarProps> = ({
+  profilePhoto,
+  variant = "small",
+}) => {
   const theme = useTheme<Theme>();
   const variantStyle = theme.avatarVariants[variant];
   const profile = profilePhoto ? profilePhoto : "";

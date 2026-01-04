@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "dev": "doppler run --project frontend --config dev -- expo start",
+    "android": "doppler run --project frontend --config dev -- expo start --android",
+    "ios": "doppler run --project frontend --config dev -- expo start --ios",
+    "web": "doppler run --project frontend --config dev -- expo start --web",
+    "lint": "eslint '**/*.ts' '**/*.tsx'",
+    "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@shopify/restyle": "^2.4.5",

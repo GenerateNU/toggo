@@ -15,6 +15,13 @@ export const BaseButton = createRestyleComponent<
     ColorProps<Theme> &
     React.ComponentProps<typeof TouchableOpacity>,
   Theme
->([createVariant({ themeKey: "buttonVariants" }), spacing], ({ disabled, style, ...props }) => (
-  <TouchableOpacity disabled={disabled} style={[style, disabled && { opacity: 0.5 }]} {...props} />
-));
+>(
+  [createVariant({ themeKey: "buttonVariants" }), spacing],
+  ({ disabled, style, ...props }) => (
+    <TouchableOpacity
+      disabled={disabled}
+      style={[style, disabled && { opacity: 0.5 }]}
+      {...props}
+    />
+  ),
+);
