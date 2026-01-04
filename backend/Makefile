@@ -12,6 +12,7 @@ clean:
 
 dev:
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) docker-compose up --build
+	migrate-up
 
 lint:
 	golangci-lint run ./...
@@ -20,26 +21,45 @@ api-doc:
 	swag init -g ./cmd/main.go --output ./docs
 
 migrate-create:
+ifndef name
+	$(error name is required, e.g. make migrate-create name=create_user)
+endif
 	@mkdir -p $(MIGRATIONS_DIR)
 	goose -dir $(MIGRATIONS_DIR) create $(name) sql
-
-migrate-up:
-	@echo "Applying all pending migrations to $(APP_ENVIRONMENT)..."
-	doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c 'goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$DB_HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up'
-
-migrate-down:
-	@echo "Rolling back last migration in $(APP_ENVIRONMENT)..."
-	doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c 'goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$DB_HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" down'
 
 db-connect:
 	@echo "Connecting to $(APP_ENVIRONMENT) database..."
 	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
+		HOST=$$( [ "$(APP_ENVIRONMENT)" = "dev" ] && echo localhost || echo $$DB_HOST ); \
 		PGPASSWORD=$$DB_PASSWORD psql \
-			-h $$DB_HOST \
+			-h $$HOST \
 			-p $$DB_PORT \
 			-U $$DB_USER \
 			-d $$DB_DATABASE \
 	'
+
+migrate-up:
+	@echo "Applying migrations to $(APP_ENVIRONMENT) database..."
+	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
+		HOST=$$( [ "$(APP_ENVIRONMENT)" = "dev" ] && echo localhost || echo $$DB_HOST ); \
+		goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up \
+	'
+
+migrate-down:
+	@echo "Rolling back last migration on $(APP_ENVIRONMENT) database..."
+	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
+		HOST=$$( [ "$(APP_ENVIRONMENT)" = "dev" ] && echo localhost || echo $$DB_HOST ); \
+		goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" down \
+	'
+
+db-up:
+	@echo "Starting Postgres container..."
+	@DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+		docker-compose up -d postgres
+
+db-down:
+	@echo "Stopping Postgres container..."
+	@docker-compose stop postgres
 
 format:
 	gofmt -s -w .
