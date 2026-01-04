@@ -30,12 +30,11 @@ func NewUserController(userService services.UserServiceInterface, validator *val
 // @Produce      json
 // @Param        request body models.CreateUserRequest true "Create user request"
 // @Success      201 {object} models.User
-// @Failure      400 {object} errs.ErrorResponse
-// @Failure      422 {object} errs.ErrorResponse
-// @Failure      500 {object} errs.ErrorResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users [post]
 func (u *UserController) CreateUser(c *fiber.Ctx) error {
-	// parse and get user ID from auth middleware
 	userIDStr := c.Locals("userID").(string)
 	userID, err := utilities.ValidateID(userIDStr)
 	if err != nil {
@@ -64,13 +63,13 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        userID  path     string                     true "User ID"
-// @Param        request body     models.UpdateUserRequest   true "Update user request"
+// @Param        userID path string true "User ID"
+// @Param        request body models.UpdateUserRequest true "Update user request"
 // @Success      200 {object} models.User
-// @Failure      400 {object} errs.ErrorResponse
-// @Failure      404 {object} errs.ErrorResponse
-// @Failure      422 {object} errs.ErrorResponse
-// @Failure      500 {object} errs.ErrorResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [patch]
 func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	var req models.UpdateUserRequest
@@ -101,9 +100,9 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        userID path string true "User ID"
 // @Success      200 {object} models.User
-// @Failure      400 {object} errs.ErrorResponse
-// @Failure      404 {object} errs.ErrorResponse
-// @Failure      500 {object} errs.ErrorResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [get]
 func (u *UserController) GetUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
@@ -124,9 +123,9 @@ func (u *UserController) GetUser(c *fiber.Ctx) error {
 // @Tags         users
 // @Param        userID path string true "User ID"
 // @Success      204 "No Content"
-// @Failure      400 {object} errs.ErrorResponse
-// @Failure      404 {object} errs.ErrorResponse
-// @Failure      500 {object} errs.ErrorResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [delete]
 func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
