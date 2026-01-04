@@ -3,10 +3,12 @@ package testkit
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 	"toggo/internal/tests/testkit/fakes"
@@ -88,12 +90,14 @@ func (tb *IntegrationTestBuilder) Request(r Request) *IntegrationTestBuilder {
 		auth = *r.Auth
 	}
 	if auth {
-		userID := ""
-		if r.UserID != nil {
-			userID = *r.UserID
+		if _, ok := r.Headers["Authorization"]; !ok {
+			userID := ""
+			if r.UserID != nil {
+				userID = *r.UserID
+			}
+			token := fakes.GenerateValidJWT(userID, time.Hour)
+			req.Header.Set("Authorization", "Bearer "+token)
 		}
-		token := fakes.GenerateValidJWT(userID, time.Hour)
-		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	// Execute request
@@ -192,6 +196,6 @@ func (tb *IntegrationTestBuilder) AssertBody(expected any) *IntegrationTestBuild
 }
 
 func (tb *IntegrationTestBuilder) DebugLogging() *IntegrationTestBuilder {
-	tb.t.Logf("Response: %s", string(tb.raw))
+	fmt.Fprintf(os.Stderr, "Response: %s\n", string(tb.raw))
 	return tb
 }

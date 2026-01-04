@@ -75,4 +75,12 @@ install-lint:
 	@echo "Installing golangci-lint..."
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.59.0
 
+test:
+	docker compose -f docker-compose.test.yml up -d
+
+	doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4
+
+	docker compose -f docker-compose.test.yml down
+
+
 .PHONY: tidy build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc
