@@ -1,0 +1,22 @@
+name: Auto Assign PR
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Auto-assign PR
+        uses: toshimaru/auto-author-assign@v2.0.1
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Add reviewers
+        uses: madrapps/add-reviewers@v1
+        with:
+          reviewers: aahiltn,in-mai-space
+          token: ${{ secrets.GITHUB_TOKEN }}
