@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: prod.Dockerfile
+    environment:
+      DOPPLER_TOKEN: ${DOPPLER_TOKEN}
+      APP_PORT: 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge

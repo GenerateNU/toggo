@@ -29,11 +29,6 @@ services:
     environment:
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       APP_PORT: 8000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: dev_user
-      DB_PASSWORD: password
-      DB_DATABASE: dev_db
     volumes:
       - .:/app
       - /app/tmp
