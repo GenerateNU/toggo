@@ -1,4 +1,4 @@
-import { ColorName, ColorPalette } from "../config/color";
+import { ColorName } from "../config/color";
 
 const baseButton = {
   padding: "s",
