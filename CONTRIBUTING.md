@@ -1,17 +1,5 @@
 # Toggo
 
-## Package Managers
-
-Install the package manager for your operating system:
-
-| OS | Package Manager |
-|----|-----------------|
-| macOS | [Homebrew](https://brew.sh/) |
-| Windows | [Chocolatey](https://chocolatey.org/) or [Scoop](https://scoop.sh/) |
-| Linux | Use your distro's package manager (`apt`, `dnf`, `pacman`, etc.) |
-
----
-
 ## Prerequisites
 
 ### General
