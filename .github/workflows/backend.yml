@@ -44,7 +44,9 @@ jobs:
           curl -Ls https://cli.doppler.com/install.sh | sudo sh -s -- --version 3.70.0
 
       - name: Install lint tooling
-        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b $(go env GOPATH)/bin v2.0.1
 
       - name: Format
         run: make format
