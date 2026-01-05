@@ -5,6 +5,8 @@ permissions: read-all
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'backend/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
