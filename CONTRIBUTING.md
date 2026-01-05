@@ -4,7 +4,7 @@
 
 **🦪 The codebase is your oyster!**
 
-This is your playground. Build whatever feature excites you. If something annoys you, write some code to fix it, you'll be helping yourself *and* everyone else. Found a bug? Open an issue. Noticed this README is out of date? Update it. See a rough edge in the dev experience? Smooth it out.
+This is your playground. Build whatever feature excites you. Found a bug? Open an issue. Noticed this README is out of date? Update it. See a rough edge in the dev experience? Smooth it out.
 
 Take ownership. Make it better. Ship it.
 

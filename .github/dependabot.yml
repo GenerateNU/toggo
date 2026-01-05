@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: ./backend/
+    schedule:
+      interval: weekly
+    groups:
+      backend:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: ./frontend/
+    schedule:
+      interval: weekly
+    groups:
+      frontend:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "nativewind"
+      - dependency-name: "tailwindcss"
