@@ -78,6 +78,7 @@ To verify the server is running, visit: [http://localhost:8000/healthcheck](http
 cd frontend
 bun install
 bun dev
+# you can do also bun ios to start iOS simulator on MacOS
 ```
 
 ---
@@ -97,7 +98,7 @@ make db-connect APP_ENVIRONMENT=prod
 
 | Action | Local | Production |
 |--------|-------|------------|
-| Create migration | `make migrate-create name=<name>` | — |
+| Create migration | `make migrate-create name=<descriptive-name-for-migration>` | — |
 | Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
 | Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
 
