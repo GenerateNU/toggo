@@ -38,7 +38,7 @@ func Validate(validate *validator.Validate, s interface{}, maybeErrs ...MaybeErr
 	if err := validate.Struct(s); err != nil {
 		if validationErrs, ok := err.(validator.ValidationErrors); ok {
 			for _, ve := range validationErrs {
-				allErrors[ToSnakeCase(ve.Field())] = buildMessage(ve) // ← Use buildMessage
+				allErrors[ToSnakeCase(ve.Field())] = buildMessage(ve)
 			}
 		} else {
 			return fmt.Errorf("failed to validate struct: %w", err)

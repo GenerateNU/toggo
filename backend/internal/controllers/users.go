@@ -83,7 +83,7 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	}
 
 	if err := utilities.Validate(u.validator, req); err != nil {
-		return err // ← Fixed: no wrapper
+		return err
 	}
 
 	updatedUser, err := u.userService.UpdateUser(c.Context(), id, req)
