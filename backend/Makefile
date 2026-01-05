@@ -19,10 +19,6 @@ dev:
 	@echo "Following logs... (Ctrl+C to stop)"
 	docker-compose logs -f
 
-dev-down:
-	docker compose down -v
-	docker volume prune -f
-
 lint:
 	golangci-lint run ./...
 
@@ -75,10 +71,6 @@ format:
 
 tidy:
 	go mod tidy
-
-install-lint:
-	@echo "Installing golangci-lint..."
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.59.0
 
 test:
 	docker compose -f docker-compose.test.yml up -d
