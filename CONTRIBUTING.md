@@ -155,7 +155,7 @@ To verify the server is running, visit: [http://localhost:8000/healthcheck](http
 cd frontend
 bun install
 bun dev
-# you can do also bun ios to start iOS simulator on MacOS
+# you can do also `bun ios` to start iOS simulator on MacOS
 ```
 
 ---
