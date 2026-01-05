@@ -17,7 +17,7 @@ For current visual representation of the architecture, see [Architecture Diagram
 | **Migrations**        | **[Goose](https://pressly.github.io/goose/)** – Supports database schema migrations with up, down, and specific-hash migration commands.                                                                                                                              |
 | **Authorization**     | **JSON Web Tokens (JWT)** – Stateless and standardized authorization, compatible across multiple client applications.                                                                                                                                                 |
 | **API Doc** | **[Scalar](https://scalar.com/)** – Provides clear and maintainable API documentation.                                                                                                                                                                                |
-| **External Services** | - **[AWS S3](https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html)** – Storage and management of voice memos and images.<br>- **[Expo Push Service](https://docs.expo.dev/push-notifications/sending-notifications/)** – Sending push notifications to users. |
+| **External Services** | - **[AWS S3](https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html)** – Storage and management of images.<br>- **[Expo Push Service](https://docs.expo.dev/push-notifications/sending-notifications/)** – Sending push notifications to users. |
 
 ### Frontend
 | **Category**                | **Technology & Purpose**                                                                                                                                              |
