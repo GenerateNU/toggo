@@ -71,8 +71,6 @@ frontend/
 │   └── _layout.tsx      # Root layout with providers
 ├── assets/              # Static assets (images, fonts, svgs, icons)
 ├── auth/                # Authentication service and Supabase client
-├── components/          # Shared components used across the app
-│   └── forms/           # Form components (login-form, register-form)
 ├── constants/           # Constants and configuration values
 ├── contexts/            # React contexts (user context, etc.)
 ├── design-system/       # UI components and theming
@@ -81,7 +79,6 @@ frontend/
 │   ├── config/          # Theme config (colors, spacing, typography)
 │   └── variants/        # Component variants (button, avatar)
 ├── hooks/               # Custom React hooks
-├── store/               # Zustand stores (user store, etc.)
 ├── types/               # TypeScript type definitions
 └── utilities/           # Helper functions
 ```
