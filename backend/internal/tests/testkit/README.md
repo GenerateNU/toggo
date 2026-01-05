@@ -157,6 +157,12 @@ testkit.New(t).
     AssertStatus(http.StatusOK)
 ```
 
+### Running Tests
+```
+cd backend
+make test
+```
+
 ### Lifecycle Test Example
 
 A lifecycle test verifies the full CRUD flow works correctly:

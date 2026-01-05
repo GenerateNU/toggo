@@ -160,8 +160,16 @@ bun dev
 # you can do also `bun ios` to start iOS simulator on MacOS
 ```
 
+---
+
+## Testing
+```bash
+cd backend
+make test
+```
+
 > [!TIP]
-> Save time by turning long commands into **aliases**—just type your shortcut instead of the full command. Here’s how to do it:
+> Save time by turning long commands into **aliases**, just type your shortcut instead of the full command. Here’s how to do it:
 >
 > 1. **Open your shell configuration file**
 >
