@@ -4,7 +4,7 @@
 
 **🦪 The codebase is your oyster!**
 
-This is your playground. Build whatever feature excites you. Found a bug? Open an issue. Noticed this README is out of date? Update it. See a rough edge in the dev experience? Smooth it out.
+Found a bug? Open an issue. Noticed documentation is out out of date? Update it. See a rough edge in the dev experience? Smooth it out.
 
 Take ownership. Make it better. Ship it.
 
@@ -143,6 +143,7 @@ make db-connect APP_ENVIRONMENT=prod
 ## Starting Server
 
 ### Backend
+Ensure you have your Docker app running first.
 ```bash
 cd backend
 go mod download
@@ -158,3 +159,40 @@ bun install
 bun dev
 # you can do also `bun ios` to start iOS simulator on MacOS
 ```
+
+> [!TIP]
+> Save time by turning long commands into **aliases**—just type your shortcut instead of the full command. Here’s how to do it:
+>
+> 1. **Open your shell configuration file**
+>
+>    * For **bash**, open `~/.bashrc`
+>    * For **zsh**, open `~/.zshrc`
+>
+>    ```bash
+>    nano ~/.bashrc   # or ~/.zshrc
+>    ```
+> 2. **Add your aliases at the end of the file**
+>    Example:
+>
+>    ```bash
+>    alias mu='make migrate-up'
+>    alias mup='make migrate-up APP_ENVIRONMENT=prod'
+>    alias test='make test'
+>    alias bdev='make dev'
+>    alias db='make db-connect'
+>    alias dbp='make db-connect APP_ENVIRONMENT=prod'
+>    alias md='make migrate-down'
+>    alias mdp='make migrate-down APP_ENVIRONMENT=prod'
+>    ```
+> 3. **Save the file** and exit the editor.
+> 4. **Apply the changes** by running:
+>
+>    ```bash
+>    source ~/.bashrc   # or source ~/.zshrc
+>    ```
+> 5. **Use your aliases**
+>    Now, instead of typing `make migrate-up APP_ENVIRONMENT=prod`, you can just type:
+>
+>    ```bash
+>    mup
+>    ```
