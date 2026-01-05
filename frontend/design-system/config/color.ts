@@ -7,6 +7,7 @@ export const ColorPalette = {
   mountainGray: "#7D7D7D",
   travelBagBrown: "#A0522D",
   cloudWhite: "#F8F8FF",
+  transparent: "transparent",
 };
 
 export type ColorName = keyof typeof ColorPalette;

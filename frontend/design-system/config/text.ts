@@ -13,6 +13,10 @@ const FONT_FAMILIES = {
 };
 
 export const FontVariants = {
+  defaults: {
+    fontSize: FONT_SIZES.medium,
+    fontFamily: FONT_FAMILIES.regular,
+  },
   h1: {
     fontSize: FONT_SIZES.xxlarge,
     fontFamily: FONT_FAMILIES.bold,
