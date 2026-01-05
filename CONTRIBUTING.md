@@ -100,6 +100,12 @@ When prompted, select:
 ## Database & Migrations
 
 ### Connecting to Database
+Ensure your database is up in the Docker Container by:
+```bash
+make dev # will start both server and database OR
+make db-up # just start the database in container
+```
+Then you can go into PSQL and execute any SQL query
 ```bash
 # Local database
 make db-connect

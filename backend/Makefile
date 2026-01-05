@@ -61,6 +61,10 @@ db-up:
 	@echo "Starting Postgres container..."
 	@DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
 		docker-compose up -d postgres
+	@echo "Waiting for database..."
+	@until docker exec database pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
+	@echo "Database ready"
+	$(MAKE) migrate-up
 
 db-down:
 	@echo "Stopping Postgres container..."
