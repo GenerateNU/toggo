@@ -3,6 +3,7 @@ package middlewares
 import (
 	"strings"
 	"toggo/internal/config"
+	"toggo/internal/errs"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -13,61 +14,68 @@ func AuthRequired(cfg *config.Configuration) fiber.Handler {
 	secret := []byte(cfg.Auth.JWTSecretKey)
 
 	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-		if authHeader == "" {
-			return unauthorized(c, "missing authorization header")
-		}
-
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			return unauthorized(c, "invalid authorization format")
-		}
-
-		tokenString := parts[1]
-
-		// Parse the token
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fiber.ErrUnauthorized
-			}
-			return secret, nil
-		})
-
-		if err != nil || !token.Valid {
-			return unauthorized(c, "invalid or expired token")
-		}
-
-		// Extract claims
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			return unauthorized(c, "invalid token claims")
-		}
-
-		userIDRaw, ok := claims["sub"]
-		if !ok {
-			return unauthorized(c, "missing user ID in token")
-		}
-
-		userIDStr, ok := userIDRaw.(string)
-		if !ok || userIDStr == "" {
-			return unauthorized(c, "invalid user ID in token")
-		}
-
-		// Validate UUID
-		userID, err := uuid.Parse(userIDStr)
+		tokenString, err := extractBearerToken(c.Get("Authorization"))
 		if err != nil {
-			return unauthorized(c, "user ID is not a valid UUID")
+			return err
 		}
 
-		// Forward valid UUID as string
-		c.Locals("userID", userID.String())
+		claims, err := parseJWT(tokenString, secret)
+		if err != nil {
+			return err
+		}
 
+		userID, err := getUserIDFromClaims(claims)
+		if err != nil {
+			return err
+		}
+
+		c.Locals("userID", userID.String())
 		return c.Next()
 	}
 }
 
-func unauthorized(c *fiber.Ctx, message string) error {
-	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-		"error": message,
+func extractBearerToken(authHeader string) (string, error) {
+	if authHeader == "" {
+		return "", errs.Unauthorized()
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", errs.Unauthorized()
+	}
+
+	return parts[1], nil
+}
+
+func parseJWT(tokenString string, secret []byte) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errs.Unauthorized()
+		}
+		return secret, nil
 	})
+	if err != nil || !token.Valid {
+		return nil, errs.Unauthorized()
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errs.Unauthorized()
+	}
+
+	return claims, nil
+}
+
+func getUserIDFromClaims(claims jwt.MapClaims) (uuid.UUID, error) {
+	sub, ok := claims["sub"].(string)
+	if !ok || sub == "" {
+		return uuid.Nil, errs.Unauthorized()
+	}
+
+	userID, err := uuid.Parse(sub)
+	if err != nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+
+	return userID, nil
 }

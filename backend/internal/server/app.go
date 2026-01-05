@@ -25,7 +25,7 @@ func CreateApp(config *config.Configuration, db *bun.DB) *fiber.App {
 
 	repository := repository.NewRepository(db)
 
-	validator := validator.New()
+	validator := validator.New(validator.WithRequiredStructEnabled())
 
 	routeParams := types.RouteParams{
 		Validator: validator,

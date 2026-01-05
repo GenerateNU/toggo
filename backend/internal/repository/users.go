@@ -36,7 +36,7 @@ func (r *userRepository) Find(ctx context.Context, id uuid.UUID) (*models.User, 
 		Scan(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, errs.ErrNotFound
 		}
 		return nil, err
 	}

@@ -5,9 +5,9 @@ import (
 )
 
 type User struct {
-	ID    uuid.UUID `bun:"id,pk,type:uuid"`
-	Name  string    `bun:"name"`
-	Email string    `bun:"email"`
+	ID    uuid.UUID `bun:"id,pk,type:uuid" json:"id"`
+	Name  string    `bun:"name" json:"name"`
+	Email string    `bun:"email" json:"email"`
 }
 
 type CreateUserRequest struct {
