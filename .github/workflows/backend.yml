@@ -40,7 +40,8 @@ jobs:
         run: echo "DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN }}" >> $GITHUB_ENV
 
       - name: Install Doppler CLI
-        run: curl -Ls https://cli.doppler.com/install.sh | sh
+        run: |
+          curl -Ls https://cli.doppler.com/install.sh | sudo sh -s -- --version 3.70.0
 
       - name: Install lint tooling
         run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
