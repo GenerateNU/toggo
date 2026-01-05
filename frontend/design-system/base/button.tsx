@@ -9,7 +9,7 @@ import {
 import { TouchableOpacity } from "react-native";
 import { Theme } from "../config/theme";
 
-export const BaseButton = createRestyleComponent<
+export const Button = createRestyleComponent<
   VariantProps<Theme, "buttonVariants"> &
     SpacingProps<Theme> &
     ColorProps<Theme> &

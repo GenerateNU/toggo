@@ -18,7 +18,7 @@ const baseIconBorder = {
   borderRadius: "full",
   aspectRatio: 1,
   borderWidth: 2,
-  borderColor: ColorPalette.oceanBlue,
+  borderColor: "oceanBlue",
 };
 
 const createButtonStyle = (
@@ -28,36 +28,37 @@ const createButtonStyle = (
 ) => ({
   ...baseButton,
   width: "100%",
-  backgroundColor: outline ? "transparent" : ColorPalette[color],
+  backgroundColor: outline ? "transparent" : color, // Use color key, not ColorPalette[color]
   borderRadius,
   borderWidth: outline ? 2 : 0,
-  borderColor: outline ? ColorPalette[color] : "transparent",
-  color: outline ? ColorPalette[color] : ColorPalette.cloudWhite,
+  borderColor: outline ? color : "transparent",
+  color: outline ? color : "cloudWhite",
 });
 
 export const ButtonVariants = {
+  defaults: createButtonStyle("forestGreen", "full"),
   icon: {
     ...baseIcon,
-    backgroundColor: ColorPalette.cloudWhite,
+    backgroundColor: "cloudWhite",
   },
   iconGray: {
     ...baseIcon,
-    backgroundColor: ColorPalette.mountainGray,
+    backgroundColor: "mountainGray",
   },
   iconBeige: {
     ...baseIcon,
-    backgroundColor: ColorPalette.sandyBeige,
+    backgroundColor: "sandyBeige",
   },
   smallIconBorder: {
     ...baseIconBorder,
-    backgroundColor: ColorPalette.cloudWhite,
-    borderColor: ColorPalette.forestGreen,
+    backgroundColor: "cloudWhite",
+    borderColor: "forestGreen",
   },
   text: {
     width: "auto",
   },
   primary: createButtonStyle("sunsetOrange", "full"),
-  secondary: createButtonStyle("forestGreen", "full", true),
+  secondary: createButtonStyle("forestGreen", "full"),
   accent: createButtonStyle("skyBlue", "full"),
 };
 

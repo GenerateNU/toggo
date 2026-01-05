@@ -1,12 +1,12 @@
+import { Redirect, Slot } from "expo-router";
 import { useUser } from "@/contexts/user";
-import { Redirect } from "expo-router";
 
-export default function Index() {
+export default function AuthLayout() {
   const { isAuthenticated } = useUser();
 
   if (isAuthenticated) {
     return <Redirect href="/(app)" />;
   }
 
-  return <Redirect href="/(auth)/login" />;
+  return <Slot />;
 }

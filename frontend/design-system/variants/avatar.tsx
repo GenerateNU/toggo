@@ -1,4 +1,7 @@
 export const AvatarVariants = {
+  defaults: {
+    size: 70,
+  },
   huge: {
     size: 150,
   },
