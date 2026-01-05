@@ -62,6 +62,49 @@ When prompted, select:
 
 ---
 
+## Database & Migrations
+
+### Connecting to Database
+```bash
+# Local database
+make db-connect
+
+# Production database
+make db-connect APP_ENVIRONMENT=prod
+```
+
+> [!NOTE]
+> **Can't connect to the database?** Usually a port conflict or conflicting Postgres installations.
+> 
+> **1. Check what's using port 5432:**
+> ```bash
+> lsof -i :5432
+> ```
+> 
+> **2. Check for running Postgres instances:**
+> ```bash
+> ps aux | grep postgres
+> ```
+> 
+> **3. Common fixes:**
+> - Stop Homebrew Postgres: `brew services stop postgresql` or `brew services stop postgresql@15`
+> - Stop system Postgres (Linux): `sudo systemctl stop postgresql`
+> - Kill a specific process: `kill <PID>` (use the PID from above)
+> - Remove old socket files: `rm /tmp/.s.PGSQL.5432` (if you see "socket file" errors)
+
+### Running Migrations
+
+| Action | Local | Production |
+|--------|-------|------------|
+| Create migration | `make migrate-create name=<informative-name>` | — |
+| Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
+| Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
+
+> [!CAUTION]
+> Always run migrations locally and ensure it works correctly first, then open a PR, get it reviewed and merged, then apply to production.
+
+---
+
 ## Getting Started
 
 ### Backend
@@ -80,30 +123,6 @@ bun install
 bun dev
 # you can do also bun ios to start iOS simulator on MacOS
 ```
-
----
-
-## Database & Migrations
-
-### Connecting to Database
-```bash
-# Local database
-make db-connect
-
-# Production database
-make db-connect APP_ENVIRONMENT=prod
-```
-
-### Running Migrations
-
-| Action | Local | Production |
-|--------|-------|------------|
-| Create migration | `make migrate-create name=<informative-name>` | — |
-| Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
-| Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
-
-> [!CAUTION]
-> Always run migrations locally and ensure it works correctly first, then open a PR, get it reviewed and merged, then apply to production.
 
 ---
 
