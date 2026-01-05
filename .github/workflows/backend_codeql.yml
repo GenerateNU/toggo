@@ -6,6 +6,10 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend_codeql.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend_codeql.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +23,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
