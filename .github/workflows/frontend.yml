@@ -5,7 +5,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  frontend-checks:
+  ci:
+    name: Format and Lint
     if: |
       github.event.pull_request.draft == false &&
       github.actor != 'dependabot[bot]'
