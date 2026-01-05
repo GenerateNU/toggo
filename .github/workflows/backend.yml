@@ -3,12 +3,8 @@ name: Backend CI
 permissions: read-all
 
 on:
-  push:
-    paths:
-      - backend/**
-      - config/**
-      - .github/workflows/backend.yml
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
