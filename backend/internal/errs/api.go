@@ -46,13 +46,13 @@ type FieldError struct {
 
 func ValidationError(err error) APIError {
 	return APIError{
-		StatusCode: http.StatusBadRequest,
+		StatusCode: http.StatusUnprocessableEntity,
 		Message:    formatValidationErrors(err),
 	}
 }
 
 func formatValidationErrors(err error) []FieldError {
-	var errors []FieldError
+	var errs []FieldError
 
 	validationErrors, ok := err.(validator.ValidationErrors)
 	if !ok {
@@ -60,13 +60,13 @@ func formatValidationErrors(err error) []FieldError {
 	}
 
 	for _, e := range validationErrors {
-		errors = append(errors, FieldError{
+		errs = append(errs, FieldError{
 			Field:   e.Field(),
 			Message: buildMessage(e),
 		})
 	}
 
-	return errors
+	return errs
 }
 
 func buildMessage(e validator.FieldError) string {
@@ -136,12 +136,24 @@ func InvalidUUID() APIError {
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	var apiErr APIError
 
+	// Try to convert database errors first
+	err = tryWrapDBError(err)
+
 	switch {
 	case errors.Is(err, ErrNotFound):
 		apiErr = NewAPIError(http.StatusNotFound, err)
 
 	case errors.Is(err, ErrDuplicate):
 		apiErr = NewAPIError(http.StatusConflict, err)
+
+	case errors.Is(err, ErrForeignKey):
+		apiErr = NewAPIError(http.StatusBadRequest, err)
+
+	case errors.Is(err, ErrCheckViolation):
+		apiErr = NewAPIError(http.StatusBadRequest, err)
+
+	case errors.Is(err, ErrDatabaseError):
+		apiErr = InternalServerError()
 
 	default:
 		if _, ok := err.(validator.ValidationErrors); ok {

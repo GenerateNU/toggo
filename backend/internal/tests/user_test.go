@@ -76,6 +76,21 @@ func TestUserLifecycle(t *testing.T) {
 			AssertField("name", "Jane Doe")
 	})
 
+	t.Run("create user with same email returns 409", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &authUserID,
+				Body: models.CreateUserRequest{
+					Name:  "Duplicate User",
+					Email: email,
+				},
+			}).
+			AssertStatus(http.StatusConflict)
+	})
+
 	t.Run("delete user", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
