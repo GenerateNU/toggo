@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	errors "toggo/internal/errs"
+	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
 
@@ -40,7 +40,7 @@ func (u *UserService) GetUser(ctx context.Context, id uuid.UUID) (*models.User, 
 		return nil, err
 	}
 	if user == nil {
-		return nil, errors.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 	return user, nil
 }
