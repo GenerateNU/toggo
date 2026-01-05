@@ -58,8 +58,13 @@ jobs:
           sudo systemctl start docker
           docker info
 
+      - name: Fetch Doppler secrets
+        uses: dopplerhq/secrets-fetch-action@v1.3.0
+        id: doppler
+        with:
+          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
+          inject-env-vars: true
+
       - name: Test
-        run: |
-          export DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN }}
-          make test
+        run: make test
         working-directory: backend
