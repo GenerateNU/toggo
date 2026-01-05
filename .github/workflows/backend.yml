@@ -48,9 +48,11 @@ jobs:
 
       - name: Format
         run: make format
+        working-directory: backend
 
       - name: Lint
         run: make lint
+        working-directory: backend
 
       - name: Start Docker
         run: |
@@ -59,3 +61,4 @@ jobs:
 
       - name: Test
         run: make test
+        working-directory: backend
