@@ -1,0 +1,63 @@
+name: Backend CI
+
+permissions: read-all
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Format, Lint & Test
+    if: |
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22"
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go
+
+      - name: Install lint tooling
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b $(go env GOPATH)/bin v2.0.1
+
+      - name: Format
+        run: make format
+        working-directory: backend
+
+      - name: Lint
+        run: make lint
+        working-directory: backend
+
+      - name: Start Docker
+        run: |
+          sudo systemctl start docker
+          docker info
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+      
+      - name: Test
+        run: make test
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        working-directory: backend
