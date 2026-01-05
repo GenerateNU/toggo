@@ -36,10 +36,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go
 
-      - name: Install Doppler CLI
-        run: |
-          curl -Ls https://cli.doppler.com/install.sh | sudo sh -s -- --version 3.70.0
-
       - name: Install lint tooling
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
@@ -58,13 +54,10 @@ jobs:
           sudo systemctl start docker
           docker info
 
-      - name: Fetch Doppler secrets
-        uses: dopplerhq/secrets-fetch-action@v1.3.0
-        id: doppler
-        with:
-          doppler-token: ${{ secrets.DOPPLER_TOKEN }}
-          inject-env-vars: true
-
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+      
       - name: Test
         run: make test
-        working-directory: backend
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
