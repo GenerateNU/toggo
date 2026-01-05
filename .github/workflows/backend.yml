@@ -36,9 +36,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go
 
-      - name: Set Doppler Token
-        run: echo "DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN }}" >> $GITHUB_ENV
-
       - name: Install Doppler CLI
         run: |
           curl -Ls https://cli.doppler.com/install.sh | sudo sh -s -- --version 3.70.0
