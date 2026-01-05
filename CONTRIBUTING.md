@@ -98,7 +98,7 @@ make db-connect APP_ENVIRONMENT=prod
 
 | Action | Local | Production |
 |--------|-------|------------|
-| Create migration | `make migrate-create name=<descriptive-name-for-migration>` | — |
+| Create migration | `make migrate-create name=<informative-name>` | — |
 | Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
 | Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
 
