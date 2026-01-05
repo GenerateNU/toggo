@@ -1,8 +1,7 @@
 name: Frontend CodeQL
 
 on:
-  push:
-    branches: [main]
+  pull_request:
     paths:
       - "frontend/**"
       - ".github/workflows/frontend_codeql.yml"
@@ -19,6 +18,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
