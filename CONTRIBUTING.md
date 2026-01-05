@@ -43,7 +43,7 @@
 
 ## Doppler Setup
 
-Doppler manages our environment variables. Set it up once:
+Doppler manages our environment variables. The token will expire once in a while for security reason, so you will need to do this process again.
 ```bash
 # 1. Install Doppler CLI
 brew install dopplerhq/cli/doppler  # macOS
