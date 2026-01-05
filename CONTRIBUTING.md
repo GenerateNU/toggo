@@ -24,7 +24,6 @@ chore: upgrade dependencies
 
 Use the Issues tab to:
 - Report bugs you find during development
-- Request features that don't exist yet
 - Track work that needs more discussion or clarification
 
 > [!IMPORTANT]
@@ -32,6 +31,8 @@ Use the Issues tab to:
 > - Maintain clear thought process
 > - Ship features incrementally
 > - Allow reviewers to focus on details
+
+---
 
 ## Prerequisites
 
