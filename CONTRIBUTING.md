@@ -139,7 +139,7 @@ make db-connect APP_ENVIRONMENT=prod
 
 ---
 
-## Getting Started
+## Starting Server
 
 ### Backend
 ```bash
