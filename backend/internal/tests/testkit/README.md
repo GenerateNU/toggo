@@ -15,7 +15,7 @@ Testing allows us to confidently push out new features without regression and en
 
 Writing tests from scratch can be tedious, so we have helpers to make it easy. See `user_test.go` for full examples.
 
-> **Note:** Feel free to add new helper methods as needed — we want testing to be easy for everyone!
+> [!NOTE] Feel free to add new helper methods as needed — we want testing to be easy for everyone!
 
 ### Quick Start
 
