@@ -157,25 +157,3 @@ bun install
 bun dev
 # you can do also `bun ios` to start iOS simulator on MacOS
 ```
-
----
-
-## Useful Commands
-
-### Backend
-
-| Command | Description |
-|---------|-------------|
-| `make dev` | Start backend server |
-| `make test` | Run tests |
-| `make lint` | Run linter |
-| `make tidy` | Clean up unused dependencies in `go.mod` and `go.sum` |
-| `make format` | Format code |
-
-### Frontend
-
-| Command | Description |
-|---------|-------------|
-| `bun dev` | Start frontend dev server |
-| `bun lint` | Run linter |
-| `bun format` | Format code |
