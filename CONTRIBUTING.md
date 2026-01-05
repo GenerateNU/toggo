@@ -1,5 +1,38 @@
 # Toggo
 
+## Contributing
+
+**🦪 The codebase is your oyster!**
+
+This is your playground. Build whatever feature excites you. If something annoys you, write some code to fix it, you'll be helping yourself *and* everyone else. Found a bug? Open an issue. Noticed this README is out of date? Update it. See a rough edge in the dev experience? Smooth it out.
+
+Take ownership. Make it better. Ship it.
+
+### Commit Messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. **Please read it!**
+
+Examples:
+```bash
+feat: add user profile page
+fix: resolve login redirect issue
+docs: update README setup instructions
+chore: upgrade dependencies
+```
+
+### Issues
+
+Use the Issues tab to:
+- Report bugs you find during development
+- Request features that don't exist yet
+- Track work that needs more discussion or clarification
+
+> [!IMPORTANT]
+> Keep PRs small and focused. Split large features into smaller PRs that are easy to review. This helps:
+> - Maintain clear thought process
+> - Ship features incrementally
+> - Allow reviewers to focus on details
+
 ## Prerequisites
 
 ### General
@@ -145,38 +178,3 @@ bun dev
 | `bun dev` | Start frontend dev server |
 | `bun lint` | Run linter |
 | `bun format` | Format code |
-
----
-
-## Contributing
-
-**🦪 The codebase is your oyster!**
-
-This is your playground. Build whatever feature excites you. If something annoys you, write some code to fix it, you'll be helping yourself *and* everyone else. Found a bug? Open an issue. Noticed this README is out of date? Update it. See a rough edge in the dev experience? Smooth it out.
-
-Take ownership. Make it better. Ship it.
-
-### Commit Messages
-
-We use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. **Please read it!**
-
-Examples:
-```bash
-feat: add user profile page
-fix: resolve login redirect issue
-docs: update README setup instructions
-chore: upgrade dependencies
-```
-
-### Issues
-
-Use the Issues tab to:
-- Report bugs you find during development
-- Request features that don't exist yet
-- Track work that needs more discussion or clarification
-
-> [!IMPORTANT]
-> Keep PRs small and focused. Split large features into smaller PRs that are easy to review. This helps:
-> - Maintain clear thought process
-> - Ship features incrementally
-> - Allow reviewers to focus on details
