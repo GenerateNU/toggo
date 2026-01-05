@@ -56,6 +56,7 @@ Use the Issues tab to:
 | PostgreSQL 15 | Database | [postgresql.org](https://www.postgresql.org/download/) |
 | Goose | Database migrations | `go install github.com/pressly/goose/v3/cmd/goose@latest` |
 | golangci-lint | Go linter | [golangci-lint.run](https://golangci-lint.run/welcome/install/) |
+| goimports | Formats code + manages imports | `go install golang.org/x/tools/cmd/goimports@latest` |
 
 **Useful Go resources:**
 - [Effective Go](https://go.dev/doc/effective_go)
