@@ -1,7 +1,6 @@
 import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Text } from "@/design-system/base/text";
-import { TouchableOpacity, ActivityIndicator } from "react-native";
 import { Button } from "@/design-system/base/button";
 
 export default function Settings() {

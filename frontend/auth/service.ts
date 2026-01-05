@@ -1,7 +1,7 @@
 import { AppState } from "react-native";
 import { supabase } from "./client";
 import { Session, User } from "@supabase/supabase-js";
-import { AuthRequest, PhoneAuth, ResetPasswordPayload } from "@/types/auth";
+import { AuthRequest, ResetPasswordPayload } from "@/types/auth";
 import * as SecureStore from "expo-secure-store";
 import * as Linking from "expo-linking";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import { TextInput, ActivityIndicator, TouchableOpacity } from "react-native";
+import { TextInput, ActivityIndicator } from "react-native";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@/design-system/base/box";
 import { Text } from "@/design-system/base/text";
