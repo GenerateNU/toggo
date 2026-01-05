@@ -1,8 +1,5 @@
 # Frontend Practices
 
-> [!NOTE]
-> If you notice any inconsistencies between our data representation and the design, or have questions regarding user experience (UX) (e.g., interactions, swipe gestures, or button states), please reach out to us and the design team.
-
 ## 1. Component Design
 | **Principle**                             | **Description**                                                                                                                                                          |
 |-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -18,24 +15,21 @@
 ## 2. User Experience (UX)
 | **Scenario** | **Best Practices** |
 |-------------|--------------------|
-| Data is loading | Use skeleton screens for content-heavy views or spinners for short waits. Set layout expectations early. |
-| Data fails to load | Display clear, user-friendly error messages with retry options. Avoid silent failures. |
-| No data available | Show informative empty states with guidance or next steps (e.g., “Create your first item”). |
-| User submits data | Disable submit buttons during pending actions and show a loading indicator to prevent duplicate requests. |
-| Optimistic updates | Update the UI immediately before server response and gracefully roll back if the request fails. |
-| User inputs invalid data | Provide real-time validation, inline error messages, and block submission until inputs are valid. |
-| Form submission succeeds | Show success feedback using toasts, inline messages, or visual confirmation. |
-| User interacts with clickable elements | Use `cursor: pointer`, hover states, and visual feedback to indicate interactivity. |
-| User taps or clicks a button | Provide immediate visual feedback (color change, ripple, pressed state) to confirm interaction. |
-| Keyboard obscures inputs (mobile) | Adjust layout dynamically to keep focused inputs and action buttons visible. |
-| Keyboard remains open | Allow dismissal by tapping outside inputs or using a “Done” button. |
-| Switching between views or tabs | Use smooth, purposeful animations to guide attention and avoid abrupt transitions. |
-| Long-running actions | Show progress indicators or step-based feedback so users know something is happening. |
-| Rapid user input (search/filter) | Debounce or throttle input to reduce unnecessary API calls and improve performance. |
-| Navigation between pages | Preserve user context such as scroll position, filters, and form values when possible. |
-| Destructive actions (delete, reset) | Ask for confirmation and clearly explain consequences before proceeding. |
-| App is used on different screen sizes | Ensure responsive layouts adapt gracefully across devices and orientations. |
-| Success or failure occurs globally | Use consistent global feedback patterns (toasts, banners) for system-wide messages. |
+| Data loading | Skeleton screens or spinners. Set layout expectations early. |
+| Data fails to load | Clear error message with retry option. Never fail silently. |
+| No data available | Informative empty state with guidance (e.g., "Create your first item"). |
+| Form submission | Disable button + show loading indicator to prevent duplicate requests. |
+| Optimistic updates | Update UI immediately, rollback gracefully on failure. |
+| Invalid input | Instant validation. Block submission until valid. |
+| Submission succeeds | Toast, inline message, or visual confirmation. |
+| Clickable elements | `cursor: pointer`, hover/pressed states for feedback. |
+| Keyboard obscures input | Adjust layout to keep input and submit button visible. |
+| Keyboard dismissal | Tap outside to dismiss keyboard. |
+| View transitions | Smooth animations. Avoid abrupt changes. |
+| Long-running actions | Progress indicator or step-based feedback. |
+| Rapid input (search) | Debounce/throttle to reduce API calls. |
+| Page navigation | Preserve scroll position, filters, and form state. |
+| Destructive actions | Confirm with clear consequences before proceeding. |
 
 ---
 

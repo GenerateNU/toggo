@@ -28,8 +28,9 @@ For current visual representation of the architecture, see [Architecture Diagram
 | **Styling**                 | **[Nativewind](https://www.nativewind.dev/)** – Tailwind CSS-inspired utility-first styling for React Native.                                                         |
 | **Design System**           | **[Restyle](https://shopify.github.io/restyle/fundamentals/)** – A theming and styling system for reusable, consistent UI components.                                 |
 | **Server State Management** | **[TanStack Query](https://tanstack.com/query/latest/docs/framework/react/quick-start)** – Simplifies API calls, caching, and handling loading/error states.          |
-| **Client State Management** | **[Zustand](https://zustand-demo.pmnd.rs/)** – Lightweight and flexible state management.                                                        |
-| **Validation**              | **[Zod](https://zod.dev/)** – Type-safe schema validation for forms and API requests.                                                                                 |
+| **Client State Management** | **[Zustand](https://zustand-demo.pmnd.rs/)** – Lightweight and flexible state management.                                                                             |
+| **API Client Generation**   | **[Orval](https://orval.dev/)** – Auto-generates typed API clients and React Query hooks from OpenAPI/Swagger specs.                                                  |
+| **Validation**              | **[Zod](https://zod.dev/)** – Type-safe schema validation for forms and API requests.                                                                                 |             |
 
 ---
 
@@ -62,16 +63,27 @@ backend/
 
 ```
 frontend/
-├── api/             # API calls to backend endpoints
-├── app/             # Main entry point for the frontend application
-├── assets/          # Static assets (e.g., images, fonts, svgs, icons)
-├── auth/            # Authentication-related logic and components
-├── constants/       # Constants and configuration values shared across app
-├── contexts/        # Contexts used across the app
-├── design-system/   # Shared UI components and themes
-├── hooks/           # Custom React hooks for reusable logic
-├── types/           # TypeScript type definitions for the frontend
-└── utilities/       # Helper functions
+├── api/                 # API calls to backend endpoints
+├── app/                 # Expo Router file-based routing
+│   ├── (app)/           # Protected app routes (requires authentication)
+│   │   └── (tabs)/      # Tab navigation (home, settings, etc.)
+│   ├── (auth)/          # Authentication routes (login, register, forgot password)
+│   └── _layout.tsx      # Root layout with providers
+├── assets/              # Static assets (images, fonts, svgs, icons)
+├── auth/                # Authentication service and Supabase client
+├── components/          # Shared components used across the app
+│   └── forms/           # Form components (login-form, register-form)
+├── constants/           # Constants and configuration values
+├── contexts/            # React contexts (user context, etc.)
+├── design-system/       # UI components and theming
+│   ├── base/            # Base components (Box, Text, Button)
+│   ├── components/      # Composed components
+│   ├── config/          # Theme config (colors, spacing, typography)
+│   └── variants/        # Component variants (button, avatar)
+├── hooks/               # Custom React hooks
+├── store/               # Zustand stores (user store, etc.)
+├── types/               # TypeScript type definitions
+└── utilities/           # Helper functions
 ```
 
 ---

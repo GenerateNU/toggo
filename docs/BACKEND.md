@@ -16,6 +16,22 @@
 
 ---
 
+## Error Handling
+
+### Error Response Format
+* Use consistent error structure and meaningful HTTP status code
+* Never expose internal details (stack traces, SQL errors) to clients
+* Log full error details server-side for debugging
+
+### Database Errors
+* Catch and translate database errors to user-friendly messages:
+  * Unique violation → `"Email already exists"`
+  * Foreign key violation → `"Referenced resource not found"`
+  * Not found → `"Resource not found"`
+* Hide implementation details from API responses
+
+---
+
 ## Database Guidelines
 
 ### Indexing
@@ -31,10 +47,11 @@
   * Put the column that reduces rows the most first
   * ✅ Good: `(school_id, grade_id, student_id)`
   * ❌ Bad: `(student_id, school_id, grade_id)`
+* Consider adding index for functions if you think they are used frequently
 
 ---
 
-### Querying
+### Query and Performance
 
 * Fetch multiple records in a **single query** when possible
   * Batch queries instead of looping
@@ -47,12 +64,7 @@
 * Prefer common table expressions (CTEs) to deeply nested subqueries:
   * Improve readability
   * Make complex queries easier to debug
-
----
-
-### Query Performance & Analysis
-
-* Always use:
+* Always use these to measure your query:
   * `EXPLAIN` to inspect query plans
   * `EXPLAIN ANALYZE` to measure real execution
 * Watch for:
@@ -60,3 +72,33 @@
   * Large row counts early in the plan
 * Lower cost is generally better
   * Rough target: `< 100` (depends on data size and workload)
+
+---
+
+## Testing
+
+### Unit Tests
+* Test complex processing (compression, encryption, parsing, calculations)
+* Mock external dependencies (database, APIs, file system)
+* Fast to run — no I/O or network calls
+
+### Integration Tests
+* Test API endpoints with database
+* Test the full request/response cycle
+
+### Mocking
+* Mock external services (payment providers, email services, third-party APIs)
+* Mock time-dependent functions for deterministic tests
+* Use dependency injection to make mocking easier
+
+### What to Test
+* **Happy paths** — expected successful flows
+* **Error paths** — invalid inputs, failures, edge cases
+* **Edge cases**:
+  * Empty inputs
+  * Invalid format
+  * Duplicate data
+  * Boundary values (min/max limits)
+  * Concurrent requests
+* **Idempotency** — calling same endpoint twice should be safe
+* **Lifecycle tests** — create → read → update → delete flows
