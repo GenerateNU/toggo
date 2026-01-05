@@ -57,6 +57,7 @@ Use the Issues tab to:
 | Goose | Database migrations | `go install github.com/pressly/goose/v3/cmd/goose@latest` |
 | golangci-lint | Go linter | [golangci-lint.run](https://golangci-lint.run/welcome/install/) |
 | goimports | Formats code + manages imports | `go install golang.org/x/tools/cmd/goimports@latest` |
+| Swag CLI | Generate API doc | `go install github.com/swaggo/swag/cmd/swag@latest` |
 
 **Useful Go resources:**
 - [Effective Go](https://go.dev/doc/effective_go)
