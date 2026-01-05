@@ -39,8 +39,6 @@ func NewAPIError(statusCode int, err error) APIError {
 	}
 }
 
-// ---- Validation Error Handling ----
-
 type FieldError struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
@@ -96,8 +94,6 @@ func buildMessage(e validator.FieldError) string {
 	}
 }
 
-// ---- Existing Error Constructors ----
-
 func InvalidRequestData(errors map[string]string) APIError {
 	return APIError{
 		StatusCode: http.StatusUnprocessableEntity,
@@ -133,7 +129,9 @@ func InternalServerError() APIError {
 	return NewAPIError(http.StatusInternalServerError, errors.New("internal server error"))
 }
 
-// ---- Error Handler ----
+func InvalidUUID() APIError {
+	return NewAPIError(http.StatusBadRequest, errors.New("invalid UUID format"))
+}
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	var apiErr APIError
@@ -146,7 +144,6 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 		apiErr = NewAPIError(http.StatusConflict, err)
 
 	default:
-		// Check for validation errors
 		if _, ok := err.(validator.ValidationErrors); ok {
 			apiErr = ValidationError(err)
 		} else if castedErr, ok := err.(APIError); ok {

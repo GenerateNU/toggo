@@ -47,7 +47,7 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	}
 
 	if err := utilities.Validate(u.validator, req); err != nil {
-		return errs.BadRequest(err)
+		return err
 	}
 
 	user, err := u.userService.CreateUser(c.Context(), req, userID)
@@ -79,11 +79,11 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
-		return errs.BadRequest(err)
+		return errs.InvalidUUID()
 	}
 
 	if err := utilities.Validate(u.validator, req); err != nil {
-		return errs.BadRequest(err)
+		return err // ← Fixed: no wrapper
 	}
 
 	updatedUser, err := u.userService.UpdateUser(c.Context(), id, req)
@@ -107,7 +107,7 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 func (u *UserController) GetUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
-		return errs.BadRequest(err)
+		return errs.InvalidUUID()
 	}
 
 	user, err := u.userService.GetUser(c.Context(), id)
@@ -130,7 +130,7 @@ func (u *UserController) GetUser(c *fiber.Ctx) error {
 func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
-		return err
+		return errs.InvalidUUID()
 	}
 
 	if err := u.userService.DeleteUser(c.Context(), id); err != nil {

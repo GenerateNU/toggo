@@ -199,3 +199,7 @@ func (tb *IntegrationTestBuilder) DebugLogging() *IntegrationTestBuilder {
 	fmt.Fprintf(os.Stderr, "Response: %s\n", string(tb.raw))
 	return tb
 }
+
+func (tb *IntegrationTestBuilder) GetBody() map[string]any {
+	return tb.body
+}

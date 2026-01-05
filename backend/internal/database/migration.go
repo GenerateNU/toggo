@@ -18,7 +18,11 @@ func ApplyGooseMigrations(ctx context.Context, host string, port int, user, pass
 		return fmt.Errorf("failed to open DB: %w", err)
 	}
 
-	defer sqlDB.Close()
+	defer func() {
+		if err := sqlDB.Close(); err != nil {
+			log.Printf("failed to close DB: %v", err)
+		}
+	}()
 
 	if err := goose.Up(sqlDB, "../migrations"); err != nil {
 		log.Printf("failed to apply migrations: %v", err)

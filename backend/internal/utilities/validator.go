@@ -38,7 +38,7 @@ func Validate(validate *validator.Validate, s interface{}, maybeErrs ...MaybeErr
 	if err := validate.Struct(s); err != nil {
 		if validationErrs, ok := err.(validator.ValidationErrors); ok {
 			for _, ve := range validationErrs {
-				allErrors[ToSnakeCase(ve.Field())] = fmt.Sprintf("%s failed %s", ve.Field(), ve.Tag())
+				allErrors[ToSnakeCase(ve.Field())] = buildMessage(ve) // ← Use buildMessage
 			}
 		} else {
 			return fmt.Errorf("failed to validate struct: %w", err)
@@ -50,4 +50,29 @@ func Validate(validate *validator.Validate, s interface{}, maybeErrs ...MaybeErr
 	}
 
 	return nil
+}
+
+func buildMessage(e validator.FieldError) string {
+	switch e.Tag() {
+	case "required":
+		return fmt.Sprintf("%s is required", e.Field())
+	case "email":
+		return fmt.Sprintf("%s must be a valid email", e.Field())
+	case "min":
+		return fmt.Sprintf("%s must be at least %s characters", e.Field(), e.Param())
+	case "max":
+		return fmt.Sprintf("%s must be at most %s characters", e.Field(), e.Param())
+	case "oneof":
+		return fmt.Sprintf("%s must be one of: %s", e.Field(), e.Param())
+	case "url":
+		return fmt.Sprintf("%s must be a valid URL", e.Field())
+	case "uuid":
+		return fmt.Sprintf("%s must be a valid UUID", e.Field())
+	case "gte":
+		return fmt.Sprintf("%s must be greater than or equal to %s", e.Field(), e.Param())
+	case "lte":
+		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
+	default:
+		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
+	}
 }

@@ -12,7 +12,8 @@ import (
 func TestAuthMiddleware(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 
-	t.Run("authorized with valid token", func(t *testing.T) {
+	t.Run("allows request with valid token", func(t *testing.T) {
+		t.Parallel()
 		userID := fakes.GenerateUUID()
 
 		testkit.New(t).
@@ -25,7 +26,8 @@ func TestAuthMiddleware(t *testing.T) {
 			AssertStatus(http.StatusNotFound)
 	})
 
-	t.Run("unauthorized without token", func(t *testing.T) {
+	t.Run("rejects request without token", func(t *testing.T) {
+		t.Parallel()
 		auth := false
 
 		testkit.New(t).
@@ -38,7 +40,8 @@ func TestAuthMiddleware(t *testing.T) {
 			AssertStatus(http.StatusUnauthorized)
 	})
 
-	t.Run("unauthorized with expired token", func(t *testing.T) {
+	t.Run("rejects expired token", func(t *testing.T) {
+		t.Parallel()
 		userID := fakes.GenerateUUID()
 		expiredToken := fakes.GenerateExpiredJWT()
 
@@ -54,7 +57,8 @@ func TestAuthMiddleware(t *testing.T) {
 			AssertStatus(http.StatusUnauthorized)
 	})
 
-	t.Run("unauthorized with invalid signature", func(t *testing.T) {
+	t.Run("rejects invalid signature", func(t *testing.T) {
+		t.Parallel()
 		userID := fakes.GenerateUUID()
 		invalidToken := fakes.GenerateInvalidJWT(userID, time.Hour)
 
