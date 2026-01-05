@@ -62,5 +62,7 @@ jobs:
           docker info
 
       - name: Test
-        run: make test
+        run: |
+          export DOPPLER_TOKEN=${{ secrets.DOPPLER_TOKEN }}
+          make test
         working-directory: backend
