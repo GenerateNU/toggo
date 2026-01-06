@@ -157,7 +157,7 @@ go mod download
 make dev
 ```
 
-To verify the server is running, visit: [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck)
+To verify the server is running, visit: Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Frontend
 ```bash
@@ -166,6 +166,30 @@ bun install
 bun dev
 # you can do also `bun ios` to start iOS simulator on MacOS
 ```
+
+---
+
+## API Documentation
+To generate API calls on frontend side and our API documentation up-to-date, we will need to add comments to all the controllers
+```ts
+// @Summary Healthcheck endpoint
+// @Description Returns OK if the server is running
+// @Tags example
+// @Produce json
+// @Success 200 {string} string "ok"
+// @Router /healthcheck [get]
+func HealthcheckHandler(c *fiber.Ctx) error {
+	return c.JSON(fiber.Map{
+		"status": "ok",
+	})
+}
+```
+Then, we can generate the `swagger.yaml` file with:
+```
+cd backend
+make api-doc
+```
+You can now start the server and your documentation changes should reflect on the route [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
