@@ -211,7 +211,6 @@ make test
 >    nano ~/.bashrc   # or ~/.zshrc
 >    ```
 > 2. **Add your aliases at the end of the file**
->    Example:
 >
 >    ```bash
 >    alias mu='make migrate-up'
