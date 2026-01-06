@@ -18,10 +18,6 @@ Writing tests from scratch can be tedious, so we have helpers to make it easy. S
 > [!NOTE]
 > Feel free to add new helper methods as needed, we want testing to be easy for everyone!
 
-### Quick Start
-
-Here's a complete test file to get you started:
-
 ### Step-by-Step Breakdown
 
 **Step 1: Create a test app**
@@ -64,13 +60,9 @@ testkit.New(t).
 | `UserID` | `*string` | User ID embedded in JWT token |
 | `Auth` | `*bool` | `nil` or `true` = authenticated, `false` = no auth header |
 
-**Step 4: Assert the response**
-```go
-.AssertStatus(http.StatusCreated)
-```
 ### Assertions
 
-We use a **builder pattern** — after making a request, you can chain multiple assertions:
+We use a **builder pattern**, so after making a request, you can chain multiple assertions:
 
 ```go
 testkit.New(t).

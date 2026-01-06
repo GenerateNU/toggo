@@ -2,15 +2,15 @@
 
 ## Contributing
 
-**🦪 The codebase is your oyster!**
-
 Found a bug? Open an issue. Noticed documentation is out out of date? Update it. See a rough edge in the dev experience? Smooth it out.
 
-Take ownership. Make it better. Ship it.
+**Take ownership. Make it better. Ship it.**
 
-### Commit Messages
+---
 
-We use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. **Please read it!**
+### Version Control (Git)
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for PRs.
 
 Examples:
 ```bash
@@ -19,12 +19,6 @@ fix: resolve login redirect issue
 docs: update README setup instructions
 chore: upgrade dependencies
 ```
-
-### Issues
-
-Use the Issues tab to:
-- Report bugs you find during development
-- Track work that needs more discussion or clarification
 
 > [!IMPORTANT]
 > Keep PRs small and focused. Split large features into smaller PRs that are easy to review. This helps:
@@ -40,7 +34,6 @@ Use the Issues tab to:
 
 | Tool | Description | Installation |
 |------|-------------|--------------|
-| Git | Version control | [git-scm.com](https://git-scm.com/downloads) |
 | Docker | Containerization | [docker.com](https://www.docker.com/products/docker-desktop/) |
 | Doppler | Secrets management | [doppler.com/docs/install-cli](https://docs.doppler.com/docs/install-cli) |
 | Figma | Design tool | [figma.com](https://www.figma.com/downloads/) |
@@ -157,7 +150,7 @@ go mod download
 make dev
 ```
 
-To verify the server is running, visit: Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
+To verify the server is running, visit Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Frontend
 ```bash
@@ -198,39 +191,3 @@ You can now start the server and your documentation changes should reflect on th
 cd backend
 make test
 ```
-
-> [!TIP]
-> Save time by turning long commands into **aliases**, just type your shortcut instead of the full command. Here’s how to do it:
->
-> 1. **Open your shell configuration file**
->
->    * For **bash**, open `~/.bashrc`
->    * For **zsh**, open `~/.zshrc`
->
->    ```bash
->    nano ~/.bashrc   # or ~/.zshrc
->    ```
-> 2. **Add your aliases at the end of the file**
->
->    ```bash
->    alias mu='make migrate-up'
->    alias mup='make migrate-up APP_ENVIRONMENT=prod'
->    alias test='make test'
->    alias bdev='make dev'
->    alias db='make db-connect'
->    alias dbp='make db-connect APP_ENVIRONMENT=prod'
->    alias md='make migrate-down'
->    alias mdp='make migrate-down APP_ENVIRONMENT=prod'
->    ```
-> 3. **Save the file** and exit the editor.
-> 4. **Apply the changes** by running:
->
->    ```bash
->    source ~/.bashrc   # or source ~/.zshrc
->    ```
-> 5. **Use your aliases**
->    Now, instead of typing `make migrate-up APP_ENVIRONMENT=prod`, you can just type:
->
->    ```bash
->    mup
->    ```
