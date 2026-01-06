@@ -19,14 +19,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
 func main() {
 	cfg := mustLoadConfig()
-
-	fmt.Println(GenerateJWT(uuid.New().String(), cfg.Auth.JWTSecretKey))
 
 	db := mustConnectDB(context.Background(), cfg)
 	defer closeDB(db)
