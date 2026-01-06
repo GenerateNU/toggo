@@ -15,30 +15,54 @@ import (
 	"time"
 	"toggo/internal/config"
 	"toggo/internal/database"
+	"toggo/internal/repository"
 	"toggo/internal/server"
+	"toggo/internal/workflows"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
 func main() {
+	// Load config
 	cfg := mustLoadConfig()
 
-	fmt.Println(GenerateJWT(uuid.New().String(), cfg.Auth.JWTSecretKey))
-
+	// Connect to DB
 	db := mustConnectDB(context.Background(), cfg)
 	defer closeDB(db)
 
+	// Create a cancellable context for graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	// Start Temporal workers in a separate goroutine
+	go workflows.StartAllWorkersWithContext(ctx, repository.NewRepository(db))
+
+	// Create Fiber app
 	fiberApp := server.CreateApp(cfg, db)
 	port := fmt.Sprintf(":%d", cfg.App.Port)
 
-	go handleShutdown(fiberApp)
+	// Run Fiber server in the main goroutine
+	go func() {
+		if err := fiberApp.Listen(port); err != nil {
+			log.Printf("Fiber server stopped: %v", err)
+		}
+	}()
 
-	if err := fiberApp.Listen(port); err != nil {
-		log.Fatalf("Server failed: %v", err)
+	// Wait for shutdown signal
+	<-ctx.Done()
+	log.Println("Shutting down server...")
+
+	// Shutdown Fiber gracefully with a timeout
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := fiberApp.ShutdownWithContext(shutdownCtx); err != nil {
+		log.Printf("Fiber shutdown error: %v", err)
 	}
+
+	log.Println("Server exited gracefully")
 }
 
 func mustLoadConfig() *config.Configuration {

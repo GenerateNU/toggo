@@ -1,8 +1,8 @@
 package workflows
 
 import (
+	"context"
 	"log"
-	"os"
 	"toggo/internal/repository"
 	"toggo/internal/workflows/example"
 
@@ -10,29 +10,35 @@ import (
 	"go.temporal.io/sdk/worker"
 )
 
-func StartAllWorkers(repo *repository.Repository) worker.Worker {
-	hostPort := os.Getenv("TEMPORAL_ADDRESS")
-	if hostPort == "" {
-		hostPort = "host.docker.internal:7233"
-	}
-
-	c, err := client.Dial(client.Options{HostPort: hostPort})
+func StartAllWorkersWithContext(ctx context.Context, repo *repository.Repository) {
+	c, err := client.Dial(client.Options{
+		HostPort: "host.docker.internal:7233",
+	})
 	if err != nil {
 		log.Fatalln("Unable to connect to Temporal:", err)
 	}
 
 	userWorker := example.StartUserWorker(c, *repo)
+
+	// Start worker in a goroutine
+	done := make(chan struct{})
 	go func() {
-		if err := userWorker.Run(nil); err != nil {
-			log.Fatalln("Worker stopped unexpectedly:", err)
+		if err := userWorker.Run(worker.InterruptCh()); err != nil {
+			log.Println("Worker stopped:", err)
 		}
+		close(done)
 	}()
 
-	return userWorker
-}
+	// Wait for shutdown signal
+	<-ctx.Done()
+	log.Println("Shutting down workers...")
 
-func runWorker(w worker.Worker) {
-	if err := w.Run(nil); err != nil {
-		log.Fatalln("Worker stopped unexpectedly:", err)
-	}
+	// Stop worker first (stops polling)
+	userWorker.Stop()
+	<-done
+
+	// Close client last (closes gRPC connection)
+	c.Close()
+
+	log.Println("Workers exited gracefully")
 }
