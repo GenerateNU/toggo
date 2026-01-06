@@ -58,8 +58,6 @@
   * Avoid N+1 queries
 * Only select required columns (avoid `SELECT *`)
 * Reduce rows **before** joining — joins are expensive
-* Avoid functions in `WHERE` clauses (they prevent index usage)
-* Prefer `GROUP BY` over `DISTINCT`
 * Prefer window functions for analytics and ranking
 * Prefer common table expressions (CTEs) to deeply nested subqueries:
   * Improve readability

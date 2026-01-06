@@ -22,13 +22,10 @@
 | Optimistic updates | Update UI immediately, rollback gracefully on failure. |
 | Invalid input | Instant validation. Block submission until valid. |
 | Submission succeeds | Toast, inline message, or visual confirmation. |
-| Clickable elements | `cursor: pointer`, hover/pressed states for feedback. |
 | Keyboard obscures input | Adjust layout to keep input and submit button visible. |
 | Keyboard dismissal | Tap outside to dismiss keyboard. |
-| View transitions | Smooth animations. Avoid abrupt changes. |
 | Long-running actions | Progress indicator or step-based feedback. |
 | Rapid input (search) | Debounce/throttle to reduce API calls. |
-| Page navigation | Preserve scroll position, filters, and form state. |
 | Destructive actions | Confirm with clear consequences before proceeding. |
 
 ---

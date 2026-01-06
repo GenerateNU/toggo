@@ -157,7 +157,7 @@ go mod download
 make dev
 ```
 
-To verify the server is running, visit: Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
+To verify the server is running, visit Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Frontend
 ```bash
@@ -198,6 +198,8 @@ You can now start the server and your documentation changes should reflect on th
 cd backend
 make test
 ```
+
+---
 
 > [!TIP]
 > Save time by turning long commands into **aliases**, just type your shortcut instead of the full command. Here’s how to do it:
