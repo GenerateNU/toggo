@@ -10,7 +10,7 @@ Found a bug? Open an issue. Noticed documentation is out out of date? Update it.
 
 ### Version Control (Git)
 
-We use [Conventional Commits](https://www.conventionalcommits.org/) for PRs. **Please read it!**
+We use [Conventional Commits](https://www.conventionalcommits.org/) for PRs.
 
 Examples:
 ```bash
