@@ -170,7 +170,7 @@ bun dev
 ---
 
 ## API Documentation
-To generate API calls on frontend side and our API documentation up-to-date, we will need to add comments to all the controllers
+To generate API calls on frontend side and keep our API documentation up-to-date, we will need to add comments above the controllers
 ```ts
 // @Summary Healthcheck endpoint
 // @Description Returns OK if the server is running
