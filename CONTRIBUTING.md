@@ -8,9 +8,11 @@ Found a bug? Open an issue. Noticed documentation is out out of date? Update it.
 
 Take ownership. Make it better. Ship it.
 
-### Commit Messages
+---
 
-We use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. **Please read it!**
+### Version Control (Git)
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for PRs. **Please read it!**
 
 Examples:
 ```bash
@@ -19,12 +21,6 @@ fix: resolve login redirect issue
 docs: update README setup instructions
 chore: upgrade dependencies
 ```
-
-### Issues
-
-Use the Issues tab to:
-- Report bugs you find during development
-- Track work that needs more discussion or clarification
 
 > [!IMPORTANT]
 > Keep PRs small and focused. Split large features into smaller PRs that are easy to review. This helps:
@@ -40,7 +36,6 @@ Use the Issues tab to:
 
 | Tool | Description | Installation |
 |------|-------------|--------------|
-| Git | Version control | [git-scm.com](https://git-scm.com/downloads) |
 | Docker | Containerization | [docker.com](https://www.docker.com/products/docker-desktop/) |
 | Doppler | Secrets management | [doppler.com/docs/install-cli](https://docs.doppler.com/docs/install-cli) |
 | Figma | Design tool | [figma.com](https://www.figma.com/downloads/) |
