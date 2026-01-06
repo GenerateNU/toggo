@@ -2,11 +2,9 @@
 
 ## Contributing
 
-**🦪 The codebase is your oyster!**
-
 Found a bug? Open an issue. Noticed documentation is out out of date? Update it. See a rough edge in the dev experience? Smooth it out.
 
-Take ownership. Make it better. Ship it.
+**Take ownership. Make it better. Ship it.**
 
 ---
 
