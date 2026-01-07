@@ -1,9 +1,9 @@
+import { UserProvider } from "@/contexts/user";
+import { getTheme } from "@/design-system/config/theme";
+import { ThemeProvider } from "@shopify/restyle";
+import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Slot } from "expo-router";
-import { ThemeProvider } from "@shopify/restyle";
-import { getTheme } from "@/design-system/config/theme";
-import { UserProvider } from "@/contexts/user";
 
 export default function RootLayout() {
   return (

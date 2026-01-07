@@ -2,6 +2,7 @@ package utilities
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -75,4 +76,19 @@ func buildMessage(e validator.FieldError) string {
 	default:
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}
+}
+
+var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+
+func NewValidator() *validator.Validate {
+	v := validator.New(validator.WithRequiredStructEnabled())
+
+	err := v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
+		return usernameRegex.MatchString(fl.Field().String())
+	})
+	if err != nil {
+		log.Println("Error registering username validation:", err)
+	}
+
+	return v
 }

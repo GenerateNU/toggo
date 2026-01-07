@@ -1,10 +1,17 @@
-import { Stack } from "expo-router";
+import { useUser } from "@/contexts/user";
+import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {
+  const { isAuthenticated } = useUser();
+
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Stack>
       <Stack.Screen
-        name="(tabs)"
+        name="index"
         options={{ headerShown: false, gestureEnabled: false }}
       />
     </Stack>

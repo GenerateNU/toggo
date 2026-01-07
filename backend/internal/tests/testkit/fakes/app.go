@@ -11,8 +11,8 @@ import (
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
 	"toggo/internal/types"
+	"toggo/internal/utilities"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
 )
@@ -95,7 +95,7 @@ func connectAndMigrateDBOrPanic(ctx context.Context, cfg *config.Configuration) 
 
 func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bun.DB) {
 	routeParams := types.RouteParams{
-		Validator: validator.New(),
+		Validator: utilities.NewValidator(),
 		ServiceParams: &types.ServiceParams{
 			Repository: repository.NewRepository(db),
 		},

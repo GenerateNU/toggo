@@ -12,7 +12,7 @@ import (
 func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
-	email := fmt.Sprintf("lifecycle-%s@example.com", fakes.GenerateUUID())
+	username := fakes.GenerateRandomUsername()
 
 	var createdUserID string
 
@@ -24,11 +24,12 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:  "John Doe",
-					Email: email,
+					Name:     "John Doe",
+					Username: username,
 				},
 			}).
 			AssertStatus(http.StatusCreated).
+			DebugLogging().
 			GetBody()
 
 		t.Logf("Response: %+v", resp)
@@ -44,7 +45,7 @@ func TestUserLifecycle(t *testing.T) {
 				UserID: &authUserID,
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("email", email).
+			AssertField("username", username).
 			AssertField("name", "John Doe")
 	})
 
@@ -76,7 +77,7 @@ func TestUserLifecycle(t *testing.T) {
 			AssertField("name", "Jane Doe")
 	})
 
-	t.Run("create user with same email returns 409", func(t *testing.T) {
+	t.Run("create user with same username returns 409", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -84,8 +85,8 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:  "Duplicate User",
-					Email: email,
+					Name:     "Duplicate User",
+					Username: username,
 				},
 			}).
 			AssertStatus(http.StatusConflict)
@@ -139,7 +140,7 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusNoContent)
 	})
 
-	t.Run("create with same email after deletion", func(t *testing.T) {
+	t.Run("create with same username after deletion", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -147,8 +148,8 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:  "Reborn User",
-					Email: email,
+					Name:     "Reborn User",
+					Username: username,
 				},
 			}).
 			AssertStatus(http.StatusCreated)

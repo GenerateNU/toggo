@@ -1,45 +1,44 @@
+import { useUser } from "@/contexts/user";
+import { Box } from "@/design-system/base/box";
+import { Button } from "@/design-system/base/button";
+import { Text } from "@/design-system/base/text";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, TextInput } from "react-native";
 import { z } from "zod";
-import { TextInput, ActivityIndicator } from "react-native";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Box } from "@/design-system/base/box";
-import { Text } from "@/design-system/base/text";
-import { Button } from "@/design-system/base/button";
 
-const LOGIN_SCHEMA = z.object({
-  email: z.string().email({ message: "Invalid email" }),
-  password: z.string().min(1, { message: "Password required" }),
+const PHONE_SCHEMA = z.object({
+  phone: z
+    .string()
+    .min(10, "Enter a valid phone number")
+    .regex(/^\+?\d{10,15}$/, "Invalid phone number format"),
 });
 
-type LoginFormData = z.infer<typeof LOGIN_SCHEMA>;
+type PhoneFormData = z.infer<typeof PHONE_SCHEMA>;
 
-interface LoginFormProps {
-  onSubmit: (email: string, password: string) => Promise<string | null>;
-  isPending: boolean;
-}
-
-export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
+export function PhoneNumberForm() {
+  const { sendOTP, isPending } = useUser();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(LOGIN_SCHEMA),
-    mode: "onTouched",
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const { control, handleSubmit, formState } = useForm<PhoneFormData>({
+    resolver: zodResolver(PHONE_SCHEMA),
+    mode: "onChange",
+    defaultValues: { phone: "" },
   });
 
-  const handleFormSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: PhoneFormData) => {
     setError(null);
-    const err = await onSubmit(data.email, data.password);
-    if (err) {
-      setError(err);
+    try {
+      await sendOTP(data.phone);
+      router.push({
+        pathname: "/(auth)/verify",
+        params: { phone: data.phone },
+      });
+    } catch (err: any) {
+      setError(err?.message || "Failed to send OTP");
     }
   };
 
@@ -54,66 +53,34 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
       )}
 
       <Controller
-        name="email"
+        name="phone"
         control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
+        render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
             <Text variant="caption" color="forestGreen">
-              Email
+              Phone Number
             </Text>
             <Box
               borderWidth={1}
-              borderColor={errors.email ? "sunsetOrange" : "mountainGray"}
+              borderColor={
+                formState.errors.phone ? "sunsetOrange" : "mountainGray"
+              }
               borderRadius="s"
               padding="s"
               backgroundColor="cloudWhite"
             >
               <TextInput
-                placeholder="Enter your email"
+                placeholder="+1 555 555 5555"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
-                autoCapitalize="none"
-                keyboardType="email-address"
+                keyboardType="phone-pad"
                 style={{ fontSize: 16 }}
               />
             </Box>
-            {errors.email && (
+            {formState.errors.phone && (
               <Text variant="caption" color="sunsetOrange">
-                {errors.email.message}
-              </Text>
-            )}
-          </Box>
-        )}
-      />
-
-      <Controller
-        name="password"
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
-              Password
-            </Text>
-            <Box
-              borderWidth={1}
-              borderColor={errors.password ? "sunsetOrange" : "mountainGray"}
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
-            >
-              <TextInput
-                placeholder="Enter your password"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                secureTextEntry
-                style={{ fontSize: 16 }}
-              />
-            </Box>
-            {errors.password && (
-              <Text variant="caption" color="sunsetOrange">
-                {errors.password.message}
+                {formState.errors.phone.message}
               </Text>
             )}
           </Box>
@@ -121,15 +88,14 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
       />
 
       <Button
-        onPress={handleSubmit(handleFormSubmit)}
-        disabled={!isValid}
-        variant="secondary"
+        onPress={handleSubmit(onSubmit)}
+        disabled={!formState.isValid || isPending}
       >
         {isPending ? (
           <ActivityIndicator color="cloudWhite" />
         ) : (
           <Text variant="caption" color="cloudWhite">
-            Login
+            Send OTP
           </Text>
         )}
       </Button>

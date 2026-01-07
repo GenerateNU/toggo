@@ -1,48 +1,42 @@
-import { createContext, useContext, ReactNode } from "react";
-import { ResetPasswordPayload } from "@/types/auth";
-import { UserState, useUserStore } from "@/auth/store";
+import { useUserStore } from "@/auth/store";
+import { PhoneAuth } from "@/types/auth";
+import { createContext, ReactNode, useContext } from "react";
 
 interface UserContextType {
   isAuthenticated: boolean;
   userId: string | null;
-  email: string | null;
   isPending: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
-  register: (email: string, password: string) => Promise<string | null>;
+  error: string | null;
+
+  sendOTP: (phoneNo: string) => Promise<void>;
+  verifyOTP: (payload: PhoneAuth) => Promise<void>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<string | null>;
-  resetPassword: (payload: ResetPasswordPayload) => Promise<string | null>;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const isAuthenticated = useUserStore(
-    (state: UserState) => state.isAuthenticated,
-  );
-  const userId = useUserStore((state: UserState) => state.userId);
-  const email = useUserStore((state: UserState) => state.email);
-  const isPending = useUserStore((state: UserState) => state.isPending);
-  const login = useUserStore((state: UserState) => state.login);
-  const register = useUserStore((state: UserState) => state.register);
-  const logout = useUserStore((state: UserState) => state.logout);
-  const forgotPassword = useUserStore(
-    (state: UserState) => state.forgotPassword,
-  );
-  const resetPassword = useUserStore((state: UserState) => state.resetPassword);
+  // State
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const userId = useUserStore((state) => state.userId);
+  const isPending = useUserStore((state) => state.isPending);
+  const error = useUserStore((state) => state.error);
+
+  // Methods
+  const logout = useUserStore((state) => state.logout);
+  const sendOTP = useUserStore((state) => state.sendOTP);
+  const verifyOTP = useUserStore((state) => state.verifyOTP);
 
   return (
     <UserContext.Provider
       value={{
         isAuthenticated,
         userId,
-        email,
         isPending,
-        login,
-        register,
+        error,
         logout,
-        forgotPassword,
-        resetPassword,
+        sendOTP,
+        verifyOTP,
       }}
     >
       {children}
