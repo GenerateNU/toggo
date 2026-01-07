@@ -8,6 +8,7 @@
     "ios": "doppler run --project frontend --config dev -- expo start --ios",
     "web": "doppler run --project frontend --config dev -- expo start --web",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
+    "kubb": "kubb --debug",
     "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

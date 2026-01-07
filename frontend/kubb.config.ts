@@ -2,7 +2,7 @@ import { defineConfig } from '@kubb/core'
 import { pluginOas } from '@kubb/plugin-oas'
 import { pluginTs } from '@kubb/plugin-ts'
 import { pluginZod } from '@kubb/plugin-zod'
-import { pluginTanstackQuery } from '@kubb/plugin-tanstack-query'
+import { pluginReactQuery } from '@kubb/plugin-react-query'
 
 export default defineConfig({
   root: '.',
@@ -35,28 +35,36 @@ export default defineConfig({
       typed: true,
     }),
 
-    // API hooks split by tag
-    pluginTanstackQuery({
+    pluginReactQuery({
       output: {
         path: './api',
       },
-
+    
       client: {
-        importPath: './api/client',
+        importPath: '../client',
       },
-
+    
       group: {
         type: 'tag',
+        name: ({ group }) =>
+          group
+            // remove trailing "Controller" if swaggo adds it
+            .replace(/Controller$/, '')
+            // camelCase / PascalCase → kebab-case
+            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            // snake_case → kebab-case
+            .replace(/_/g, '-')
+            .toLowerCase()
       },
-
+    
       query: {
         methods: ['get'],
       },
-
-      mutate: {
-        variablesType: 'mutate',
+    
+      mutation: {
         methods: ['post', 'put', 'patch', 'delete'],
       },
-    }),
+    })
+    
   ],
 })
