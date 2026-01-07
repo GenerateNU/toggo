@@ -1,27 +1,22 @@
 import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
-import { Text } from "@/design-system/base/text";
 import { Button } from "@/design-system/base/button";
+import { Text } from "@/design-system/base/text";
 
-export default function Settings() {
-  const { logout, email, isPending } = useUser();
-
+export default function Home() {
+  const { logout, isPending } = useUser();
   return (
     <Box
       flex={1}
       justifyContent="center"
       alignItems="center"
       padding="l"
-      gap="l"
+      gap="m"
     >
-      <Box alignItems="center">
-        <Text variant="caption" color="forestGreen">
-          Logged in as
-        </Text>
-        <Text variant="caption" mt="xs">
-          {email}
-        </Text>
-      </Box>
+      <Text variant="bodyLargeBold">Welcome to Toggo ✨</Text>
+      <Text variant="caption" color="forestGreen">
+        Cool things will appear here soon!
+      </Text>
 
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">

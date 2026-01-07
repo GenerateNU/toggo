@@ -55,9 +55,9 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("name = ?", *req.Name)
 	}
 
-	if req.Email != nil {
-		updates["email"] = *req.Email
-		updateQuery = updateQuery.Set("email = ?", *req.Email)
+	if req.Username != nil {
+		updates["username"] = *req.Username
+		updateQuery = updateQuery.Set("username = ?", *req.Username)
 	}
 
 	result, err := updateQuery.Exec(ctx)

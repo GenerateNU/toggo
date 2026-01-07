@@ -1,70 +1,15 @@
+import { PhoneAuth } from "@/types/auth";
+import { Session } from "@supabase/supabase-js";
 import { AppState } from "react-native";
 import { supabase } from "./client";
-import { Session, User } from "@supabase/supabase-js";
-import { AuthRequest, ResetPasswordPayload } from "@/types/auth";
-import * as SecureStore from "expo-secure-store";
-import * as Linking from "expo-linking";
 
 export interface AuthService {
-  signUp({ email, password }: AuthRequest): Promise<User>;
-  login({ email, password }: AuthRequest): Promise<Session>;
+  signInWithPhoneNumber(phoneNo: string): Promise<void>;
+  verifyPhoneOTP(payload: PhoneAuth): Promise<Session>;
   logout(): Promise<void>;
-  forgotPassword({ email }: { email: string }): Promise<void>;
-  resetPassword(payload: ResetPasswordPayload): Promise<User>;
 }
 
 export class SupabaseAuth implements AuthService {
-  async storeLocalSessionToDevice(email: string, password: string) {
-    SecureStore.setItem("email", email);
-    SecureStore.setItem("password", password);
-  }
-
-  async signUp({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }): Promise<User> {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (!data.user) {
-      throw new Error("Unable to create user");
-    }
-
-    return data.user;
-  }
-
-  async login({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }): Promise<Session> {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (!data.session) {
-      throw new Error("Unable to login");
-    }
-
-    return data.session;
-  }
-
   async logout(): Promise<void> {
     const { error } = await supabase.auth.signOut();
 
@@ -73,11 +18,9 @@ export class SupabaseAuth implements AuthService {
     }
   }
 
-  async forgotPassword({ email }: { email: string }): Promise<void> {
-    const redirectTo = Linking.createURL(`(auth)/login/reset-password`);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
+  async signInWithPhoneNumber(phoneNo: string): Promise<void> {
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phoneNo,
     });
 
     if (error) {
@@ -85,29 +28,17 @@ export class SupabaseAuth implements AuthService {
     }
   }
 
-  async resetPassword({
-    password,
-    accessToken,
-    refreshToken,
-  }: ResetPasswordPayload): Promise<User> {
-    const { error: setSessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-
-    if (setSessionError) {
-      throw new Error(setSessionError.message);
-    }
-
-    const { data, error } = await supabase.auth.updateUser({
-      password,
+  async verifyPhoneOTP(payload: PhoneAuth): Promise<Session> {
+    const { data, error } = await supabase.auth.verifyOtp({
+      ...payload,
+      type: "sms",
     });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return data.user;
+    return data.session!;
   }
 }
 
