@@ -11,7 +11,7 @@ type User struct {
 }
 
 type CreateUserRequest struct {
-	Name string `validate:"required,min=1"`
+	Name     string `validate:"required,min=1"`
 	Username string `validate:"required,username"`
 }
 

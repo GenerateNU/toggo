@@ -3,11 +3,9 @@ package fakes
 import (
 	"fmt"
 	"math/rand"
-	"time"
 )
 
 func GenerateRandomUsername() string {
-	rand.Seed(time.Now().UnixNano())
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const length = 8
 
