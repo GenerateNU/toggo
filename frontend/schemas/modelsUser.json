@@ -1,1 +1,9 @@
-{"type":"object","properties":{"email":{"type":"string"},"id":{"type":"string"},"name":{"type":"string"}},"x-readme-ref-name":"models.User"}
+{
+  "type": "object",
+  "properties": {
+    "email": { "type": "string" },
+    "id": { "type": "string" },
+    "name": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.User"
+}

@@ -1,18 +1,18 @@
-import { defineConfig } from '@kubb/core'
-import { pluginOas } from '@kubb/plugin-oas'
-import { pluginTs } from '@kubb/plugin-ts'
-import { pluginZod } from '@kubb/plugin-zod'
-import { pluginReactQuery } from '@kubb/plugin-react-query'
+import { defineConfig } from "@kubb/core";
+import { pluginOas } from "@kubb/plugin-oas";
+import { pluginTs } from "@kubb/plugin-ts";
+import { pluginZod } from "@kubb/plugin-zod";
+import { pluginReactQuery } from "@kubb/plugin-react-query";
 
 export default defineConfig({
-  root: '.',
+  root: ".",
 
   input: {
-    path: '../backend/docs/swagger.json',
+    path: "../backend/docs/swagger.json",
   },
 
   output: {
-    path: './',
+    path: "./",
   },
 
   plugins: [
@@ -21,7 +21,7 @@ export default defineConfig({
     // one types file
     pluginTs({
       output: {
-        path: './types/types.gen.ts',
+        path: "./types/types.gen.ts",
         barrelType: false,
       },
     }),
@@ -29,7 +29,7 @@ export default defineConfig({
     // one zod schema file
     pluginZod({
       output: {
-        path: './types/schema.gen.ts',
+        path: "./types/schema.gen.ts",
         barrelType: false,
       },
       typed: true,
@@ -37,34 +37,33 @@ export default defineConfig({
 
     pluginReactQuery({
       output: {
-        path: './api',
+        path: "./api",
       },
-    
+
       client: {
-        importPath: '../client',
+        importPath: "../client",
       },
-    
+
       group: {
-        type: 'tag',
+        type: "tag",
         name: ({ group }) =>
           group
             // remove trailing "Controller" if swaggo adds it
-            .replace(/Controller$/, '')
+            .replace(/Controller$/, "")
             // camelCase / PascalCase → kebab-case
-            .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+            .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
             // snake_case → kebab-case
-            .replace(/_/g, '-')
-            .toLowerCase()
+            .replace(/_/g, "-")
+            .toLowerCase(),
       },
-    
+
       query: {
-        methods: ['get'],
+        methods: ["get"],
       },
-    
+
       mutation: {
-        methods: ['post', 'put', 'patch', 'delete'],
+        methods: ["post", "put", "patch", "delete"],
       },
-    })
-    
+    }),
   ],
-})
+});

@@ -1,1 +1,6 @@
-{"type":"object","required":["email","name"],"properties":{"email":{"type":"string"},"name":{"type":"string"}},"x-readme-ref-name":"models.CreateUserRequest"}
+{
+  "type": "object",
+  "required": ["email", "name"],
+  "properties": { "email": { "type": "string" }, "name": { "type": "string" } },
+  "x-readme-ref-name": "models.CreateUserRequest"
+}
