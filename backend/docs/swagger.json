@@ -22,6 +22,7 @@
                     "users"
                 ],
                 "summary": "Create a new user",
+                "operationId": "createUser",
                 "parameters": [
                     {
                         "description": "Create user request",
@@ -71,6 +72,7 @@
                     "users"
                 ],
                 "summary": "Get a user",
+                "operationId": "getUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -113,6 +115,7 @@
                     "users"
                 ],
                 "summary": "Delete a user",
+                "operationId": "deleteUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -158,6 +161,7 @@
                     "users"
                 ],
                 "summary": "Update a user",
+                "operationId": "updateUser",
                 "parameters": [
                     {
                         "type": "string",
