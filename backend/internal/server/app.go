@@ -8,8 +8,8 @@ import (
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
 	"toggo/internal/types"
+	"toggo/internal/utilities"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
 )
@@ -25,7 +25,7 @@ func CreateApp(config *config.Configuration, db *bun.DB) *fiber.App {
 
 	repository := repository.NewRepository(db)
 
-	validator := validator.New(validator.WithRequiredStructEnabled())
+	validator := utilities.NewValidator()
 
 	routeParams := types.RouteParams{
 		Validator: validator,

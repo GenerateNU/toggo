@@ -76,3 +76,18 @@ func buildMessage(e validator.FieldError) string {
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}
 }
+
+var (
+	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+	nameRegex     = regexp.MustCompile(`^[a-zA-Z0-9._]+$`)
+)
+
+func NewValidator() *validator.Validate {
+	v := validator.New(validator.WithRequiredStructEnabled())
+
+	v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
+		return usernameRegex.MatchString(fl.Field().String())
+	})
+
+	return v
+}
