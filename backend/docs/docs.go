@@ -28,6 +28,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Create a new user",
+                "operationId": "createUser",
                 "parameters": [
                     {
                         "description": "Create user request",
@@ -77,6 +78,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Get a user",
+                "operationId": "getUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -119,6 +121,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Delete a user",
+                "operationId": "deleteUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -164,6 +167,7 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Update a user",
+                "operationId": "updateUser",
                 "parameters": [
                     {
                         "type": "string",
