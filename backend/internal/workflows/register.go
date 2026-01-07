@@ -20,7 +20,6 @@ func StartAllWorkersWithContext(ctx context.Context, repo *repository.Repository
 
 	userWorker := example.StartUserWorker(c, *repo)
 
-	// Start worker in a goroutine
 	done := make(chan struct{})
 	go func() {
 		if err := userWorker.Run(worker.InterruptCh()); err != nil {
@@ -29,15 +28,12 @@ func StartAllWorkersWithContext(ctx context.Context, repo *repository.Repository
 		close(done)
 	}()
 
-	// Wait for shutdown signal
 	<-ctx.Done()
 	log.Println("Shutting down workers...")
 
-	// Stop worker first (stops polling)
 	userWorker.Stop()
 	<-done
 
-	// Close client last (closes gRPC connection)
 	c.Close()
 
 	log.Println("Workers exited gracefully")
