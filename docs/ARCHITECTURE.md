@@ -66,7 +66,6 @@ frontend/
 ├── api/                 # API calls to backend endpoints
 ├── app/                 # Expo Router file-based routing
 │   ├── (app)/           # Protected app routes (requires authentication)
-│   │   └── (tabs)/      # Tab navigation (home, settings, etc.)
 │   ├── (auth)/          # Authentication routes (login, register, forgot password)
 │   └── _layout.tsx      # Root layout with providers
 ├── assets/              # Static assets (images, fonts, svgs, icons)
