@@ -1,15 +1,35 @@
 name: Frontend CI
 
+permissions: read-all
+
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - 'frontend/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+
   ci:
     name: Format and Lint
+    needs: changes
     if: |
+      needs.changes.outputs.frontend == 'true' &&
       github.event.pull_request.draft == false &&
       github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
