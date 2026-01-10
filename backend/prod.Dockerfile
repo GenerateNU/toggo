@@ -29,4 +29,4 @@ COPY --from=builder /app/toggo .
 
 EXPOSE 8000
 
-CMD ["doppler", "run", "--project", "backend", "--config", "prod", "--", "./toggo"]
+CMD ["sh", "-c", "echo $DOPPLER_TOKEN"]
