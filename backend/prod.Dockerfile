@@ -1,6 +1,9 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
-RUN apk add --no-cache git curl bash libc6-compat
+RUN apk add --no-cache \
+  git \
+  curl \
+  ca-certificates
 
 WORKDIR /app
 
@@ -16,9 +19,9 @@ FROM alpine:3.19
 RUN apk add --no-cache curl bash ca-certificates wget
 
 RUN wget -q -t3 'https://packages.doppler.com/public/cli/rsa.8004D9FF50437357.key' \
-    -O /etc/apk/keys/cli@doppler-8004D9FF50437357.rsa.pub && \
-    echo 'https://packages.doppler.com/public/cli/alpine/any-version/main' >> /etc/apk/repositories && \
-    apk add doppler
+  -O /etc/apk/keys/cli@doppler-8004D9FF50437357.rsa.pub && \
+  echo 'https://packages.doppler.com/public/cli/alpine/any-version/main' >> /etc/apk/repositories && \
+  apk add doppler
 
 WORKDIR /app
 
