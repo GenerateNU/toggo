@@ -1,5 +1,0 @@
-{
-  "type": "object",
-  "properties": { "message": {}, "statusCode": { "type": "integer" } },
-  "x-readme-ref-name": "errs.APIError"
-}
