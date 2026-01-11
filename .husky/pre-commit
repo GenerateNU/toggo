@@ -1,0 +1,76 @@
+#!/bin/sh
+
+echo "🔍 Running pre-commit checks..."
+
+# Get list of staged files
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
+STAGED_FE_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^frontend/' || true)
+
+# Backend checks
+if [ -n "$STAGED_GO_FILES" ]; then
+  echo "🔧 Running backend format, lint, and tidy..."
+  
+  # Format Go code with gofmt
+  if command -v gofmt >/dev/null 2>&1; then
+    (cd backend && gofmt -s -w .) || {
+      echo "❌ Backend format failed"
+      exit 1
+    }
+  else
+    echo "⚠️  gofmt not found, skipping backend format"
+  fi
+  
+  # Run golangci-lint if available
+  if command -v golangci-lint >/dev/null 2>&1; then
+    (cd backend && golangci-lint run ./...) || {
+      echo "❌ Backend lint failed"
+      exit 1
+    }
+  else
+    echo "⚠️  golangci-lint not found, skipping backend lint"
+  fi
+  
+  # Run go mod tidy
+  if command -v go >/dev/null 2>&1; then
+    (cd backend && go mod tidy) || {
+      echo "❌ Backend tidy failed"
+      exit 1
+    }
+  else
+    echo "⚠️  go not found, skipping backend tidy"
+  fi
+  
+  # Re-stage formatted files
+  git add backend/
+  
+  echo "✅ Backend checks passed"
+fi
+
+# Frontend checks
+if [ -n "$STAGED_FE_FILES" ]; then
+  echo "🔧 Running frontend lint and format..."
+  
+  # Check if bun is available
+  if ! command -v bun >/dev/null 2>&1; then
+    echo "⚠️  bun not found, skipping frontend checks"
+  else
+    # Run prettier format
+    (cd frontend && bun run format) || {
+      echo "❌ Frontend format failed"
+      exit 1
+    }
+    
+    # Run eslint
+    (cd frontend && bun run lint) || {
+      echo "❌ Frontend lint failed"
+      exit 1
+    }
+    
+    # Re-stage formatted files
+    git add frontend/
+    
+    echo "✅ Frontend checks passed"
+  fi
+fi
+
+echo "✅ All pre-commit checks passed!"
