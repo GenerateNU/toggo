@@ -65,7 +65,12 @@ migrate-up:
 
 migrate-up-win:
 	@echo Applying migrations to $(APP_ENVIRONMENT) database...
-	@doppler run --project backend --config $(APP_ENVIRONMENT) -- powershell -File migrate.ps1 -Environment $(APP_ENVIRONMENT) -MigrationsDir $(MIGRATIONS_DIR)
+	@doppler run --project backend --config $(APP_ENVIRONMENT) -- powershell -Command "\
+		$$dbHost = if ('$(APP_ENVIRONMENT)' -eq 'dev') { 'localhost' } else { $$env:DB_HOST }; \
+		$$connectionString = \"postgres://$${env:DB_USER}:$${env:DB_PASSWORD}@$${dbHost}:$${env:DB_PORT}/$${env:DB_DATABASE}?sslmode=disable\"; \
+		Write-Host 'Applying migrations to $(APP_ENVIRONMENT) database...'; \
+		goose -dir $(MIGRATIONS_DIR) postgres $$connectionString up"
+
 migrate-down:
 	@echo "Rolling back last migration on $(APP_ENVIRONMENT) database..."
 	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
