@@ -9,7 +9,6 @@ STAGED_FE_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^front
 # Backend checks
 if [ -n "$STAGED_GO_FILES" ]; then
   echo "🔧 Running backend format, lint, and tidy..."
-  
   # Format Go code with gofmt
   if command -v gofmt >/dev/null 2>&1; then
     (cd backend && gofmt -s -w .) || {
