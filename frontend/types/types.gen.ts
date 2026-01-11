@@ -13,32 +13,29 @@ export type ErrsAPIError = {
 
 export type ModelsCreateUserRequest = {
   /**
-   * @type string
-   */
-  email: string;
-  /**
+   * @minLength 1
    * @type string
    */
   name: string;
+  /**
+   * @type string
+   */
+  username: string;
 };
 
 export type ModelsUpdateUserRequest = {
-  /**
-   * @type string | undefined
-   */
-  email?: string;
   /**
    * @minLength 1
    * @type string | undefined
    */
   name?: string;
-};
-
-export type ModelsUser = {
   /**
    * @type string | undefined
    */
-  email?: string;
+  username?: string;
+};
+
+export type ModelsUser = {
   /**
    * @type string | undefined
    */
@@ -47,6 +44,10 @@ export type ModelsUser = {
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
 };
 
 /**

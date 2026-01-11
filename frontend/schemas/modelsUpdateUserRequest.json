@@ -1,8 +1,8 @@
 {
   "type": "object",
   "properties": {
-    "email": { "type": "string" },
-    "name": { "type": "string", "minLength": 1 }
+    "name": { "type": "string", "minLength": 1 },
+    "username": { "type": "string" }
   },
   "x-readme-ref-name": "models.UpdateUserRequest"
 }
