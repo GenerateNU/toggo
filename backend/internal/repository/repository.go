@@ -9,13 +9,19 @@ import (
 )
 
 type Repository struct {
-	User UserRepository
+	User   UserRepository
+	Health HealthRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User: &userRepository{db: db},
+		User:   &userRepository{db: db},
+		Health: &healthRepository{db: db},
 	}
+}
+
+type HealthRepository interface {
+	HealthCheck(ctx context.Context) (string, error)
 }
 
 type UserRepository interface {

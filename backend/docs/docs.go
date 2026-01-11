@@ -222,7 +222,7 @@ const docTemplate = `{
         },
         "/healthcheck": {
             "get": {
-                "description": "Returns OK if the server is running",
+                "description": "Returns OK if the server is running and database is healthy",
                 "produces": [
                     "application/json"
                 ],
@@ -230,11 +230,20 @@ const docTemplate = `{
                     "example"
                 ],
                 "summary": "Healthcheck endpoint",
+                "operationId": "healthcheck",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
