@@ -1,0 +1,22 @@
+name: Backend CD
+
+on:
+ push:
+   branches: [main]
+   paths:
+      - 'backend/**'
+      - '.github/workflows/be_*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+ deploy-app:
+   runs-on: ubuntu-latest
+   steps:
+     - name: Checkout repository
+       uses: actions/checkout@v4
+     - name: Deploy backend
+       uses: digitalocean/app_action/deploy@v2
+       with:
+         token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
