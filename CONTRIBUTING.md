@@ -37,6 +37,7 @@ chore: upgrade dependencies
 | Docker | Containerization | [docker.com](https://www.docker.com/products/docker-desktop/) |
 | Doppler | Secrets management | [doppler.com/docs/install-cli](https://docs.doppler.com/docs/install-cli) |
 | Figma | Design tool | [figma.com](https://www.figma.com/downloads/) |
+| Just | CLI tool build with Rust | [Just](https://github.com/casey/just) |
 
 > [!TIP]
 > **macOS users:** Use [OrbStack](https://orbstack.dev/) instead of Docker Desktop — it's lighter and faster.
@@ -86,7 +87,7 @@ doppler setup
 ```
 
 When prompted, select:
-- **Project:** `toggo`
+- **Project:** `backend`
 - **Config:** `dev` (for local development)
 
 ---
