@@ -97,6 +97,14 @@ format-fe:
 lint-fe:
     cd frontend && bun lint
 
+# === Localstack ===
+
+localstack-up:
+    cd backend && make localstack-up
+
+localstack-down:
+    cd backend && make localstack-down
+
 # === Setup ===
 
 # Complete setup: install all dependencies

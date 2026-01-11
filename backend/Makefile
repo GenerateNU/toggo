@@ -84,4 +84,13 @@ test:
 	doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4
 	docker compose -f docker-compose.test.yml down
 
+localstack-up:
+	./scripts/start-localstack.sh
+
+localstack-down:
+	@echo "Stopping LocalStack..."
+	localstack stop
+	@echo "Removing LocalStack container..."
+	docker rm localstack-main 2>/dev/null || true
+
 .PHONY: format tidy build clean lint format install-lint dev db-up db-down db-connect migrate-create migrate-up migrate-down api-doc test
