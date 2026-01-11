@@ -180,14 +180,21 @@ paths:
       - users
   /healthcheck:
     get:
-      description: Returns OK if the server is running
+      description: Returns OK if the server is running and database is healthy
+      operationId: healthcheck
       produces:
       - application/json
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
-            type: string
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
       summary: Healthcheck endpoint
       tags:
       - example

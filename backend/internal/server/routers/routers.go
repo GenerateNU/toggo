@@ -8,7 +8,7 @@ import (
 )
 
 func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...fiber.Handler) {
-	app.Get("/healthcheck", controllers.HealthcheckHandler)
+	app.Get("/healthcheck", controllers.HealthcheckHandler(routeParams.ServiceParams.Repository.Health))
 
 	apiGroup := app.Group("/api")
 	apiV1Group := apiGroup.Group("/v1", middlewares...)
