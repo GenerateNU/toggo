@@ -254,14 +254,15 @@ const docTemplate = `{
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "name"
+                "name",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -269,25 +270,25 @@ const docTemplate = `{
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
         "models.User": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -302,7 +303,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Toggo API",
-	Description:      "Toggo API",
+	Description:      "Bringing group travel plans to life",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

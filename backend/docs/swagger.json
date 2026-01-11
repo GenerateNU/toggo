@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Toggo API",
+        "description": "Bringing group travel plans to life",
         "title": "Toggo API",
         "contact": {},
         "version": "1.0"
@@ -248,14 +248,15 @@
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "name"
+                "name",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -263,25 +264,25 @@
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
         "models.User": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
