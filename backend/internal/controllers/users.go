@@ -34,6 +34,7 @@ func NewUserController(userService services.UserServiceInterface, validator *val
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users [post]
+// @ID 			createUser
 func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	userIDStr := c.Locals("userID").(string)
 	userID, err := utilities.ValidateID(userIDStr)
@@ -71,6 +72,7 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [patch]
+// @ID 			updateUser
 func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	var req models.UpdateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -104,6 +106,7 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [get]
+// @ID 			getUser
 func (u *UserController) GetUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {
@@ -127,6 +130,7 @@ func (u *UserController) GetUser(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [delete]
+// @ID 			deleteUser
 func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 	id, err := utilities.ValidateID(c.Params("userID"))
 	if err != nil {

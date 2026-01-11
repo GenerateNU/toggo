@@ -1,4 +1,5 @@
 module.exports = {
+  ignorePatterns: ["api/"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",

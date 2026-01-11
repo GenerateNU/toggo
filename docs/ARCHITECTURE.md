@@ -29,7 +29,7 @@ For current visual representation of the architecture, see [Architecture Diagram
 | **Design System**           | **[Restyle](https://shopify.github.io/restyle/fundamentals/)** – A theming and styling system for reusable, consistent UI components.                                 |
 | **Server State Management** | **[TanStack Query](https://tanstack.com/query/latest/docs/framework/react/quick-start)** – Simplifies API calls, caching, and handling loading/error states.          |
 | **Client State Management** | **[Zustand](https://zustand-demo.pmnd.rs/)** – Lightweight and flexible state management.                                                                             |
-| **API Client Generation**   | **[Orval](https://orval.dev/)** – Auto-generates typed API clients and React Query hooks from OpenAPI/Swagger specs.                                                  |
+| **API Client Generation**   | **[Kubb](https://kubb.dev/)** – Auto-generates typed API clients, Zod schemas and React Query hooks from OpenAPI/Swagger specs.                                       |
 | **Validation**              | **[Zod](https://zod.dev/)** – Type-safe schema validation for forms and API requests.                                                                                 |             |
 
 ---
@@ -66,7 +66,6 @@ frontend/
 ├── api/                 # API calls to backend endpoints
 ├── app/                 # Expo Router file-based routing
 │   ├── (app)/           # Protected app routes (requires authentication)
-│   │   └── (tabs)/      # Tab navigation (home, settings, etc.)
 │   ├── (auth)/          # Authentication routes (login, register, forgot password)
 │   └── _layout.tsx      # Root layout with providers
 ├── assets/              # Static assets (images, fonts, svgs, icons)

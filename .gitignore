@@ -1,3 +1,5 @@
 toggo
 node_modules
 tmp
+.kubb
+.DS_Store

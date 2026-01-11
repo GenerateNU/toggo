@@ -45,6 +45,7 @@ paths:
       consumes:
       - application/json
       description: Creates a new user with the provided payload
+      operationId: createUser
       parameters:
       - description: Create user request
         in: body
@@ -77,6 +78,7 @@ paths:
   /api/v1/users/{userID}:
     delete:
       description: Deletes a user by ID
+      operationId: deleteUser
       parameters:
       - description: User ID
         in: path
@@ -103,6 +105,7 @@ paths:
       - users
     get:
       description: Retrieves a user by ID
+      operationId: getUser
       parameters:
       - description: User ID
         in: path
@@ -135,6 +138,7 @@ paths:
       consumes:
       - application/json
       description: Updates an existing user by ID
+      operationId: updateUser
       parameters:
       - description: User ID
         in: path
