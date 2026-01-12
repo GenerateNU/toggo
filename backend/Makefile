@@ -20,14 +20,16 @@ dev:
 	docker-compose logs -f
 
 dev-win:
-	@powershell -Command "$$env:DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(Get-Date -Format 'yyyyMMddHHmmss') --plain --max-age 1m); docker-compose up -d --build"
+	@powershell -Command "\
+		$$env:DOPPLER_TOKEN = doppler configs tokens create --project backend --config dev --name dev-token-$$(Get-Date -Format 'yyyyMMddHHmmss') --plain --max-age 1m; \
+		docker-compose up -d --build"
 	@echo Waiting for database...
 	@powershell -Command "while (!(docker exec database pg_isready -U dev_user -d dev_db 2>$$null)) { Start-Sleep -Seconds 1 }"
 	@echo Database ready
 	$(MAKE) migrate-up-win
 	@echo Following logs... (Ctrl+C to stop)
-	docker-compose logs -f
-
+	@docker-compose logs -f
+	
 lint:
 	golangci-lint run ./...
 
@@ -126,7 +128,7 @@ test-win:
 	docker compose -f docker-compose.test.yml down
 
 localstack-up:
-	./scripts/start-localstack.sh
+	./scripts/start-localstack.sh # if on windows, just use git bash to run this script
 
 localstack-down:
 	@echo "Stopping LocalStack..."

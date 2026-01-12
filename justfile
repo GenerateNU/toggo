@@ -1,116 +1,129 @@
-# Toggo Project Commands
+set windows-shell := ["powershell.exe", "-Command"]
 
+suffix := if os() == "windows" { "-win" } else { "" }
+sep := if os() == "windows" { ";" } else { "&&" }
+
+alias i := setup
+alias bd := dev-be
+alias fd := dev-fe
+alias fdt := dev-fe-tunnel
+alias fx := ios-fe
+
+# Toggo Project Commands
 default:
     @just --list
 
 # === Docker & Services ===
+# Start both backend and frontend development servers
 
 # Start both backend and frontend development servers
 dev:
-    @echo "Starting development environment..."
-    cd backend && make dev &
-    cd frontend && bun dev
+    @echo "Start Toggo development environment ✈️"
+    {{ if os() == "windows" { "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'just dev-be'; just fdt" } else { "just dev-be & just dev-fe" } }}
 
 # Start only the database container
 up-db:
-    cd backend && make db-up
+    cd backend {{ sep }} make db-up{{ suffix }}
 
 # Stop the database container
 down-db:
-    cd backend && make db-down
+    cd backend {{ sep }} make db-down
 
 # === Database ===
 
 # Connect to local database
 connect-db:
-    cd backend && make db-connect
+    cd backend {{ sep }} make db-connect{{ suffix }}
 
 # Connect to production database
 connect-prod-db:
-    cd backend && make db-connect APP_ENVIRONMENT=prod
+    cd backend {{ sep }} make db-connect{{ suffix }} APP_ENVIRONMENT=prod
 
 # Create a new migration (use: just create-migrate name=add_users_table)
 create-migrate name:
-    cd backend && make migrate-create name={{name}}
+    cd backend {{ sep }} make migrate-create name={{ name }}
 
 # Run migrations up (local)
 migrate-up:
-    cd backend && make migrate-up
+    cd backend {{ sep }} make migrate-up{{ suffix }}
 
 # Run migrations up (production)
 migrate-up-prod:
-    cd backend && make migrate-up APP_ENVIRONMENT=prod
+    cd backend {{ sep }} make migrate-up{{ suffix }} APP_ENVIRONMENT=prod
 
 # Run migrations down (local)
 migrate-down:
-    cd backend && make migrate-down
+    cd backend {{ sep }} make migrate-down{{ suffix }}
 
 # Run migrations down (production)
 migrate-down-prod:
-    cd backend && make migrate-down APP_ENVIRONMENT=prod
+    cd backend {{ sep }} make migrate-down{{ suffix }} APP_ENVIRONMENT=prod
 
 # === Backend ===
 
 # Install backend dependencies
 install-be:
-    cd backend && go mod download
+    cd backend {{ sep }} go mod download
 
 # Start backend server
 dev-be:
-    cd backend && make dev
+    cd backend {{ sep }} make dev{{ suffix }}
 
 # Run backend tests
 test-be:
-    cd backend && make test
+    cd backend {{ sep }} make test{{ suffix }}
 
 # Generate API documentation
 api-doc:
-    cd backend && make api-doc
+    cd backend {{ sep }} make api-doc
 
 # Run Go linter
 lint-be:
-    cd backend && golangci-lint run
+    cd backend {{ sep }} golangci-lint run
 
 # Format Go code
 format-be:
-    cd backend && goimports -w .
+    cd backend {{ sep }} goimports -w .
 
 # === Frontend ===
 
 # Install frontend dependencies
 install-fe:
-    cd frontend && bun install
+    cd frontend {{ sep }} bun install
 
 # Start frontend development server
 dev-fe:
-    cd frontend && bun dev
+    cd frontend {{ sep }} bun dev
+
+dev-fe-tunnel:
+    cd frontend {{ sep }} bun tunnel
 
 # Start iOS simulator (macOS only)
 ios-fe:
-    cd frontend && bun ios
+    cd frontend {{ sep }} bun ios
 
 # Format frontend code
 format-fe:
-    cd frontend && bun format
+    cd frontend {{ sep }} bun format
 
 # Lint frontend code
 lint-fe:
-    cd frontend && bun lint
+    cd frontend {{ sep }} bun lint
 
 # === Localstack ===
 
 localstack-up:
-    cd backend && make localstack-up
+    cd backend {{ sep }} make localstack-up
 
 localstack-down:
-    cd backend && make localstack-down
+    cd backend {{ sep }} make localstack-down
 
 # === Setup ===
 
 # Complete setup: install all dependencies
 setup:
     @echo "Installing backend dependencies..."
-    cd backend && go mod download
+    cd backend {{ sep }} go mod download
     @echo "Installing frontend dependencies..."
-    cd frontend && bun install
+    cd frontend {{ sep }} bun install
     @echo "Setup complete!"
