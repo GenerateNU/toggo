@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "frontend",
@@ -13,7 +14,7 @@
         "expo": "~54.0.30",
         "expo-device": "^8.0.10",
         "expo-image": "^3.0.11",
-        "expo-notifications": "^0.32.15",
+        "expo-notifications": "^0.32.16",
         "expo-router": "~6.0.21",
         "expo-status-bar": "~3.0.9",
         "lucide-react-native": "^0.562.0",

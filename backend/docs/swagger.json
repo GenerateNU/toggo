@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Toggo API",
+        "description": "Bringing group travel plans to life",
         "title": "Toggo API",
         "contact": {},
         "version": "1.0"
@@ -216,7 +216,7 @@
         },
         "/healthcheck": {
             "get": {
-                "description": "Returns OK if the server is running",
+                "description": "Returns OK if the server is running and database is healthy",
                 "produces": [
                     "application/json"
                 ],
@@ -224,11 +224,20 @@
                     "example"
                 ],
                 "summary": "Healthcheck endpoint",
+                "operationId": "healthcheck",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -248,14 +257,15 @@
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "name"
+                "name",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -263,25 +273,25 @@
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
         "models.User": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

@@ -8,35 +8,36 @@ definitions:
     type: object
   models.CreateUserRequest:
     properties:
-      email:
-        type: string
       name:
+        minLength: 1
+        type: string
+      username:
         type: string
     required:
-    - email
     - name
+    - username
     type: object
   models.UpdateUserRequest:
     properties:
-      email:
-        type: string
       name:
         minLength: 1
+        type: string
+      username:
         type: string
     type: object
   models.User:
     properties:
-      email:
-        type: string
       id:
         type: string
       name:
+        type: string
+      username:
         type: string
     type: object
 host: localhost:8000
 info:
   contact: {}
-  description: Toggo API
+  description: Bringing group travel plans to life
   title: Toggo API
   version: "1.0"
 paths:
@@ -179,14 +180,21 @@ paths:
       - users
   /healthcheck:
     get:
-      description: Returns OK if the server is running
+      description: Returns OK if the server is running and database is healthy
+      operationId: healthcheck
       produces:
       - application/json
       responses:
         "200":
-          description: ok
+          description: OK
           schema:
-            type: string
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
       summary: Healthcheck endpoint
       tags:
       - example

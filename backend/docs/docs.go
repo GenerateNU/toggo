@@ -222,7 +222,7 @@ const docTemplate = `{
         },
         "/healthcheck": {
             "get": {
-                "description": "Returns OK if the server is running",
+                "description": "Returns OK if the server is running and database is healthy",
                 "produces": [
                     "application/json"
                 ],
@@ -230,11 +230,20 @@ const docTemplate = `{
                     "example"
                 ],
                 "summary": "Healthcheck endpoint",
+                "operationId": "healthcheck",
                 "responses": {
                     "200": {
-                        "description": "ok",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -254,14 +263,15 @@ const docTemplate = `{
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
-                "email",
-                "name"
+                "name",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -269,25 +279,25 @@ const docTemplate = `{
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
         "models.User": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -302,7 +312,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Toggo API",
-	Description:      "Toggo API",
+	Description:      "Bringing group travel plans to life",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

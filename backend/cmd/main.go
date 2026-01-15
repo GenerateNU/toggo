@@ -1,6 +1,6 @@
 // @title Toggo API
 // @version 1.0
-// @description Toggo API
+// @description Bringing group travel plans to life
 // @host localhost:8000
 // @BasePath /
 package main

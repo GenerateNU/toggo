@@ -45,19 +45,19 @@ export const errsAPIErrorSchema = z.object({
 }) as unknown as z.ZodType<ErrsAPIError>;
 
 export const modelsCreateUserRequestSchema = z.object({
-  email: z.string(),
-  name: z.string(),
+  name: z.string().min(1),
+  username: z.string(),
 }) as unknown as z.ZodType<ModelsCreateUserRequest>;
 
 export const modelsUpdateUserRequestSchema = z.object({
-  email: z.optional(z.string()),
   name: z.optional(z.string().min(1)),
+  username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateUserRequest>;
 
 export const modelsUserSchema = z.object({
-  email: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
 
 /**
