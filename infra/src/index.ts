@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import { createAWSInfrastructure } from "./aws";
 
-const S3_BUCKET_NAMES: string[] = ["testt"]
+const S3_BUCKET_NAMES: string[] = ["media"]
 
 function createInfrastructure() {
     const config = new pulumi.Config();
