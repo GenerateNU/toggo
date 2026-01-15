@@ -27,9 +27,6 @@ dev:
 	@echo "Following logs... (Ctrl+C to stop)"
 	docker-compose logs -f
 
-<<<<<<< HEAD
-
-=======
 dev-win:
 	@powershell -Command "\
 		$$env:DOPPLER_TOKEN = doppler configs tokens create --project backend --config dev --name dev-token-$$(Get-Date -Format 'yyyyMMddHHmmss') --plain --max-age 1m; \
@@ -41,7 +38,6 @@ dev-win:
 	@echo Following logs... (Ctrl+C to stop)
 	@docker-compose logs -f
 	
->>>>>>> main
 lint:
 	golangci-lint run ./...
 
