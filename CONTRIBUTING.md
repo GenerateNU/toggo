@@ -203,6 +203,17 @@ You can now start the server and your documentation changes should reflect on th
 
 ---
 
+## LocalStack Environment
+```bash
+# create a local AWS environment
+just localstack-up
+
+# remove local AWS environment
+just localstack-down
+```
+
+---
+
 ## Testing
 ```bash
 cd backend
