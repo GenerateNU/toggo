@@ -108,21 +108,20 @@ just
 ### Connecting to Database
 Ensure your database is up in the Docker Container by:
 ```bash
-make dev # will start both server and database OR
-make db-up # just start the database in container
-# or `just up-db`
+just dev-be # will start both server and database OR
+just up-db # just start the database in container
 ```
 Then you can go into PSQL and execute any SQL query
 ```bash
 # Local database
-make db-connect # or `just connect-db`
+just connect-db
 
 # Production database
-make db-connect APP_ENVIRONMENT=prod # or `just connect-prod-db`
+just connect-prod-db
 ```
 ```bash
 # will turn off local database
-make db-down # or `just down-db`
+just down-db
 ```
 
 > [!NOTE]
@@ -148,9 +147,9 @@ make db-down # or `just down-db`
 
 | Action | Local | Production |
 |--------|-------|------------|
-| Create migration | `make migrate-create name=<informative-name>` | — |
-| Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
-| Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
+| Create migration | `just migrate-create name=<informative-name>` | — |
+| Migrate up | `just migrate-up` | `just migrate-up-prod` |
+| Migrate down | `just migrate-down` | `just migrate-down-prod` |
 
 > [!CAUTION]
 > Always run migrations locally and ensure it works correctly first, then open a PR, get it reviewed and merged, then apply to production.
@@ -164,7 +163,7 @@ Ensure you have your Docker app running first.
 ```bash
 cd backend
 go mod download
-make dev # or `just dev-be`
+just dev-be
 ```
 
 To verify the server is running, visit Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -173,8 +172,8 @@ To verify the server is running, visit Healthcheck at [http://localhost:8000/hea
 ```bash
 cd frontend
 bun install
-bun dev # or `just dev-fe`
-# you can do also `bun ios` to start iOS simulator on MacOS
+just dev-fe
+# you can do also `just ios-fe` to start iOS simulator on MacOS
 ```
 
 ---
@@ -196,8 +195,7 @@ func HealthcheckHandler(c *fiber.Ctx) error {
 ```
 Then, we can generate the `swagger.yaml` file with:
 ```bash
-cd backend
-make api-doc # or `just api-doc`
+just api-doc
 ```
 You can now start the server and your documentation changes should reflect on the route [http://localhost:8000/docs](http://localhost:8000/docs)
 
@@ -216,6 +214,5 @@ just localstack-down
 
 ## Testing
 ```bash
-cd backend
-make test # or `just test-be`
+just test-be
 ```

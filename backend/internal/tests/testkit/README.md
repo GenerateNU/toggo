@@ -151,8 +151,7 @@ testkit.New(t).
 
 ### Running Tests
 ```
-cd backend
-make test
+just test-be
 ```
 
 ### Lifecycle Test Example
