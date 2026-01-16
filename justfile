@@ -112,9 +112,11 @@ lint-fe:
 
 # === Localstack ===
 
+# Create a localstack container
 localstack-up:
     cd backend {{ sep }} make localstack-up
 
+# Remove the localstack container
 localstack-down:
     cd backend {{ sep }} make localstack-down
 
