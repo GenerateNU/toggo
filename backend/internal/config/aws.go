@@ -11,7 +11,6 @@ type AWSConfig struct {
 	AWSAccessKeyID     string `validate:"required"`
 	AWSSecretAccessKey string `validate:"required"`
 	AWSRegion          string `validate:"required"`
-	AWSS3BucketName    string `validate:"required"`
 }
 
 func LoadAWSConfig() (*AWSConfig, error) {
@@ -19,7 +18,6 @@ func LoadAWSConfig() (*AWSConfig, error) {
 		AWSAccessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
 		AWSSecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		AWSRegion:          os.Getenv("AWS_REGION"),
-		AWSS3BucketName:    os.Getenv("AWS_BUCKET_NAME"),
 	}
 
 	if err := validator.New().Struct(cfg); err != nil {
