@@ -48,10 +48,14 @@ chore: upgrade dependencies
 |------|-------------|--------------|
 | Go | Backend language | [go.dev/dl](https://go.dev/dl/) |
 | PostgreSQL 15 | Database | [postgresql.org](https://www.postgresql.org/download/) |
+| psql | CLI to interact with a PostgreSQL database | [install psql](https://dev.to/tigerdata/how-to-install-psql-on-mac-ubuntu-debian-windows-am) |
 | Goose | Database migrations | `go install github.com/pressly/goose/v3/cmd/goose@latest` |
 | golangci-lint | Go linter | [golangci-lint.run](https://golangci-lint.run/welcome/install/) |
 | goimports | Formats code + manages imports | `go install golang.org/x/tools/cmd/goimports@latest` |
 | Swag CLI | Generate API doc | `go install github.com/swaggo/swag/cmd/swag@latest` |
+| LocalStack | Run AWS services locally | [install cli](https://docs.localstack.cloud/aws/getting-started/installation/) |
+| Temporal | Run workflow orchestration | [install cli](https://docs.temporal.io/cli/setup-cli) |
+
 
 **Useful Go resources:**
 - [Effective Go](https://go.dev/doc/effective_go)
@@ -92,21 +96,32 @@ When prompted, select:
 
 ---
 
+## Running Commands
+We use a justfile to run both frontend and backend commands from any directory at high speed. You can view all available commands with:
+```bash
+just
+```
+---
+
 ## Database & Migrations
 
 ### Connecting to Database
 Ensure your database is up in the Docker Container by:
 ```bash
-make dev # will start both server and database OR
-make db-up # just start the database in container
+just dev-be # will start both server and database OR
+just up-db # just start the database in container
 ```
 Then you can go into PSQL and execute any SQL query
 ```bash
 # Local database
-make db-connect
+just connect-db
 
 # Production database
-make db-connect APP_ENVIRONMENT=prod
+just connect-prod-db
+```
+```bash
+# will turn off local database
+just down-db
 ```
 
 > [!NOTE]
@@ -132,9 +147,9 @@ make db-connect APP_ENVIRONMENT=prod
 
 | Action | Local | Production |
 |--------|-------|------------|
-| Create migration | `make migrate-create name=<informative-name>` | — |
-| Migrate up | `make migrate-up` | `make migrate-up APP_ENVIRONMENT=prod` |
-| Migrate down | `make migrate-down` | `make migrate-down APP_ENVIRONMENT=prod` |
+| Create migration | `just migrate-create name=<informative-name>` | — |
+| Migrate up | `just migrate-up` | `just migrate-up-prod` |
+| Migrate down | `just migrate-down` | `just migrate-down-prod` |
 
 > [!CAUTION]
 > Always run migrations locally and ensure it works correctly first, then open a PR, get it reviewed and merged, then apply to production.
@@ -148,7 +163,7 @@ Ensure you have your Docker app running first.
 ```bash
 cd backend
 go mod download
-make dev
+just dev-be
 ```
 
 To verify the server is running, visit Healthcheck at [http://localhost:8000/healthcheck](http://localhost:8000/healthcheck) or API doc at [http://localhost:8000/docs](http://localhost:8000/docs)
@@ -157,8 +172,8 @@ To verify the server is running, visit Healthcheck at [http://localhost:8000/hea
 ```bash
 cd frontend
 bun install
-bun dev
-# you can do also `bun ios` to start iOS simulator on MacOS
+just dev-fe
+# you can do also `just ios-fe` to start iOS simulator on MacOS
 ```
 
 ---
@@ -179,16 +194,25 @@ func HealthcheckHandler(c *fiber.Ctx) error {
 }
 ```
 Then, we can generate the `swagger.yaml` file with:
-```
-cd backend
-make api-doc
+```bash
+just api-doc
 ```
 You can now start the server and your documentation changes should reflect on the route [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
+## LocalStack Environment
+```bash
+# create a local AWS environment
+just localstack-up
+
+# remove local AWS environment
+just localstack-down
+```
+
+---
+
 ## Testing
 ```bash
-cd backend
-make test
+just test-be
 ```
