@@ -10,7 +10,7 @@ import (
 type AWSConfig struct {
 	AccessKeyID     string `validate:"required"`
 	SecretAccessKey string `validate:"required"`
-	Region          string
+	Region          string `validate:"required"`
 	BucketName      string `validate:"required"`
 }
 
