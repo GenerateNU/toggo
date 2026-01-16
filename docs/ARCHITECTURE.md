@@ -87,7 +87,7 @@ frontend/
 ## 4. Infrastructure & Configuration
 
 - We use **[Doppler](https://www.doppler.com/)** to manage secrets. This eliminates the need for local `.env` files. Updates propagate automatically to all team members, keeping environments in sync without anyone needing to manually share sensitive information.
-- We use **[Pulumi](https://www.pulumi.com/) to manage cloud infrastructure in TypeScript, giving us version control for infrastructure. Changes to resources are fully versioned and reproducible, and adding something like a new S3 bucket only needs us to specify bucket name and running Pulumi, much easier than navigating the console.
+- We use **[Pulumi](https://www.pulumi.com/)** to manage cloud infrastructure in TypeScript, giving us version control for infrastructure. Changes to resources are fully versioned and reproducible, and adding something like a new S3 bucket only needs us to specify bucket name and running Pulumi, much easier than navigating the console.
 
 ---
 
