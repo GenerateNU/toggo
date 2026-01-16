@@ -101,6 +101,7 @@ We use a justfile to run both frontend and backend commands from any directory a
 ```bash
 just
 ```
+---
 
 ## Database & Migrations
 
