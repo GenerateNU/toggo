@@ -3,7 +3,6 @@ package example
 import (
 	"time"
 	"toggo/internal/models"
-	"toggo/internal/repository"
 
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -12,10 +11,10 @@ import (
 func UserWorkflow(
 	ctx workflow.Context,
 	input UserWorkflowInput,
-	repository *repository.Repository,
 ) error {
 	logger := workflow.GetLogger(ctx)
-	activities := &UserActivities{Repository: repository}
+
+	activities := &UserActivities{}
 
 	createCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
