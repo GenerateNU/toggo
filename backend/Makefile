@@ -11,10 +11,6 @@ clean:
 	rm -f $(BINARY_NAME)
 
 dev:
-	@echo "Starting local Temporal server..."
-	@temporal server start-dev &  # run Temporal server in background
-	@sleep 5  # wait a few seconds for Temporal to initialize
-
 	@echo "Starting Docker containers..."
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
 		docker-compose up --build

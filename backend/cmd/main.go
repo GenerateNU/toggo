@@ -15,9 +15,7 @@ import (
 	"time"
 	"toggo/internal/config"
 	"toggo/internal/database"
-	"toggo/internal/repository"
 	"toggo/internal/server"
-	"toggo/internal/workflows"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
@@ -31,8 +29,6 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-
-	go workflows.StartAllWorkersWithContext(ctx, repository.NewRepository(db))
 
 	fiberApp := server.CreateApp(cfg, db)
 	port := fmt.Sprintf(":%d", cfg.App.Port)

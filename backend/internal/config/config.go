@@ -7,6 +7,7 @@ type Configuration struct {
 	Database    DatabaseConfig
 	Auth        AuthConfig
 	AWS         AWSConfig
+	Temporal    TemporalConfig
 	Environment string
 }
 
@@ -31,11 +32,17 @@ func LoadConfiguration() (*Configuration, error) {
 		return nil, err
 	}
 
+	temporalConfig, err := LoadTemporalConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Configuration{
 		App:         *appConfig,
 		Database:    *databaseConfig,
 		Auth:        *authConfig,
 		AWS:         *awsConfig,
+		Temporal:    *temporalConfig,
 		Environment: os.Getenv("APP_ENVIRONMENT"),
 	}, nil
 }
