@@ -6,8 +6,7 @@ import (
 
 const UserExampleTaskQueueName = "EXAMPLE_TASK_QUEUE"
 
-
 type UserWorkflowInput struct {
-	User *models.User
+	User      *models.User
 	UpdateReq *models.UpdateUserRequest
 }

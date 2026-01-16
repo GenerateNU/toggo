@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -17,7 +16,6 @@ import (
 	"toggo/internal/database"
 	"toggo/internal/server"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
 )
 
@@ -78,22 +76,4 @@ func closeDB(db *bun.DB) {
 	if err := db.Close(); err != nil {
 		log.Printf("Failed to close DB: %v", err)
 	}
-}
-
-func handleShutdown(fiberApp *fiber.App) {
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-
-	<-shutdown
-	log.Println("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := fiberApp.ShutdownWithContext(ctx); err != nil {
-		log.Printf("Server shutdown failed: %v", err)
-	}
-
-	log.Println("Server exited gracefully")
-	os.Exit(0)
 }

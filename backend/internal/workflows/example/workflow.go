@@ -25,10 +25,10 @@ func UserWorkflow(
 	createCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		StartToCloseTimeout: 10 * time.Second,
 		RetryPolicy: &temporal.RetryPolicy{
-			InitialInterval:        1 * time.Second,
-			BackoffCoefficient:     2.0,
-			MaximumInterval:        30 * time.Second,
-			MaximumAttempts:        5,
+			InitialInterval:    1 * time.Second,
+			BackoffCoefficient: 2.0,
+			MaximumInterval:    30 * time.Second,
+			MaximumAttempts:    5,
 		},
 	})
 
