@@ -11,11 +11,15 @@ clean:
 	rm -f $(BINARY_NAME)
 
 dev:
-	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) docker-compose up -d --build
-	@echo "Waiting for database..."
-	@until docker exec database pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
+	@echo "Starting Docker containers..."
+	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+		docker-compose up --build
+
+	@until docker exec backend-db pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
+
 	$(MAKE) migrate-up
+
 	@echo "Following logs... (Ctrl+C to stop)"
 	docker-compose logs -f
 
@@ -88,9 +92,7 @@ db-up:
 	@echo "Starting Postgres container..."
 	@DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
 		docker-compose up -d postgres
-	@echo "Waiting for database..."
 	@until docker exec database pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
-	@echo "Database ready"
 	$(MAKE) migrate-up
 
 db-up-win:
@@ -113,7 +115,6 @@ tidy:
 
 test:
 	docker compose -f docker-compose.test.yml up -d
-	@echo "Waiting for database..."
 	@until docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
 	doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4

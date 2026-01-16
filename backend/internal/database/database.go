@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"time"
+	"toggo/internal/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -52,4 +53,24 @@ func NewDB(ctx context.Context, dsn string) (*bun.DB, error) {
 	log.Println("Database connection established successfully")
 
 	return bunDB, nil
+}
+
+func ConnectDB(ctx context.Context, cfg *config.Configuration) *bun.DB {
+	db, err := NewDB(ctx, cfg.Database.DSN())
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("Failed to ping database: %v", err)
+	}
+
+	log.Println("Connected to database successfully!")
+	return db
+}
+
+func CloseDB(db *bun.DB) {
+	if err := db.Close(); err != nil {
+		log.Printf("Failed to close DB: %v", err)
+	}
 }
