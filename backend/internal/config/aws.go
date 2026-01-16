@@ -19,7 +19,11 @@ func LoadAWSConfig() (*AWSConfig, error) {
 		AccessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
 		SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		Region:          os.Getenv("AWS_REGION"),
-		BucketName:      os.Getenv("AWS_BUCKET_NAME"),
+		BucketName:      os.Getenv("S3_BUCKET_NAME"),
+	}
+
+	if cfg.Region == "" {
+		cfg.Region = "us-east-1"
 	}
 
 	if err := validator.New().Struct(cfg); err != nil {
