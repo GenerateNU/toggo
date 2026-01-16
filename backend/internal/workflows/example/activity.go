@@ -19,13 +19,6 @@ func (a *UserActivities) CreateUser(
 	return a.Repository.User.Create(ctx, user)
 }
 
-func (a *UserActivities) FindUser(
-	ctx context.Context,
-	id uuid.UUID,
-) (*models.User, error) {
-	return a.Repository.User.Find(ctx, id)
-}
-
 func (a *UserActivities) UpdateUser(
 	ctx context.Context,
 	id uuid.UUID,
