@@ -1,4 +1,4 @@
-package utilities
+package utilities //nolint:revive
 
 import (
 	"fmt"
@@ -73,6 +73,8 @@ func buildMessage(e validator.FieldError) string {
 		return fmt.Sprintf("%s must be greater than or equal to %s", e.Field(), e.Param())
 	case "lte":
 		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
+	case "image_size":
+		return fmt.Sprintf("%s must be one of: small, medium, large", e.Field())
 	default:
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}
@@ -88,6 +90,14 @@ func NewValidator() *validator.Validate {
 	})
 	if err != nil {
 		log.Println("Error registering username validation:", err)
+	}
+
+	err = v.RegisterValidation("image_size", func(fl validator.FieldLevel) bool {
+		size := fl.Field().String()
+		return size == "small" || size == "medium" || size == "large"
+	})
+	if err != nil {
+		log.Println("Error registering image_size validation:", err)
 	}
 
 	return v

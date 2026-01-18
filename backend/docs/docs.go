@@ -15,6 +15,86 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/files/health": {
+            "get": {
+                "description": "Verifies connectivity to the configured S3 bucket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Check S3 connection",
+                "operationId": "checkS3Health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.S3HealthCheckResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/presigned-urls": {
+            "post": {
+                "description": "Generates presigned URLs for multiple files with specified sizes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get bulk presigned URLs",
+                "operationId": "getBulkPresignedURLs",
+                "parameters": [
+                    {
+                        "description": "Bulk presigned URL request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.BulkPresignedURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.BulkPresignedURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "post": {
                 "description": "Creates a new user with the provided payload",
@@ -260,6 +340,32 @@ const docTemplate = `{
                 }
             }
         },
+        "models.BulkPresignedURLRequest": {
+            "type": "object",
+            "required": [
+                "files"
+            ],
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.PresignedURLRequest"
+                    }
+                }
+            }
+        },
+        "models.BulkPresignedURLResponse": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FilePresignedURLResponse"
+                    }
+                }
+            }
+        },
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
@@ -272,6 +378,78 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FilePresignedURLResponse": {
+            "type": "object",
+            "properties": {
+                "fileKey": {
+                    "type": "string"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PresignedURLResponse"
+                    }
+                }
+            }
+        },
+        "models.ImageSize": {
+            "type": "string",
+            "enum": [
+                "small",
+                "medium",
+                "large"
+            ],
+            "x-enum-varnames": [
+                "ImageSizeSmall",
+                "ImageSizeMedium",
+                "ImageSizeLarge"
+            ]
+        },
+        "models.PresignedURLRequest": {
+            "type": "object",
+            "required": [
+                "fileKey",
+                "sizes"
+            ],
+            "properties": {
+                "fileKey": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sizes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.ImageSize"
+                    }
+                }
+            }
+        },
+        "models.PresignedURLResponse": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "$ref": "#/definitions/models.ImageSize"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.S3HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "bucketName": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }

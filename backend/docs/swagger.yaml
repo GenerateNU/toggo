@@ -6,6 +6,23 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.BulkPresignedURLRequest:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/models.PresignedURLRequest'
+        minItems: 1
+        type: array
+    required:
+    - files
+    type: object
+  models.BulkPresignedURLResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/models.FilePresignedURLResponse'
+        type: array
+    type: object
   models.CreateUserRequest:
     properties:
       name:
@@ -16,6 +33,55 @@ definitions:
     required:
     - name
     - username
+    type: object
+  models.FilePresignedURLResponse:
+    properties:
+      fileKey:
+        type: string
+      urls:
+        items:
+          $ref: '#/definitions/models.PresignedURLResponse'
+        type: array
+    type: object
+  models.ImageSize:
+    enum:
+    - small
+    - medium
+    - large
+    type: string
+    x-enum-varnames:
+    - ImageSizeSmall
+    - ImageSizeMedium
+    - ImageSizeLarge
+  models.PresignedURLRequest:
+    properties:
+      fileKey:
+        minLength: 1
+        type: string
+      sizes:
+        items:
+          $ref: '#/definitions/models.ImageSize'
+        minItems: 1
+        type: array
+    required:
+    - fileKey
+    - sizes
+    type: object
+  models.PresignedURLResponse:
+    properties:
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
+        type: string
+    type: object
+  models.S3HealthCheckResponse:
+    properties:
+      bucketName:
+        type: string
+      region:
+        type: string
+      status:
+        type: string
     type: object
   models.UpdateUserRequest:
     properties:
@@ -41,6 +107,59 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/files/health:
+    get:
+      description: Verifies connectivity to the configured S3 bucket
+      operationId: checkS3Health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.S3HealthCheckResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Check S3 connection
+      tags:
+      - files
+  /api/v1/files/presigned-urls:
+    post:
+      consumes:
+      - application/json
+      description: Generates presigned URLs for multiple files with specified sizes
+      operationId: getBulkPresignedURLs
+      parameters:
+      - description: Bulk presigned URL request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.BulkPresignedURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BulkPresignedURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get bulk presigned URLs
+      tags:
+      - files
   /api/v1/users:
     post:
       consumes:
