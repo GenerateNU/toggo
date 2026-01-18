@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.generatetoggo.frontend",
+      "bundleIdentifier": "com.generateneutoggo.frontend",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -35,9 +35,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "501043d0-0b1d-4f07-917f-a2df041248c3"
+        "projectId": "42251195-5cfc-4250-bd2c-c53ced042b7e"
       }
     },
-    "owner": "generate-toggo"
+    "owner": "generate-neu-toggo"
   }
 }
