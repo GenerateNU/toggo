@@ -4,14 +4,34 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "android": {
+        "image": "latest"
+      },
+      "ios": {
+        "image": "latest"
+      }
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "extends": "base",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
     },
     "production": {
+      "extends": "base",
+      "ios": {
+        "distribution": "store"
+      },
+      "android": {
+        "buildType": "apk"
+      },
       "autoIncrement": true
     }
   },

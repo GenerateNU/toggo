@@ -22,6 +22,7 @@
     "@tanstack/react-query": "^5.90.16",
     "autoprefixer": "10.4.14",
     "expo": "~54.0.30",
+    "expo-dev-client": "~6.0.20",
     "expo-device": "^8.0.10",
     "expo-image": "^3.0.11",
     "expo-notifications": "^0.32.16",

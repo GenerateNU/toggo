@@ -1,43 +1,37 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
-    "scheme": "frontend",
+    "name": "toggo",
+    "icon": "./assets/icon.png",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "toggo",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
     },
+    "extra": {
+      "eas": {
+        "projectId": "77d257aa-af30-4ea2-8add-772d20e231ec"
+      }
+    },
+    "owner": "generate-neu-toggo",
+    "slug": "toggo",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.generatetoggo.frontend",
+      "bundleIdentifier": "com.generateneutoggo.toggo",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": ["expo-router"],
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "501043d0-0b1d-4f07-917f-a2df041248c3"
-      }
-    },
-    "owner": "generate-toggo"
+      "package": "com.generateneutoggo.toggo"
+    }
   }
 }
