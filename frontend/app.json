@@ -1,32 +1,16 @@
 {
   "expo": {
-    "name": "toggo",
-    "icon": "./assets/icon.png",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "scheme": "toggo",
-    "platforms": ["ios", "android"],
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "plugins": ["expo-router"],
-    "experiments": {
-      "typedRoutes": true
-    },
     "extra": {
       "eas": {
-        "projectId": "77d257aa-af30-4ea2-8add-772d20e231ec"
+        "projectId": "42251195-5cfc-4250-bd2c-c53ced042b7e"
       }
     },
     "owner": "generate-neu-toggo",
-    "slug": "toggo",
     "ios": {
-      "bundleIdentifier": "com.generateneutoggo.toggo",
+      "bundleIdentifier": "com.generateneutoggo.frontend",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    },
-    "android": {
-      "package": "com.generateneutoggo.toggo"
     }
   }
 }
