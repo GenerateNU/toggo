@@ -8,7 +8,7 @@ type User struct {
 	ID       		uuid.UUID 		`bun:"id,pk,type:uuid" json:"id"`
 	Name     		string    		`bun:"name" json:"name"`
 	Username 		string    		`bun:"username" json:"username"`
-	ProfilePicture  *string 		`bun:"profile_picture" json:"profile_picture,omitempty"`
+	ProfilePicture  *uuid.UUID 		`bun:"profile_picture,unique,type:uuid" json:"profile_picture,omitempty"`
 }
 
 type CreateUserRequest struct {
@@ -17,6 +17,7 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	Name     *string `validate:"omitempty,min=1"`
-	Username *string `validate:"omitempty,username"`
+	Name     *string    `validate:"omitempty,min=1"`
+	Username *string    `validate:"omitempty,username"`
+	ProfilePicture *uuid.UUID `validate:"omitempty,uuid"`
 }
