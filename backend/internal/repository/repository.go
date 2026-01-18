@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 	"toggo/internal/models"
 
 	"github.com/google/uuid"
@@ -11,12 +12,14 @@ import (
 type Repository struct {
 	User   UserRepository
 	Health HealthRepository
+	Image  ImageRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
 		User:   &userRepository{db: db},
 		Health: &healthRepository{db: db},
+		Image:  &imageRepository{db: db},
 	}
 }
 
@@ -29,4 +32,16 @@ type UserRepository interface {
 	Find(ctx context.Context, id uuid.UUID) (*models.User, error)
 	Update(ctx context.Context, id uuid.UUID, user *models.UpdateUserRequest) (*models.User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type ImageRepository interface {
+	CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error)
+	ConfirmUpload(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	ConfirmAllUploads(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	MarkFailed(ctx context.Context, imageID uuid.UUID, size models.ImageSize) error
+	FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	FindByIDAndSize(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	DeleteByID(ctx context.Context, imageID uuid.UUID) error
+	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
 }

@@ -8,6 +8,7 @@ import (
 	"context"
 	"toggo/internal/models"
 
+	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -100,27 +101,27 @@ func (_c *MockFileServiceInterface_CheckS3Connection_Call) RunAndReturn(run func
 	return _c
 }
 
-// GetBulkPresignedURLs provides a mock function for the type MockFileServiceInterface
-func (_mock *MockFileServiceInterface) GetBulkPresignedURLs(ctx context.Context, req models.BulkPresignedURLRequest) (*models.BulkPresignedURLResponse, error) {
+// ConfirmUpload provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) ConfirmUpload(ctx context.Context, req models.ConfirmUploadRequest) (*models.ConfirmUploadResponse, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetBulkPresignedURLs")
+		panic("no return value specified for ConfirmUpload")
 	}
 
-	var r0 *models.BulkPresignedURLResponse
+	var r0 *models.ConfirmUploadResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.BulkPresignedURLRequest) (*models.BulkPresignedURLResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.ConfirmUploadRequest) (*models.ConfirmUploadResponse, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.BulkPresignedURLRequest) *models.BulkPresignedURLResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.ConfirmUploadRequest) *models.ConfirmUploadResponse); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.BulkPresignedURLResponse)
+			r0 = ret.Get(0).(*models.ConfirmUploadResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, models.BulkPresignedURLRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, models.ConfirmUploadRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -128,27 +129,27 @@ func (_mock *MockFileServiceInterface) GetBulkPresignedURLs(ctx context.Context,
 	return r0, r1
 }
 
-// MockFileServiceInterface_GetBulkPresignedURLs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBulkPresignedURLs'
-type MockFileServiceInterface_GetBulkPresignedURLs_Call struct {
+// MockFileServiceInterface_ConfirmUpload_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ConfirmUpload'
+type MockFileServiceInterface_ConfirmUpload_Call struct {
 	*mock.Call
 }
 
-// GetBulkPresignedURLs is a helper method to define mock.On call
+// ConfirmUpload is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req models.BulkPresignedURLRequest
-func (_e *MockFileServiceInterface_Expecter) GetBulkPresignedURLs(ctx interface{}, req interface{}) *MockFileServiceInterface_GetBulkPresignedURLs_Call {
-	return &MockFileServiceInterface_GetBulkPresignedURLs_Call{Call: _e.mock.On("GetBulkPresignedURLs", ctx, req)}
+//   - req models.ConfirmUploadRequest
+func (_e *MockFileServiceInterface_Expecter) ConfirmUpload(ctx interface{}, req interface{}) *MockFileServiceInterface_ConfirmUpload_Call {
+	return &MockFileServiceInterface_ConfirmUpload_Call{Call: _e.mock.On("ConfirmUpload", ctx, req)}
 }
 
-func (_c *MockFileServiceInterface_GetBulkPresignedURLs_Call) Run(run func(ctx context.Context, req models.BulkPresignedURLRequest)) *MockFileServiceInterface_GetBulkPresignedURLs_Call {
+func (_c *MockFileServiceInterface_ConfirmUpload_Call) Run(run func(ctx context.Context, req models.ConfirmUploadRequest)) *MockFileServiceInterface_ConfirmUpload_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 models.BulkPresignedURLRequest
+		var arg1 models.ConfirmUploadRequest
 		if args[1] != nil {
-			arg1 = args[1].(models.BulkPresignedURLRequest)
+			arg1 = args[1].(models.ConfirmUploadRequest)
 		}
 		run(
 			arg0,
@@ -158,12 +159,222 @@ func (_c *MockFileServiceInterface_GetBulkPresignedURLs_Call) Run(run func(ctx c
 	return _c
 }
 
-func (_c *MockFileServiceInterface_GetBulkPresignedURLs_Call) Return(bulkPresignedURLResponse *models.BulkPresignedURLResponse, err error) *MockFileServiceInterface_GetBulkPresignedURLs_Call {
-	_c.Call.Return(bulkPresignedURLResponse, err)
+func (_c *MockFileServiceInterface_ConfirmUpload_Call) Return(confirmUploadResponse *models.ConfirmUploadResponse, err error) *MockFileServiceInterface_ConfirmUpload_Call {
+	_c.Call.Return(confirmUploadResponse, err)
 	return _c
 }
 
-func (_c *MockFileServiceInterface_GetBulkPresignedURLs_Call) RunAndReturn(run func(ctx context.Context, req models.BulkPresignedURLRequest) (*models.BulkPresignedURLResponse, error)) *MockFileServiceInterface_GetBulkPresignedURLs_Call {
+func (_c *MockFileServiceInterface_ConfirmUpload_Call) RunAndReturn(run func(ctx context.Context, req models.ConfirmUploadRequest) (*models.ConfirmUploadResponse, error)) *MockFileServiceInterface_ConfirmUpload_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateUploadURLs provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) CreateUploadURLs(ctx context.Context, req models.UploadURLRequest) (*models.UploadURLResponse, error) {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUploadURLs")
+	}
+
+	var r0 *models.UploadURLResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UploadURLRequest) (*models.UploadURLResponse, error)); ok {
+		return returnFunc(ctx, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UploadURLRequest) *models.UploadURLResponse); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.UploadURLResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, models.UploadURLRequest) error); ok {
+		r1 = returnFunc(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileServiceInterface_CreateUploadURLs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUploadURLs'
+type MockFileServiceInterface_CreateUploadURLs_Call struct {
+	*mock.Call
+}
+
+// CreateUploadURLs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req models.UploadURLRequest
+func (_e *MockFileServiceInterface_Expecter) CreateUploadURLs(ctx interface{}, req interface{}) *MockFileServiceInterface_CreateUploadURLs_Call {
+	return &MockFileServiceInterface_CreateUploadURLs_Call{Call: _e.mock.On("CreateUploadURLs", ctx, req)}
+}
+
+func (_c *MockFileServiceInterface_CreateUploadURLs_Call) Run(run func(ctx context.Context, req models.UploadURLRequest)) *MockFileServiceInterface_CreateUploadURLs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.UploadURLRequest
+		if args[1] != nil {
+			arg1 = args[1].(models.UploadURLRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileServiceInterface_CreateUploadURLs_Call) Return(uploadURLResponse *models.UploadURLResponse, err error) *MockFileServiceInterface_CreateUploadURLs_Call {
+	_c.Call.Return(uploadURLResponse, err)
+	return _c
+}
+
+func (_c *MockFileServiceInterface_CreateUploadURLs_Call) RunAndReturn(run func(ctx context.Context, req models.UploadURLRequest) (*models.UploadURLResponse, error)) *MockFileServiceInterface_CreateUploadURLs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetFile provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error) {
+	ret := _mock.Called(ctx, imageID, size)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFile")
+	}
+
+	var r0 *models.GetFileResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.ImageSize) (*models.GetFileResponse, error)); ok {
+		return returnFunc(ctx, imageID, size)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.ImageSize) *models.GetFileResponse); ok {
+		r0 = returnFunc(ctx, imageID, size)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.GetFileResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.ImageSize) error); ok {
+		r1 = returnFunc(ctx, imageID, size)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileServiceInterface_GetFile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFile'
+type MockFileServiceInterface_GetFile_Call struct {
+	*mock.Call
+}
+
+// GetFile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageID uuid.UUID
+//   - size models.ImageSize
+func (_e *MockFileServiceInterface_Expecter) GetFile(ctx interface{}, imageID interface{}, size interface{}) *MockFileServiceInterface_GetFile_Call {
+	return &MockFileServiceInterface_GetFile_Call{Call: _e.mock.On("GetFile", ctx, imageID, size)}
+}
+
+func (_c *MockFileServiceInterface_GetFile_Call) Run(run func(ctx context.Context, imageID uuid.UUID, size models.ImageSize)) *MockFileServiceInterface_GetFile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 models.ImageSize
+		if args[2] != nil {
+			arg2 = args[2].(models.ImageSize)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFile_Call) Return(getFileResponse *models.GetFileResponse, err error) *MockFileServiceInterface_GetFile_Call {
+	_c.Call.Return(getFileResponse, err)
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFile_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error)) *MockFileServiceInterface_GetFile_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetFileAllSizes provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error) {
+	ret := _mock.Called(ctx, imageID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFileAllSizes")
+	}
+
+	var r0 *models.GetFileAllSizesResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*models.GetFileAllSizesResponse, error)); ok {
+		return returnFunc(ctx, imageID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *models.GetFileAllSizesResponse); ok {
+		r0 = returnFunc(ctx, imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.GetFileAllSizesResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileServiceInterface_GetFileAllSizes_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFileAllSizes'
+type MockFileServiceInterface_GetFileAllSizes_Call struct {
+	*mock.Call
+}
+
+// GetFileAllSizes is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageID uuid.UUID
+func (_e *MockFileServiceInterface_Expecter) GetFileAllSizes(ctx interface{}, imageID interface{}) *MockFileServiceInterface_GetFileAllSizes_Call {
+	return &MockFileServiceInterface_GetFileAllSizes_Call{Call: _e.mock.On("GetFileAllSizes", ctx, imageID)}
+}
+
+func (_c *MockFileServiceInterface_GetFileAllSizes_Call) Run(run func(ctx context.Context, imageID uuid.UUID)) *MockFileServiceInterface_GetFileAllSizes_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFileAllSizes_Call) Return(getFileAllSizesResponse *models.GetFileAllSizesResponse, err error) *MockFileServiceInterface_GetFileAllSizes_Call {
+	_c.Call.Return(getFileAllSizesResponse, err)
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFileAllSizes_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)) *MockFileServiceInterface_GetFileAllSizes_Call {
 	_c.Call.Return(run)
 	return _c
 }

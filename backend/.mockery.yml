@@ -20,3 +20,6 @@ packages:
   toggo/internal/services:
     interfaces:
       FileServiceInterface:
+  toggo/internal/repository:
+    interfaces:
+      ImageRepository:

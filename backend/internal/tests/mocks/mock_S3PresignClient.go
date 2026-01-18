@@ -121,3 +121,86 @@ func (_c *MockS3PresignClient_PresignGetObject_Call) RunAndReturn(run func(ctx c
 	_c.Call.Return(run)
 	return _c
 }
+
+// PresignPutObject provides a mock function for the type MockS3PresignClient
+func (_mock *MockS3PresignClient) PresignPutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error) {
+	var tmpRet mock.Arguments
+	if len(optFns) > 0 {
+		tmpRet = _mock.Called(ctx, params, optFns)
+	} else {
+		tmpRet = _mock.Called(ctx, params)
+	}
+	ret := tmpRet
+
+	if len(ret) == 0 {
+		panic("no return value specified for PresignPutObject")
+	}
+
+	var r0 *v4.PresignedHTTPRequest
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *s3.PutObjectInput, ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)); ok {
+		return returnFunc(ctx, params, optFns...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *s3.PutObjectInput, ...func(*s3.PresignOptions)) *v4.PresignedHTTPRequest); ok {
+		r0 = returnFunc(ctx, params, optFns...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*v4.PresignedHTTPRequest)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *s3.PutObjectInput, ...func(*s3.PresignOptions)) error); ok {
+		r1 = returnFunc(ctx, params, optFns...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockS3PresignClient_PresignPutObject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PresignPutObject'
+type MockS3PresignClient_PresignPutObject_Call struct {
+	*mock.Call
+}
+
+// PresignPutObject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - params *s3.PutObjectInput
+//   - optFns ...func(*s3.PresignOptions)
+func (_e *MockS3PresignClient_Expecter) PresignPutObject(ctx interface{}, params interface{}, optFns ...interface{}) *MockS3PresignClient_PresignPutObject_Call {
+	return &MockS3PresignClient_PresignPutObject_Call{Call: _e.mock.On("PresignPutObject",
+		append([]interface{}{ctx, params}, optFns...)...)}
+}
+
+func (_c *MockS3PresignClient_PresignPutObject_Call) Run(run func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.PresignOptions))) *MockS3PresignClient_PresignPutObject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *s3.PutObjectInput
+		if args[1] != nil {
+			arg1 = args[1].(*s3.PutObjectInput)
+		}
+		var arg2 []func(*s3.PresignOptions)
+		var variadicArgs []func(*s3.PresignOptions)
+		if len(args) > 2 {
+			variadicArgs = args[2].([]func(*s3.PresignOptions))
+		}
+		arg2 = variadicArgs
+		run(
+			arg0,
+			arg1,
+			arg2...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockS3PresignClient_PresignPutObject_Call) Return(presignedHTTPRequest *v4.PresignedHTTPRequest, err error) *MockS3PresignClient_PresignPutObject_Call {
+	_c.Call.Return(presignedHTTPRequest, err)
+	return _c
+}
+
+func (_c *MockS3PresignClient_PresignPutObject_Call) RunAndReturn(run func(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.PresignOptions)) (*v4.PresignedHTTPRequest, error)) *MockS3PresignClient_PresignPutObject_Call {
+	_c.Call.Return(run)
+	return _c
+}
