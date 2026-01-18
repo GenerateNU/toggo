@@ -113,7 +113,11 @@ format:
 tidy:
 	go mod tidy
 
+mocks:
+	mockery --config .mockery.yml
+
 test:
+	$(MAKE) mocks
 	docker compose -f docker-compose.test.yml up -d
 	@until docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
@@ -121,6 +125,7 @@ test:
 	docker compose -f docker-compose.test.yml down
 
 test-win:
+	$(MAKE) mocks
 	docker compose -f docker-compose.test.yml up -d
 	@echo Waiting for database...
 	@powershell -Command "while (!(docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db 2>$$null)) { Start-Sleep -Seconds 1 }"
@@ -137,4 +142,4 @@ localstack-down:
 	@echo "Removing LocalStack container..."
 	docker rm localstack-main 2>/dev/null || true
 
-.PHONY: format tidy build clean lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win
+.PHONY: format tidy mocks build clean lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win
