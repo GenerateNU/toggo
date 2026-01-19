@@ -10,7 +10,7 @@ import (
 
 func NewTemporalClient(config *config.Configuration) (client.Client, error) {
 	clientOptions := client.Options{
-		HostPort: fmt.Sprint(config.Temporal.Host, ":", config.Temporal.Port),
+		HostPort: fmt.Sprintf("%s:%d", config.Temporal.Host, config.Temporal.Port),
 	}
 
 	if config.Environment == "prod" {
