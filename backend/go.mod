@@ -17,7 +17,7 @@ require (
 	github.com/swaggo/swag v1.16.6
 	github.com/uptrace/bun v1.2.16
 	github.com/uptrace/bun/dialect/pgdialect v1.2.16
-	go.temporal.io/sdk v1.38.0
+	go.temporal.io/sdk v1.39.0
 )
 
 require (
@@ -65,7 +65,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.39.0 // indirect
-	go.temporal.io/api v1.54.0 // indirect
+	go.temporal.io/api v1.59.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/mod v0.30.0 // indirect
