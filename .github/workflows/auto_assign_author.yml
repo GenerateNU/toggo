@@ -1,18 +1,37 @@
-name: Auto Assign Author
+name: Auto Assign Commit Authors
 
 on:
   pull_request:
-    types: [opened, reopened]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    types: [opened, reopened, synchronize]
 
 jobs:
-  auto-add-assignee:
+  assign-commit-authors:
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
-      - uses: kentaro-m/auto-assign-action@v1.2.6
+      - uses: actions/github-script@v7
         with:
-          configuration-path: ".github/assignees.yml"
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+
+            const commits = await github.paginate(
+              github.rest.pulls.listCommits,
+              { owner, repo, pull_number: prNumber }
+            );
+
+            const assignees = [
+              ...new Set(
+                commits
+                  .map(c => c.author?.login)
+                  .filter(Boolean)
+              )
+            ];
+
+            if (assignees.length > 0) {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: prNumber,
+                assignees
+              });
+            }
