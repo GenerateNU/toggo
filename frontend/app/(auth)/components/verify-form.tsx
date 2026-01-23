@@ -1,4 +1,5 @@
 import { useUser } from "@/contexts/user";
+import { useCreateUser } from "@/api/users/useCreateUser";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
@@ -116,12 +117,14 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
 }
 
 export function OTPVerificationForm() {
-  const { verifyOTP, sendOTP, isPending } = useUser();
+  const { verifyOTP, sendOTP, isPending, signupData, clearSignupData, logout } = useUser();
+  const { mutateAsync: createUser } = useCreateUser();
   const params = useLocalSearchParams();
   const router = useRouter();
   const phoneNumber = params.phone as string | undefined;
 
   const [error, setError] = useState<string | null>(null);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
 
   useEffect(() => {
     if (!phoneNumber) {
@@ -158,11 +161,49 @@ export function OTPVerificationForm() {
   const onSubmit = async (data: OTPFormData) => {
     setError(null);
     if (!phoneNumber) return;
+
+    setIsCreatingUser(true);
+
     try {
+      // Step 1: Verify OTP
       await verifyOTP({ phone: phoneNumber, token: data.otp });
-      router.replace("/(app)");
+
+      try {
+        // Step 2: Create user in backend after OTP verification
+        if (!signupData.name || !signupData.username) {
+          throw new Error("Signup data missing. Please try again.");
+        }
+
+        await createUser({
+          data: {
+            name: signupData.name,
+            username: signupData.username,
+            phone: phoneNumber,
+          },
+        });
+
+        // Clear signup data on success
+        clearSignupData();
+
+        // Navigate to app
+        router.replace("/(app)");
+      } catch (backendError: any) {
+        // If backend creation fails, logout
+        try {
+          await logout();
+        } catch (logoutError) {
+          console.error("Failed to logout:", logoutError);
+        }
+
+        // Clear signup data on error
+        clearSignupData();
+
+        setError(backendError?.message || "Failed to create account. Please try again.");
+        setIsCreatingUser(false);
+      }
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
+      setIsCreatingUser(false);
     }
   };
 
@@ -213,9 +254,9 @@ export function OTPVerificationForm() {
 
       <Button
         onPress={handleSubmit(onSubmit)}
-        disabled={!formState.isValid || isPending}
+        disabled={!formState.isValid || isPending || isCreatingUser}
       >
-        {isPending ? (
+        {isPending || isCreatingUser ? (
           <ActivityIndicator color="cloudWhite" />
         ) : (
           <Text variant="caption" color="cloudWhite">

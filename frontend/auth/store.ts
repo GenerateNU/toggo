@@ -12,8 +12,13 @@ export interface UserState {
   isAuthenticated: boolean;
   userId: string | null;
   isPending: boolean;
-  error: string | null;
+  signupData: {
+    name: string | null;
+    username: string | null;
+  };
 
+  setSignupData: (name: string, username: string) => void;
+  clearSignupData: () => void;
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
   logout: () => Promise<void>;
@@ -26,23 +31,36 @@ export const useUserStore = create<UserState>()(
       userId: null,
       isPending: false,
       error: null,
+      signupData: {
+        name: null,
+        username: null,
+      },
+
+      setSignupData: (name: string, username: string) => {
+        set({
+          signupData: { name, username },
+        });
+      },
+
+      clearSignupData: () => {
+        set({
+          signupData: { name: null, username: null },
+        });
+      },
 
       sendOTP: async (phoneNo: string) => {
         try {
-          set({ isPending: true, error: null });
+          set({ isPending: true });
           await authService.signInWithPhoneNumber(phoneNo);
           set({ isPending: false });
         } catch (err) {
-          set({
-            isPending: false,
-            error: parseError(err),
-          });
+          throw new Error(parseError(err)); 
         }
       },
 
       verifyOTP: async (payload: PhoneAuth) => {
         try {
-          set({ isPending: true, error: null });
+          set({ isPending: true });
 
           const session: Session = await authService.verifyPhoneOTP(payload);
 
@@ -52,10 +70,7 @@ export const useUserStore = create<UserState>()(
             isPending: false,
           });
         } catch (err) {
-          set({
-            isPending: false,
-            error: parseError(err),
-          });
+          throw new Error(parseError(err));
         }
       },
 
@@ -65,7 +80,6 @@ export const useUserStore = create<UserState>()(
           isAuthenticated: false,
           userId: null,
           isPending: false,
-          error: null,
         });
       },
     }),
@@ -75,6 +89,7 @@ export const useUserStore = create<UserState>()(
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         userId: state.userId,
+        signupData: state.signupData,
       }),
     },
   ),

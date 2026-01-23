@@ -7,10 +7,16 @@ interface UserContextType {
   userId: string | null;
   isPending: boolean;
   error: string | null;
+  signupData: {
+    name: string | null;
+    username: string | null;
+  };
 
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
   logout: () => Promise<void>;
+  setSignupData: (name: string, username: string) => void;
+  clearSignupData: () => void;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -21,11 +27,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const userId = useUserStore((state) => state.userId);
   const isPending = useUserStore((state) => state.isPending);
   const error = useUserStore((state) => state.error);
+  const signupData = useUserStore((state) => state.signupData);
 
   // Methods
   const logout = useUserStore((state) => state.logout);
   const sendOTP = useUserStore((state) => state.sendOTP);
   const verifyOTP = useUserStore((state) => state.verifyOTP);
+  const setSignupData = useUserStore((state) => state.setSignupData);
+  const clearSignupData = useUserStore((state) => state.clearSignupData);
 
   return (
     <UserContext.Provider
@@ -34,9 +43,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         userId,
         isPending,
         error,
+        signupData,
         logout,
         sendOTP,
         verifyOTP,
+        setSignupData,
+        clearSignupData,
       }}
     >
       {children}

@@ -3,16 +3,16 @@
  * Do not edit manually.
  */
 
-import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
-import type { GetHealthcheckQueryResponse } from "../../types/types.gen.ts";
 import type {
-  QueryKey,
-  QueryClient,
-  QueryObserverOptions,
-  UseQueryResult,
+    QueryClient,
+    QueryKey,
+    QueryObserverOptions,
+    UseQueryResult,
 } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import type { GetHealthcheckQueryResponse } from "../../types/types.gen.ts";
+import type { RequestConfig, ResponseErrorConfig } from "../client.ts";
+import fetch from "../client.ts";
 
 export const getHealthcheckQueryKey = () => [{ url: "/healthcheck" }] as const;
 
