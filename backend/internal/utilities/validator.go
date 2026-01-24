@@ -79,6 +79,7 @@ func buildMessage(e validator.FieldError) string {
 }
 
 var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
+var phoneRegex = regexp.MustCompile(`^\+?[0-9]{10,15}$`)
 
 func NewValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
@@ -88,6 +89,13 @@ func NewValidator() *validator.Validate {
 	})
 	if err != nil {
 		log.Println("Error registering username validation:", err)
+	}
+
+	err = v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
+		return phoneRegex.MatchString(fl.Field().String())
+	})
+	if err != nil {
+		log.Println("Error registering phone validation:", err)
 	}
 
 	return v

@@ -14,6 +14,11 @@ import type {
   CreateUser500,
   CreateUserMutationRequest,
   CreateUserMutationResponse,
+  GetCurrentUser200,
+  GetCurrentUser401,
+  GetCurrentUser404,
+  GetCurrentUser500,
+  GetCurrentUserQueryResponse,
   GetUserPathParams,
   GetUser200,
   GetUser400,
@@ -34,8 +39,9 @@ import type {
   UpdateUser500,
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
-  GetHealthcheck200,
-  GetHealthcheckQueryResponse,
+  Healthcheck200,
+  Healthcheck500,
+  HealthcheckQueryResponse,
 } from "./types.gen.ts";
 import { z } from "zod/v4";
 
@@ -46,17 +52,20 @@ export const errsAPIErrorSchema = z.object({
 
 export const modelsCreateUserRequestSchema = z.object({
   name: z.string().min(1),
+  phone_number: z.string(),
   username: z.string(),
 }) as unknown as z.ZodType<ModelsCreateUserRequest>;
 
 export const modelsUpdateUserRequestSchema = z.object({
   name: z.optional(z.string().min(1)),
+  phone_number: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateUserRequest>;
 
 export const modelsUserSchema = z.object({
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  phone_number: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
 
@@ -98,6 +107,38 @@ export const createUserMutationRequestSchema = z.lazy(
 export const createUserMutationResponseSchema = z.lazy(
   () => createUser201Schema,
 ) as unknown as z.ZodType<CreateUserMutationResponse>;
+
+/**
+ * @description OK
+ */
+export const getCurrentUser200Schema = z.lazy(
+  () => modelsUserSchema,
+) as unknown as z.ZodType<GetCurrentUser200>;
+
+/**
+ * @description Unauthorized
+ */
+export const getCurrentUser401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCurrentUser401>;
+
+/**
+ * @description Not Found
+ */
+export const getCurrentUser404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCurrentUser404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getCurrentUser500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCurrentUser500>;
+
+export const getCurrentUserQueryResponseSchema = z.lazy(
+  () => getCurrentUser200Schema,
+) as unknown as z.ZodType<GetCurrentUserQueryResponse>;
 
 export const getUserPathParamsSchema = z.object({
   userID: z.string().describe("User ID"),
@@ -221,11 +262,19 @@ export const updateUserMutationResponseSchema = z.lazy(
 ) as unknown as z.ZodType<UpdateUserMutationResponse>;
 
 /**
- * @description ok
+ * @description OK
  */
-export const getHealthcheck200Schema =
-  z.string() as unknown as z.ZodType<GetHealthcheck200>;
+export const healthcheck200Schema = z
+  .object({})
+  .catchall(z.any()) as unknown as z.ZodType<Healthcheck200>;
 
-export const getHealthcheckQueryResponseSchema = z.lazy(
-  () => getHealthcheck200Schema,
-) as unknown as z.ZodType<GetHealthcheckQueryResponse>;
+/**
+ * @description Internal Server Error
+ */
+export const healthcheck500Schema = z
+  .object({})
+  .catchall(z.any()) as unknown as z.ZodType<Healthcheck500>;
+
+export const healthcheckQueryResponseSchema = z.lazy(
+  () => healthcheck200Schema,
+) as unknown as z.ZodType<HealthcheckQueryResponse>;

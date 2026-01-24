@@ -15,6 +15,7 @@ func UserRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	// /api/v1/users
 	userGroup := apiGroup.Group("/users")
 	userGroup.Post("", userController.CreateUser)
+	userGroup.Get("/me", userController.GetMe)
 
 	// /api/v1/users/:userID
 	userIDGroup := userGroup.Group("/:userID")

@@ -68,6 +68,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/users/me": {
+            "get": {
+                "description": "Retrieves the authenticated user (from JWT claims)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get current user",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/{userID}": {
             "get": {
                 "description": "Retrieves a user by ID",
@@ -264,12 +303,16 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
+                "phone_number",
                 "username"
             ],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "phone_number": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -283,6 +326,9 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
+                "phone_number": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -295,6 +341,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 },
                 "username": {
