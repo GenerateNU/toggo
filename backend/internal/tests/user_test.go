@@ -26,7 +26,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "John Doe",
 					Username:    username,
-					PhoneNumber: "+15555550123",
+					PhoneNumber: "+16175551234",
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -48,7 +48,7 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			AssertField("username", username).
 			AssertField("name", "John Doe").
-			AssertField("phone_number", "+15555550123")
+			AssertField("phone_number", "+16175551234")
 	})
 
 	t.Run("get created user", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestUserLifecycle(t *testing.T) {
 
 	t.Run("update user", func(t *testing.T) {
 		name := "Jane Doe"
-		phone := "+15555550999"
+		phone := "+16175559999"
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -80,7 +80,7 @@ func TestUserLifecycle(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			AssertField("name", "Jane Doe").
-			AssertField("phone_number", "+15555550999")
+			AssertField("phone_number", "+16175559999")
 	})
 
 	t.Run("get updated user", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "Duplicate User",
 					Username:    username,
-					PhoneNumber: "+15555550124",
+					PhoneNumber: "+16175551235",
 				},
 			}).
 			AssertStatus(http.StatusConflict)
@@ -169,7 +169,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "Reborn User",
 					Username:    username,
-					PhoneNumber: "+15555550125",
+					PhoneNumber: "+16175551236",
 				},
 			}).
 			AssertStatus(http.StatusCreated)
