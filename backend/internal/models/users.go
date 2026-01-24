@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -9,6 +11,8 @@ type User struct {
 	Name        string    `bun:"name" json:"name"`
 	Username    string    `bun:"username" json:"username"`
 	PhoneNumber string    `bun:"phone_number" json:"phone_number"`
+	DeviceToken         *string    `bun:"device_token" json:"device_token"`
+	DeviceTokenUpdatedAt *time.Time `bun:"device_token_updated_at" json:"device_token_updated_at"`
 }
 
 type CreateUserRequest struct {
