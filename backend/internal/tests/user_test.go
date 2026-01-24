@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"toggo/internal/models"
 	testkit "toggo/internal/tests/testkit/builders"
@@ -13,6 +14,7 @@ func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
+	normalizedUsername := strings.ToLower(username)
 
 	var createdUserID string
 
@@ -46,7 +48,7 @@ func TestUserLifecycle(t *testing.T) {
 				UserID: &authUserID,
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("username", username).
+			AssertField("username", normalizedUsername).
 			AssertField("name", "John Doe").
 			AssertField("phone_number", "+16175551234")
 	})
@@ -60,7 +62,7 @@ func TestUserLifecycle(t *testing.T) {
 				UserID: &authUserID,
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("username", username).
+			AssertField("username", normalizedUsername).
 			AssertField("name", "John Doe")
 	})
 

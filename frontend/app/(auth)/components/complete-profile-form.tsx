@@ -140,6 +140,8 @@ export function CompleteProfileForm() {
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
+                autoCapitalize="none"
+                autoCorrect={false}
                 style={{ fontSize: 16 }}
               />
             </Box>
