@@ -15,7 +15,7 @@ type Membership struct {
 	UpdatedAt    time.Time `bun:"updated_at" json:"updated_at"`
 	BudgetMin    int       `bun:"budget_min" json:"budget_min"`
 	BudgetMax    int       `bun:"budget_max" json:"budget_max"`
-	Availability map[string]interface{}     `bun:"availability,type:jsonb" json:"availability"`
+	Availability *map[string]interface{} `bun:"availability,type:jsonb" json:"availability,omitempty"`
 }
 
 type CreateMembershipRequest struct {
@@ -24,12 +24,10 @@ type CreateMembershipRequest struct {
 	IsAdmin      bool      `validate:"required" json:"is_admin"`
 	BudgetMin    int       `validate:"required,gte=0" json:"budget_min"`
 	BudgetMax    int       `validate:"required,gte=0,gtefield=BudgetMin" json:"budget_max"`
-	Availability map[string]interface{}     `validate:"required" json:"availability"`
 }
 
 type UpdateMembershipRequest struct {
 	IsAdmin      bool  `validate:"omitempty" json:"is_admin"`
 	BudgetMin    int   `validate:"omitempty,gte=0" json:"budget_min"`
 	BudgetMax    int   `validate:"omitempty,gte=0,gtefield=BudgetMin" json:"budget_max"`
-	Availability map[string]interface{} `validate:"omitempty" json:"availability"`
 }

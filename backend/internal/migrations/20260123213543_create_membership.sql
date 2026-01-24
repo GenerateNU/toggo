@@ -8,7 +8,7 @@ CREATE TABLE memberships (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     budget_min INTEGER NOT NULL DEFAULT 0 CHECK (budget_min >= 0),
     budget_max INTEGER NOT NULL DEFAULT 0 CHECK (budget_max >= 0 AND budget_max >= budget_min),
-    availability JSONB NOT NULL,
+    availability JSONB NULL,
     PRIMARY KEY (user_id, trip_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
