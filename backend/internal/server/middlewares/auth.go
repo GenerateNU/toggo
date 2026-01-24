@@ -11,7 +11,7 @@ import (
 )
 
 func AuthRequired(cfg *config.Configuration) fiber.Handler {
-	secret := []byte("wTbxtBEQd9o0yV4hxFyzucdKLQxxQwulab6UEvkgs1mdKplh519Bujvso2npE0LRmGRRSKc/m6mPwgKjjxj/EA==")
+	secret := []byte(cfg.Auth.JWTSecretKey)
 
 	return func(c *fiber.Ctx) error {
 		tokenString, err := extractBearerToken(c.Get("Authorization"))
