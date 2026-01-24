@@ -122,6 +122,42 @@ export type GetCurrentUserQuery = {
   Errors: GetCurrentUser401 | GetCurrentUser404 | GetCurrentUser500;
 };
 
+export type GetUserByPhonePathParams = {
+  /**
+   * @description Phone number (E.164 format)
+   * @type string
+   */
+  phone: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetUserByPhone200 = ModelsUser;
+
+/**
+ * @description Bad Request
+ */
+export type GetUserByPhone400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetUserByPhone404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetUserByPhone500 = ErrsAPIError;
+
+export type GetUserByPhoneQueryResponse = GetUserByPhone200;
+
+export type GetUserByPhoneQuery = {
+  Response: GetUserByPhone200;
+  PathParams: GetUserByPhonePathParams;
+  Errors: GetUserByPhone400 | GetUserByPhone404 | GetUserByPhone500;
+};
+
 export type GetUserPathParams = {
   /**
    * @description User ID

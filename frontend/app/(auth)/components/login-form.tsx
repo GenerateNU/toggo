@@ -2,6 +2,7 @@ import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -31,14 +32,25 @@ export function PhoneNumberForm() {
 
   const onSubmit = async (data: PhoneFormData) => {
     setError(null);
+
     try {
-      await sendOTP(data.phone);
+      // Normalize phone number
+      const normalized = normalizePhone(data.phone);
+      if (!normalized) {
+        setError("Invalid phone number format");
+        return;
+      }
+
+      // Send OTP to Supabase (using digits without country code)
+      await sendOTP(normalized.digits);
+
+      // Navigate to OTP verification (pass E.164 format for backend)
       router.push({
         pathname: "/(auth)/verify",
-        params: { phone: data.phone },
+        params: { phone: normalized.e164 },
       });
     } catch (err: any) {
-      setError(err?.message || "Failed to send OTP");
+      setError(err?.message || "Failed to send OTP. Please try again.");
     }
   };
 

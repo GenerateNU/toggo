@@ -12,46 +12,22 @@ export interface UserState {
   isAuthenticated: boolean;
   userId: string | null;
   isPending: boolean;
-  signupData: {
-    name: string | null;
-    username: string | null;
-    phone: string | null;
-  };
   currentUser?: CurrentUser | null;
 
-  setSignupData: (name: string, username: string, phone: string) => void;
-  clearSignupData: () => void;
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
-  refreshCurrentUser: () => Promise<void>;
+  refreshCurrentUser: () => Promise<CurrentUser>;
   logout: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       isAuthenticated: false,
       userId: null,
       isPending: false,
       error: null,
-      signupData: {
-        name: null,
-        username: null,
-        phone: null,
-      },
       currentUser: null,
-
-      setSignupData: (name: string, username: string, phone: string) => {
-        set({
-          signupData: { name, username, phone },
-        });
-      },
-
-      clearSignupData: () => {
-        set({
-          signupData: { name: null, username: null, phone: null },
-        });
-      },
 
       sendOTP: async (phoneNo: string) => {
         try {
@@ -69,32 +45,26 @@ export const useUserStore = create<UserState>()(
 
           const session: Session = await authService.verifyPhoneOTP(payload);
           let currentUser: CurrentUser | null = null;
+          let found = false;
 
           try {
             currentUser = await authService.getCurrentUser();
+            found = true;
           } catch (err: any) {
-            // If not found, allow signup flow to create user; otherwise bubble up
-            if (
-              !(
-                err &&
-                typeof err === "object" &&
-                "status" in err &&
-                (err as any).status === 404
-              )
-            ) {
+            const status =
+              err?.status ?? err?.data?.status ?? err?.response?.status;
+            if (status !== 404) {
               throw err;
             }
             currentUser = null;
+            found = false;
           }
 
           set({
-            isAuthenticated: true,
+            isAuthenticated: found,
             userId: currentUser?.id ?? session.user.id,
             currentUser,
             isPending: false,
-            signupData: currentUser
-              ? { name: null, username: null, phone: null }
-              : { ...get().signupData },
           });
         } catch (err) {
           throw new Error(parseError(err));
@@ -102,12 +72,27 @@ export const useUserStore = create<UserState>()(
       },
 
       refreshCurrentUser: async () => {
-        const currentUser = await authService.getCurrentUser();
-        set({
-          currentUser,
-          userId: currentUser.id,
-          isAuthenticated: true,
-        });
+        try {
+          const currentUser = await authService.getCurrentUser();
+
+          // If the backend returns null or similar, treat as not found so the caller can route to signup
+          if (!currentUser) {
+            const err: any = new Error("User not found");
+            err.status = 404;
+            throw err;
+          }
+
+          set({
+            currentUser,
+            userId: currentUser.id,
+            isAuthenticated: true,
+          });
+
+          return currentUser;
+        } catch (err) {
+          // Propagate so caller (verify-form) can redirect to complete-profile on 404
+          throw err;
+        }
       },
 
       logout: async () => {
@@ -115,7 +100,6 @@ export const useUserStore = create<UserState>()(
         set({
           isAuthenticated: false,
           userId: null,
-          signupData: { name: null, username: null, phone: null },
           currentUser: null,
           isPending: false,
         });
@@ -127,7 +111,6 @@ export const useUserStore = create<UserState>()(
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         userId: state.userId,
-        signupData: state.signupData,
         currentUser: state.currentUser,
       }),
     },

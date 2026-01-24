@@ -1,8 +1,8 @@
 import { useUser } from "@/contexts/user";
-import { useCreateUser } from "@/api/users/useCreateUser";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -117,31 +117,20 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
 }
 
 export function OTPVerificationForm() {
-  const {
-    verifyOTP,
-    sendOTP,
-    isPending,
-    clearSignupData,
-    signupData,
-    currentUser,
-    refreshCurrentUser,
-  } = useUser();
-  const { mutateAsync: createUser } = useCreateUser();
+  const { verifyOTP, sendOTP, isPending, refreshCurrentUser } = useUser();
   const params = useLocalSearchParams();
   const router = useRouter();
   const phoneNumber = params.phone as string | undefined;
 
   const [error, setError] = useState<string | null>(null);
-  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
     if (!phoneNumber) {
       router.replace("/(auth)/login");
     }
   }, [phoneNumber, router]);
-
-  const [timer, setTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
     if (timer <= 0) return;
@@ -170,17 +159,27 @@ export function OTPVerificationForm() {
     setError(null);
     if (!phoneNumber) return;
 
-    setIsCreatingUser(true);
-
     try {
-      // Step 1: Verify OTP
-      await verifyOTP({ phone: phoneNumber, token: data.otp });
+      const normalized = normalizePhone(phoneNumber);
+      if (!normalized) {
+        setError("Invalid phone number");
+        return;
+      }
 
-      // Try to fetch current user (login flow)
+      await verifyOTP({ phone: normalized.digits, token: data.otp });
+
       try {
-        await refreshCurrentUser();
-        clearSignupData();
-        router.replace("/(app)");
+        const user = await refreshCurrentUser();
+
+        // If the profile is incomplete, send to completion even if the record exists
+        if (!user?.name || !user?.username) {
+          router.replace({
+            pathname: "/(auth)/complete-profile",
+            params: { phone: normalized.e164 },
+          });
+          return;
+        }
+
         return;
       } catch (err: any) {
         const status =
@@ -189,54 +188,31 @@ export function OTPVerificationForm() {
           setError(
             err?.message || "Failed to fetch account. Please try again.",
           );
-          setIsCreatingUser(false);
           return;
         }
-        // status 404 -> no account yet; fall through to signup creation flow
+
+        router.replace({
+          pathname: "/(auth)/complete-profile",
+          params: { phone: normalized.e164 },
+        });
       }
-
-      // If signup data exists, create user in backend (signup flow)
-      if (signupData.name && signupData.username && phoneNumber) {
-        try {
-          await createUser({
-            data: {
-              name: signupData.name,
-              username: signupData.username,
-              phone_number: phoneNumber,
-            },
-          });
-
-          // Refresh current user after successful creation
-          await refreshCurrentUser();
-        } catch (backendError: any) {
-          setError(
-            backendError?.message ||
-              "Failed to create account. Please try again.",
-          );
-          setIsCreatingUser(false);
-          return;
-        }
-      } else {
-        // No signup data and no existing user -> treat as error
-        setError("Account not found. Please sign up first.");
-        setIsCreatingUser(false);
-        return;
-      }
-
-      // After OTP verification (and optional signup), go to app
-      clearSignupData();
-      router.replace("/(app)");
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
-      setIsCreatingUser(false);
     }
   };
 
   const handleResendOTP = async () => {
     if (!phoneNumber) return;
     setError(null);
+
+    const normalized = normalizePhone(phoneNumber);
+    if (!normalized) {
+      setError("Invalid phone number");
+      return;
+    }
+
     try {
-      await sendOTP(phoneNumber);
+      await sendOTP(normalized.digits);
       setTimer(60);
       setCanResend(false);
     } catch (err: any) {
@@ -245,7 +221,7 @@ export function OTPVerificationForm() {
   };
 
   return (
-    <Box gap="m" marginTop="l">
+    <Box gap="m">
       {error && (
         <Box backgroundColor="sunsetOrange" padding="s" borderRadius="s">
           <Text variant="caption" color="cloudWhite">
@@ -279,9 +255,9 @@ export function OTPVerificationForm() {
 
       <Button
         onPress={handleSubmit(onSubmit)}
-        disabled={!formState.isValid || isPending || isCreatingUser}
+        disabled={!formState.isValid || isPending}
       >
-        {isPending || isCreatingUser ? (
+        {isPending ? (
           <ActivityIndicator color="cloudWhite" />
         ) : (
           <Text variant="caption" color="cloudWhite">

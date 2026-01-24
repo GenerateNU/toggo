@@ -4,7 +4,8 @@ import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
 
 export default function Home() {
-  const { logout, isPending } = useUser();
+  const { logout, isPending, currentUser } = useUser();
+  const displayName = currentUser?.name || currentUser?.username || "Traveler";
   return (
     <Box
       flex={1}
@@ -13,10 +14,12 @@ export default function Home() {
       padding="l"
       gap="m"
     >
-      <Text variant="bodyLargeBold">Welcome to Toggo ✨</Text>
-      <Text variant="caption" color="forestGreen">
-        Cool things will appear here soon!
-      </Text>
+      <Text variant="bodyLargeBold">Welcome, {displayName} ✨</Text>
+      {currentUser?.username && (
+        <Text variant="caption" color="forestGreen">
+          @{currentUser.username}
+        </Text>
+      )}
 
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">

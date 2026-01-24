@@ -2,6 +2,7 @@ import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -10,18 +11,6 @@ import { ActivityIndicator, TextInput } from "react-native";
 import { z } from "zod";
 
 const SIGNUP_SCHEMA = z.object({
-  name: z
-    .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be less than 100 characters"),
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(50, "Username must be less than 50 characters")
-    .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Username can only contain letters, numbers, underscores, and hyphens",
-    ),
   phone: z
     .string()
     .min(10, "Enter a valid phone number")
@@ -31,7 +20,7 @@ const SIGNUP_SCHEMA = z.object({
 type SignupFormData = z.infer<typeof SIGNUP_SCHEMA>;
 
 export function SignupForm() {
-  const { sendOTP, setSignupData } = useUser();
+  const { sendOTP } = useUser();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +28,7 @@ export function SignupForm() {
   const { control, handleSubmit, formState } = useForm<SignupFormData>({
     resolver: zodResolver(SIGNUP_SCHEMA),
     mode: "onChange",
-    defaultValues: { name: "", username: "", phone: "" },
+    defaultValues: { phone: "" },
   });
 
   const onSubmit = async (data: SignupFormData) => {
@@ -47,16 +36,21 @@ export function SignupForm() {
     setIsLoading(true);
 
     try {
-      // Store name and username in state management
-      setSignupData(data.name, data.username, data.phone);
+      // Normalize phone number
+      const normalized = normalizePhone(data.phone);
+      if (!normalized) {
+        setError("Invalid phone number format");
+        setIsLoading(false);
+        return;
+      }
 
-      // Send OTP
-      await sendOTP(data.phone);
+      // Send OTP using normalized digits format
+      await sendOTP(normalized.digits);
 
-      // Navigate to OTP verification
+      // Navigate to OTP verification with E.164 format
       router.push({
         pathname: "/(auth)/verify",
-        params: { phone: data.phone },
+        params: { phone: normalized.e164 },
       });
     } catch (err: any) {
       setError(err?.message || "Failed to send OTP. Please try again.");
@@ -73,74 +67,6 @@ export function SignupForm() {
           </Text>
         </Box>
       )}
-
-      <Controller
-        name="name"
-        control={control}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
-              Full Name
-            </Text>
-            <Box
-              borderWidth={1}
-              borderColor={
-                formState.errors.name ? "sunsetOrange" : "mountainGray"
-              }
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
-            >
-              <TextInput
-                placeholder="John Doe"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                style={{ fontSize: 16 }}
-              />
-            </Box>
-            {formState.errors.name && (
-              <Text variant="caption" color="sunsetOrange">
-                {formState.errors.name.message}
-              </Text>
-            )}
-          </Box>
-        )}
-      />
-
-      <Controller
-        name="username"
-        control={control}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
-              Username
-            </Text>
-            <Box
-              borderWidth={1}
-              borderColor={
-                formState.errors.username ? "sunsetOrange" : "mountainGray"
-              }
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
-            >
-              <TextInput
-                placeholder="john_doe"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                style={{ fontSize: 16 }}
-              />
-            </Box>
-            {formState.errors.username && (
-              <Text variant="caption" color="sunsetOrange">
-                {formState.errors.username.message}
-              </Text>
-            )}
-          </Box>
-        )}
-      />
 
       <Controller
         name="phone"
