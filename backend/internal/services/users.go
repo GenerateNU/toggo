@@ -16,6 +16,7 @@ type UserServiceInterface interface {
 	GetUser(ctx context.Context, id uuid.UUID) (*models.User, error)
 	UpdateUser(ctx context.Context, id uuid.UUID, userBody models.UpdateUserRequest) (*models.User, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	UpdateDeviceToken(ctx context.Context, id uuid.UUID, deviceToken string) (*models.User, error)
 }
 
 var _ UserServiceInterface = (*UserService)(nil)
@@ -75,4 +76,9 @@ func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, userBody mod
 
 func (u *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return u.User.Delete(ctx, id)
+}
+
+func (u *UserService) UpdateDeviceToken(ctx context.Context, id uuid.UUID, deviceToken string) (*models.User, error) {
+	deviceToken = strings.TrimSpace(deviceToken)
+	return u.User.UpdateDeviceToken(ctx, id, deviceToken)
 }
