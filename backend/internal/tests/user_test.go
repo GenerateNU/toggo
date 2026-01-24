@@ -24,8 +24,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "John Doe",
-					Username: username,
+					Name:        "John Doe",
+					Username:    username,
+					PhoneNumber: "+15555550123",
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -34,6 +35,20 @@ func TestUserLifecycle(t *testing.T) {
 
 		t.Logf("Response: %+v", resp)
 		createdUserID = resp["id"].(string)
+	})
+
+	t.Run("get me returns current user", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users/me",
+				Method: testkit.GET,
+				UserID: &authUserID,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("username", username).
+			AssertField("name", "John Doe").
+			AssertField("phone_number", "+15555550123")
 	})
 
 	t.Run("get created user", func(t *testing.T) {
@@ -51,6 +66,7 @@ func TestUserLifecycle(t *testing.T) {
 
 	t.Run("update user", func(t *testing.T) {
 		name := "Jane Doe"
+		phone := "+15555550999"
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -58,11 +74,13 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.PATCH,
 				UserID: &authUserID,
 				Body: models.UpdateUserRequest{
-					Name: &name,
+					Name:        &name,
+					PhoneNumber: &phone,
 				},
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("name", "Jane Doe")
+			AssertField("name", "Jane Doe").
+			AssertField("phone_number", "+15555550999")
 	})
 
 	t.Run("get updated user", func(t *testing.T) {
@@ -85,8 +103,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "Duplicate User",
-					Username: username,
+					Name:        "Duplicate User",
+					Username:    username,
+					PhoneNumber: "+15555550124",
 				},
 			}).
 			AssertStatus(http.StatusConflict)
@@ -148,8 +167,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "Reborn User",
-					Username: username,
+					Name:        "Reborn User",
+					Username:    username,
+					PhoneNumber: "+15555550125",
 				},
 			}).
 			AssertStatus(http.StatusCreated)

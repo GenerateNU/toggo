@@ -96,6 +96,35 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(updatedUser)
 }
 
+// @Summary      Get current user
+// @Description  Retrieves the authenticated user (from JWT claims)
+// @Tags         users
+// @Produce      json
+// @Success      200 {object} models.User
+// @Failure      401 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/users/me [get]
+// @ID 		getCurrentUser
+func (u *UserController) GetMe(c *fiber.Ctx) error {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
+		return errs.Unauthorized()
+	}
+
+	userID, err := utilities.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	user, err := u.userService.GetUser(c.Context(), userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(user)
+}
+
 // @Summary      Get a user
 // @Description  Retrieves a user by ID
 // @Tags         users
