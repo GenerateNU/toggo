@@ -3,74 +3,77 @@
  * Do not edit manually.
  */
 
+import fetch from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  QueryClient,
+  HealthcheckQueryResponse,
+  Healthcheck500,
+} from "../../types/types.gen.ts";
+import type {
   QueryKey,
+  QueryClient,
   UseSuspenseQueryOptions,
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import type { GetHealthcheckQueryResponse } from "../../types/types.gen.ts";
-import type { RequestConfig, ResponseErrorConfig } from "../client.ts";
-import fetch from "../client.ts";
 
-export const getHealthcheckSuspenseQueryKey = () =>
+export const healthcheckSuspenseQueryKey = () =>
   [{ url: "/healthcheck" }] as const;
 
-export type GetHealthcheckSuspenseQueryKey = ReturnType<
-  typeof getHealthcheckSuspenseQueryKey
+export type HealthcheckSuspenseQueryKey = ReturnType<
+  typeof healthcheckSuspenseQueryKey
 >;
 
 /**
- * @description Returns OK if the server is running
+ * @description Returns OK if the server is running and database is healthy
  * @summary Healthcheck endpoint
  * {@link /healthcheck}
  */
-export async function getHealthcheckSuspense(
+export async function healthcheckSuspense(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
   const res = await request<
-    GetHealthcheckQueryResponse,
-    ResponseErrorConfig<Error>,
+    HealthcheckQueryResponse,
+    ResponseErrorConfig<Healthcheck500>,
     unknown
   >({ method: "GET", url: `/healthcheck`, ...requestConfig });
   return res.data;
 }
 
-export function getHealthcheckSuspenseQueryOptions(
+export function healthcheckSuspenseQueryOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getHealthcheckSuspenseQueryKey();
+  const queryKey = healthcheckSuspenseQueryKey();
   return queryOptions<
-    GetHealthcheckQueryResponse,
-    ResponseErrorConfig<Error>,
-    GetHealthcheckQueryResponse,
+    HealthcheckQueryResponse,
+    ResponseErrorConfig<Healthcheck500>,
+    HealthcheckQueryResponse,
     typeof queryKey
   >({
     queryKey,
     queryFn: async ({ signal }) => {
       config.signal = signal;
-      return getHealthcheckSuspense(config);
+      return healthcheckSuspense(config);
     },
   });
 }
 
 /**
- * @description Returns OK if the server is running
+ * @description Returns OK if the server is running and database is healthy
  * @summary Healthcheck endpoint
  * {@link /healthcheck}
  */
-export function useGetHealthcheckSuspense<
-  TData = GetHealthcheckQueryResponse,
-  TQueryKey extends QueryKey = GetHealthcheckSuspenseQueryKey,
+export function useHealthcheckSuspense<
+  TData = HealthcheckQueryResponse,
+  TQueryKey extends QueryKey = HealthcheckSuspenseQueryKey,
 >(
   options: {
     query?: Partial<
       UseSuspenseQueryOptions<
-        GetHealthcheckQueryResponse,
-        ResponseErrorConfig<Error>,
+        HealthcheckQueryResponse,
+        ResponseErrorConfig<Healthcheck500>,
         TData,
         TQueryKey
       >
@@ -80,16 +83,16 @@ export function useGetHealthcheckSuspense<
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
-  const queryKey = queryOptions?.queryKey ?? getHealthcheckSuspenseQueryKey();
+  const queryKey = queryOptions?.queryKey ?? healthcheckSuspenseQueryKey();
 
   const query = useSuspenseQuery(
     {
-      ...getHealthcheckSuspenseQueryOptions(config),
+      ...healthcheckSuspenseQueryOptions(config),
       queryKey,
       ...queryOptions,
     } as unknown as UseSuspenseQueryOptions,
     queryClient,
-  ) as UseSuspenseQueryResult<TData, ResponseErrorConfig<Error>> & {
+  ) as UseSuspenseQueryResult<TData, ResponseErrorConfig<Healthcheck500>> & {
     queryKey: TQueryKey;
   };
 

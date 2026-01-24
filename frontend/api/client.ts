@@ -1,6 +1,5 @@
 // api/client.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "@/auth/client";
 
 export type RequestConfig<TBody = unknown> = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -18,11 +17,20 @@ type ClientResponse<TData> = { data: TData };
 
 export const getAuthToken = async (): Promise<string | null> => {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const allKeys = await AsyncStorage.getAllKeys();
+    const supabaseTokenKey = allKeys.find(
+      (key) => key.startsWith("sb-") && key.endsWith("-auth-token"),
+    );
 
-    return session?.access_token ?? null;
+    if (!supabaseTokenKey) {
+      return null;
+    }
+
+    const tokenString = await AsyncStorage.getItem(supabaseTokenKey);
+    if (!tokenString) return null;
+
+    const parsedToken = JSON.parse(tokenString);
+    return parsedToken?.access_token ?? null;
   } catch (error) {
     console.error("Failed to get auth token:", error);
     return null;

@@ -3,7 +3,7 @@ import { Session } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { AuthService, SupabaseAuth } from "@/auth/service";
+import { AuthService, CurrentUser, SupabaseAuth } from "@/auth/service";
 import { PhoneAuth } from "@/types/auth";
 
 const authService: AuthService = new SupabaseAuth();
@@ -16,17 +16,19 @@ export interface UserState {
     name: string | null;
     username: string | null;
   };
+  currentUser?: CurrentUser | null;
 
   setSignupData: (name: string, username: string) => void;
   clearSignupData: () => void;
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
+  refreshCurrentUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       isAuthenticated: false,
       userId: null,
       isPending: false,
@@ -35,6 +37,7 @@ export const useUserStore = create<UserState>()(
         name: null,
         username: null,
       },
+      currentUser: null,
 
       setSignupData: (name: string, username: string) => {
         set({
@@ -54,7 +57,7 @@ export const useUserStore = create<UserState>()(
           await authService.signInWithPhoneNumber(phoneNo);
           set({ isPending: false });
         } catch (err) {
-          throw new Error(parseError(err)); 
+          throw new Error(parseError(err));
         }
       },
 
@@ -63,15 +66,39 @@ export const useUserStore = create<UserState>()(
           set({ isPending: true });
 
           const session: Session = await authService.verifyPhoneOTP(payload);
+          let currentUser: CurrentUser | null = null;
+
+          try {
+            currentUser = await authService.getCurrentUser();
+          } catch (err: any) {
+            // If not found, allow signup flow to create user; otherwise bubble up
+            if (!(err && typeof err === "object" && "status" in err && (err as any).status === 404)) {
+              throw err;
+            }
+            currentUser = null;
+          }
 
           set({
             isAuthenticated: true,
-            userId: session.user.id,
+            userId: currentUser?.id ?? session.user.id,
+            currentUser,
             isPending: false,
+            signupData: currentUser
+              ? { name: null, username: null }
+              : { ...get().signupData },
           });
         } catch (err) {
           throw new Error(parseError(err));
         }
+      },
+
+      refreshCurrentUser: async () => {
+        const currentUser = await authService.getCurrentUser();
+        set({
+          currentUser,
+          userId: currentUser.id,
+          isAuthenticated: true,
+        });
       },
 
       logout: async () => {
@@ -79,6 +106,8 @@ export const useUserStore = create<UserState>()(
         set({
           isAuthenticated: false,
           userId: null,
+          signupData: { name: null, username: null },
+          currentUser: null,
           isPending: false,
         });
       },
@@ -90,6 +119,7 @@ export const useUserStore = create<UserState>()(
         isAuthenticated: state.isAuthenticated,
         userId: state.userId,
         signupData: state.signupData,
+        currentUser: state.currentUser,
       }),
     },
   ),
@@ -100,13 +130,19 @@ const parseError = (err: unknown): string => {
     return "Something went wrong";
   }
 
-  if (err.message.includes("User already registered")) {
+  const msg = err.message.toLowerCase();
+
+  if (msg.includes("error sending confirmation") || msg.includes("otp provider")) {
+    return "Failed to send verification code. Please try again.";
+  }
+
+  if (msg.includes("user already registered")) {
     return "An account with this email already exists";
   }
-  if (err.message.includes("Invalid login credentials")) {
+  if (msg.includes("invalid login credentials")) {
     return "Invalid email or password";
   }
-  if (err.message.includes("Email not confirmed")) {
+  if (msg.includes("email not confirmed")) {
     return "Please verify your email before logging in";
   }
 

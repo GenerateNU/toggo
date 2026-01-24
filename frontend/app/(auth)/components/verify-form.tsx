@@ -117,7 +117,15 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
 }
 
 export function OTPVerificationForm() {
-  const { verifyOTP, sendOTP, isPending, signupData, clearSignupData, logout } = useUser();
+  const {
+    verifyOTP,
+    sendOTP,
+    isPending,
+    clearSignupData,
+    signupData,
+    currentUser,
+    refreshCurrentUser,
+  } = useUser();
   const { mutateAsync: createUser } = useCreateUser();
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -168,39 +176,52 @@ export function OTPVerificationForm() {
       // Step 1: Verify OTP
       await verifyOTP({ phone: phoneNumber, token: data.otp });
 
+      // Try to fetch current user (login flow)
       try {
-        // Step 2: Create user in backend after OTP verification
-        if (!signupData.name || !signupData.username) {
-          throw new Error("Signup data missing. Please try again.");
-        }
-
-        await createUser({
-          data: {
-            name: signupData.name,
-            username: signupData.username,
-            phone: phoneNumber,
-          },
-        });
-
-        // Clear signup data on success
+        await refreshCurrentUser();
         clearSignupData();
-
-        // Navigate to app
         router.replace("/(app)");
-      } catch (backendError: any) {
-        // If backend creation fails, logout
-        try {
-          await logout();
-        } catch (logoutError) {
-          console.error("Failed to logout:", logoutError);
+        return;
+      } catch (err: any) {
+        const status = err?.status ?? err?.data?.status ?? err?.response?.status;
+        if (status !== 404) {
+          setError(err?.message || "Failed to fetch account. Please try again.");
+          setIsCreatingUser(false);
+          return;
         }
-
-        // Clear signup data on error
-        clearSignupData();
-
-        setError(backendError?.message || "Failed to create account. Please try again.");
-        setIsCreatingUser(false);
+        // status 404 -> no account yet; fall through to signup creation flow
       }
+
+      // If signup data exists, create user in backend (signup flow)
+      if (signupData.name && signupData.username) {
+        try {
+          await createUser({
+            data: {
+              name: signupData.name,
+              username: signupData.username,
+            },
+          });
+
+          // Refresh current user after successful creation
+          await refreshCurrentUser();
+        } catch (backendError: any) {
+          setError(
+            backendError?.message ||
+              "Failed to create account. Please try again.",
+          );
+          setIsCreatingUser(false);
+          return;
+        }
+      } else {
+        // No signup data and no existing user -> treat as error
+        setError("Account not found. Please sign up first.");
+        setIsCreatingUser(false);
+        return;
+      }
+
+      // After OTP verification (and optional signup), go to app
+      clearSignupData();
+      router.replace("/(app)");
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
       setIsCreatingUser(false);

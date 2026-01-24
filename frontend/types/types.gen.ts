@@ -83,6 +83,33 @@ export type CreateUserMutation = {
   Errors: CreateUser400 | CreateUser422 | CreateUser500;
 };
 
+/**
+ * @description OK
+ */
+export type GetCurrentUser200 = ModelsUser;
+
+/**
+ * @description Unauthorized
+ */
+export type GetCurrentUser401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetCurrentUser404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetCurrentUser500 = ErrsAPIError;
+
+export type GetCurrentUserQueryResponse = GetCurrentUser200;
+
+export type GetCurrentUserQuery = {
+  Response: GetCurrentUser200;
+  Errors: GetCurrentUser401 | GetCurrentUser404 | GetCurrentUser500;
+};
+
 export type GetUserPathParams = {
   /**
    * @description User ID
@@ -203,13 +230,22 @@ export type UpdateUserMutation = {
 };
 
 /**
- * @description ok
+ * @description OK
  */
-export type GetHealthcheck200 = string;
+export type Healthcheck200 = {
+  [key: string]: any;
+};
 
-export type GetHealthcheckQueryResponse = GetHealthcheck200;
+/**
+ * @description Internal Server Error
+ */
+export type Healthcheck500 = {
+  [key: string]: any;
+};
 
-export type GetHealthcheckQuery = {
-  Response: GetHealthcheck200;
-  Errors: any;
+export type HealthcheckQueryResponse = Healthcheck200;
+
+export type HealthcheckQuery = {
+  Response: Healthcheck200;
+  Errors: Healthcheck500;
 };

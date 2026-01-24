@@ -1,4 +1,3 @@
-import { useCreateUser } from "@/api/users/useCreateUser";
 import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
@@ -19,7 +18,10 @@ const SIGNUP_SCHEMA = z.object({
     .string()
     .min(3, "Username must be at least 3 characters")
     .max(50, "Username must be less than 50 characters")
-    .regex(/^[a-zA-Z0-9_-]+$/, "Username can only contain letters, numbers, underscores, and hyphens"),
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Username can only contain letters, numbers, underscores, and hyphens",
+    ),
   phone: z
     .string()
     .min(10, "Enter a valid phone number")
@@ -82,7 +84,9 @@ export function SignupForm() {
             </Text>
             <Box
               borderWidth={1}
-              borderColor={formState.errors.name ? "sunsetOrange" : "mountainGray"}
+              borderColor={
+                formState.errors.name ? "sunsetOrange" : "mountainGray"
+              }
               borderRadius="s"
               padding="s"
               backgroundColor="cloudWhite"
@@ -114,7 +118,9 @@ export function SignupForm() {
             </Text>
             <Box
               borderWidth={1}
-              borderColor={formState.errors.username ? "sunsetOrange" : "mountainGray"}
+              borderColor={
+                formState.errors.username ? "sunsetOrange" : "mountainGray"
+              }
               borderRadius="s"
               padding="s"
               backgroundColor="cloudWhite"
@@ -146,7 +152,9 @@ export function SignupForm() {
             </Text>
             <Box
               borderWidth={1}
-              borderColor={formState.errors.phone ? "sunsetOrange" : "mountainGray"}
+              borderColor={
+                formState.errors.phone ? "sunsetOrange" : "mountainGray"
+              }
               borderRadius="s"
               padding="s"
               backgroundColor="cloudWhite"

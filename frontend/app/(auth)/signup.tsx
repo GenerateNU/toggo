@@ -13,7 +13,7 @@ export default function SignupPage() {
         Create your account
       </Text>
       <SignupForm />
-      
+
       <Box mt="l" alignItems="center" gap="xs">
         <Text variant="caption" color="forestGreen">
           Already have an account?

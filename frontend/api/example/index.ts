@@ -1,5 +1,10 @@
-export { getHealthcheck, getHealthcheckQueryKey, getHealthcheckQueryOptions, useGetHealthcheck } from "./useGetHealthcheck.ts";
-export type { GetHealthcheckQueryKey } from "./useGetHealthcheck.ts";
-export { getHealthcheckSuspense, getHealthcheckSuspenseQueryKey, getHealthcheckSuspenseQueryOptions, useGetHealthcheckSuspense } from "./useGetHealthcheckSuspense.ts";
-export type { GetHealthcheckSuspenseQueryKey } from "./useGetHealthcheckSuspense.ts";
-
+export type { HealthcheckQueryKey } from "./useHealthcheck.ts";
+export type { HealthcheckSuspenseQueryKey } from "./useHealthcheckSuspense.ts";
+export { healthcheckQueryKey } from "./useHealthcheck.ts";
+export { healthcheck } from "./useHealthcheck.ts";
+export { healthcheckQueryOptions } from "./useHealthcheck.ts";
+export { useHealthcheck } from "./useHealthcheck.ts";
+export { healthcheckSuspenseQueryKey } from "./useHealthcheckSuspense.ts";
+export { healthcheckSuspense } from "./useHealthcheckSuspense.ts";
+export { healthcheckSuspenseQueryOptions } from "./useHealthcheckSuspense.ts";
+export { useHealthcheckSuspense } from "./useHealthcheckSuspense.ts";
