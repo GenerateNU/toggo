@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"strings"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
+	"toggo/internal/utilities"
 
 	"github.com/google/uuid"
 )
@@ -27,10 +29,19 @@ func NewUserService(repo *repository.Repository) UserServiceInterface {
 }
 
 func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUserRequest, userID uuid.UUID) (*models.User, error) {
+	phone, err := utilities.NormalizeUSPhone(userBody.PhoneNumber)
+	if err != nil {
+		return nil, errs.InvalidRequestData(map[string]string{"phone_number": err.Error()})
+	}
+
+	username := strings.ToLower(strings.TrimSpace(userBody.Username))
+	name := userBody.Name
+
 	return u.User.Create(ctx, &models.User{
-		Name:     userBody.Name,
-		Username: userBody.Username,
-		ID:       userID,
+		Name:        name,
+		Username:    username,
+		PhoneNumber: phone,
+		ID:          userID,
 	})
 }
 
@@ -46,6 +57,19 @@ func (u *UserService) GetUser(ctx context.Context, id uuid.UUID) (*models.User, 
 }
 
 func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, userBody models.UpdateUserRequest) (*models.User, error) {
+	if userBody.PhoneNumber != nil {
+		normalized, err := utilities.NormalizeUSPhone(*userBody.PhoneNumber)
+		if err != nil {
+			return nil, errs.InvalidRequestData(map[string]string{"phone_number": err.Error()})
+		}
+		userBody.PhoneNumber = &normalized
+	}
+
+	if userBody.Username != nil {
+		normalized := strings.ToLower(strings.TrimSpace(*userBody.Username))
+		userBody.Username = &normalized
+	}
+
 	return u.User.Update(ctx, id, &userBody)
 }
 

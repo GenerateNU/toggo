@@ -1,4 +1,5 @@
 // api/client.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type RequestConfig<TBody = unknown> = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -14,10 +15,27 @@ export type ResponseErrorConfig<T = unknown> =
 
 type ClientResponse<TData> = { data: TData };
 
-async function getAuthToken(): Promise<string | null> {
-  // TODO: SecureStore / AsyncStorage
-  return null;
-}
+export const getAuthToken = async (): Promise<string | null> => {
+  try {
+    const allKeys = await AsyncStorage.getAllKeys();
+    const supabaseTokenKey = allKeys.find(
+      (key) => key.startsWith("sb-") && key.endsWith("-auth-token"),
+    );
+
+    if (!supabaseTokenKey) {
+      return null;
+    }
+
+    const tokenString = await AsyncStorage.getItem(supabaseTokenKey);
+    if (!tokenString) return null;
+
+    const parsedToken = JSON.parse(tokenString);
+    return parsedToken?.access_token ?? null;
+  } catch (error) {
+    console.error("Failed to get auth token:", error);
+    return null;
+  }
+};
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 

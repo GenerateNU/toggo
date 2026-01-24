@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"toggo/internal/models"
 	testkit "toggo/internal/tests/testkit/builders"
@@ -13,6 +14,7 @@ func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
+	normalizedUsername := strings.ToLower(username)
 
 	var createdUserID string
 
@@ -24,8 +26,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "John Doe",
-					Username: username,
+					Name:        "John Doe",
+					Username:    username,
+					PhoneNumber: "+16175551234",
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -34,6 +37,20 @@ func TestUserLifecycle(t *testing.T) {
 
 		t.Logf("Response: %+v", resp)
 		createdUserID = resp["id"].(string)
+	})
+
+	t.Run("get me returns current user", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users/me",
+				Method: testkit.GET,
+				UserID: &authUserID,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("username", normalizedUsername).
+			AssertField("name", "John Doe").
+			AssertField("phone_number", "+16175551234")
 	})
 
 	t.Run("get created user", func(t *testing.T) {
@@ -45,12 +62,13 @@ func TestUserLifecycle(t *testing.T) {
 				UserID: &authUserID,
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("username", username).
+			AssertField("username", normalizedUsername).
 			AssertField("name", "John Doe")
 	})
 
 	t.Run("update user", func(t *testing.T) {
 		name := "Jane Doe"
+		phone := "+16175559999"
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -58,11 +76,13 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.PATCH,
 				UserID: &authUserID,
 				Body: models.UpdateUserRequest{
-					Name: &name,
+					Name:        &name,
+					PhoneNumber: &phone,
 				},
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("name", "Jane Doe")
+			AssertField("name", "Jane Doe").
+			AssertField("phone_number", "+16175559999")
 	})
 
 	t.Run("get updated user", func(t *testing.T) {
@@ -85,8 +105,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "Duplicate User",
-					Username: username,
+					Name:        "Duplicate User",
+					Username:    username,
+					PhoneNumber: "+16175551235",
 				},
 			}).
 			AssertStatus(http.StatusConflict)
@@ -148,8 +169,9 @@ func TestUserLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "Reborn User",
-					Username: username,
+					Name:        "Reborn User",
+					Username:    username,
+					PhoneNumber: "+16175551236",
 				},
 			}).
 			AssertStatus(http.StatusCreated)

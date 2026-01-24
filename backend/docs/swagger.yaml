@@ -28,10 +28,13 @@ definitions:
       name:
         minLength: 1
         type: string
+      phone_number:
+        type: string
       username:
         type: string
     required:
     - name
+    - phone_number
     - username
     type: object
   models.FilePresignedURLResponse:
@@ -88,6 +91,8 @@ definitions:
       name:
         minLength: 1
         type: string
+      phone_number:
+        type: string
       username:
         type: string
     type: object
@@ -96,6 +101,8 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      phone_number:
         type: string
       username:
         type: string
@@ -295,6 +302,32 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Update a user
+      tags:
+      - users
+  /api/v1/users/me:
+    get:
+      description: Retrieves the authenticated user (from JWT claims)
+      operationId: getCurrentUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get current user
       tags:
       - users
   /healthcheck:
