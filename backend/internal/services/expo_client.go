@@ -45,51 +45,51 @@ type ExpoNotificationResponse struct {
 }
 
 func (c *expoClient) SendNotification(ctx context.Context, deviceToken string, title string, body string) error {
-	req := ExpoNotificationRequest{
-		To:    deviceToken,
-		Title: title,
-		Body:  body,
-	}
+    req := ExpoNotificationRequest{
+        To:    deviceToken,
+        Title: title,
+        Body:  body,
+    }
 
-	payload, err := json.Marshal(req)
-	if err != nil {
-		return fmt.Errorf("failed to marshal notification: %w", err)
-	}
+    payload, err := json.Marshal(req)
+    if err != nil {
+        return fmt.Errorf("failed to marshal notification: %w", err)
+    }
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", expoAPIURL, bytes.NewBuffer(payload))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
+    httpReq, err := http.NewRequestWithContext(ctx, "POST", expoAPIURL, bytes.NewBuffer(payload))
+    if err != nil {
+        return fmt.Errorf("failed to create request: %w", err)
+    }
 
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
+    httpReq.Header.Set("Content-Type", "application/json")
+    httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 
-	resp, err := c.httpClient.Do(httpReq)
-	if err != nil {
-		return fmt.Errorf("failed to send notification: %w", err)
-	}
-	defer resp.Body.Close()
+    resp, err := c.httpClient.Do(httpReq)
+    if err != nil {
+        return fmt.Errorf("failed to send notification: %w", err)
+    }
+    defer func() { _ = resp.Body.Close() }()
 
-	// Read response
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response: %w", err)
-	}
+    // Read response
+    respBody, err := io.ReadAll(resp.Body)
+    if err != nil {
+        return fmt.Errorf("failed to read response: %w", err)
+    }
 
-	// Check for API errors
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("expo api error: status %d, body: %s", resp.StatusCode, string(respBody))
-	}
+    // Check for API errors
+    if resp.StatusCode != http.StatusOK {
+        return fmt.Errorf("expo api error: status %d, body: %s", resp.StatusCode, string(respBody))
+    }
 
-	// Parse response to check for errors in JSON
-	var expoResp ExpoNotificationResponse
-	if err := json.Unmarshal(respBody, &expoResp); err != nil {
-		return fmt.Errorf("failed to parse response: %w", err)
-	}
+    // Parse response to check for errors in JSON
+    var expoResp ExpoNotificationResponse
+    if err := json.Unmarshal(respBody, &expoResp); err != nil {
+        return fmt.Errorf("failed to parse response: %w", err)
+    }
 
-	if len(expoResp.Errors) > 0 {
-		return fmt.Errorf("expo error: %s", expoResp.Errors[0].Message)
-	}
+    if len(expoResp.Errors) > 0 {
+        return fmt.Errorf("expo error: %s", expoResp.Errors[0].Message)
+    }
 
-	return nil
+    return nil
 }
