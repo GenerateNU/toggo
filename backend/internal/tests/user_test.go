@@ -177,3 +177,73 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusCreated)
 	})
 }
+func TestDeviceTokenUpdate(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	authUserID := fakes.GenerateUUID()
+	username := fakes.GenerateRandomUsername()
+
+	var userID string
+
+	// Create a user first
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/users",
+			Method: testkit.POST,
+			UserID: &authUserID,
+			Body: models.CreateUserRequest{
+				Name:        "Device Token User",
+				Username:    username,
+				PhoneNumber: "+16175551234",
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+
+	userID = resp["id"].(string)
+
+	t.Run("update device token successfully", func(t *testing.T) {
+		deviceToken := "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", userID),
+				Method: testkit.PATCH,
+				UserID: &authUserID,
+				Body: models.UpdateDeviceTokenRequest{
+					DeviceToken: deviceToken,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("device_token", deviceToken)
+	})
+
+	t.Run("update device token with invalid token returns 422", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", userID),
+				Method: testkit.PATCH,
+				UserID: &authUserID,
+				Body: models.UpdateDeviceTokenRequest{
+					DeviceToken: "",
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("update device token for non-existent user returns 404", func(t *testing.T) {
+		fakeUserID := fakes.GenerateUUID()
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", fakeUserID),
+				Method: testkit.PATCH,
+				UserID: &authUserID,
+				Body: models.UpdateDeviceTokenRequest{
+					DeviceToken: "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]",
+				},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+}
