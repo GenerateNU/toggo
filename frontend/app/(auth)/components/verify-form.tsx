@@ -183,9 +183,12 @@ export function OTPVerificationForm() {
         router.replace("/(app)");
         return;
       } catch (err: any) {
-        const status = err?.status ?? err?.data?.status ?? err?.response?.status;
+        const status =
+          err?.status ?? err?.data?.status ?? err?.response?.status;
         if (status !== 404) {
-          setError(err?.message || "Failed to fetch account. Please try again.");
+          setError(
+            err?.message || "Failed to fetch account. Please try again.",
+          );
           setIsCreatingUser(false);
           return;
         }

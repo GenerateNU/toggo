@@ -96,31 +96,6 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(updatedUser)
 }
 
-// @Summary      Get a user
-// @Description  Retrieves a user by ID
-// @Tags         users
-// @Produce      json
-// @Param        userID path string true "User ID"
-// @Success      200 {object} models.User
-// @Failure      400 {object} errs.APIError
-// @Failure      404 {object} errs.APIError
-// @Failure      500 {object} errs.APIError
-// @Router       /api/v1/users/{userID} [get]
-// @ID 			getUser
-func (u *UserController) GetUser(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("userID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	user, err := u.userService.GetUser(c.Context(), id)
-	if err != nil {
-		return err
-	}
-
-	return c.Status(http.StatusOK).JSON(user)
-}
-
 // @Summary      Get current user
 // @Description  Retrieves the authenticated user (from JWT claims)
 // @Tags         users
@@ -143,6 +118,31 @@ func (u *UserController) GetMe(c *fiber.Ctx) error {
 	}
 
 	user, err := u.userService.GetUser(c.Context(), userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(user)
+}
+
+// @Summary      Get a user
+// @Description  Retrieves a user by ID
+// @Tags         users
+// @Produce      json
+// @Param        userID path string true "User ID"
+// @Success      200 {object} models.User
+// @Failure      400 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/users/{userID} [get]
+// @ID 			getUser
+func (u *UserController) GetUser(c *fiber.Ctx) error {
+	id, err := utilities.ValidateID(c.Params("userID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	user, err := u.userService.GetUser(c.Context(), id)
 	if err != nil {
 		return err
 	}

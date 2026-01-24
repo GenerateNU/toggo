@@ -303,12 +303,16 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
+                "phone_number",
                 "username"
             ],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "phone_number": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
@@ -322,6 +326,9 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
+                "phone_number": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -334,6 +341,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone_number": {
                     "type": "string"
                 },
                 "username": {

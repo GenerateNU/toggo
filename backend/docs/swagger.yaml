@@ -11,16 +11,21 @@ definitions:
       name:
         minLength: 1
         type: string
+      phone_number:
+        type: string
       username:
         type: string
     required:
     - name
+    - phone_number
     - username
     type: object
   models.UpdateUserRequest:
     properties:
       name:
         minLength: 1
+        type: string
+      phone_number:
         type: string
       username:
         type: string
@@ -30,6 +35,8 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      phone_number:
         type: string
       username:
         type: string

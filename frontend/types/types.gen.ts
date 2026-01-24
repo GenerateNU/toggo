@@ -20,6 +20,10 @@ export type ModelsCreateUserRequest = {
   /**
    * @type string
    */
+  phone_number: string;
+  /**
+   * @type string
+   */
   username: string;
 };
 
@@ -29,6 +33,10 @@ export type ModelsUpdateUserRequest = {
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  phone_number?: string;
   /**
    * @type string | undefined
    */
@@ -44,6 +52,10 @@ export type ModelsUser = {
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  phone_number?: string;
   /**
    * @type string | undefined
    */

@@ -72,7 +72,14 @@ export const useUserStore = create<UserState>()(
             currentUser = await authService.getCurrentUser();
           } catch (err: any) {
             // If not found, allow signup flow to create user; otherwise bubble up
-            if (!(err && typeof err === "object" && "status" in err && (err as any).status === 404)) {
+            if (
+              !(
+                err &&
+                typeof err === "object" &&
+                "status" in err &&
+                (err as any).status === 404
+              )
+            ) {
               throw err;
             }
             currentUser = null;
@@ -132,7 +139,10 @@ const parseError = (err: unknown): string => {
 
   const msg = err.message.toLowerCase();
 
-  if (msg.includes("error sending confirmation") || msg.includes("otp provider")) {
+  if (
+    msg.includes("error sending confirmation") ||
+    msg.includes("otp provider")
+  ) {
     return "Failed to send verification code. Please try again.";
   }
 

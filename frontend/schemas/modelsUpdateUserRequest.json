@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "name": { "type": "string", "minLength": 1 },
+    "phone_number": { "type": "string" },
     "username": { "type": "string" }
   },
   "x-readme-ref-name": "models.UpdateUserRequest"

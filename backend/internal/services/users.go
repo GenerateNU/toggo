@@ -28,9 +28,10 @@ func NewUserService(repo *repository.Repository) UserServiceInterface {
 
 func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUserRequest, userID uuid.UUID) (*models.User, error) {
 	return u.User.Create(ctx, &models.User{
-		Name:     userBody.Name,
-		Username: userBody.Username,
-		ID:       userID,
+		Name:        userBody.Name,
+		Username:    userBody.Username,
+		PhoneNumber: userBody.PhoneNumber,
+		ID:          userID,
 	})
 }
 
