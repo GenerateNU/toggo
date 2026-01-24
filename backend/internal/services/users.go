@@ -5,6 +5,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
+	"toggo/internal/utilities"
 
 	"github.com/google/uuid"
 )
@@ -27,10 +28,15 @@ func NewUserService(repo *repository.Repository) UserServiceInterface {
 }
 
 func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUserRequest, userID uuid.UUID) (*models.User, error) {
+	phone, err := utilities.NormalizeUSPhone(userBody.PhoneNumber)
+	if err != nil {
+		return nil, errs.InvalidRequestData(map[string]string{"phone_number": err.Error()})
+	}
+
 	return u.User.Create(ctx, &models.User{
 		Name:        userBody.Name,
 		Username:    userBody.Username,
-		PhoneNumber: userBody.PhoneNumber,
+		PhoneNumber: phone,
 		ID:          userID,
 	})
 }
@@ -47,6 +53,14 @@ func (u *UserService) GetUser(ctx context.Context, id uuid.UUID) (*models.User, 
 }
 
 func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, userBody models.UpdateUserRequest) (*models.User, error) {
+	if userBody.PhoneNumber != nil {
+		normalized, err := utilities.NormalizeUSPhone(*userBody.PhoneNumber)
+		if err != nil {
+			return nil, errs.InvalidRequestData(map[string]string{"phone_number": err.Error()})
+		}
+		userBody.PhoneNumber = &normalized
+	}
+
 	return u.User.Update(ctx, id, &userBody)
 }
 
