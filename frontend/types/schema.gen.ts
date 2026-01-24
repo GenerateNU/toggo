@@ -19,12 +19,6 @@ import type {
   GetCurrentUser404,
   GetCurrentUser500,
   GetCurrentUserQueryResponse,
-  GetUserByPhonePathParams,
-  GetUserByPhone200,
-  GetUserByPhone400,
-  GetUserByPhone404,
-  GetUserByPhone500,
-  GetUserByPhoneQueryResponse,
   GetUserPathParams,
   GetUser200,
   GetUser400,
@@ -145,42 +139,6 @@ export const getCurrentUser500Schema = z.lazy(
 export const getCurrentUserQueryResponseSchema = z.lazy(
   () => getCurrentUser200Schema,
 ) as unknown as z.ZodType<GetCurrentUserQueryResponse>;
-
-export const getUserByPhonePathParamsSchema = z.object({
-  phone: z.string().describe("Phone number (E.164 format)"),
-}) as unknown as z.ZodType<GetUserByPhonePathParams>;
-
-/**
- * @description OK
- */
-export const getUserByPhone200Schema = z.lazy(
-  () => modelsUserSchema,
-) as unknown as z.ZodType<GetUserByPhone200>;
-
-/**
- * @description Bad Request
- */
-export const getUserByPhone400Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<GetUserByPhone400>;
-
-/**
- * @description Not Found
- */
-export const getUserByPhone404Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<GetUserByPhone404>;
-
-/**
- * @description Internal Server Error
- */
-export const getUserByPhone500Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<GetUserByPhone500>;
-
-export const getUserByPhoneQueryResponseSchema = z.lazy(
-  () => getUserByPhone200Schema,
-) as unknown as z.ZodType<GetUserByPhoneQueryResponse>;
 
 export const getUserPathParamsSchema = z.object({
   userID: z.string().describe("User ID"),
