@@ -15,10 +15,11 @@ export interface UserState {
   signupData: {
     name: string | null;
     username: string | null;
+    phone: string | null;
   };
   currentUser?: CurrentUser | null;
 
-  setSignupData: (name: string, username: string) => void;
+  setSignupData: (name: string, username: string, phone: string) => void;
   clearSignupData: () => void;
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
@@ -36,18 +37,19 @@ export const useUserStore = create<UserState>()(
       signupData: {
         name: null,
         username: null,
+        phone: null,
       },
       currentUser: null,
 
-      setSignupData: (name: string, username: string) => {
+      setSignupData: (name: string, username: string, phone: string) => {
         set({
-          signupData: { name, username },
+          signupData: { name, username, phone },
         });
       },
 
       clearSignupData: () => {
         set({
-          signupData: { name: null, username: null },
+          signupData: { name: null, username: null, phone: null },
         });
       },
 
@@ -91,7 +93,7 @@ export const useUserStore = create<UserState>()(
             currentUser,
             isPending: false,
             signupData: currentUser
-              ? { name: null, username: null }
+              ? { name: null, username: null, phone: null }
               : { ...get().signupData },
           });
         } catch (err) {
@@ -113,7 +115,7 @@ export const useUserStore = create<UserState>()(
         set({
           isAuthenticated: false,
           userId: null,
-          signupData: { name: null, username: null },
+          signupData: { name: null, username: null, phone: null },
           currentUser: null,
           isPending: false,
         });

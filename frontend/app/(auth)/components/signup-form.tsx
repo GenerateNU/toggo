@@ -48,7 +48,7 @@ export function SignupForm() {
 
     try {
       // Store name and username in state management
-      setSignupData(data.name, data.username);
+      setSignupData(data.name, data.username, data.phone);
 
       // Send OTP
       await sendOTP(data.phone);

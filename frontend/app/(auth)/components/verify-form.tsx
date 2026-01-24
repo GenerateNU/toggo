@@ -196,12 +196,13 @@ export function OTPVerificationForm() {
       }
 
       // If signup data exists, create user in backend (signup flow)
-      if (signupData.name && signupData.username) {
+      if (signupData.name && signupData.username && phoneNumber) {
         try {
           await createUser({
             data: {
               name: signupData.name,
               username: signupData.username,
+              phone_number: phoneNumber,
             },
           });
 

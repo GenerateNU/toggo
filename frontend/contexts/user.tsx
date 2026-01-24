@@ -11,6 +11,7 @@ interface UserContextType {
   signupData: {
     name: string | null;
     username: string | null;
+    phone: string | null;
   };
   currentUser: CurrentUser | null | undefined;
 
@@ -18,7 +19,7 @@ interface UserContextType {
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
   refreshCurrentUser: () => Promise<void>;
   logout: () => Promise<void>;
-  setSignupData: (name: string, username: string) => void;
+  setSignupData: (name: string, username: string, phone: string) => void;
   clearSignupData: () => void;
 }
 
