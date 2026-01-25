@@ -15,6 +15,7 @@ import (
 	"toggo/internal/config"
 	"toggo/internal/database"
 	"toggo/internal/server"
+	"toggo/internal/tracing"
 )
 
 func main() {
@@ -22,10 +23,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
-	db := database.ConnectDB(context.Background(), cfg)
-	defer database.CloseDB(db)
 
 	ctx := setupSignalHandler()
+
+	shutdownTracer, err := tracing.InitializeDatadogTracer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize tracing: %v", err)
+	}
+	defer shutdownTracer(ctx)
+
+	db := database.ConnectDB(ctx, cfg)
+	defer database.CloseDB(db)
+
 	app := server.CreateApp(cfg, db)
 
 	go startServer(app, cfg.App.Port)

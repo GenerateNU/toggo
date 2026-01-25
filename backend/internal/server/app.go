@@ -23,6 +23,10 @@ func CreateApp(config *config.Configuration, db *bun.DB) *fiber.App {
 
 	middlewares.SetUpMiddlewares(app, config)
 
+	if config.Tracing.Enabled {
+		app.Use(middlewares.TracingMiddleware(&config.Tracing))
+	}
+
 	repository := repository.NewRepository(db)
 
 	validator := utilities.NewValidator()

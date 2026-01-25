@@ -8,6 +8,7 @@ type Configuration struct {
 	Auth        AuthConfig
 	AWS         AWSConfig
 	Temporal    TemporalConfig
+	Tracing     TracingConfig
 	Environment string
 }
 
@@ -37,12 +38,18 @@ func LoadConfiguration() (*Configuration, error) {
 		return nil, err
 	}
 
+	tracingConfig, err := LoadTracingConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Configuration{
 		App:         *appConfig,
 		Database:    *databaseConfig,
 		Auth:        *authConfig,
 		AWS:         *awsConfig,
 		Temporal:    *temporalConfig,
+		Tracing:     *tracingConfig,
 		Environment: os.Getenv("APP_ENVIRONMENT"),
 	}, nil
 }
