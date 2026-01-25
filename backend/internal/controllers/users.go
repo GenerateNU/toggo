@@ -173,39 +173,3 @@ func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusNoContent)
 }
 
-// @Summary      Update user device token
-// @Description  Updates the device token for push notifications
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Param        userID path string true "User ID"
-// @Param        request body models.UpdateDeviceTokenRequest true "Update device token request"
-// @Success      200 {object} models.User
-// @Failure      400 {object} errs.APIError
-// @Failure      404 {object} errs.APIError
-// @Failure      422 {object} errs.APIError
-// @Failure      500 {object} errs.APIError
-// @Router       /api/v1/users/{userID}/device-token [patch]
-// @ID 			updateDeviceToken
-func (u *UserController) UpdateDeviceToken(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("userID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	var req models.UpdateDeviceTokenRequest
-	if err := c.BodyParser(&req); err != nil {
-		return errs.InvalidJSON()
-	}
-
-	if err := utilities.Validate(u.validator, req); err != nil {
-		return err
-	}
-
-	user, err := u.userService.UpdateDeviceToken(c.Context(), id, req.DeviceToken)
-	if err != nil {
-		return err
-	}
-
-	return c.Status(http.StatusOK).JSON(user)
-}

@@ -65,6 +65,13 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("phone_number = ?", *req.PhoneNumber)
 	}
 
+	if req.DeviceToken != nil {
+		trimmedToken := strings.TrimSpace(*req.DeviceToken)
+		updates["device_token"] = trimmedToken
+		updateQuery = updateQuery.Set("device_token = ?", trimmedToken)
+		updateQuery = updateQuery.Set("device_token_updated_at = NOW()")
+	}
+
 	result, err := updateQuery.Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user: %w", err)
@@ -99,37 +106,4 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		Exec(ctx)
 
 	return err
-}
-
-func (r *userRepository) UpdateDeviceToken(ctx context.Context, id uuid.UUID, deviceToken string) (*models.User, error) {
-	result, err := r.db.NewUpdate().
-		Model(&models.User{}).
-		Set("device_token = ?", deviceToken).
-		Set("device_token_updated_at = ?", "NOW()").
-		Where("id = ?", id).
-		Exec(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update device token: %w", err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return nil, fmt.Errorf("failed to check update result: %w", err)
-	}
-
-	if rowsAffected == 0 {
-		return nil, errs.ErrNotFound
-	}
-
-	updatedUser := &models.User{}
-	err = r.db.NewSelect().
-		Model(updatedUser).
-		Where("id = ?", id).
-		Scan(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch updated user: %w", err)
-	}
-
-	return updatedUser, nil
 }

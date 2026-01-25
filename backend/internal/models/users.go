@@ -25,8 +25,5 @@ type UpdateUserRequest struct {
 	Name        *string `validate:"omitempty,min=1" json:"name"`
 	Username    *string `validate:"omitempty,username" json:"username"`
 	PhoneNumber *string `validate:"omitempty,phone" json:"phone_number"`
-}
-
-type UpdateDeviceTokenRequest struct {
-	DeviceToken string `validate:"required,min=1" json:"device_token"`
+	DeviceToken *string `validate:"omitempty" json:"device_token"`
 }

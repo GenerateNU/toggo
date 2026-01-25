@@ -22,7 +22,6 @@ func UserRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	userIDGroup.Get("", userController.GetUser)
 	userIDGroup.Patch("", userController.UpdateUser)
 	userIDGroup.Delete("", userController.DeleteUser)
-	userIDGroup.Patch("/device-token", userController.UpdateDeviceToken)
 
 	return userGroup
 }
