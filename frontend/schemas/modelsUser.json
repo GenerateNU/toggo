@@ -4,6 +4,7 @@
     "id": { "type": "string" },
     "name": { "type": "string" },
     "phone_number": { "type": "string" },
+    "timezone": { "type": "string" },
     "username": { "type": "string" }
   },
   "x-readme-ref-name": "models.User"

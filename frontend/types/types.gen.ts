@@ -40,6 +40,10 @@ export type ModelsUpdateUserRequest = {
   /**
    * @type string | undefined
    */
+  timezone?: string;
+  /**
+   * @type string | undefined
+   */
   username?: string;
 };
 
@@ -56,6 +60,10 @@ export type ModelsUser = {
    * @type string | undefined
    */
   phone_number?: string;
+  /**
+   * @type string | undefined
+   */
+  timezone?: string;
   /**
    * @type string | undefined
    */

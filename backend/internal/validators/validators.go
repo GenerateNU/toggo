@@ -1,4 +1,4 @@
-package utilities
+package validators
 
 import (
 	"fmt"
@@ -78,25 +78,16 @@ func buildMessage(e validator.FieldError) string {
 	}
 }
 
-var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
-var phoneRegex = regexp.MustCompile(`^\+?[0-9]{10,15}$`)
-
 func NewValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
-	err := v.RegisterValidation("username", func(fl validator.FieldLevel) bool {
-		return usernameRegex.MatchString(fl.Field().String())
-	})
-	if err != nil {
-		log.Println("Error registering username validation:", err)
-	}
-
-	err = v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
-		return phoneRegex.MatchString(fl.Field().String())
-	})
-	if err != nil {
-		log.Println("Error registering phone validation:", err)
-	}
+	registerUserValidator(v)
 
 	return v
+}
+
+func registerValidation(v *validator.Validate, name string, fn validator.Func) {
+	if err := v.RegisterValidation(name, fn); err != nil {
+		log.Printf("Error registering %s validation: %v\n", name, err)
+	}
 }
