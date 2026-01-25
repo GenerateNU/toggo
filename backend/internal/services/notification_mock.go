@@ -2,50 +2,68 @@ package services
 
 import (
 	"context"
-
-	"github.com/google/uuid"
+	"toggo/internal/models"
 )
 
-// MockNotificationService is a mock implementation for testing
 type MockNotificationService struct {
-	SendNotificationCalled      bool
-	SendNotificationUserID      uuid.UUID
-	SendNotificationTitle       string
-	SendNotificationBody        string
-	SendNotificationBatchCalled bool
-	SendNotificationBatchUserIDs []uuid.UUID
-	SendNotificationBatchTitle   string
-	SendNotificationBatchBody    string
+	SendNotificationCalled       bool
+	SendNotificationRequest      models.SendNotificationRequest
+	SendNotificationError        error
+	SendNotificationBatchCalled  bool
+	SendNotificationBatchRequest models.SendBulkNotificationRequest
+	SendNotificationBatchResponse *models.NotificationResponse
+	SendNotificationBatchError   error
 }
 
-func (m *MockNotificationService) SendNotification(ctx context.Context, userID uuid.UUID, title string, body string) error {
+func (m *MockNotificationService) SendNotification(ctx context.Context, req models.SendNotificationRequest) error {
 	m.SendNotificationCalled = true
-	m.SendNotificationUserID = userID
-	m.SendNotificationTitle = title
-	m.SendNotificationBody = body
-	return nil
+	m.SendNotificationRequest = req
+	return m.SendNotificationError
 }
 
-func (m *MockNotificationService) SendNotificationBatch(ctx context.Context, userIDs []uuid.UUID, title string, body string) error {
+func (m *MockNotificationService) SendNotificationBatch(ctx context.Context, req models.SendBulkNotificationRequest) (*models.NotificationResponse, error) {
 	m.SendNotificationBatchCalled = true
-	m.SendNotificationBatchUserIDs = userIDs
-	m.SendNotificationBatchTitle = title
-	m.SendNotificationBatchBody = body
-	return nil
+	m.SendNotificationBatchRequest = req
+	
+	if m.SendNotificationBatchResponse != nil {
+		return m.SendNotificationBatchResponse, m.SendNotificationBatchError
+	}
+	
+	return &models.NotificationResponse{
+		SuccessCount: len(req.UserIDs),
+		FailureCount: 0,
+		Errors:       []models.NotificationError{},
+	}, m.SendNotificationBatchError
 }
 
-// MockExpoClient is a mock Expo client for testing
 type MockExpoClient struct {
-	SendNotificationCalled bool
-	SendNotificationToken  string
-	SendNotificationTitle  string
-	SendNotificationBody   string
+	SendNotificationsCalled   bool
+	SendNotificationsTokens   []string
+	SendNotificationsTitle    string
+	SendNotificationsBody     string
+	SendNotificationsData     map[string]interface{}
+	SendNotificationsResponse *ExpoBulkResponse
+	SendNotificationsError    error
 }
 
-func (m *MockExpoClient) SendNotification(ctx context.Context, deviceToken string, title string, body string) error {
-	m.SendNotificationCalled = true
-	m.SendNotificationToken = deviceToken
-	m.SendNotificationTitle = title
-	m.SendNotificationBody = body
-	return nil
+func (m *MockExpoClient) SendNotifications(ctx context.Context, tokens []string, title string, body string, data map[string]interface{}) (*ExpoBulkResponse, error) {
+	m.SendNotificationsCalled = true
+	m.SendNotificationsTokens = tokens
+	m.SendNotificationsTitle = title
+	m.SendNotificationsBody = body
+	m.SendNotificationsData = data
+	
+	if m.SendNotificationsResponse != nil {
+		return m.SendNotificationsResponse, m.SendNotificationsError
+	}
+	
+	tickets := make([]ExpoNotificationResponse, len(tokens))
+	for i := range tickets {
+		tickets[i] = ExpoNotificationResponse{
+			Status: "ok",
+			ID:     "ticket-id",
+		}
+	}
+	
+	return &ExpoBulkResponse{Data: tickets}, m.SendNotificationsError
 }
