@@ -30,14 +30,14 @@ func NewExpoClient(accessToken string) ExpoClient {
 }
 
 // ExpoNotificationRequest matches Expo API format
-type ExpoNotificationResponse struct {
+type ExpoNotificationRequest struct {
 	To    string `json:"to"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
     Data  map[string]interface{} `json:"data,omitempty"`
 }
 
-type ExpoTicket struct {
+type ExpoNotificationResponse struct {
     Status string `json:"status"`
     ID     string `json:"id,omitempty"`
     Message string `json:"message,omitempty"`
