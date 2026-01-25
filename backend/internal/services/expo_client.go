@@ -11,7 +11,7 @@ import (
 
 // ExpoClient handles communication with Expo API
 type ExpoClient interface {
-	SendNotification(ctx context.Context, deviceToken string, title string, body string) error
+	SendNotification(ctx context.Context, tokens []string, title string, body string) error
 }
 
 // expoClient implements ExpoClient
@@ -30,66 +30,78 @@ func NewExpoClient(accessToken string) ExpoClient {
 }
 
 // ExpoNotificationRequest matches Expo API format
-type ExpoNotificationRequest struct {
+type ExpoNotificationResponse struct {
 	To    string `json:"to"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
+    Data  map[string]interface{} `json:"data,omitempty"`
 }
 
-// ExpoNotificationResponse matches Expo API response
-type ExpoNotificationResponse struct {
-	Data   interface{} `json:"data"`
-	Errors []struct {
-		Message string `json:"message"`
-	} `json:"errors"`
+type ExpoTicket struct {
+    Status string `json:"status"`
+    ID     string `json:"id,omitempty"`
+    Message string `json:"message,omitempty"`
+    Details map[string]interface{} `json:"details,omitempty"`
 }
 
-func (c *expoClient) SendNotification(ctx context.Context, deviceToken string, title string, body string) error {
-    req := ExpoNotificationRequest{
-        To:    deviceToken,
-        Title: title,
-        Body:  body,
-    }
+type ExpoBulkResponse struct {
+    Data   []ExpoTicket `json:"data"`
+}
 
-    payload, err := json.Marshal(req)
-    if err != nil {
-        return fmt.Errorf("failed to marshal notification: %w", err)
-    }
+// sends notifications to multiple devices (max 100 per call per Expo limits)
+func (c *expoClient) SendNotifications(ctx context.Context, tokens []string, title string, body string, data map[string]interface{}) (*ExpoBulkResponse, error) {
+	if len(tokens) == 0 {
+		return &ExpoBulkResponse{Data: []ExpoTicket{}}, nil
+	}
 
-    httpReq, err := http.NewRequestWithContext(ctx, "POST", expoAPIURL, bytes.NewBuffer(payload))
-    if err != nil {
-        return fmt.Errorf("failed to create request: %w", err)
-    }
+	if len(tokens) > 100 {
+		return nil, fmt.Errorf("cannot send to more than 100 tokens at once (got %d)", len(tokens))
+	}
 
-    httpReq.Header.Set("Content-Type", "application/json")
-    httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
+	var requests []ExpoNotificationRequest
+	for _, token := range tokens {
+		requests = append(requests, ExpoNotificationRequest{
+			To:    token,
+			Title: title,
+			Body:  body,
+			Data:  data,
+		})
+	}
 
-    resp, err := c.httpClient.Do(httpReq)
-    if err != nil {
-        return fmt.Errorf("failed to send notification: %w", err)
-    }
-    defer func() { _ = resp.Body.Close() }()
+	payload, err := json.Marshal(requests)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal notifications: %w", err)
+	}
 
-    // Read response
-    respBody, err := io.ReadAll(resp.Body)
-    if err != nil {
-        return fmt.Errorf("failed to read response: %w", err)
-    }
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", expoAPIURL, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
 
-    // Check for API errors
-    if resp.StatusCode != http.StatusOK {
-        return fmt.Errorf("expo api error: status %d, body: %s", resp.StatusCode, string(respBody))
-    }
+	httpReq.Header.Set("Content-Type", "application/json")
+	if c.accessToken != "" {
+		httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
+	}
 
-    // Parse response to check for errors in JSON
-    var expoResp ExpoNotificationResponse
-    if err := json.Unmarshal(respBody, &expoResp); err != nil {
-        return fmt.Errorf("failed to parse response: %w", err)
-    }
+	resp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send notifications: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
 
-    if len(expoResp.Errors) > 0 {
-        return fmt.Errorf("expo error: %s", expoResp.Errors[0].Message)
-    }
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
 
-    return nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("expo api error: status %d, body: %s", resp.StatusCode, string(respBody))
+	}
+
+	var expoResp ExpoBulkResponse
+	if err := json.Unmarshal(respBody, &expoResp); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return &expoResp, nil
 }
