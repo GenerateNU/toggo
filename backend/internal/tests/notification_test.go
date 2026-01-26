@@ -10,29 +10,28 @@ import (
 )
 
 func TestNotificationServiceSendNotification(t *testing.T) {
-	t.Run("skips user with no device token", func(t *testing.T) {
+	t.Run("returns error when user has no device token", func(t *testing.T) {
 		userID := uuid.New()
-		user := &models.User{
-			ID:          userID,
-			Name:        "Test User",
-			DeviceToken: nil,
-		}
 
-		mockUserService := &mockUserServiceForNotif{
-			getUser: func(ctx context.Context, id uuid.UUID) (*models.User, error) {
-				return user, nil
-			},
+		mockRepo := &mockNotificationUserRepo{
+			users: []*models.User{},
 		}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockUserService, mockExpoClient)
-		err := notifService.SendNotification(context.Background(), userID, "Test", "Test Body")
-
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
+		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+		
+		req := models.SendNotificationRequest{
+			UserID: userID,
+			Title: "Test Title",
+			Body: "Test Body",
 		}
-		if mockExpoClient.SendNotificationCalled {
-			t.Error("expected Expo client not to be called")
+		err := notifService.SendNotification(context.Background(), req)
+
+		if err == nil {
+			t.Errorf("expected error when user has no device token")
+		}
+		if mockExpoClient.SendNotificationsCalled {
+			t.Error("expected Expo client NOT to be called")
 		}
 	})
 
@@ -45,27 +44,30 @@ func TestNotificationServiceSendNotification(t *testing.T) {
 			DeviceToken: &token,
 		}
 
-		mockUserService := &mockUserServiceForNotif{
-			getUser: func(ctx context.Context, id uuid.UUID) (*models.User, error) {
-				return user, nil
-			},
+		mockRepo := &mockNotificationUserRepo{
+			users: []*models.User{user},
 		}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockUserService, mockExpoClient)
-		err := notifService.SendNotification(context.Background(), userID, "Test Title", "Test Body")
+		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+		req := models.SendNotificationRequest{
+			UserID: userID,
+			Title:  "Test Title",
+			Body:   "Test Body",
+		}
+		err := notifService.SendNotification(context.Background(), req)
 
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 		}
-		if !mockExpoClient.SendNotificationCalled {
+		if !mockExpoClient.SendNotificationsCalled {
 			t.Error("expected Expo client to be called")
 		}
-		if mockExpoClient.SendNotificationToken != token {
-			t.Errorf("expected token %q, got %q", token, mockExpoClient.SendNotificationToken)
+		if len(mockExpoClient.SendNotificationsTokens) != 1 || mockExpoClient.SendNotificationsTokens[0] != token {
+			t.Errorf("expected token %q, got %v", token, mockExpoClient.SendNotificationsTokens)
 		}
-		if mockExpoClient.SendNotificationTitle != "Test Title" {
-			t.Errorf("expected title %q, got %q", "Test Title", mockExpoClient.SendNotificationTitle)
+		if mockExpoClient.SendNotificationsTitle != "Test Title" {
+			t.Errorf("expected title %q, got %q", "Test Title", mockExpoClient.SendNotificationsTitle)
 		}
 	})
 }
@@ -82,54 +84,57 @@ func TestNotificationServiceBatch(t *testing.T) {
 			userID2: {ID: userID2, Name: "User 2", DeviceToken: &token2},
 		}
 
-		mockUserService := &mockUserServiceForNotif{
-			getUser: func(ctx context.Context, id uuid.UUID) (*models.User, error) {
-				return users[id], nil
-			},
-		}
+		mockRepo := &mockNotificationUserRepo{users: []*models.User{users[userID1], users[userID2]}}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockUserService, mockExpoClient)
-		err := notifService.SendNotificationBatch(
-			context.Background(),
-			[]uuid.UUID{userID1, userID2},
-			"Batch Test",
-			"Batch Body",
-		)
+		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+
+		req := models.SendBulkNotificationRequest{
+			UserIDs: []uuid.UUID{userID1, userID2},
+			Title:  "Batch Test",
+			Body:   "Batch Body",
+		}
+
+		_, err := notifService.SendNotificationBatch(context.Background(), req)
 
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 		}
-		if !mockExpoClient.SendNotificationCalled {
+		if !mockExpoClient.SendNotificationsCalled {
 			t.Error("expected Expo client to be called")
 		}
 	})
 }
 
-// Mock UserService for notification tests
-type mockUserServiceForNotif struct {
-	getUser func(ctx context.Context, id uuid.UUID) (*models.User, error)
+type mockNotificationUserRepo struct {
+	users []*models.User
 }
 
-func (m *mockUserServiceForNotif) CreateUser(ctx context.Context, userBody models.CreateUserRequest, userID uuid.UUID) (*models.User, error) {
-	return nil, nil
+func (m *mockNotificationUserRepo) Create(ctx context.Context, user *models.User) (*models.User, error) {
+	return user, nil
 }
 
-func (m *mockUserServiceForNotif) GetUser(ctx context.Context, id uuid.UUID) (*models.User, error) {
-	if m.getUser != nil {
-		return m.getUser(ctx, id)
+func (m *mockNotificationUserRepo) Find(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	for _, u := range m.users {
+		if u.ID == id {
+			return u, nil
+		}
 	}
 	return nil, nil
 }
 
-func (m *mockUserServiceForNotif) UpdateUser(ctx context.Context, id uuid.UUID, userBody models.UpdateUserRequest) (*models.User, error) {
-	return nil, nil
+func (m *mockNotificationUserRepo) Update(ctx context.Context, id uuid.UUID, user *models.UpdateUserRequest) (*models.User, error) {
+	return &models.User{ID: id}, nil
 }
 
-func (m *mockUserServiceForNotif) DeleteUser(ctx context.Context, id uuid.UUID) error {
+func (m *mockNotificationUserRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (m *mockUserServiceForNotif) UpdateDeviceToken(ctx context.Context, id uuid.UUID, deviceToken string) (*models.User, error) {
+func (m *mockNotificationUserRepo) UpdateDeviceToken(ctx context.Context, id uuid.UUID, deviceToken string) (*models.User, error) {
 	return nil, nil
+}
+
+func (m *mockNotificationUserRepo) GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error) {
+	return m.users, nil
 }

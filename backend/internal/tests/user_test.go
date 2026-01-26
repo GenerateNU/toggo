@@ -207,41 +207,28 @@ func TestDeviceTokenUpdate(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", userID),
+				Route:  fmt.Sprintf("/api/v1/users/%s", userID),
 				Method: testkit.PATCH,
 				UserID: &authUserID,
-				Body: models.UpdateDeviceTokenRequest{
-					DeviceToken: deviceToken,
+				Body: models.UpdateUserRequest{
+					DeviceToken: &deviceToken,
 				},
 			}).
 			AssertStatus(http.StatusOK).
 			AssertField("device_token", deviceToken)
 	})
 
-	t.Run("update device token with invalid token returns 422", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", userID),
-				Method: testkit.PATCH,
-				UserID: &authUserID,
-				Body: models.UpdateDeviceTokenRequest{
-					DeviceToken: "",
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
 	t.Run("update device token for non-existent user returns 404", func(t *testing.T) {
+		deviceToken := "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
 		fakeUserID := fakes.GenerateUUID()
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/users/%s/device-token", fakeUserID),
+				Route:  fmt.Sprintf("/api/v1/users/%s", fakeUserID),
 				Method: testkit.PATCH,
 				UserID: &authUserID,
-				Body: models.UpdateDeviceTokenRequest{
-					DeviceToken: "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]",
+				Body: models.UpdateUserRequest{
+					DeviceToken: &deviceToken,
 				},
 			}).
 			AssertStatus(http.StatusNotFound)

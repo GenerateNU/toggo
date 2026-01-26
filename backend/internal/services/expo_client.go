@@ -11,7 +11,7 @@ import (
 
 // ExpoClient handles communication with Expo API
 type ExpoClient interface {
-	SendNotification(ctx context.Context, tokens []string, title string, body string) error
+	SendNotifications(ctx context.Context, tokens []string, title string, body string, data map[string]interface{}) (*ExpoBulkResponse, error)
 }
 
 // expoClient implements ExpoClient
@@ -45,13 +45,13 @@ type ExpoNotificationResponse struct {
 }
 
 type ExpoBulkResponse struct {
-    Data   []ExpoTicket `json:"data"`
+    Data   []ExpoNotificationResponse `json:"data"`
 }
 
 // sends notifications to multiple devices (max 100 per call per Expo limits)
 func (c *expoClient) SendNotifications(ctx context.Context, tokens []string, title string, body string, data map[string]interface{}) (*ExpoBulkResponse, error) {
 	if len(tokens) == 0 {
-		return &ExpoBulkResponse{Data: []ExpoTicket{}}, nil
+		return &ExpoBulkResponse{Data: []ExpoNotificationResponse{}}, nil
 	}
 
 	if len(tokens) > 100 {
