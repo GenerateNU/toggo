@@ -184,7 +184,6 @@ func TestDeviceTokenUpdate(t *testing.T) {
 
 	var userID string
 
-	// Create a user first
 	resp := testkit.New(t).
 		Request(testkit.Request{
 			App:    app,
