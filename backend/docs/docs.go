@@ -15,6 +15,65 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/files/confirm": {
+            "post": {
+                "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Confirm upload",
+                "operationId": "confirmUpload",
+                "parameters": [
+                    {
+                        "description": "Confirm upload request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/health": {
             "get": {
                 "description": "Verifies connectivity to the configured S3 bucket",
@@ -42,9 +101,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/files/presigned-urls": {
+        "/api/v1/files/upload": {
             "post": {
-                "description": "Generates presigned URLs for multiple files with specified sizes",
+                "description": "Generates presigned PUT URLs for uploading files and creates pending records in DB",
                 "consumes": [
                     "application/json"
                 ],
@@ -54,24 +113,24 @@ const docTemplate = `{
                 "tags": [
                     "files"
                 ],
-                "summary": "Get bulk presigned URLs",
-                "operationId": "getBulkPresignedURLs",
+                "summary": "Create upload URLs",
+                "operationId": "createUploadURLs",
                 "parameters": [
                     {
-                        "description": "Bulk presigned URL request",
+                        "description": "Upload URL request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.BulkPresignedURLRequest"
+                            "$ref": "#/definitions/models.UploadURLRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.BulkPresignedURLResponse"
+                            "$ref": "#/definitions/models.UploadURLResponse"
                         }
                     },
                     "400": {
@@ -82,6 +141,109 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/{imageId}": {
+            "get": {
+                "description": "Retrieves presigned URLs for all sizes of an image",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get all sizes of a file",
+                "operationId": "getFileAllSizes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetFileAllSizesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/{imageId}/{size}": {
+            "get": {
+                "description": "Retrieves a presigned URL for downloading a specific file size",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file by ID and size",
+                "operationId": "getFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image size (large, medium, small)",
+                        "name": "size",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetFileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -379,29 +541,36 @@ const docTemplate = `{
                 }
             }
         },
-        "models.BulkPresignedURLRequest": {
+        "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
-                "files"
+                "imageId"
             ],
             "properties": {
-                "files": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.PresignedURLRequest"
-                    }
+                "imageId": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "Optional: if nil, confirm all sizes",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ImageSize"
+                        }
+                    ]
                 }
             }
         },
-        "models.BulkPresignedURLResponse": {
+        "models.ConfirmUploadResponse": {
             "type": "object",
             "properties": {
-                "files": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.FilePresignedURLResponse"
-                    }
+                "confirmed": {
+                    "type": "integer"
+                },
+                "imageId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -425,56 +594,29 @@ const docTemplate = `{
                 }
             }
         },
-        "models.FilePresignedURLResponse": {
+        "models.GetFileAllSizesResponse": {
             "type": "object",
             "properties": {
-                "fileKey": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetFileResponse"
+                    }
+                },
+                "imageId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetFileResponse": {
+            "type": "object",
+            "properties": {
+                "contentType": {
                     "type": "string"
                 },
-                "urls": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.PresignedURLResponse"
-                    }
-                }
-            }
-        },
-        "models.ImageSize": {
-            "type": "string",
-            "enum": [
-                "small",
-                "medium",
-                "large"
-            ],
-            "x-enum-varnames": [
-                "ImageSizeSmall",
-                "ImageSizeMedium",
-                "ImageSizeLarge"
-            ]
-        },
-        "models.PresignedURLRequest": {
-            "type": "object",
-            "required": [
-                "fileKey",
-                "sizes"
-            ],
-            "properties": {
-                "fileKey": {
-                    "type": "string",
-                    "minLength": 1
+                "imageId": {
+                    "type": "string"
                 },
-                "sizes": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.ImageSize"
-                    }
-                }
-            }
-        },
-        "models.PresignedURLResponse": {
-            "type": "object",
-            "properties": {
                 "size": {
                     "$ref": "#/definitions/models.ImageSize"
                 },
@@ -482,6 +624,19 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "models.ImageSize": {
+            "type": "string",
+            "enum": [
+                "large",
+                "medium",
+                "small"
+            ],
+            "x-enum-varnames": [
+                "ImageSizeLarge",
+                "ImageSizeMedium",
+                "ImageSizeSmall"
+            ]
         },
         "models.S3HealthCheckResponse": {
             "type": "object",
@@ -497,6 +652,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SizedUploadURL": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "$ref": "#/definitions/models.ImageSize"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
@@ -507,8 +673,56 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
+                "profilePicture": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UploadURLRequest": {
+            "type": "object",
+            "required": [
+                "contentType",
+                "fileKey",
+                "sizes"
+            ],
+            "properties": {
+                "contentType": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "fileKey": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sizes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.ImageSize"
+                    }
+                }
+            }
+        },
+        "models.UploadURLResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "fileKey": {
+                    "type": "string"
+                },
+                "imageId": {
+                    "type": "string"
+                },
+                "uploadUrls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SizedUploadURL"
+                    }
                 }
             }
         },
@@ -522,6 +736,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture": {
                     "type": "string"
                 },
                 "username": {

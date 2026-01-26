@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 	"toggo/internal/interfaces"
 	"toggo/internal/models"
@@ -58,21 +60,39 @@ func NewFileService(cfg FileServiceConfig) FileServiceInterface {
 }
 
 func (f *FileService) CheckS3Connection(ctx context.Context) (*models.S3HealthCheckResponse, error) {
+	fmt.Println("S3 endpoint:", os.Getenv("AWS_ENDPOINT_URL"))
+	// Gather credential presence info (safe to report presence but not full secret)
+	accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	hasCreds := accessKey != "" && secretKey != ""
+	accessMask := ""
+	if accessKey != "" {
+		if len(accessKey) > 4 {
+			accessMask = accessKey[:4] + strings.Repeat("*", len(accessKey)-4)
+		} else {
+			accessMask = "****"
+		}
+	}
+
 	_, err := f.s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 		Bucket: aws.String(f.bucketName),
 	})
 	if err != nil {
 		return &models.S3HealthCheckResponse{
-			Status:     "unhealthy",
-			BucketName: f.bucketName,
-			Region:     f.region,
+			Status:         "unhealthy",
+			BucketName:     f.bucketName,
+			Region:         f.region,
+			HasCredentials: hasCreds,
+			AccessKeyMask:  accessMask,
 		}, fmt.Errorf("failed to connect to S3 bucket: %w", err)
 	}
 
 	return &models.S3HealthCheckResponse{
-		Status:     "healthy",
-		BucketName: f.bucketName,
-		Region:     f.region,
+		Status:         "healthy",
+		BucketName:     f.bucketName,
+		Region:         f.region,
+		HasCredentials: hasCreds,
+		AccessKeyMask:  accessMask,
 	}, nil
 }
 

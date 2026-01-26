@@ -35,6 +35,15 @@ func NewFileController(fileService services.FileServiceInterface, validator *val
 func (f *FileController) CheckS3Health(c *fiber.Ctx) error {
 	response, err := f.fileService.CheckS3Connection(c.Context())
 	if err != nil {
+		// Ensure we return a useful body even if the service returned nil
+		if response == nil {
+			response = &models.S3HealthCheckResponse{
+				Status:     "unhealthy",
+				BucketName: "",
+				Region:     "",
+			}
+		}
+		response.Error = err.Error()
 		return c.Status(http.StatusServiceUnavailable).JSON(response)
 	}
 
