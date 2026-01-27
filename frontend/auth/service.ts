@@ -21,7 +21,7 @@ export type CurrentUser = {
 export class SupabaseAuth implements AuthService {
   async logout(): Promise<void> {
     const session = await supabase.auth.getSession();
-    
+
     if (!session.data.session) {
       return;
     }
