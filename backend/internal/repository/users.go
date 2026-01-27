@@ -20,7 +20,7 @@ type userRepository struct {
 func (r *userRepository) Create(ctx context.Context, req *models.User) (*models.User, error) {
 	_, err := r.db.NewInsert().
 		Model(req).
-		Returning("id", "name", "username", "phone_number").
+		Returning("id", "name", "username", "phone_number", "timezone").
 		Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -63,6 +63,11 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 	if req.PhoneNumber != nil {
 		updates["phone_number"] = *req.PhoneNumber
 		updateQuery = updateQuery.Set("phone_number = ?", *req.PhoneNumber)
+	}
+
+	if req.Timezone != nil {
+		updates["timezone"] = *req.Timezone
+		updateQuery = updateQuery.Set("timezone = ?", *req.Timezone)
 	}
 
 	result, err := updateQuery.Exec(ctx)

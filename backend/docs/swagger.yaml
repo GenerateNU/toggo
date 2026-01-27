@@ -27,6 +27,8 @@ definitions:
         type: string
       phone_number:
         type: string
+      timezone:
+        type: string
       username:
         type: string
     type: object
@@ -37,6 +39,8 @@ definitions:
       name:
         type: string
       phone_number:
+        type: string
+      timezone:
         type: string
       username:
         type: string

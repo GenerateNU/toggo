@@ -329,6 +329,9 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
+                "timezone": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -344,6 +347,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phone_number": {
+                    "type": "string"
+                },
+                "timezone": {
                     "type": "string"
                 },
                 "username": {

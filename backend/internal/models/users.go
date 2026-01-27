@@ -9,6 +9,7 @@ type User struct {
 	Name        string    `bun:"name" json:"name"`
 	Username    string    `bun:"username" json:"username"`
 	PhoneNumber string    `bun:"phone_number" json:"phone_number"`
+	Timezone    string    `bun:"timezone" json:"timezone"`
 }
 
 type CreateUserRequest struct {
@@ -21,4 +22,5 @@ type UpdateUserRequest struct {
 	Name        *string `validate:"omitempty,min=1" json:"name"`
 	Username    *string `validate:"omitempty,username" json:"username"`
 	PhoneNumber *string `validate:"omitempty,phone" json:"phone_number"`
+	Timezone    *string `validate:"omitempty,timezone" json:"timezone"`
 }

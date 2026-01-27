@@ -5,7 +5,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -37,7 +37,7 @@ func NewUserController(userService services.UserServiceInterface, validator *val
 // @ID 			createUser
 func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	userIDStr := c.Locals("userID").(string)
-	userID, err := utilities.ValidateID(userIDStr)
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -47,7 +47,7 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(u.validator, req); err != nil {
+	if err := validators.Validate(u.validator, req); err != nil {
 		return err
 	}
 
@@ -79,12 +79,12 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	id, err := utilities.ValidateID(c.Params("userID"))
+	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	if err := utilities.Validate(u.validator, req); err != nil {
+	if err := validators.Validate(u.validator, req); err != nil {
 		return err
 	}
 
@@ -112,7 +112,7 @@ func (u *UserController) GetMe(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	userID, err := utilities.ValidateID(userIDStr)
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -137,7 +137,7 @@ func (u *UserController) GetMe(c *fiber.Ctx) error {
 // @Router       /api/v1/users/{userID} [get]
 // @ID 			getUser
 func (u *UserController) GetUser(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("userID"))
+	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -161,7 +161,7 @@ func (u *UserController) GetUser(c *fiber.Ctx) error {
 // @Router       /api/v1/users/{userID} [delete]
 // @ID 			deleteUser
 func (u *UserController) DeleteUser(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("userID"))
+	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
