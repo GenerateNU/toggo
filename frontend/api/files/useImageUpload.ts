@@ -1,88 +1,28 @@
+import type { UseMutationOptions } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { uploadImage } from "../../services/imageService";
 import type {
-    QueryClient,
-    UseMutationOptions,
-    UseMutationResult,
-} from "@tanstack/react-query";
-import { mutationOptions, useMutation } from "@tanstack/react-query";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+  UploadError400,
+  UploadError500,
+  UploadImageRequest,
+  UploadImageResponse,
+} from "../../types/images";
+import type { ResponseErrorConfig } from "../client";
 
-import type { UploadError400, UploadError500 } from "../../types/images";
-import {
-    uploadImage,
-    type UploadImageRequest,
-    type UploadImageResponse,
-} from "../../utilities/images";
-
-// === Mutation Key ===
-
-export const uploadImageMutationKey = () =>
-  [{ url: "/api/v1/images/upload" }] as const;
-
-export type UploadImageMutationKey = ReturnType<typeof uploadImageMutationKey>;
-
-// === Mutation Options ===
-
-export function uploadImageMutationOptions(
-  config: Partial<RequestConfig> = {},
-) {
-  const mutationKey = uploadImageMutationKey();
-  return mutationOptions<
-    UploadImageResponse,
-    ResponseErrorConfig<UploadError400 | UploadError500>,
-    { data: UploadImageRequest },
-    typeof mutationKey
-  >({
-    mutationKey,
-    mutationFn: async ({ data }) => {
-      return uploadImage(data, config);
-    },
-  });
-}
-
-// === Hook ===
+type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
 
 /**
- * @description Compresses and uploads an image with specified size variants
- * @summary Upload an image
+ * Hook to compress and upload an image with specified size variants.
+ *
+ * @param options - Optional mutation options (cropping, etc.)
+ * @return Mutation object for uploading image
  */
-export function useUploadImage<TContext>(
-  options: {
-    mutation?: UseMutationOptions<
-      UploadImageResponse,
-      ResponseErrorConfig<UploadError400 | UploadError500>,
-      { data: UploadImageRequest },
-      TContext
-    > & { client?: QueryClient };
-    client?: Partial<RequestConfig>;
-  } = {},
+export function useUploadImage(
+  options?: UseMutationOptions<UploadImageResponse, UploadError, UploadImageRequest>,
 ) {
-  const { mutation = {}, client: config = {} } = options ?? {};
-  const { client: queryClient, ...mutationOpts } = mutation;
-  const mutationKey = mutationOpts.mutationKey ?? uploadImageMutationKey();
-
-  const baseOptions = uploadImageMutationOptions(config) as UseMutationOptions<
-    UploadImageResponse,
-    ResponseErrorConfig<UploadError400 | UploadError500>,
-    { data: UploadImageRequest },
-    TContext
-  >;
-
-  return useMutation<
-    UploadImageResponse,
-    ResponseErrorConfig<UploadError400 | UploadError500>,
-    { data: UploadImageRequest },
-    TContext
-  >(
-    {
-      ...baseOptions,
-      mutationKey,
-      ...mutationOpts,
-    },
-    queryClient,
-  ) as UseMutationResult<
-    UploadImageResponse,
-    ResponseErrorConfig<UploadError400 | UploadError500>,
-    { data: UploadImageRequest },
-    TContext
-  >;
+  return useMutation<UploadImageResponse, UploadError, UploadImageRequest>({
+    mutationKey: ["upload-image"],
+    mutationFn: (data) => uploadImage(data),
+    ...options,
+  });
 }

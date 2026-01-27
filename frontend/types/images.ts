@@ -28,54 +28,39 @@ export class ImageCompressionError extends Error {
   }
 }
 
-// API Request/Response types
-export interface ImageVariantRequest {
-  size: ImageSize;
-  content_type: string;
-}
-
-export interface ImageUploadRequest {
-  id: string;
-  variants: ImageVariantRequest[];
-}
-
-export interface BulkUploadURLRequest {
-  images: ImageUploadRequest[];
-}
-
-export interface PresignedURLResponse {
-  size: string;
-  upload_url: string;
-  file_key: string;
-  content_type: string;
-}
-
-export interface ImageUploadURLResponse {
-  id: string;
-  presigned_urls: PresignedURLResponse[];
-}
-
-export interface BulkUploadURLResponse {
-  images: ImageUploadURLResponse[];
-}
-
-export interface ConfirmUploadRequest {
-  image_id: string;
-  variants: ImageSize[];
-}
-
-export interface BulkConfirmUploadRequest {
-  images: ConfirmUploadRequest[];
-}
-
-export interface ConfirmUploadResponse {
-  message: string;
-}
-
+// API Error types
 export interface UploadError400 {
   error: string;
 }
 
 export interface UploadError500 {
   error: string;
+}
+
+export interface UploadImageRequest {
+  uri: string;
+  sizes?: ImageSize[];
+}
+
+export interface UploadImageResponse {
+  imageId: string;
+  variants: ImageSize[];
+}
+
+
+export interface GetImageURLRequest {
+  imageId: string;
+  size: ImageSize;
+}
+
+export interface GetImageURLResponse {
+  imageId: string;
+  size: ImageSize;
+  url: string;
+  contentType?: string;
+}
+
+export interface GetImageAllSizesResponse {
+  imageId: string;
+  files: GetImageURLResponse[];
 }
