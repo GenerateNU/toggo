@@ -117,16 +117,17 @@ test:
 	docker compose -f docker-compose.test.yml up -d
 	@until docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
-	doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4
-	docker compose -f docker-compose.test.yml down
+	@doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4; \
+	EXIT_CODE=$$?; \
+	docker compose -f docker-compose.test.yml down; \
+	exit $$EXIT_CODE
 
 test-win:
 	docker compose -f docker-compose.test.yml up -d
 	@echo Waiting for database...
 	@powershell -Command "while (!(docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db 2>$$null)) { Start-Sleep -Seconds 1 }"
 	@echo Database ready
-	doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4
-	docker compose -f docker-compose.test.yml down
+	@powershell -Command "try { doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4 } finally { docker compose -f docker-compose.test.yml down }"
 
 localstack-up:
 	./scripts/start-localstack.sh # if on windows, just use git bash to run this script

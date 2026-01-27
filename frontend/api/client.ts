@@ -1,5 +1,7 @@
 // api/client.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
+import { Platform } from "react-native";
 
 export type RequestConfig<TBody = unknown> = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -37,7 +39,28 @@ export const getAuthToken = async (): Promise<string | null> => {
   }
 };
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
+const resolveBaseUrl = (): string => {
+  const constants = Constants as Record<string, any>;
+  const debuggerHost =
+    constants.expoConfig?.hostUri ??
+    constants.expoGoConfig?.hostUri ??
+    constants.manifest?.debuggerHost ??
+    constants.manifest2?.extra?.expoClient?.hostUri;
+
+  if (debuggerHost) {
+    const host = debuggerHost.split(":")[0];
+    return `http://${host}:8000`;
+  }
+
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    const { hostname, protocol } = window.location;
+    return `${protocol}//${hostname}:8000`;
+  }
+
+  return "http://localhost:8000";
+};
+
+const BASE_URL = resolveBaseUrl();
 
 export default async function request<TData, TError = unknown, TBody = unknown>(
   config: RequestConfig<TBody>,
