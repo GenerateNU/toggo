@@ -133,7 +133,7 @@ func TestUserLifecycle(t *testing.T) {
 			AssertField("timezone", "Asia/Tokyo")
 	})
 
-	t.Run("update user with invalid timezone returns 400", func(t *testing.T) {
+	t.Run("update user with invalid timezone returns 422", func(t *testing.T) {
 		tz := "Invalid/Timezone"
 		testkit.New(t).
 			Request(testkit.Request{
