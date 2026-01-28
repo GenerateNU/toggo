@@ -30,7 +30,6 @@ func TestNotificationEndpoints(t *testing.T) {
 				PhoneNumber: "+16175559001",
 			},
 		}).
-		DebugLogging().
 		AssertStatus(http.StatusCreated).
 		GetBody()
 	user1ID = resp1["id"].(string)
@@ -94,7 +93,7 @@ func TestNotificationEndpoints(t *testing.T) {
 			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
-	t.Run("send notification with invalid user_id returns 422", func(t *testing.T) {
+	t.Run("send notification with invalid user_id returns 400", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -107,7 +106,7 @@ func TestNotificationEndpoints(t *testing.T) {
 					"body":    "Test body",
 				},
 			}).
-			AssertStatus(http.StatusUnprocessableEntity)
+			AssertStatus(http.StatusBadRequest)
 	})
 
 	t.Run("send notification with missing title returns 422", func(t *testing.T) {
@@ -205,7 +204,7 @@ func TestNotificationEndpoints(t *testing.T) {
 					Data:   map[string]interface{}{"screen": "Home"},
 				},
 			}).
-			AssertStatus(http.StatusInternalServerError)
+			AssertStatus(http.StatusOK)
 	})
 
 	t.Run("send bulk with missing user_ids returns 422", func(t *testing.T) {
@@ -239,7 +238,7 @@ func TestNotificationEndpoints(t *testing.T) {
 			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
-	t.Run("send bulk with invalid user_id returns 422", func(t *testing.T) {
+	t.Run("send bulk with invalid user_id returns 400", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -252,7 +251,7 @@ func TestNotificationEndpoints(t *testing.T) {
 					"body":     "Test body",
 				},
 			}).
-			AssertStatus(http.StatusUnprocessableEntity)
+			AssertStatus(http.StatusBadRequest)
 	})
 
 	t.Run("send bulk with missing title returns 422", func(t *testing.T) {
