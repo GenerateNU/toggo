@@ -1,5 +1,7 @@
 export type { HealthcheckQueryKey } from "./api/example/useHealthcheck.ts";
 export type { HealthcheckSuspenseQueryKey } from "./api/example/useHealthcheckSuspense.ts";
+export type { SendBulkNotificationMutationKey } from "./api/notifications/useSendBulkNotification.ts";
+export type { SendNotificationMutationKey } from "./api/notifications/useSendNotification.ts";
 export type { CreateUserMutationKey } from "./api/users/useCreateUser.ts";
 export type { DeleteUserMutationKey } from "./api/users/useDeleteUser.ts";
 export type { GetCurrentUserQueryKey } from "./api/users/useGetCurrentUser.ts";
@@ -15,6 +17,14 @@ export { healthcheckSuspenseQueryKey } from "./api/example/useHealthcheckSuspens
 export { healthcheckSuspense } from "./api/example/useHealthcheckSuspense.ts";
 export { healthcheckSuspenseQueryOptions } from "./api/example/useHealthcheckSuspense.ts";
 export { useHealthcheckSuspense } from "./api/example/useHealthcheckSuspense.ts";
+export { sendBulkNotificationMutationKey } from "./api/notifications/useSendBulkNotification.ts";
+export { sendBulkNotification } from "./api/notifications/useSendBulkNotification.ts";
+export { sendBulkNotificationMutationOptions } from "./api/notifications/useSendBulkNotification.ts";
+export { useSendBulkNotification } from "./api/notifications/useSendBulkNotification.ts";
+export { sendNotificationMutationKey } from "./api/notifications/useSendNotification.ts";
+export { sendNotification } from "./api/notifications/useSendNotification.ts";
+export { sendNotificationMutationOptions } from "./api/notifications/useSendNotification.ts";
+export { useSendNotification } from "./api/notifications/useSendNotification.ts";
 export { createUserMutationKey } from "./api/users/useCreateUser.ts";
 export { createUser } from "./api/users/useCreateUser.ts";
 export { createUserMutationOptions } from "./api/users/useCreateUser.ts";

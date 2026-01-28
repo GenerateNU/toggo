@@ -20,8 +20,74 @@ definitions:
     - phone_number
     - username
     type: object
+  models.NotificationError:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.NotificationResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/models.NotificationError'
+        type: array
+      failure_count:
+        type: integer
+      success_count:
+        type: integer
+    type: object
+  models.SendBulkNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_ids:
+        items:
+          type: string
+        maxItems: 1000
+        minItems: 1
+        type: array
+    required:
+    - body
+    - title
+    - user_ids
+    type: object
+  models.SendNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_id:
+        type: string
+    required:
+    - body
+    - title
+    - user_id
+    type: object
   models.UpdateUserRequest:
     properties:
+      device_token:
+        type: string
       name:
         minLength: 1
         type: string
@@ -32,6 +98,10 @@ definitions:
     type: object
   models.User:
     properties:
+      device_token:
+        type: string
+      device_token_updated_at:
+        type: string
       id:
         type: string
       name:
@@ -48,6 +118,74 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/notifications/send:
+    post:
+      consumes:
+      - application/json
+      description: Sends a push notification to a single user
+      operationId: sendNotification
+      parameters:
+      - description: Notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send notification to user
+      tags:
+      - notifications
+  /api/v1/notifications/send-bulk:
+    post:
+      consumes:
+      - application/json
+      description: Sends push notifications to multiple users
+      operationId: sendBulkNotification
+      parameters:
+      - description: Bulk notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendBulkNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send bulk notifications
+      tags:
+      - notifications
   /api/v1/users:
     post:
       consumes:
