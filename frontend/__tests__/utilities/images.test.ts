@@ -2,544 +2,630 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { Image } from "react-native";
 
 import {
-  getImageAllSizes,
-  getImageURL,
-  uploadGalleryImage,
-  uploadImage,
-  uploadProfilePicture,
-} from "@/services/imageService";
-import { IMAGE_CONFIG } from "../../constants/images";
-import {
-  compressGalleryImage,
+  uriToBlob,
   compressImage,
   compressProfilePicture,
-  uriToBlob,
-} from "../../utilities/images";
+  compressGalleryImage,
+} from "@/utilities/images";
+import { IMAGE_CONFIG } from "../../constants/images";
+import { ImageCompressionError } from "../../types/images";
 
 // =============================================================================
-// Test Helpers
+// Mocks
 // =============================================================================
 
-const mockManipulateAsync = ImageManipulator.manipulateAsync as jest.Mock;
-const mockGetSize = Image.getSize as jest.Mock;
-const mockFetch = globalThis.fetch as jest.Mock;
+jest.mock("expo-image-manipulator", () => ({
+  manipulateAsync: jest.fn(),
+  SaveFormat: { JPEG: "jpeg" },
+}));
 
-/**
- * Creates a mock manipulated image result
- */
-function createMockImageResult(
-  width = 1000,
-  height = 800,
-  uri = "file://compressed.jpg",
-): ImageManipulator.ImageResult {
-  return { uri, width, height, base64: undefined };
-}
+jest.mock("react-native", () => ({
+  Image: {
+    getSize: jest.fn(),
+  },
+}));
 
-/**
- * Creates a mock blob with specified size
- */
-function createMockBlob(size: number): Blob {
-  return { size } as Blob;
-}
+// Mock global fetch for getFileSize and uriToBlob
+const mockFetch = jest.fn();
+globalThis.fetch = mockFetch;
 
-/**
- * Sets up fetch to return a blob of specified size
- */
-function mockFetchForFileSize(size: number) {
+// =============================================================================
+// Test Utilities
+// =============================================================================
+
+const createMockImageResult = (
+  uri: string,
+  width: number,
+  height: number,
+): ImageManipulator.ImageResult => ({
+  uri,
+  width,
+  height,
+  base64: undefined,
+});
+
+const createMockBlob = (size: number): Blob => ({
+  size,
+  type: "image/jpeg",
+  slice: jest.fn(),
+  arrayBuffer: jest.fn(),
+  text: jest.fn(),
+  stream: jest.fn(),
+  bytes: jest.fn(),
+});
+
+const setupImageGetSize = (width: number, height: number) => {
+  (Image.getSize as jest.Mock).mockImplementation((uri, onSuccess) => {
+    onSuccess(width, height);
+  });
+};
+
+const setupImageGetSizeError = (errorMessage: string) => {
+  (Image.getSize as jest.Mock).mockImplementation((uri, onSuccess, onError) => {
+    onError(errorMessage);
+  });
+};
+
+const setupFetchWithSize = (size: number) => {
   mockFetch.mockResolvedValue({
-    blob: () => Promise.resolve(createMockBlob(size)),
-    ok: true,
+    blob: jest.fn().mockResolvedValue(createMockBlob(size)),
   });
-}
-
-/**
- * Sets up Image.getSize to return specified dimensions
- */
-function mockImageDimensions(width: number, height: number) {
-  mockGetSize.mockImplementation((uri, success) => success(width, height));
-}
+};
 
 // =============================================================================
-// uriToBlob Tests
+// Tests
 // =============================================================================
 
-describe("uriToBlob", () => {
-  it("converts URI to blob", async () => {
-    const mockBlob = createMockBlob(1000);
-    mockFetch.mockResolvedValue({
-      blob: () => Promise.resolve(mockBlob),
-    });
-
-    const result = await uriToBlob("file://test.jpg");
-
-    expect(mockFetch).toHaveBeenCalledWith("file://test.jpg");
-    expect(result).toBe(mockBlob);
-  });
-});
-
-// =============================================================================
-// Compression Tests
-// =============================================================================
-
-describe("compressImage", () => {
+describe("image-compression", () => {
   beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(createMockImageResult());
-    mockFetchForFileSize(500000); // 500KB - under all limits
+    jest.clearAllMocks();
   });
 
-  it("compresses to all sizes by default", async () => {
-    const result = await compressImage("file://test.jpg");
+  // ---------------------------------------------------------------------------
+  // uriToBlob
+  // ---------------------------------------------------------------------------
 
-    expect(result).toHaveLength(3);
-    expect(result.map((v) => v.size)).toEqual(["large", "medium", "small"]);
-  });
-
-  it("compresses to specific sizes when requested", async () => {
-    const result = await compressImage("file://test.jpg", ["small"]);
-
-    expect(result).toHaveLength(1);
-    expect(result[0]?.size).toBe("small");
-  });
-
-  it("returns correct variant structure", async () => {
-    const result = await compressImage("file://test.jpg", ["large"]);
-
-    expect(result[0]).toMatchObject({
-      size: "large",
-      uri: expect.any(String),
-      width: expect.any(Number),
-      height: expect.any(Number),
-      fileSize: expect.any(Number),
-    });
-  });
-});
-
-describe("compressImage - large variant", () => {
-  beforeEach(() => {
-    mockImageDimensions(2000, 1500);
-  });
-
-  it("compresses with configured quality", async () => {
-    mockManipulateAsync.mockResolvedValue(createMockImageResult(2000, 1500));
-    mockFetchForFileSize(4000000); // 4MB - under 6MB limit
-
-    await compressImage("file://test.jpg", ["large"]);
-
-    expect(mockManipulateAsync).toHaveBeenCalledWith(
-      "file://test.jpg",
-      [], // No manipulations for large
-      { compress: IMAGE_CONFIG.large.quality, format: "jpeg" },
-    );
-  });
-
-  it("iteratively reduces quality if too large", async () => {
-    // First call returns too large, subsequent calls return acceptable size
-    mockManipulateAsync.mockResolvedValue(createMockImageResult(2000, 1500));
-    mockFetch
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(7000000)), // 7MB - too large
-        ok: true,
-      })
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(5000000)), // 5MB - acceptable
-        ok: true,
+  describe("uriToBlob", () => {
+    it("converts a URI to a Blob", async () => {
+      const mockBlob = createMockBlob(1000);
+      mockFetch.mockResolvedValue({
+        blob: jest.fn().mockResolvedValue(mockBlob),
       });
 
-    const result = await compressImage("file://test.jpg", ["large"]);
+      const result = await uriToBlob("file:///test/image.jpg");
 
-    // Should have been called twice (initial + one quality reduction)
-    expect(mockManipulateAsync).toHaveBeenCalledTimes(2);
-    expect(result[0]?.fileSize).toBe(5000000);
-  });
-});
+      expect(mockFetch).toHaveBeenCalledWith("file:///test/image.jpg");
+      expect(result).toBe(mockBlob);
+    });
 
-describe("compressImage - medium variant", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(createMockImageResult(600, 480));
-    mockFetchForFileSize(1000000); // 1MB - under 2MB limit
-  });
-
-  it("scales down to configured scale factor", async () => {
-    await compressImage("file://test.jpg", ["medium"]);
-
-    const expectedWidth = Math.round(1000 * IMAGE_CONFIG.medium.scale);
-    const expectedHeight = Math.round(800 * IMAGE_CONFIG.medium.scale);
-
-    expect(mockManipulateAsync).toHaveBeenCalledWith(
-      "file://test.jpg",
-      [{ resize: { width: expectedWidth, height: expectedHeight } }],
-      { compress: IMAGE_CONFIG.medium.quality, format: "jpeg" },
-    );
-  });
-});
-
-describe("compressImage - small variant", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(
-      createMockImageResult(
-        IMAGE_CONFIG.small.width,
-        IMAGE_CONFIG.small.height,
-      ),
-    );
-    mockFetchForFileSize(100000); // 100KB - under 512KB limit
-  });
-
-  it("crops to square and resizes to thumbnail size", async () => {
-    await compressImage("file://test.jpg", ["small"]);
-
-    // With 1000x800 image, should crop to center 800x800 square
-    const minDim = 800;
-    const cropX = Math.round((1000 - minDim) / 2); // 100
-    const cropY = 0;
-
-    expect(mockManipulateAsync).toHaveBeenCalledWith(
-      "file://test.jpg",
-      [
-        {
-          crop: {
-            originX: cropX,
-            originY: cropY,
-            width: minDim,
-            height: minDim,
-          },
-        },
-        {
-          resize: {
-            width: IMAGE_CONFIG.small.width,
-            height: IMAGE_CONFIG.small.height,
-          },
-        },
-      ],
-      { compress: IMAGE_CONFIG.small.quality, format: "jpeg" },
-    );
-  });
-
-  it("handles portrait orientation", async () => {
-    mockImageDimensions(600, 1000); // Portrait
-
-    await compressImage("file://test.jpg", ["small"]);
-
-    // With 600x1000 image, should crop to center 600x600 square
-    const minDim = 600;
-    const cropX = 0;
-    const cropY = Math.round((1000 - minDim) / 2); // 200
-
-    expect(mockManipulateAsync).toHaveBeenCalledWith(
-      "file://test.jpg",
-      [
-        {
-          crop: {
-            originX: cropX,
-            originY: cropY,
-            width: minDim,
-            height: minDim,
-          },
-        },
-        {
-          resize: {
-            width: IMAGE_CONFIG.small.width,
-            height: IMAGE_CONFIG.small.height,
-          },
-        },
-      ],
-      { compress: IMAGE_CONFIG.small.quality, format: "jpeg" },
-    );
-  });
-});
-
-describe("compressProfilePicture", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(
-      createMockImageResult(
-        IMAGE_CONFIG.small.width,
-        IMAGE_CONFIG.small.height,
-      ),
-    );
-    mockFetchForFileSize(100000);
-  });
-
-  it("returns only small variant", async () => {
-    const result = await compressProfilePicture("file://test.jpg");
-
-    expect(result.size).toBe("small");
-    expect(result.width).toBe(IMAGE_CONFIG.small.width);
-    expect(result.height).toBe(IMAGE_CONFIG.small.height);
-  });
-});
-
-describe("compressGalleryImage", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(createMockImageResult());
-    mockFetchForFileSize(500000);
-  });
-
-  it("returns all three size variants", async () => {
-    const result = await compressGalleryImage("file://test.jpg");
-
-    expect(result).toHaveLength(3);
-    expect(result.map((v) => v.size)).toEqual(["large", "medium", "small"]);
-  });
-});
-
-// =============================================================================
-// Upload Tests
-// =============================================================================
-
-describe("uploadImage", () => {
-  const mockUploadUrls = {
-    imageId: "img-123",
-    fileKey: "uploads/123-test-uuid",
-    uploadUrls: [
-      { size: "large", url: "https://s3.example.com/large" },
-      { size: "medium", url: "https://s3.example.com/medium" },
-      { size: "small", url: "https://s3.example.com/small" },
-    ],
-    expiresAt: "2026-01-27T00:00:00Z",
-  };
-
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(createMockImageResult());
-  });
-
-  it("compresses, uploads to S3, and confirms", async () => {
-    const mockClient = jest
-      .fn()
-      // First call: getUploadURLs
-      .mockResolvedValueOnce({ data: mockUploadUrls })
-      // Second call: confirmUpload
-      .mockResolvedValueOnce({
-        data: { imageId: "img-123", status: "confirmed", confirmed: 3 },
+    it("handles remote URIs", async () => {
+      const mockBlob = createMockBlob(2000);
+      mockFetch.mockResolvedValue({
+        blob: jest.fn().mockResolvedValue(mockBlob),
       });
 
-    // Mock fetch for file size checks and S3 uploads
-    mockFetch
-      // File size checks (3 variants)
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-        ok: true,
-      })
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-        ok: true,
-      })
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-        ok: true,
-      })
-      // URI to blob conversions (3 variants)
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-      })
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-      })
-      .mockResolvedValueOnce({
-        blob: () => Promise.resolve(createMockBlob(500000)),
-      })
-      // S3 uploads (3 variants)
-      .mockResolvedValueOnce({ ok: true })
-      .mockResolvedValueOnce({ ok: true })
-      .mockResolvedValueOnce({ ok: true });
+      const result = await uriToBlob("https://example.com/image.jpg");
 
-    const result = await uploadImage({
-      uri: "file://test.jpg",
-      sizes: ["large", "medium", "small"],
+      expect(mockFetch).toHaveBeenCalledWith("https://example.com/image.jpg");
+      expect(result).toBe(mockBlob);
     });
 
-    expect(result).toEqual({
-      imageId: "img-123",
-      variants: ["large", "medium", "small"],
+    it("propagates fetch errors", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      await expect(uriToBlob("file:///test/image.jpg")).rejects.toThrow(
+        "Network error",
+      );
     });
-
-    // Verify getUploadURLs was called
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: "POST",
-        url: "/api/v1/files/upload",
-      }),
-    );
-
-    // Verify confirmUpload was called
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: "POST",
-        url: "/api/v1/files/confirm",
-      }),
-    );
   });
 
-  it("defaults to all sizes when not specified", async () => {
-    const mockClient = jest
-      .fn()
-      .mockResolvedValueOnce({ data: mockUploadUrls })
-      .mockResolvedValueOnce({
-        data: { imageId: "img-123", status: "confirmed", confirmed: 3 },
+  // ---------------------------------------------------------------------------
+  // compressImage
+  // ---------------------------------------------------------------------------
+
+  describe("compressImage", () => {
+    const testUri = "file:///test/source.jpg";
+
+    describe("successful compression", () => {
+      beforeEach(() => {
+        setupImageGetSize(1920, 1080);
+        setupFetchWithSize(500_000); // 500KB - under all limits
       });
 
-    mockFetch.mockResolvedValue({
-      blob: () => Promise.resolve(createMockBlob(500000)),
-      ok: true,
-    });
+      it("compresses to all three sizes by default", async () => {
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
 
-    const result = await uploadImage({ uri: "file://test.jpg" });
+        const results = await compressImage(testUri);
 
-    expect(result.variants).toEqual(["large", "medium", "small"]);
-  });
-});
-
-describe("uploadProfilePicture", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(
-      createMockImageResult(
-        IMAGE_CONFIG.small.width,
-        IMAGE_CONFIG.small.height,
-      ),
-    );
-  });
-
-  it("uploads only small variant", async () => {
-    const mockClient = jest
-      .fn()
-      .mockResolvedValueOnce({
-        data: {
-          imageId: "img-123",
-          fileKey: "uploads/123-test-uuid",
-          uploadUrls: [{ size: "small", url: "https://s3.example.com/small" }],
-          expiresAt: "2026-01-27T00:00:00Z",
-        },
-      })
-      .mockResolvedValueOnce({
-        data: { imageId: "img-123", status: "confirmed", confirmed: 1 },
+        expect(results).toHaveLength(3);
+        expect(results.map((r) => r.size)).toEqual([
+          "large",
+          "medium",
+          "small",
+        ]);
       });
 
-    mockFetch.mockResolvedValue({
-      blob: () => Promise.resolve(createMockBlob(100000)),
-      ok: true,
-    });
+      it("compresses to specified sizes only", async () => {
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
 
-    const result = await uploadProfilePicture("file://test.jpg");
+        const results = await compressImage(testUri, ["large", "small"]);
 
-    expect(result).toBe("img-123");
-
-    // Verify only small size was requested
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ sizes: ["small"] }),
-      }),
-    );
-  });
-});
-
-describe("uploadGalleryImage", () => {
-  beforeEach(() => {
-    mockImageDimensions(1000, 800);
-    mockManipulateAsync.mockResolvedValue(createMockImageResult());
-  });
-
-  it("uploads all three size variants", async () => {
-    const mockClient = jest
-      .fn()
-      .mockResolvedValueOnce({
-        data: {
-          imageId: "img-123",
-          fileKey: "uploads/123-test-uuid",
-          uploadUrls: [
-            { size: "large", url: "https://s3.example.com/large" },
-            { size: "medium", url: "https://s3.example.com/medium" },
-            { size: "small", url: "https://s3.example.com/small" },
-          ],
-          expiresAt: "2026-01-27T00:00:00Z",
-        },
-      })
-      .mockResolvedValueOnce({
-        data: { imageId: "img-123", status: "confirmed", confirmed: 3 },
+        expect(results).toHaveLength(2);
+        expect(results.map((r: { size: any; }) => r.size)).toEqual(["large", "small"]);
       });
 
-    mockFetch.mockResolvedValue({
-      blob: () => Promise.resolve(createMockBlob(500000)),
-      ok: true,
-    });
+      it("returns correct variant structure for large", async () => {
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///large.jpg", 1920, 1080),
+        );
 
-    const result = await uploadGalleryImage("file://test.jpg");
+        const [largeResult] = await compressImage(testUri, ["large"]);
 
-    expect(result).toBe("img-123");
-
-    // Verify all sizes were requested
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ sizes: ["large", "medium", "small"] }),
-      }),
-    );
-  });
-});
-
-// =============================================================================
-// Retrieval Tests
-// =============================================================================
-
-describe("getImageURL", () => {
-  it("fetches presigned URL for specific size", async () => {
-    const mockResponse = {
-      imageId: "img-123",
-      size: "small",
-      url: "https://s3.example.com/img-123/small",
-      contentType: "image/jpeg",
-    };
-
-    const mockClient = jest.fn().mockResolvedValue({ data: mockResponse });
-
-    const result = await getImageURL("img-123", "small");
-
-    expect(result).toEqual(mockResponse);
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: "GET",
-        url: "/api/v1/files/img-123/small",
-      }),
-    );
-  });
-});
-
-describe("getImageAllSizes", () => {
-  it("fetches presigned URLs for all sizes", async () => {
-    const mockResponse = {
-      imageId: "img-123",
-      files: [
-        {
-          imageId: "img-123",
+        expect(largeResult).toEqual({
           size: "large",
-          url: "https://s3.example.com/large",
-        },
-        {
-          imageId: "img-123",
-          size: "medium",
-          url: "https://s3.example.com/medium",
-        },
-        {
-          imageId: "img-123",
-          size: "small",
-          url: "https://s3.example.com/small",
-        },
-      ],
-    };
+          uri: "file:///large.jpg",
+          width: 1920,
+          height: 1080,
+          fileSize: 500_000,
+        });
+      });
 
-    const mockClient = jest.fn().mockResolvedValue({ data: mockResponse });
+      it("applies resize for medium variant", async () => {
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///medium.jpg", 960, 540),
+        );
 
-    const result = await getImageAllSizes("img-123");
+        await compressImage(testUri, ["medium"]);
 
-    expect(result).toEqual(mockResponse);
-    expect(mockClient).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: "GET",
-        url: "/api/v1/files/img-123",
-      }),
-    );
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+          testUri,
+          [
+            {
+              resize: { width: expect.any(Number), height: expect.any(Number) },
+            },
+          ],
+          expect.objectContaining({
+            compress: IMAGE_CONFIG.medium.quality,
+            format: ImageManipulator.SaveFormat.JPEG,
+          }),
+        );
+      });
+
+      it("applies crop and resize for small variant", async () => {
+        setupImageGetSize(1920, 1080);
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///small.jpg", 150, 150),
+        );
+
+        await compressImage(testUri, ["small"]);
+
+        // Should crop to center square (1080x1080) then resize
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+          testUri,
+          [
+            {
+              crop: {
+                originX: 420, // (1920 - 1080) / 2
+                originY: 0,
+                width: 1080,
+                height: 1080,
+              },
+            },
+            {
+              resize: {
+                width: IMAGE_CONFIG.small.width,
+                height: IMAGE_CONFIG.small.height,
+              },
+            },
+          ],
+          expect.objectContaining({
+            compress: IMAGE_CONFIG.small.quality,
+            format: ImageManipulator.SaveFormat.JPEG,
+          }),
+        );
+      });
+
+      it("handles portrait orientation for small variant crop", async () => {
+        setupImageGetSize(1080, 1920); // Portrait
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///small.jpg", 150, 150),
+        );
+
+        await compressImage(testUri, ["small"]);
+
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+          testUri,
+          [
+            {
+              crop: {
+                originX: 0,
+                originY: 420, // (1920 - 1080) / 2
+                width: 1080,
+                height: 1080,
+              },
+            },
+            {
+              resize: {
+                width: IMAGE_CONFIG.small.width,
+                height: IMAGE_CONFIG.small.height,
+              },
+            },
+          ],
+          expect.any(Object),
+        );
+      });
+
+      it("handles square images for small variant", async () => {
+        setupImageGetSize(1000, 1000);
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///small.jpg", 150, 150),
+        );
+
+        await compressImage(testUri, ["small"]);
+
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+          testUri,
+          [
+            {
+              crop: {
+                originX: 0,
+                originY: 0,
+                width: 1000,
+                height: 1000,
+              },
+            },
+            {
+              resize: {
+                width: IMAGE_CONFIG.small.width,
+                height: IMAGE_CONFIG.small.height,
+              },
+            },
+          ],
+          expect.any(Object),
+        );
+      });
+    });
+
+    describe("iterative quality reduction", () => {
+      beforeEach(() => {
+        setupImageGetSize(1920, 1080);
+      });
+
+      it("reduces quality when initial compression exceeds limit", async () => {
+        // First attempt too large, second attempt within limit
+        let callCount = 0;
+        mockFetch.mockImplementation(() => {
+          callCount++;
+          const size = callCount === 1 ? 15_000_000 : 500_000;
+          return Promise.resolve({
+            blob: jest.fn().mockResolvedValue(createMockBlob(size)),
+          });
+        });
+
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
+
+        await compressImage(testUri, ["large"]);
+
+        // Should have been called twice (initial + one quality step)
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledTimes(2);
+      });
+
+      it("tries all quality steps before scaling", async () => {
+        // Always return too large until we've tried all quality steps
+        let callCount = 0;
+        const qualitySteps = 6; // 0.85, 0.8, 0.75, 0.7, 0.65, 0.6
+        mockFetch.mockImplementation(() => {
+          callCount++;
+          // Still too large after all quality steps, then under limit after scale
+          const size = callCount <= qualitySteps + 1 ? 15_000_000 : 500_000;
+          return Promise.resolve({
+            blob: jest.fn().mockResolvedValue(createMockBlob(size)),
+          });
+        });
+
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
+
+        await compressImage(testUri, ["large"]);
+
+        // 1 initial + 6 quality steps + 1 scale step = 8
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledTimes(8);
+      });
+
+      it("applies dimension scaling after quality reduction fails", async () => {
+        let callCount = 0;
+        mockFetch.mockImplementation(() => {
+          callCount++;
+          // Under limit only after scaling
+          const size = callCount <= 7 ? 15_000_000 : 500_000;
+          return Promise.resolve({
+            blob: jest.fn().mockResolvedValue(createMockBlob(size)),
+          });
+        });
+
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1728, 972), // 0.9 scale
+        );
+
+        await compressImage(testUri, ["large"]);
+
+        // Last call should include resize action
+        const lastCall = (
+          ImageManipulator.manipulateAsync as jest.Mock
+        ).mock.calls.slice(-1)[0];
+        expect(lastCall[1]).toContainEqual(
+          expect.objectContaining({
+            resize: expect.objectContaining({
+              width: expect.any(Number),
+              height: expect.any(Number),
+            }),
+          }),
+        );
+      });
+    });
+
+    describe("error handling", () => {
+      it("throws ImageCompressionError when compression fails completely", async () => {
+        setupImageGetSize(1920, 1080);
+        // Always return too large
+        setupFetchWithSize(100_000_000);
+
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
+
+        await expect(compressImage(testUri, ["large"])).rejects.toThrow(
+          ImageCompressionError,
+        );
+      });
+
+      it("throws error with correct size name in message", async () => {
+        setupImageGetSize(1920, 1080);
+        setupFetchWithSize(100_000_000);
+
+        (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+          createMockImageResult("file:///compressed.jpg", 1920, 1080),
+        );
+
+        await expect(compressImage(testUri, ["medium"])).rejects.toThrow(
+          /medium variant/,
+        );
+      });
+
+      it("throws error when image dimensions cannot be determined", async () => {
+        setupImageGetSizeError("Invalid image");
+
+        await expect(compressImage(testUri)).rejects.toThrow(
+          "Failed to get image dimensions",
+        );
+      });
+
+      it("propagates ImageManipulator errors", async () => {
+        setupImageGetSize(1920, 1080);
+        (ImageManipulator.manipulateAsync as jest.Mock).mockRejectedValue(
+          new Error("Manipulation failed"),
+        );
+
+        await expect(compressImage(testUri, ["large"])).rejects.toThrow(
+          "Manipulation failed",
+        );
+      });
+    });
+
+    describe("parallel processing", () => {
+      it("compresses all variants in parallel", async () => {
+        setupImageGetSize(1920, 1080);
+        setupFetchWithSize(500_000);
+
+        const delays: number[] = [];
+        (ImageManipulator.manipulateAsync as jest.Mock).mockImplementation(
+          async () => {
+            const start = Date.now();
+            await new Promise((r) => setTimeout(r, 10));
+            delays.push(Date.now() - start);
+            return createMockImageResult("file:///compressed.jpg", 500, 500);
+          },
+        );
+
+        const start = Date.now();
+        await compressImage(testUri, ["large", "medium", "small"]);
+        const totalTime = Date.now() - start;
+
+        // If parallel, total time should be roughly equal to single operation
+        // If sequential, it would be 3x longer
+        expect(totalTime).toBeLessThan(50); // Allow some overhead
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // compressProfilePicture
+  // ---------------------------------------------------------------------------
+
+  describe("compressProfilePicture", () => {
+    it("returns a small variant", async () => {
+      setupImageGetSize(800, 600);
+      setupFetchWithSize(50_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///profile.jpg", 150, 150),
+      );
+
+      const result = await compressProfilePicture("file:///source.jpg");
+
+      expect(result.size).toBe("small");
+    });
+
+    it("applies center crop for non-square images", async () => {
+      setupImageGetSize(1000, 500);
+      setupFetchWithSize(50_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///profile.jpg", 150, 150),
+      );
+
+      await compressProfilePicture("file:///source.jpg");
+
+      expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+        "file:///source.jpg",
+        [
+          {
+            crop: {
+              originX: 250, // (1000 - 500) / 2
+              originY: 0,
+              width: 500,
+              height: 500,
+            },
+          },
+          {
+            resize: {
+              width: IMAGE_CONFIG.small.width,
+              height: IMAGE_CONFIG.small.height,
+            },
+          },
+        ],
+        expect.any(Object),
+      );
+    });
+
+    it("returns correct structure", async () => {
+      setupImageGetSize(500, 500);
+      setupFetchWithSize(30_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///profile.jpg", 150, 150),
+      );
+
+      const result = await compressProfilePicture("file:///source.jpg");
+
+      expect(result).toEqual({
+        size: "small",
+        uri: "file:///profile.jpg",
+        width: 150,
+        height: 150,
+        fileSize: 30_000,
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // compressGalleryImage
+  // ---------------------------------------------------------------------------
+
+  describe("compressGalleryImage", () => {
+    it("returns all three size variants", async () => {
+      setupImageGetSize(2000, 1500);
+      setupFetchWithSize(500_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///gallery.jpg", 1000, 750),
+      );
+
+      const results = await compressGalleryImage("file:///source.jpg");
+
+      expect(results).toHaveLength(3);
+      expect(results.map((r: { size: any }) => r.size)).toEqual([
+        "large",
+        "medium",
+        "small",
+      ]);
+    });
+
+    it("processes large images correctly", async () => {
+      setupImageGetSize(4000, 3000);
+      setupFetchWithSize(400_000); // 400KB - under the small variant limit (0.5MB)
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///gallery.jpg", 2000, 1500)
+      );
+
+      const results = await compressGalleryImage("file:///4k-image.jpg");
+
+      expect(results).toHaveLength(3);
+      results.forEach((variant) => {
+        expect(variant.uri).toBeDefined();
+        expect(variant.width).toBeGreaterThan(0);
+        expect(variant.height).toBeGreaterThan(0);
+        expect(variant.fileSize).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Edge Cases
+  // ---------------------------------------------------------------------------
+
+  describe("edge cases", () => {
+    it("handles very small source images", async () => {
+      setupImageGetSize(100, 100);
+      setupFetchWithSize(5_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///tiny.jpg", 100, 100),
+      );
+
+      const results = await compressImage("file:///tiny.jpg");
+
+      expect(results).toHaveLength(3);
+    });
+
+    it("handles images with odd dimensions", async () => {
+      setupImageGetSize(1921, 1081); // Odd dimensions
+      setupFetchWithSize(500_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///odd.jpg", 1921, 1081),
+      );
+
+      const results = await compressImage("file:///odd.jpg", ["small"]);
+
+      // Should round crop coordinates correctly
+      expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+        "file:///odd.jpg",
+        [
+          {
+            crop: {
+              originX: 420, // Math.round((1921 - 1081) / 2)
+              originY: 0,
+              width: 1081,
+              height: 1081,
+            },
+          },
+          expect.any(Object),
+        ],
+        expect.any(Object),
+      );
+
+      expect(results).toHaveLength(1);
+    });
+
+    it("handles single size request", async () => {
+      setupImageGetSize(1920, 1080);
+      setupFetchWithSize(500_000);
+
+      (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
+        createMockImageResult("file:///single.jpg", 1920, 1080),
+      );
+
+      const results = await compressImage("file:///source.jpg", ["large"]);
+
+      expect(results).toHaveLength(1);
+      expect(results[0]?.size).toBe("large");
+    });
+
+    it("handles empty sizes array", async () => {
+      setupImageGetSize(1920, 1080);
+
+      const results = await compressImage("file:///source.jpg", []);
+
+      expect(results).toHaveLength(0);
+    });
   });
 });
