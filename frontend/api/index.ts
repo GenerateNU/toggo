@@ -1,5 +1,7 @@
 export type { HealthcheckQueryKey } from "./example/useHealthcheck.ts";
 export type { HealthcheckSuspenseQueryKey } from "./example/useHealthcheckSuspense.ts";
+export type { SendBulkNotificationMutationKey } from "./notifications/useSendBulkNotification.ts";
+export type { SendNotificationMutationKey } from "./notifications/useSendNotification.ts";
 export type { CreateUserMutationKey } from "./users/useCreateUser.ts";
 export type { DeleteUserMutationKey } from "./users/useDeleteUser.ts";
 export type { GetCurrentUserQueryKey } from "./users/useGetCurrentUser.ts";
@@ -15,6 +17,14 @@ export { healthcheckSuspenseQueryKey } from "./example/useHealthcheckSuspense.ts
 export { healthcheckSuspense } from "./example/useHealthcheckSuspense.ts";
 export { healthcheckSuspenseQueryOptions } from "./example/useHealthcheckSuspense.ts";
 export { useHealthcheckSuspense } from "./example/useHealthcheckSuspense.ts";
+export { sendBulkNotificationMutationKey } from "./notifications/useSendBulkNotification.ts";
+export { sendBulkNotification } from "./notifications/useSendBulkNotification.ts";
+export { sendBulkNotificationMutationOptions } from "./notifications/useSendBulkNotification.ts";
+export { useSendBulkNotification } from "./notifications/useSendBulkNotification.ts";
+export { sendNotificationMutationKey } from "./notifications/useSendNotification.ts";
+export { sendNotification } from "./notifications/useSendNotification.ts";
+export { sendNotificationMutationOptions } from "./notifications/useSendNotification.ts";
+export { useSendNotification } from "./notifications/useSendNotification.ts";
 export { createUserMutationKey } from "./users/useCreateUser.ts";
 export { createUser } from "./users/useCreateUser.ts";
 export { createUserMutationOptions } from "./users/useCreateUser.ts";

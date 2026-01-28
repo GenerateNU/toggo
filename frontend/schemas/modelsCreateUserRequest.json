@@ -1,10 +1,1 @@
-{
-  "type": "object",
-  "required": ["name", "phone_number", "username"],
-  "properties": {
-    "name": { "type": "string", "minLength": 1 },
-    "phone_number": { "type": "string" },
-    "username": { "type": "string" }
-  },
-  "x-readme-ref-name": "models.CreateUserRequest"
-}
+{"type":"object","required":["name","phone_number","username"],"properties":{"name":{"type":"string","minLength":1},"phone_number":{"type":"string"},"username":{"type":"string"}},"x-readme-ref-name":"models.CreateUserRequest"}

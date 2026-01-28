@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.90.1",
     "@tanstack/react-query": "^5.90.16",
     "autoprefixer": "10.4.14",
+<<<<<<< HEAD
     "expo": "54.0.32",
     "expo-crypto": "~15.0.8",
     "expo-device": "^8.0.10",
@@ -31,6 +32,14 @@
     "expo-image-picker": "^17.0.10",
     "expo-notifications": "^0.32.16",
     "expo-router": "6.0.22",
+=======
+    "expo": "~54.0.30",
+    "expo-constants": "~18.0.13",
+    "expo-device": "~8.0.10",
+    "expo-image": "^3.0.11",
+    "expo-notifications": "~0.32.16",
+    "expo-router": "~6.0.21",
+>>>>>>> 7aad9ab (generated notification hooks)
     "expo-status-bar": "~3.0.9",
     "lucide-react-native": "^0.562.0",
     "nativewind": "2.0.11",
