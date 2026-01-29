@@ -51,7 +51,6 @@ func (r *imageRepository) ConfirmUpload(ctx context.Context, imageID uuid.UUID, 
 		Set("confirmed_at = ?", now).
 		Where("image_id = ? AND size = ?", imageID, size).
 		Where("status = ?", models.UploadStatusPending).
-		Returning("*").
 		Exec(ctx)
 	if err != nil {
 		return nil, err

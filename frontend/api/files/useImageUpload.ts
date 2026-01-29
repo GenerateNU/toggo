@@ -14,7 +14,7 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
 /**
  * Hook to compress and upload an image with specified size variants.
  *
- * @param options - Optional mutation options (cropping, etc.)
+ * @param options - Optional React Query mutation options.
  * @return Mutation object for uploading image
  *
  * @example

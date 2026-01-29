@@ -1,14 +1,14 @@
 import * as ImageManipulator from "expo-image-manipulator";
 import { Image } from "react-native";
 
+import { IMAGE_CONFIG } from "../../constants/images";
+import { ImageCompressionError } from "../../types/images";
 import {
   compressGalleryImage,
   compressImage,
   compressProfilePicture,
   uriToBlob,
 } from "../../utilities/images";
-import { IMAGE_CONFIG } from "../../constants/images";
-import { ImageCompressionError } from "../../types/images";
 
 // =============================================================================
 // Mocks
@@ -452,23 +452,24 @@ describe("image-compression", () => {
         setupImageGetSize(1920, 1080);
         setupFetchWithSize(500_000);
 
-        const delays: number[] = [];
+        const resolvers: Array<() => void> = [];
         (ImageManipulator.manipulateAsync as jest.Mock).mockImplementation(
-          async () => {
-            const start = Date.now();
-            await new Promise((r) => setTimeout(r, 10));
-            delays.push(Date.now() - start);
-            return createMockImageResult("file:///compressed.jpg", 500, 500);
-          },
+          () =>
+            new Promise((resolve) => {
+              resolvers.push(() =>
+                resolve(
+                  createMockImageResult("file:///compressed.jpg", 500, 500),
+                ),
+              );
+            }),
         );
 
-        const start = Date.now();
-        await compressImage(testUri, ["large", "medium", "small"]);
-        const totalTime = Date.now() - start;
-
-        // If parallel, total time should be roughly equal to single operation
-        // If sequential, it would be 3x longer
-        expect(totalTime).toBeLessThan(50); // Allow some overhead
+        const pending = compressImage(testUri, ["large", "medium", "small"]);
+        // Allow scheduled tasks to start before asserting they were called
+        await new Promise<void>((r) => setImmediate(() => r()));
+        expect(ImageManipulator.manipulateAsync).toHaveBeenCalledTimes(3);
+        resolvers.forEach((r) => r());
+        await pending;
       });
     });
   });

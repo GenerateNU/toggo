@@ -1,4 +1,5 @@
-import { skipToken, useQueries } from "@tanstack/react-query";
+import { skipToken, useQueries, UseQueryResult } from "@tanstack/react-query";
+import { useCallback } from "react";
 import type { ImageSize } from "../../constants/images";
 import { getImageURL } from "../../services/imageService";
 import type {
@@ -20,32 +21,53 @@ type GetImageError = ResponseErrorConfig<UploadError400 | UploadError500>;
 export function useGetImage(
   imageIds: (string | null | undefined)[],
   size: ImageSize,
-) {
-  const queries = useQueries({
+): {
+  queries: UseQueryResult<GetImageURLResponse, GetImageError>[];
+  data: GetImageURLResponse[];
+  isLoading: boolean;
+  isSettled: boolean;
+  isSuccess: boolean;
+  errors: GetImageError[];
+} {
+  const combine = useCallback(
+    (results: UseQueryResult<GetImageURLResponse, GetImageError>[]) => {
+      const active = results.filter((r) => r.fetchStatus !== "idle");
+
+      return {
+        /** Individual query results */
+        queries: results,
+
+        /** All successfully loaded images */
+        data: results
+          .map((q) => q.data)
+          .filter((d): d is GetImageURLResponse => d !== undefined),
+
+        /** True if any active query is loading */
+        isLoading: active.some((q) => q.isLoading),
+
+        /** True if all active queries have finished (success or error) */
+        isSettled:
+          active.length > 0 && active.every((q) => q.isSuccess || q.isError),
+
+        /** True if all active queries succeeded */
+        isSuccess: active.length > 0 && active.every((q) => q.isSuccess),
+
+        /** All errors from failed queries */
+        errors: results
+          .map((q) => q.error as GetImageError | null | undefined)
+          .filter((e): e is GetImageError => e != null),
+      };
+    },
+    [],
+  );
+
+  return useQueries({
     queries: imageIds.map((imageId) => ({
       queryKey: ["image", imageId, size] as const,
       queryFn: imageId ? () => getImageURL(imageId, size) : skipToken,
     })),
+    combine,
   });
-
-  return {
-    /** Individual query results */
-    queries,
-    /** All successfully loaded images */
-    data: queries // You'll mainly be using this for successfully loaded images!
-      .map((q) => q.data)
-      .filter((d): d is GetImageURLResponse => d !== undefined),
-    /** True if any query is loading */
-    isLoading: queries.some((q) => q.isLoading),
-    /** True if all queries have finished (success or error) */
-    isSettled: queries.every((q) => q.isSuccess || q.isError),
-    /** True if all queries succeeded */
-    isSuccess: queries.every((q) => q.isSuccess),
-    /** All errors from failed queries */
-    errors: queries
-      .map((q) => q.error as GetImageError | null | undefined)
-      .filter((e): e is GetImageError => e !== null),
-  };
 }
 
 /**
