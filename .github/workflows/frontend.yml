@@ -50,3 +50,23 @@ jobs:
         
       - name: Run linter
         run: cd frontend && bun lint:fix
+
+  test:
+    name: Unit Tests
+    needs: changes
+    if: |
+      needs.changes.outputs.frontend == 'true' &&
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        
+      - name: Install dependencies
+        run: cd frontend && bun install
+        
+      - name: Run tests
+        run: cd frontend && bun test
