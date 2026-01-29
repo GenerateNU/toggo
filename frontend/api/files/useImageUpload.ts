@@ -66,7 +66,7 @@ export function useUploadImage(
 ) {
   return useMutation<UploadImageResponse, UploadError, UploadImageRequest>({
     mutationKey: ["upload-image"],
-    mutationFn: (data) => uploadImage(data),
+    mutationFn: uploadImage,
     ...options,
   });
 }
