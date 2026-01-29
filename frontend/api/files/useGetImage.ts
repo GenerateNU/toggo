@@ -1,5 +1,4 @@
-import type { UseQueryOptions } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { skipToken, useQueries } from "@tanstack/react-query";
 import type { ImageSize } from "../../constants/images";
 import { getImageURL } from "../../services/imageService";
 import type {
@@ -12,24 +11,49 @@ import type { ResponseErrorConfig } from "../client";
 type GetImageError = ResponseErrorConfig<UploadError400 | UploadError500>;
 
 /**
- * Hook to get a presigned download URL for a specific image size.
+ * Hook to get presigned download URLs for one or more images.
  *
- * @param imageId - The ID of the image to retrieve
+ * @param imageIds - Array of image IDs (null/undefined values are skipped)
  * @param size - The desired image size
- * @param options - Optional query options
- * @return Query object for fetching the image URL
+ * @return Object with data array, loading state, and individual query results
  */
 export function useGetImage(
-  imageId: string,
+  imageIds: (string | null | undefined)[],
   size: ImageSize,
-  options?: Omit<
-    UseQueryOptions<GetImageURLResponse, GetImageError>,
-    "queryKey" | "queryFn"
-  >,
 ) {
-  return useQuery<GetImageURLResponse, GetImageError>({
-    queryKey: ["image", imageId, size],
-    queryFn: () => getImageURL(imageId, size),
-    ...options,
+  const queries = useQueries({
+    queries: imageIds.map((imageId) => ({
+      queryKey: ["image", imageId, size] as const,
+      queryFn: imageId ? () => getImageURL(imageId, size) : skipToken,
+    })),
   });
+
+  return {
+    /** Individual query results */
+    queries,
+    /** All successfully loaded images */
+    data: queries // You'll mainly be using this for successfully loaded images!
+      .map((q) => q.data)
+      .filter((d): d is GetImageURLResponse => d !== undefined),
+    /** True if any query is loading */
+    isLoading: queries.some((q) => q.isLoading),
+    /** True if all queries have finished (success or error) */
+    isSettled: queries.every((q) => q.isSuccess || q.isError),
+    /** True if all queries succeeded */
+    isSuccess: queries.every((q) => q.isSuccess),
+    /** All errors from failed queries */
+    errors: queries
+      .map((q) => q.error as GetImageError | null)
+      .filter((e): e is GetImageError => e !== null),
+  };
 }
+
+/**
+ * Example usage (getting a profile image):
+ * const { data: profileImages, isLoading: profileLoading } = useGetImage(
+     [profileImageId],
+     "small",
+   );
+   const profileImageData = profileImages[0];
+   ...
+ */
