@@ -108,6 +108,7 @@ func (r *imageRepository) MarkFailed(ctx context.Context, imageID uuid.UUID, siz
 		Model((*models.Image)(nil)).
 		Set("status = ?", models.UploadStatusFailed).
 		Where("image_id = ? AND size = ?", imageID, size).
+		Where("status = ?", models.UploadStatusPending).
 		Exec(ctx)
 	if err != nil {
 		return err

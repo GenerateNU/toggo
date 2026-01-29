@@ -26,7 +26,9 @@ export function useGetImageAllSizes(imageIds: (string | null | undefined)[]): {
 } {
   const combine = useCallback(
     (results: UseQueryResult<GetImageAllSizesResponse, GetImageError>[]) => {
-      const active = results.filter((r) => r.fetchStatus !== "idle");
+      const active = results.filter(
+        (r) => r.fetchStatus !== "idle" || r.isSuccess || r.isError,
+      );
 
       return {
         /** Individual query results */
