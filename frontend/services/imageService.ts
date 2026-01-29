@@ -40,7 +40,7 @@ async function getUploadURLs(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "POST",
-    url: "/api/v1/files/upload",
+    url: "/api/v0/files/upload",
     data: { fileKey, sizes, contentType },
     ...config,
   });
@@ -60,7 +60,7 @@ async function confirmUpload(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "POST",
-    url: "/api/v1/files/confirm",
+    url: "/api/v0/files/confirm",
     data: size ? { imageId, size } : { imageId },
     ...config,
   });
@@ -186,7 +186,7 @@ export async function getImageURL(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "GET",
-    url: `/api/v1/files/${imageId}/${size}`,
+    url: `/api/v0/files/${imageId}/${size}`,
     ...config,
   });
   return res.data;
@@ -208,7 +208,7 @@ export async function getImageAllSizes(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "GET",
-    url: `/api/v1/files/${imageId}`,
+    url: `/api/v0/files/${imageId}`,
     ...config,
   });
   return res.data;
