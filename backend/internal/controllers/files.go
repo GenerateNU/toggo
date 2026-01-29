@@ -29,7 +29,7 @@ func NewFileController(fileService services.FileServiceInterface, validator *val
 // @Tags         files
 // @Produce      json
 // @Success      200 {object} models.S3HealthCheckResponse
-// @Failure      500 {object} errs.APIError
+// @Failure      503 {object} errs.APIError
 // @Router       /api/v1/files/health [get]
 // @ID           checkS3Health
 func (f *FileController) CheckS3Health(c *fiber.Ctx) error {

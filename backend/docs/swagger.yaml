@@ -74,6 +74,9 @@ definitions:
     properties:
       bucketName:
         type: string
+      error:
+        description: Error contains the underlying error message when status is "unhealthy"
+        type: string
       region:
         type: string
       status:
@@ -93,7 +96,7 @@ definitions:
         type: string
       phone_number:
         type: string
-      profilePicture:
+      profile_picture:
         type: string
       username:
         type: string
@@ -109,6 +112,7 @@ definitions:
       sizes:
         items:
           $ref: '#/definitions/models.ImageSize'
+        maxItems: 3
         minItems: 1
         type: array
     required:
@@ -269,8 +273,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.S3HealthCheckResponse'
-        "500":
-          description: Internal Server Error
+        "503":
+          description: Service Unavailable
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Check S3 connection

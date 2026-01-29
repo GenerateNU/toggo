@@ -54,8 +54,8 @@ func LoadAWSConfig() (*AWSConfig, error) {
 	cfg.S3Client = s3.NewFromConfig(awsCfg, func(o *s3.Options) {
 		if cfg.S3Endpoint != "" {
 			o.BaseEndpoint = aws.String(cfg.S3Endpoint)
+			o.UsePathStyle = true
 		}
-		o.UsePathStyle = true
 	})
 	cfg.PresignClient = s3.NewPresignClient(cfg.S3Client)
 

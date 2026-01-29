@@ -61,6 +61,7 @@ func (r *imageRepository) ConfirmUpload(ctx context.Context, imageID uuid.UUID, 
 	err = r.db.NewSelect().
 		Model(image).
 		Where("image_id = ? AND size = ?", imageID, size).
+		Where("status = ?", models.UploadStatusConfirmed).
 		Scan(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -91,11 +92,14 @@ func (r *imageRepository) ConfirmAllUploads(ctx context.Context, imageID uuid.UU
 	err = r.db.NewSelect().
 		Model(&images).
 		Where("image_id = ?", imageID).
+		Where("status = ?", models.UploadStatusConfirmed).
 		Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
-
+	if len(images) == 0 {
+		return nil, errs.ErrNotFound
+	}
 	return images, nil
 }
 

@@ -92,8 +92,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.S3HealthCheckResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "503": {
+                        "description": "Service Unavailable",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -644,6 +644,10 @@ const docTemplate = `{
                 "bucketName": {
                     "type": "string"
                 },
+                "error": {
+                    "description": "Error contains the underlying error message when status is \"unhealthy\"",
+                    "type": "string"
+                },
                 "region": {
                     "type": "string"
                 },
@@ -673,7 +677,7 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
-                "profilePicture": {
+                "profile_picture": {
                     "type": "string"
                 },
                 "username": {
@@ -699,6 +703,7 @@ const docTemplate = `{
                 },
                 "sizes": {
                     "type": "array",
+                    "maxItems": 3,
                     "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/models.ImageSize"

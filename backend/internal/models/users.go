@@ -21,6 +21,6 @@ type CreateUserRequest struct {
 type UpdateUserRequest struct {
 	Name           *string    `validate:"omitempty,min=1" json:"name"`
 	Username       *string    `validate:"omitempty,username" json:"username"`
-	ProfilePicture *uuid.UUID `validate:"omitempty,uuid"`
+	ProfilePicture *uuid.UUID `validate:"omitempty,uuid" json:"profile_picture,omitempty"`
 	PhoneNumber    *string    `validate:"omitempty,phone" json:"phone_number"`
 }

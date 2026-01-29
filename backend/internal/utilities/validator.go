@@ -27,6 +27,17 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
+var allowedImageSizes = []string{"small", "medium", "large"}
+
+func isAllowedImageSize(size string) bool {
+	for _, s := range allowedImageSizes {
+		if s == size {
+			return true
+		}
+	}
+	return false
+}
+
 func Validate(validate *validator.Validate, s interface{}, maybeErrs ...MaybeError) error {
 	allErrors := make(map[string]string)
 
@@ -74,7 +85,7 @@ func buildMessage(e validator.FieldError) string {
 	case "lte":
 		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
 	case "image_size":
-		return fmt.Sprintf("%s must be one of: small, medium, large", e.Field())
+		return fmt.Sprintf("%s must be one of: %s", e.Field(), strings.Join(allowedImageSizes, ", "))
 	default:
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}
@@ -94,8 +105,7 @@ func NewValidator() *validator.Validate {
 	}
 
 	err = v.RegisterValidation("image_size", func(fl validator.FieldLevel) bool {
-		size := fl.Field().String()
-		return size == "small" || size == "medium" || size == "large"
+		return isAllowedImageSize(fl.Field().String())
 	})
 	if err != nil {
 		log.Println("Error registering image_size validation:", err)

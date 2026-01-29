@@ -6,14 +6,14 @@ import "github.com/google/uuid"
 
 type UploadURLRequest struct {
 	FileKey     string      `json:"fileKey" validate:"required,min=1"`
-	Sizes       []ImageSize `json:"sizes" validate:"required,min=1,dive,image_size"`
+	Sizes       []ImageSize `json:"sizes" validate:"required,min=1,max=3,dive,image_size"`
 	ContentType string      `json:"contentType" validate:"required,min=1"`
 }
 
 type UploadURLResponse struct {
 	ImageID    uuid.UUID        `json:"imageId"`
 	FileKey    string           `json:"fileKey"`
-	UploadURLs []SizedUploadURL `json:"uploadUrls"`
+	UploadURLs []SizedUploadURL `json:"uploadUrls" maxItems:"3"`
 	ExpiresAt  string           `json:"expiresAt"`
 }
 
@@ -26,7 +26,7 @@ type SizedUploadURL struct {
 
 type ConfirmUploadRequest struct {
 	ImageID uuid.UUID  `json:"imageId" validate:"required"`
-	Size    *ImageSize `json:"size,omitempty"` // Optional: if nil, confirm all sizes
+	Size    *ImageSize `json:"size,omitempty" validate:"omitempty,image_size"` // Optional: if nil, confirm all sizes
 }
 
 type ConfirmUploadResponse struct {
@@ -46,7 +46,7 @@ type GetFileResponse struct {
 
 type GetFileAllSizesResponse struct {
 	ImageID uuid.UUID         `json:"imageId"`
-	Files   []GetFileResponse `json:"files"`
+	Files   []GetFileResponse `json:"files" maxItems:"3"`
 }
 
 // ---- S3 Health Check ----
@@ -57,8 +57,4 @@ type S3HealthCheckResponse struct {
 	Region     string `json:"region"`
 	// Error contains the underlying error message when status is "unhealthy"
 	Error string `json:"error,omitempty"`
-	// HasCredentials is true when AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set
-	HasCredentials bool `json:"hasCredentials"`
-	// AccessKeyMask contains a masked version of the access key helpful for debugging (dev only)
-	AccessKeyMask string `json:"accessKeyMask,omitempty"`
 }

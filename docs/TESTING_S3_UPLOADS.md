@@ -250,20 +250,20 @@ bun install
 #### Run Frontend Tests
 ```bash
 cd frontend
-npx jest
+bunx jest
 
 # Run with coverage
-npx jest -- --coverage
+bunx jest -- --coverage
 
 # Run in watch mode
-npx jest -- --watch
+bunx jest -- --watch
 ```
 
 ## Integration Testing (Manual)
 
 ### End-to-End Test Scenario
 
-You may need to redirect your localstack to your IP in your doppler. In your backend > dev_personal doppler bucket, change the `S3_BUCKET_ENDPOINT` to your own IP address
+You may need to redirect your localstack to your IP in your doppler. In your backend > dev_personal doppler bucket, change the `S3_ENDPOINT` to your own IP address
 `http://x.x.x.x:4566`
 We need to do this in order to allow our simulator to connect to the localstack.
 
