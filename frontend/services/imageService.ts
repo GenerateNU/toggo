@@ -76,7 +76,6 @@ async function uploadToS3(url: string, blob: Blob): Promise<void> {
     body: blob,
     headers: { "Content-Type": "image/jpeg" },
   });
-  console.log("[S3] Uploading to URL:", url);
   if (!response.ok) {
     throw new Error(`S3 upload failed: ${response.status}`);
   }
