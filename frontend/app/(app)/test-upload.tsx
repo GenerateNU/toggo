@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Button, Image, Text, View, ScrollView } from "react-native";
 
-const S3_ENDPOINT = "http://x.x.x.x:4566"; // Update to your IP
+const S3_ENDPOINT = "http://0.0.0.0:4566"; // Update to your IP
 
 export default function TestUploadScreen() {
   const [imageId, setImageId] = useState<string | null>(null);
