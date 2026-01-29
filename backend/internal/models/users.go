@@ -25,5 +25,5 @@ type UpdateUserRequest struct {
 	Name        *string `validate:"omitempty,min=1" json:"name"`
 	Username    *string `validate:"omitempty,username" json:"username"`
 	PhoneNumber *string `validate:"omitempty,phone" json:"phone_number"`
-	DeviceToken *string `validate:"omitempty" json:"device_token"`
+	DeviceToken *string `validate:"omitempty,max=200" json:"device_token"`
 }

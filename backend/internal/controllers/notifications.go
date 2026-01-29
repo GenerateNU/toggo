@@ -49,7 +49,7 @@ func (n *NotificationController) SendNotification(c *fiber.Ctx) error {
 	}
 
 	if err := n.notificationService.SendNotification(c.Context(), req); err != nil {
-		return fiber.NewError(http.StatusInternalServerError, err.Error())
+		return errs.InternalServerError()
 	}
 
 	return c.SendStatus(http.StatusOK)

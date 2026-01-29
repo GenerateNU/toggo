@@ -68,7 +68,6 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 
 	if req.DeviceToken != nil {
 		trimmedToken := strings.TrimSpace(*req.DeviceToken)
-		updates["device_token"] = trimmedToken
 		updateQuery = updateQuery.Set("device_token = ?", trimmedToken)
 		updateQuery = updateQuery.Set("device_token_updated_at = NOW()")
 	}
