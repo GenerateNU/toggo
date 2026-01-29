@@ -26,6 +26,8 @@ interface ConfirmUploadResponse {
   confirmed: number;
 }
 
+const baseFilePath = "/api/v0/files";
+
 /**
  * Gets presigned upload URLs for the specified image sizes.
  */
@@ -40,7 +42,7 @@ async function getUploadURLs(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "POST",
-    url: "/api/v0/files/upload",
+    url: `${baseFilePath}/upload`,
     data: { fileKey, sizes, contentType },
     ...config,
   });
@@ -60,7 +62,7 @@ async function confirmUpload(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "POST",
-    url: "/api/v0/files/confirm",
+    url: `${baseFilePath}/confirm`,
     data: size ? { imageId, size } : { imageId },
     ...config,
   });
@@ -189,7 +191,7 @@ export async function getImageURL(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "GET",
-    url: `/api/v0/files/${imageId}/${size}`,
+    url: `${baseFilePath}/${imageId}/${size}`,
     ...config,
   });
   return res.data;
@@ -211,7 +213,7 @@ export async function getImageAllSizes(
     ResponseErrorConfig<UploadError400 | UploadError500>
   >({
     method: "GET",
-    url: `/api/v0/files/${imageId}`,
+    url: `${baseFilePath}/${imageId}`,
     ...config,
   });
   return res.data;

@@ -2,11 +2,11 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { Image } from "react-native";
 
 import {
-  uriToBlob,
+  compressGalleryImage,
   compressImage,
   compressProfilePicture,
-  compressGalleryImage,
-} from "@/utilities/images";
+  uriToBlob,
+} from "../../utilities/images";
 import { IMAGE_CONFIG } from "../../constants/images";
 import { ImageCompressionError } from "../../types/images";
 
@@ -68,6 +68,7 @@ const setupImageGetSizeError = (errorMessage: string) => {
 
 const setupFetchWithSize = (size: number) => {
   mockFetch.mockResolvedValue({
+    ok: true,
     blob: jest.fn().mockResolvedValue(createMockBlob(size)),
   });
 };
@@ -89,6 +90,7 @@ describe("image-compression", () => {
     it("converts a URI to a Blob", async () => {
       const mockBlob = createMockBlob(1000);
       mockFetch.mockResolvedValue({
+        ok: true,
         blob: jest.fn().mockResolvedValue(mockBlob),
       });
 
@@ -101,6 +103,7 @@ describe("image-compression", () => {
     it("handles remote URIs", async () => {
       const mockBlob = createMockBlob(2000);
       mockFetch.mockResolvedValue({
+        ok: true,
         blob: jest.fn().mockResolvedValue(mockBlob),
       });
 
@@ -115,6 +118,17 @@ describe("image-compression", () => {
 
       await expect(uriToBlob("file:///test/image.jpg")).rejects.toThrow(
         "Network error",
+      );
+    });
+
+    it("throws error when fetch response is not ok", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
+
+      await expect(uriToBlob("file:///test/image.jpg")).rejects.toThrow(
+        "Failed to fetch image: 404",
       );
     });
   });
@@ -140,7 +154,7 @@ describe("image-compression", () => {
         const results = await compressImage(testUri);
 
         expect(results).toHaveLength(3);
-        expect(results.map((r) => r.size)).toEqual([
+        expect(results.map((r: { size: any }) => r.size)).toEqual([
           "large",
           "medium",
           "small",
@@ -305,6 +319,7 @@ describe("image-compression", () => {
           callCount++;
           const size = callCount === 1 ? 15_000_000 : 500_000;
           return Promise.resolve({
+            ok: true,
             blob: jest.fn().mockResolvedValue(createMockBlob(size)),
           });
         });
@@ -328,6 +343,7 @@ describe("image-compression", () => {
           // Still too large after all quality steps, then under limit after scale
           const size = callCount <= qualitySteps + 1 ? 15_000_000 : 500_000;
           return Promise.resolve({
+            ok: true,
             blob: jest.fn().mockResolvedValue(createMockBlob(size)),
           });
         });
@@ -349,6 +365,7 @@ describe("image-compression", () => {
           // Under limit only after scaling
           const size = callCount <= 7 ? 15_000_000 : 500_000;
           return Promise.resolve({
+            ok: true,
             blob: jest.fn().mockResolvedValue(createMockBlob(size)),
           });
         });

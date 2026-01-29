@@ -6,7 +6,7 @@ import {
 } from "@/api/files";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { Button, Image, Text, View, ScrollView } from "react-native";
+import { Button, Image, ScrollView, Text, View } from "react-native";
 
 const S3_ENDPOINT = "http://0.0.0.0:4566"; // Update to your IP
 
@@ -302,7 +302,7 @@ export default function TestUploadScreen() {
 
         {galleryLoading && <Text>Loading gallery image...</Text>}
 
-        {galleryImageAllSizes && (
+        {galleryImageAllSizes?.files && (
           <View style={{ marginTop: 8 }}>
             <Text style={{ fontWeight: "bold" }}>
               Retrieved via useGetImageAllSizes:

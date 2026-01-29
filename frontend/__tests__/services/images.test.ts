@@ -1,14 +1,14 @@
 import * as Crypto from "expo-crypto";
 
 import fetch from "../../api/client";
-import { compressImage, uriToBlob } from "../../utilities/images";
 import {
+  getImageAllSizes,
+  getImageURL,
+  uploadGalleryImage,
   uploadImage,
   uploadProfilePicture,
-  uploadGalleryImage,
-  getImageURL,
-  getImageAllSizes,
-} from "@/services/imageService";
+} from "../../services/imageService";
+import { compressImage, uriToBlob } from "../../utilities/images";
 
 // =============================================================================
 // Mocks
@@ -441,11 +441,23 @@ describe("image-service", () => {
     it("fetches URLs for all sizes", async () => {
       const mockResponse = {
         imageId: "img-123",
-        urls: {
-          large: "https://s3.amazonaws.com/bucket/img-123/large",
-          medium: "https://s3.amazonaws.com/bucket/img-123/medium",
-          small: "https://s3.amazonaws.com/bucket/img-123/small",
-        },
+        files: [
+          {
+            imageId: "img-123",
+            size: "large",
+            url: "https://s3.amazonaws.com/bucket/img-123/large",
+          },
+          {
+            imageId: "img-123",
+            size: "medium",
+            url: "https://s3.amazonaws.com/bucket/img-123/medium",
+          },
+          {
+            imageId: "img-123",
+            size: "small",
+            url: "https://s3.amazonaws.com/bucket/img-123/small",
+          },
+        ],
       };
       (fetch as jest.Mock).mockResolvedValue({ data: mockResponse });
 
