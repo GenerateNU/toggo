@@ -100,24 +100,13 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 	return updatedTrip, nil
 }
 
-// Delete removes a trip
+// Delete removes a trip (idempotent)
 func (r *tripRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result, err := r.db.NewDelete().
+	_, err := r.db.NewDelete().
 		Model((*models.Trip)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected == 0 {
-		return errs.ErrNotFound
-	}
-
-	return nil
+	
+	// Idempotent - don't error if already deleted
+	return err
 }

@@ -1,0 +1,1 @@
+{"type":"object","properties":{"name":{"type":"string","minLength":1},"username":{"type":"string"}},"x-readme-ref-name":"models.UpdateUserRequest"}

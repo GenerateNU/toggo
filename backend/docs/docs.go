@@ -924,7 +924,6 @@ const docTemplate = `{
             "required": [
                 "budget_max",
                 "budget_min",
-                "is_admin",
                 "trip_id",
                 "user_id"
             ],
@@ -1025,10 +1024,16 @@ const docTemplate = `{
                 "budget_min": {
                     "type": "integer"
                 },
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

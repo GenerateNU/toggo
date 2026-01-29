@@ -1,0 +1,1 @@
+{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string"},"username":{"type":"string"}},"x-readme-ref-name":"models.User"}

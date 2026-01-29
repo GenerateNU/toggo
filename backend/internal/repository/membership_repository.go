@@ -150,24 +150,13 @@ func (r *membershipRepository) Update(ctx context.Context, userID, tripID uuid.U
 	return updatedMembership, nil
 }
 
-// Delete removes a membership
+// Delete removes a membership (idempotent)
 func (r *membershipRepository) Delete(ctx context.Context, userID, tripID uuid.UUID) error {
-	result, err := r.db.NewDelete().
+	_, err := r.db.NewDelete().
 		Model((*models.Membership)(nil)).
 		Where("user_id = ? AND trip_id = ?", userID, tripID).
 		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected == 0 {
-		return errs.ErrNotFound
-	}
-
-	return nil
+	
+	// Idempotent - don't error if already deleted
+	return err
 }
