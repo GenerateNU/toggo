@@ -69,4 +69,4 @@ jobs:
         run: cd frontend && bun install
         
       - name: Run tests
-        run: cd frontend && bun test
+        run: cd frontend && npx jest --coverage
