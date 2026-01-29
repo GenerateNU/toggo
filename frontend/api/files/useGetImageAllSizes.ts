@@ -15,9 +15,7 @@ type GetImageError = ResponseErrorConfig<UploadError400 | UploadError500>;
  * @param imageIds - Array of image IDs (null/undefined values are skipped)
  * @return Object with data array, loading state, and individual query results
  */
-export function useGetImageAllSizes(
-  imageIds: (string | null | undefined)[],
-) {
+export function useGetImageAllSizes(imageIds: (string | null | undefined)[]) {
   const queries = useQueries({
     queries: imageIds.map((imageId) => ({
       queryKey: ["image-all-sizes", imageId] as const,
@@ -39,7 +37,7 @@ export function useGetImageAllSizes(
     /** True if all queries succeeded */
     isSuccess: queries.every((q) => q.isSuccess),
     /** All errors from failed queries */
-    errors: queries 
+    errors: queries
       .map((q) => q.error as GetImageError | null)
       .filter((e): e is GetImageError => e !== null),
   };

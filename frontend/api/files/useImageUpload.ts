@@ -16,11 +16,11 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *
  * @param options - Optional mutation options (cropping, etc.)
  * @return Mutation object for uploading image
- * 
+ *
  * @example
  * ```tsx
  * function ProfilePictureUploader() {
- * 
+ *
  *   const uploadMutation = useUploadProfilePicture({
  *     onSuccess: (data) => {
  *       console.log("Profile picture uploaded:", data.imageId);

@@ -15,7 +15,7 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *
  * @param options - Optional mutation options (cropping, etc.)
  * @return Mutation object for uploading profile picture
- * 
+ *
  * @example
  * ```tsx
  * function ProfilePictureUploader() {
