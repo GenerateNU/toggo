@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"toggo/internal/errs"
+	"toggo/internal/models"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -27,11 +28,15 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-var allowedImageSizes = []string{"small", "medium", "large"}
+var allowedImageSizes = []models.ImageSize{
+	models.ImageSizeSmall,
+	models.ImageSizeMedium,
+	models.ImageSizeLarge,
+}
 
 func isAllowedImageSize(size string) bool {
 	for _, s := range allowedImageSizes {
-		if s == size {
+		if string(s) == size {
 			return true
 		}
 	}
@@ -85,7 +90,11 @@ func buildMessage(e validator.FieldError) string {
 	case "lte":
 		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
 	case "image_size":
-		return fmt.Sprintf("%s must be one of: %s", e.Field(), strings.Join(allowedImageSizes, ", "))
+		sizes := make([]string, len(allowedImageSizes))
+		for i, s := range allowedImageSizes {
+			sizes[i] = string(s)
+		}
+		return fmt.Sprintf("%s must be one of: %s", e.Field(), strings.Join(sizes, ", "))
 	default:
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}

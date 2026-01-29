@@ -105,12 +105,22 @@ func (r *imageRepository) ConfirmAllUploads(ctx context.Context, imageID uuid.UU
 
 // MarkFailed marks an image upload as failed
 func (r *imageRepository) MarkFailed(ctx context.Context, imageID uuid.UUID, size models.ImageSize) error {
-	_, err := r.db.NewUpdate().
+	result, err := r.db.NewUpdate().
 		Model((*models.Image)(nil)).
 		Set("status = ?", models.UploadStatusFailed).
 		Where("image_id = ? AND size = ?", imageID, size).
 		Exec(ctx)
-	return err
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errs.ErrNotFound
+	}
+	return nil
 }
 
 // FindByID retrieves all size variants of an image
