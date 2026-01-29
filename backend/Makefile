@@ -81,7 +81,7 @@ migrate-up:
 	@echo "Applying migrations to $(APP_ENVIRONMENT) database..."
 	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
 		HOST=$$( [ "$(APP_ENVIRONMENT)" = "dev" ] && echo localhost || echo $$DB_HOST ); \
-		goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up \
+		goose -allow-missing -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up \
 	'
 
 migrate-up-win:
@@ -90,7 +90,7 @@ migrate-up-win:
 		$$dbHost = if ('$(APP_ENVIRONMENT)' -eq 'dev') { 'localhost' } else { $$env:DB_HOST }; \
 		$$connectionString = \"postgres://$${env:DB_USER}:$${env:DB_PASSWORD}@$${dbHost}:$${env:DB_PORT}/$${env:DB_DATABASE}?sslmode=disable\"; \
 		Write-Host 'Applying migrations to $(APP_ENVIRONMENT) database...'; \
-		goose -dir $(MIGRATIONS_DIR) postgres $$connectionString up"
+		goose -allow-missing -dir $(MIGRATIONS_DIR) postgres $$connectionString up"
 
 migrate-down:
 	@echo "Rolling back last migration on $(APP_ENVIRONMENT) database..."
