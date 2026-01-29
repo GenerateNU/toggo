@@ -74,7 +74,9 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(members)
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"data": members,
+	})
 }
 
 // @Summary      Get user's trips
