@@ -52,13 +52,13 @@ type GetFileAllSizesResponse struct {
 // ---- S3 Health Check ----
 
 type S3HealthCheckResponse struct {
-	Status        string `json:"status"`
-	BucketName    string `json:"bucketName"`
-	Region        string `json:"region"`
+	Status     string `json:"status"`
+	BucketName string `json:"bucketName"`
+	Region     string `json:"region"`
 	// Error contains the underlying error message when status is "unhealthy"
-	Error         string `json:"error,omitempty"`
+	Error string `json:"error,omitempty"`
 	// HasCredentials is true when AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set
-	HasCredentials bool   `json:"hasCredentials"`
+	HasCredentials bool `json:"hasCredentials"`
 	// AccessKeyMask contains a masked version of the access key helpful for debugging (dev only)
-	AccessKeyMask  string `json:"accessKeyMask,omitempty"`
-} 
+	AccessKeyMask string `json:"accessKeyMask,omitempty"`
+}

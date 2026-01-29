@@ -47,7 +47,6 @@ export interface UploadImageResponse {
   variants: ImageSize[];
 }
 
-
 export interface GetImageURLRequest {
   imageId: string;
   size: ImageSize;

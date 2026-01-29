@@ -2,10 +2,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import { Image } from "react-native";
 
 import { IMAGE_CONFIG, ImageSize } from "../constants/images";
-import type {
-  CompressedVariant,
-  ImageDimensions,
-} from "../types/images";
+import type { CompressedVariant, ImageDimensions } from "../types/images";
 import { ImageCompressionError } from "../types/images";
 
 // =============================================================================
@@ -150,9 +147,7 @@ async function compressWithIterativeQuality(
  *
  * @internal
  */
-async function compressLarge(
-  uri: string,
-): Promise<CompressedVariant> {
+async function compressLarge(uri: string): Promise<CompressedVariant> {
   const config = IMAGE_CONFIG.large;
 
   const { result, fileSize } = await compressWithIterativeQuality(
@@ -231,8 +226,9 @@ async function compressSmall(
 
   const { result, fileSize } = await compressWithIterativeQuality(
     uri,
-    [{ 
-      crop: {
+    [
+      {
+        crop: {
           originX: cropX,
           originY: cropY,
           width: minDim,
@@ -254,7 +250,6 @@ async function compressSmall(
     fileSize,
   };
 }
-
 
 /**
  * Compresses an image to multiple size variants.

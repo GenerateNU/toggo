@@ -15,9 +15,13 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *
  * @param options - Optional mutation options (cropping, etc.)
  * @return Mutation object for uploading profile picture
-*/
+ */
 export function useUploadProfilePicture(
-  options?: UseMutationOptions<UploadImageResponse, UploadError, { uri: string }>,
+  options?: UseMutationOptions<
+    UploadImageResponse,
+    UploadError,
+    { uri: string }
+  >,
 ) {
   return useMutation<UploadImageResponse, UploadError, { uri: string }>({
     mutationKey: ["upload-profile-picture"],

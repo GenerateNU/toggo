@@ -155,7 +155,10 @@ describe("image-compression", () => {
         const results = await compressImage(testUri, ["large", "small"]);
 
         expect(results).toHaveLength(2);
-        expect(results.map((r: { size: any; }) => r.size)).toEqual(["large", "small"]);
+        expect(results.map((r: { size: any }) => r.size)).toEqual([
+          "large",
+          "small",
+        ]);
       });
 
       it("returns correct variant structure for large", async () => {
@@ -543,7 +546,7 @@ describe("image-compression", () => {
       setupFetchWithSize(400_000); // 400KB - under the small variant limit (0.5MB)
 
       (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue(
-        createMockImageResult("file:///gallery.jpg", 2000, 1500)
+        createMockImageResult("file:///gallery.jpg", 2000, 1500),
       );
 
       const results = await compressGalleryImage("file:///4k-image.jpg");

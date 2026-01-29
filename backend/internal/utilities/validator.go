@@ -99,7 +99,7 @@ func NewValidator() *validator.Validate {
 	})
 	if err != nil {
 		log.Println("Error registering image_size validation:", err)
-  }
+	}
 	err = v.RegisterValidation("phone", func(fl validator.FieldLevel) bool {
 		return phoneRegex.MatchString(fl.Field().String())
 	})

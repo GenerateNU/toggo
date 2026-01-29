@@ -2,9 +2,9 @@ import type { UseQueryOptions } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { getImageAllSizes } from "../../services/imageService";
 import type {
-    GetImageAllSizesResponse,
-    UploadError400,
-    UploadError500,
+  GetImageAllSizesResponse,
+  UploadError400,
+  UploadError500,
 } from "../../types/images";
 import type { ResponseErrorConfig } from "../client";
 

@@ -132,7 +132,7 @@ describe("image-service", () => {
               sizes: ["large", "medium", "small"],
               contentType: "image/jpeg",
             },
-          })
+          }),
         );
       });
 
@@ -145,7 +145,7 @@ describe("image-service", () => {
           expect.objectContaining({
             method: "PUT",
             headers: { "Content-Type": "image/jpeg" },
-          })
+          }),
         );
       });
 
@@ -157,7 +157,7 @@ describe("image-service", () => {
             method: "POST",
             url: "/api/v0/files/confirm",
             data: { imageId: "img-123" },
-          })
+          }),
         );
       });
 
@@ -179,7 +179,7 @@ describe("image-service", () => {
         expect(fetch).toHaveBeenCalledWith(
           expect.objectContaining({
             headers: { Authorization: "Bearer token" },
-          })
+          }),
         );
       });
     });
@@ -187,11 +187,11 @@ describe("image-service", () => {
     describe("error handling", () => {
       it("throws when compression fails", async () => {
         (compressImage as jest.Mock).mockRejectedValue(
-          new Error("Compression failed")
+          new Error("Compression failed"),
         );
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
-          "Compression failed"
+          "Compression failed",
         );
       });
 
@@ -201,7 +201,9 @@ describe("image-service", () => {
         ]);
         (fetch as jest.Mock).mockRejectedValue(new Error("API error"));
 
-        await expect(uploadImage({ uri: testUri })).rejects.toThrow("API error");
+        await expect(uploadImage({ uri: testUri })).rejects.toThrow(
+          "API error",
+        );
       });
 
       it("throws when presigned URL is missing for a variant", async () => {
@@ -214,7 +216,7 @@ describe("image-service", () => {
         });
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
-          "No presigned URL for medium"
+          "No presigned URL for medium",
         );
       });
 
@@ -229,7 +231,7 @@ describe("image-service", () => {
         mockGlobalFetch.mockResolvedValue({ ok: false, status: 403 });
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
-          "S3 upload failed: 403"
+          "S3 upload failed: 403",
         );
       });
 
@@ -246,7 +248,7 @@ describe("image-service", () => {
         mockGlobalFetch.mockResolvedValue({ ok: true });
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
-          "Confirm failed"
+          "Confirm failed",
         );
       });
 
@@ -258,11 +260,11 @@ describe("image-service", () => {
           data: createMockUploadURLsResponse(["large"]),
         });
         (uriToBlob as jest.Mock).mockRejectedValue(
-          new Error("Failed to read file")
+          new Error("Failed to read file"),
         );
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
-          "Failed to read file"
+          "Failed to read file",
         );
       });
     });
@@ -330,7 +332,7 @@ describe("image-service", () => {
       await uploadProfilePicture("file:///profile.jpg", config);
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.objectContaining({ headers: { Authorization: "Bearer token" } })
+        expect.objectContaining({ headers: { Authorization: "Bearer token" } }),
       );
     });
   });
@@ -392,7 +394,7 @@ describe("image-service", () => {
         expect.objectContaining({
           method: "GET",
           url: "/api/v0/files/img-123/large",
-        })
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -405,7 +407,7 @@ describe("image-service", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({
           url: "/api/v0/files/img-123/small",
-        })
+        }),
       );
     });
 
@@ -418,7 +420,7 @@ describe("image-service", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({
           headers: { "X-Custom": "header" },
-        })
+        }),
       );
     });
 
@@ -426,7 +428,7 @@ describe("image-service", () => {
       (fetch as jest.Mock).mockRejectedValue(new Error("Not found"));
 
       await expect(getImageURL("invalid-id", "large")).rejects.toThrow(
-        "Not found"
+        "Not found",
       );
     });
   });
@@ -453,7 +455,7 @@ describe("image-service", () => {
         expect.objectContaining({
           method: "GET",
           url: "/api/v0/files/img-123",
-        })
+        }),
       );
       expect(result).toEqual(mockResponse);
     });
@@ -465,7 +467,7 @@ describe("image-service", () => {
       await getImageAllSizes("img-123", config);
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.objectContaining({ headers: { "X-Custom": "header" } })
+        expect.objectContaining({ headers: { "X-Custom": "header" } }),
       );
     });
 
@@ -502,7 +504,7 @@ describe("image-service", () => {
           data: expect.objectContaining({
             fileKey: "uploads/1704067200000-test-uuid-1234",
           }),
-        })
+        }),
       );
     });
 

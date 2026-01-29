@@ -18,7 +18,11 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  * @return Mutation object for uploading image
  */
 export function useUploadImage(
-  options?: UseMutationOptions<UploadImageResponse, UploadError, UploadImageRequest>,
+  options?: UseMutationOptions<
+    UploadImageResponse,
+    UploadError,
+    UploadImageRequest
+  >,
 ) {
   return useMutation<UploadImageResponse, UploadError, UploadImageRequest>({
     mutationKey: ["upload-image"],

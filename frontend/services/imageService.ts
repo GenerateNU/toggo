@@ -4,12 +4,12 @@ import type { RequestConfig, ResponseErrorConfig } from "../api/client";
 import fetch from "../api/client";
 import type { ImageSize } from "../constants/images";
 import type {
-    GetImageAllSizesResponse,
-    GetImageURLResponse,
-    UploadError400,
-    UploadError500,
-    UploadImageRequest,
-    UploadImageResponse,
+  GetImageAllSizesResponse,
+  GetImageURLResponse,
+  UploadError400,
+  UploadError500,
+  UploadImageRequest,
+  UploadImageResponse,
 } from "../types/images";
 import { compressImage, uriToBlob } from "../utilities/images";
 
@@ -102,7 +102,6 @@ export async function uploadImage(
   { uri, sizes = ["large", "medium", "small"] }: UploadImageRequest,
   config: Partial<RequestConfig> = {},
 ): Promise<UploadImageResponse> {
-  
   // Compress all variants client-side
   const variants = await compressImage(uri, sizes);
 
@@ -111,7 +110,12 @@ export async function uploadImage(
   const fileKey = `uploads/${timestamp}-${Crypto.randomUUID()}`;
 
   // Get presigned URLs from server
-  const uploadResponse = await getUploadURLs(fileKey, sizes, "image/jpeg", config);
+  const uploadResponse = await getUploadURLs(
+    fileKey,
+    sizes,
+    "image/jpeg",
+    config,
+  );
 
   // Upload all variants to S3 in parallel
   await Promise.all(

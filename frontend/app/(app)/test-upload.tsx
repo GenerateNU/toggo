@@ -170,8 +170,12 @@ export default function TestUploadScreen() {
           <Text style={{ color: "red", fontSize: 12 }}>{s3FilesError}</Text>
         ) : null}
         {s3Files.length > 0 ? (
-          <View style={{ backgroundColor: "#f5f5f5", padding: 8, borderRadius: 4 }}>
-            <Text style={{ fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}>
+          <View
+            style={{ backgroundColor: "#f5f5f5", padding: 8, borderRadius: 4 }}
+          >
+            <Text
+              style={{ fontFamily: "monospace", fontSize: 11, marginBottom: 4 }}
+            >
               {s3Files.length} files:
             </Text>
             {s3Files.map((file, i) => (
@@ -207,7 +211,7 @@ export default function TestUploadScreen() {
           />
         </View>
       )}
-      
+
       <View style={{ height: 50 }} />
     </ScrollView>
   );

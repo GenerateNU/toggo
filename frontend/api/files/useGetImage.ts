@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { ImageSize } from "../../constants/images";
 import { getImageURL } from "../../services/imageService";
 import type {
-    GetImageURLResponse,
-    UploadError400,
-    UploadError500,
+  GetImageURLResponse,
+  UploadError400,
+  UploadError500,
 } from "../../types/images";
 import type { ResponseErrorConfig } from "../client";
 
@@ -22,7 +22,10 @@ type GetImageError = ResponseErrorConfig<UploadError400 | UploadError500>;
 export function useGetImage(
   imageId: string,
   size: ImageSize,
-  options?: Omit<UseQueryOptions<GetImageURLResponse, GetImageError>, 'queryKey' | 'queryFn'>,
+  options?: Omit<
+    UseQueryOptions<GetImageURLResponse, GetImageError>,
+    "queryKey" | "queryFn"
+  >,
 ) {
   return useQuery<GetImageURLResponse, GetImageError>({
     queryKey: ["image", imageId, size],

@@ -6,7 +6,8 @@ export const IMAGE_CONFIG = {
     quality: 0.9,
     maxBytes: 6 * 1024 * 1024, // 6MB - must match server
   },
-  medium: { // medium keeps aspect ratio just scaled down
+  medium: {
+    // medium keeps aspect ratio just scaled down
     quality: 0.6,
     scale: 0.6,
     maxBytes: 2 * 1024 * 1024, // 2MB - generous limit for scaled images
