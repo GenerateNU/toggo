@@ -24,7 +24,7 @@ func ApplyGooseMigrations(ctx context.Context, host string, port int, user, pass
 		}
 	}()
 
-	if err := goose.Up(sqlDB, "../migrations"); err != nil {
+	if err := goose.Up(sqlDB, "../migrations", goose.WithAllowMissing()); err != nil {
 		log.Printf("failed to apply migrations: %v", err)
 		return err
 	}
