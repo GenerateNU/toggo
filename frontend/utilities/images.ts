@@ -38,6 +38,9 @@ async function getImageDimensions(uri: string): Promise<ImageDimensions> {
  */
 async function getFileSize(uri: string): Promise<number> {
   const response = await globalThis.fetch(uri);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`);
+  }
   const blob = await response.blob();
   return blob.size;
 }
@@ -49,6 +52,9 @@ async function getFileSize(uri: string): Promise<number> {
  */
 export async function uriToBlob(uri: string): Promise<Blob> {
   const response = await globalThis.fetch(uri);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.status}`);
+  }
   return response.blob();
 }
 
