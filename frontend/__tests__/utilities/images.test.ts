@@ -26,8 +26,8 @@ jest.mock("react-native", () => ({
 }));
 
 // Mock global fetch for getFileSize and uriToBlob
+const originalFetch = globalThis.fetch;
 const mockFetch = jest.fn();
-globalThis.fetch = mockFetch;
 
 // =============================================================================
 // Test Utilities
@@ -78,6 +78,14 @@ const setupFetchWithSize = (size: number) => {
 // =============================================================================
 
 describe("image-compression", () => {
+  beforeAll(() => {
+    globalThis.fetch = mockFetch;
+  });
+
+  afterAll(() => {
+    globalThis.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

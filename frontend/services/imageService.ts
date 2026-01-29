@@ -104,6 +104,10 @@ export async function uploadImage(
   { uri, sizes = ["large", "medium", "small"] }: UploadImageRequest,
   config: Partial<RequestConfig> = {},
 ): Promise<UploadImageResponse> {
+  if (sizes.length === 0) {
+    throw new Error("At least one size must be requested");
+  }
+
   // Compress all variants client-side
   const variants = await compressImage(uri, sizes);
 

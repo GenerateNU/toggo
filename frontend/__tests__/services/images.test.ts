@@ -29,7 +29,7 @@ jest.mock("../../utilities/images", () => ({
 }));
 
 const mockGlobalFetch = jest.fn();
-globalThis.fetch = mockGlobalFetch;
+const originalFetch = globalThis.fetch;
 
 // =============================================================================
 // Test Utilities
@@ -68,6 +68,14 @@ const createMockBlob = (size: number): Blob => ({
 // =============================================================================
 
 describe("image-service", () => {
+  beforeAll(() => {
+    globalThis.fetch = mockGlobalFetch;
+  });
+
+  afterAll(() => {
+    globalThis.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Date, "now").mockReturnValue(1704067200000);
