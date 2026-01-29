@@ -28,6 +28,7 @@ services:
       dockerfile: dev.Dockerfile
     environment:
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
+      DOPPLER_CONFIG: ${DOPPLER_CONFIG:-dev}
       APP_PORT: 8000
     volumes:
       - .:/app

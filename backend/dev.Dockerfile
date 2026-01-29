@@ -22,4 +22,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["doppler", "run", "--project", "backend", "--config", "dev", "--", "air", "-c", ".air.toml"]
+CMD sh -c "doppler run --project backend --config ${DOPPLER_CONFIG:-dev} -- air -c .air.toml"

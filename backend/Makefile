@@ -13,6 +13,21 @@ clean:
 dev:
 	@echo "Starting Docker containers..."
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+	DOPPLER_CONFIG=dev \
+		docker-compose up --build
+
+	@until docker exec backend-db pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
+	@echo "Database ready"
+
+	$(MAKE) migrate-up
+
+	@echo "Following logs... (Ctrl+C to stop)"
+	docker-compose logs -f
+
+dev-personal:
+	@echo "Starting Docker containers..."
+	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev_personal --name dev-personal-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+	DOPPLER_CONFIG=dev_personal \
 		docker-compose up --build
 
 	@until docker exec backend-db pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
