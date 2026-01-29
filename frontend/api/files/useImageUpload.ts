@@ -16,6 +16,46 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *
  * @param options - Optional mutation options (cropping, etc.)
  * @return Mutation object for uploading image
+ *
+ * @example
+ * ```tsx
+ * function ProfilePictureUploader() {
+ *
+ *   const uploadMutation = useUploadProfilePicture({
+ *     onSuccess: (data) => {
+ *       console.log("Profile picture uploaded:", data.imageId);
+ *     },
+ *     onError: (error) => {
+ *       console.error("Upload failed:", error);
+ *     },
+ *   });
+ *
+ *   const handlePickImage = async () => {
+ *     // Launch the device's image picker
+ *     const result = await ImagePicker.launchImageLibraryAsync({
+ *       mediaTypes: ["images"],
+ *       allowsEditing: true,  // Allow user to crop before upload
+ *       aspect: [1, 1],       // Force square aspect ratio for profile pics
+ *       quality: 1,           // Max quality; compression happens in the hook
+ *     });
+ *
+ *     // If user selected an image (didn't cancel), trigger the upload
+ *     if (!result.canceled && result.assets[0]?.uri) {
+ *       uploadMutation.mutate({ uri: result.assets[0].uri });
+ *     }
+ *   };
+ *
+ *   return (
+ *     <View>
+ *       <Button onPress={handlePickImage} disabled={uploadMutation.isPending}>
+ *         {uploadMutation.isPending ? "Uploading..." : "Change Profile Picture"}
+ *       </Button>
+ *
+ *       {uploadMutation.isError && <Text>Upload failed</Text>}
+ *     </View>
+ *   );
+ * }
+ * ```
  */
 export function useUploadImage(
   options?: UseMutationOptions<

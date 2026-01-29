@@ -1,4 +1,9 @@
-import { useGetImage, useUploadProfilePicture } from "@/api/files";
+import {
+  useGetImage,
+  useGetImageAllSizes,
+  useUploadImage,
+  useUploadProfilePicture,
+} from "@/api/files";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Button, Image, Text, View, ScrollView } from "react-native";
@@ -6,16 +11,27 @@ import { Button, Image, Text, View, ScrollView } from "react-native";
 const S3_ENDPOINT = "http://0.0.0.0:4566"; // Update to your IP
 
 export default function TestUploadScreen() {
-  const [imageId, setImageId] = useState<string | null>(null);
+  const [profileImageId, setProfileImageId] = useState<string | null>(null);
+  const [galleryImageId, setGalleryImageId] = useState<string | null>(null);
   const [healthStatus, setHealthStatus] = useState<string>("");
   const [s3Status, setS3Status] = useState<string>("");
   const [s3Files, setS3Files] = useState<string[]>([]);
   const [s3FilesError, setS3FilesError] = useState<string>("");
-  const uploadMutation = useUploadProfilePicture();
 
-  const { data: imageData } = useGetImage(imageId ?? "", "small", {
-    enabled: !!imageId,
-  });
+  // Upload hooks
+  const uploadProfilePictureMutation = useUploadProfilePicture();
+  const uploadGalleryImageMutation = useUploadImage();
+
+  // Get image hooks
+  const { data: profileImages, isLoading: profileLoading } = useGetImage(
+    [profileImageId],
+    "small",
+  );
+  const profileImageData = profileImages[0];
+
+  const { data: galleryImagesAllSizes, isLoading: galleryLoading } =
+    useGetImageAllSizes([galleryImageId]);
+  const galleryImageAllSizes = galleryImagesAllSizes[0];
 
   const checkLocalStackHealth = async () => {
     setHealthStatus("Checking...");
@@ -99,11 +115,11 @@ export default function TestUploadScreen() {
     }
   };
 
-  const pickAndUploadImage = async () => {
+  const pickImage = async (): Promise<string | null> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Permission denied");
-      return;
+      return null;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -114,20 +130,47 @@ export default function TestUploadScreen() {
     });
 
     if (!result.canceled && result.assets[0]?.uri) {
-      uploadMutation.mutate(
-        { uri: result.assets[0].uri },
-        {
-          onSuccess: (data) => {
-            console.log("Upload success:", data);
-            setImageId(data.imageId);
-          },
-          onError: (error) => {
-            console.error("Upload error:", error);
-            alert("Upload failed: " + JSON.stringify(error));
-          },
-        },
-      );
+      return result.assets[0].uri;
     }
+    return null;
+  };
+
+  const handleUploadProfilePicture = async () => {
+    const uri = await pickImage();
+    if (!uri) return;
+
+    uploadProfilePictureMutation.mutate(
+      { uri },
+      {
+        onSuccess: (data) => {
+          console.log("Profile picture upload success:", data);
+          setProfileImageId(data.imageId);
+        },
+        onError: (error) => {
+          console.error("Profile picture upload error:", error);
+          alert("Upload failed: " + JSON.stringify(error));
+        },
+      },
+    );
+  };
+
+  const handleUploadGalleryImage = async () => {
+    const uri = await pickImage();
+    if (!uri) return;
+
+    uploadGalleryImageMutation.mutate(
+      { uri, sizes: ["large", "medium", "small"] },
+      {
+        onSuccess: (data) => {
+          console.log("Gallery image upload success:", data);
+          setGalleryImageId(data.imageId);
+        },
+        onError: (error) => {
+          console.error("Gallery image upload error:", error);
+          alert("Upload failed: " + JSON.stringify(error));
+        },
+      },
+    );
   };
 
   return (
@@ -157,10 +200,6 @@ export default function TestUploadScreen() {
       </View>
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        Database Images
-      </Text>
-
-      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
         S3 Files
       </Text>
 
@@ -188,29 +227,116 @@ export default function TestUploadScreen() {
       </View>
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        Image Upload Test
+        Profile Picture Upload (useUploadProfilePicture)
       </Text>
 
-      <Button title="Pick and Upload Image" onPress={pickAndUploadImage} />
+      <View style={{ gap: 8, marginBottom: 24 }}>
+        <Button
+          title="Upload Profile Picture (small only)"
+          onPress={handleUploadProfilePicture}
+        />
 
-      {uploadMutation.isPending && <Text>Uploading...</Text>}
+        {uploadProfilePictureMutation.isPending && (
+          <Text>Uploading profile picture...</Text>
+        )}
 
-      {uploadMutation.isSuccess && (
-        <View style={{ marginTop: 16 }}>
-          <Text>Upload successful!</Text>
-          <Text>Image ID: {uploadMutation.data.imageId}</Text>
-        </View>
-      )}
+        {uploadProfilePictureMutation.isError && (
+          <Text style={{ color: "red" }}>
+            Error: {uploadProfilePictureMutation.error?.message}
+          </Text>
+        )}
 
-      {imageData && (
-        <View style={{ marginTop: 16 }}>
-          <Text>Retrieved Image URL:</Text>
-          <Image
-            source={{ uri: imageData.url }}
-            style={{ width: 200, height: 200, marginTop: 8 }}
-          />
-        </View>
-      )}
+        {uploadProfilePictureMutation.isSuccess && (
+          <View>
+            <Text style={{ color: "green" }}>✅ Profile picture uploaded!</Text>
+            <Text>Image ID: {uploadProfilePictureMutation.data.imageId}</Text>
+          </View>
+        )}
+
+        {profileLoading && <Text>Loading profile image...</Text>}
+
+        {profileImageData && (
+          <View style={{ marginTop: 8 }}>
+            <Text style={{ fontWeight: "bold" }}>
+              Retrieved via useGetImage (small):
+            </Text>
+            <Image
+              source={{ uri: profileImageData.url }}
+              style={{
+                width: 150,
+                height: 150,
+                marginTop: 8,
+                borderRadius: 75,
+              }}
+            />
+          </View>
+        )}
+      </View>
+
+      <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
+        Gallery Image Upload (useUploadImage)
+      </Text>
+
+      <View style={{ gap: 8, marginBottom: 24 }}>
+        <Button
+          title="Upload Gallery Image (all sizes)"
+          onPress={handleUploadGalleryImage}
+        />
+
+        {uploadGalleryImageMutation.isPending && (
+          <Text>Uploading gallery image...</Text>
+        )}
+
+        {uploadGalleryImageMutation.isError && (
+          <Text style={{ color: "red" }}>
+            Error: {uploadGalleryImageMutation.error?.message}
+          </Text>
+        )}
+
+        {uploadGalleryImageMutation.isSuccess && (
+          <View>
+            <Text style={{ color: "green" }}>✅ Gallery image uploaded!</Text>
+            <Text>Image ID: {uploadGalleryImageMutation.data.imageId}</Text>
+          </View>
+        )}
+
+        {galleryLoading && <Text>Loading gallery image...</Text>}
+
+        {galleryImageAllSizes && (
+          <View style={{ marginTop: 8 }}>
+            <Text style={{ fontWeight: "bold" }}>
+              Retrieved via useGetImageAllSizes:
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+              {galleryImageAllSizes.files.map((sizeData) => (
+                <View key={sizeData.size} style={{ alignItems: "center" }}>
+                  <Text style={{ fontSize: 10, marginBottom: 4 }}>
+                    {sizeData.size}
+                  </Text>
+                  <Image
+                    source={{ uri: sizeData.url }}
+                    style={{
+                      width:
+                        sizeData.size === "large"
+                          ? 100
+                          : sizeData.size === "medium"
+                            ? 75
+                            : 50,
+                      height:
+                        sizeData.size === "large"
+                          ? 100
+                          : sizeData.size === "medium"
+                            ? 75
+                            : 50,
+                      borderRadius: 4,
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
 
       <View style={{ height: 50 }} />
     </ScrollView>
