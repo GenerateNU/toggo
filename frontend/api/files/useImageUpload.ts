@@ -19,11 +19,11 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *
  * @example
  * ```tsx
- * function ProfilePictureUploader() {
+ * function ImageUploader() {
  *
- *   const uploadMutation = useUploadProfilePicture({
+ *   const uploadMutation = useUploadImage({
  *     onSuccess: (data) => {
- *       console.log("Profile picture uploaded:", data.imageId);
+ *       console.log("Picture uploaded:", data.imageId);
  *     },
  *     onError: (error) => {
  *       console.error("Upload failed:", error);
@@ -48,7 +48,7 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  *   return (
  *     <View>
  *       <Button onPress={handlePickImage} disabled={uploadMutation.isPending}>
- *         {uploadMutation.isPending ? "Uploading..." : "Change Profile Picture"}
+ *         {uploadMutation.isPending ? "Uploading..." : "Change Picture"}
  *       </Button>
  *
  *       {uploadMutation.isError && <Text>Upload failed</Text>}

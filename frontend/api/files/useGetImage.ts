@@ -43,7 +43,7 @@ export function useGetImage(
     isSuccess: queries.every((q) => q.isSuccess),
     /** All errors from failed queries */
     errors: queries
-      .map((q) => q.error as GetImageError | null)
+      .map((q) => q.error as GetImageError | null | undefined)
       .filter((e): e is GetImageError => e !== null),
   };
 }
