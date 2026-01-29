@@ -76,7 +76,7 @@ async function uploadToS3(url: string, blob: Blob): Promise<void> {
     body: blob,
     headers: { "Content-Type": "image/jpeg" },
   });
-
+  console.log("[S3] Uploading to URL:", url);
   if (!response.ok) {
     throw new Error(`S3 upload failed: ${response.status}`);
   }
@@ -103,17 +103,25 @@ export async function uploadImage(
   { uri, sizes = ["large", "medium", "small"] }: UploadImageRequest,
   config: Partial<RequestConfig> = {},
 ): Promise<UploadImageResponse> {
+  console.log("[1] Starting upload, URI:", uri);
+  
   // Compress all variants client-side
+  console.log("[2] Starting compression...");
   const variants = await compressImage(uri, sizes);
+  console.log("[3] Compression done:", variants.map(v => ({ size: v.size, fileSize: v.fileSize })));
 
   // Generate a file key for this upload
   const timestamp = Date.now();
   const fileKey = `uploads/${timestamp}-${Crypto.randomUUID()}`;
+  console.log("[4] File key:", fileKey);
 
   // Get presigned URLs from server
+  console.log("[5] Getting presigned URLs...");
   const uploadResponse = await getUploadURLs(fileKey, sizes, "image/jpeg", config);
+  console.log("[6] Got presigned URLs:", uploadResponse.uploadUrls);
 
   // Upload all variants to S3 in parallel
+  console.log("[7] Starting S3 uploads...");
   await Promise.all(
     variants.map(async (variant) => {
       const presignedURL = uploadResponse.uploadUrls.find(
@@ -123,13 +131,18 @@ export async function uploadImage(
         throw new Error(`No presigned URL for ${variant.size}`);
       }
 
+      console.log(`[8] Uploading ${variant.size} to:`, presignedURL.url);
       const blob = await uriToBlob(variant.uri);
+      console.log(`[9] Got blob for ${variant.size}, size:`, blob.size);
       await uploadToS3(presignedURL.url, blob);
+      console.log(`[10] S3 upload complete for ${variant.size}`);
     }),
   );
 
   // Confirm upload with server
+  console.log("[11] Confirming upload...");
   await confirmUpload(uploadResponse.imageId, undefined, config);
+  console.log("[12] Upload confirmed!");
 
   return { imageId: uploadResponse.imageId, variants: sizes };
 }

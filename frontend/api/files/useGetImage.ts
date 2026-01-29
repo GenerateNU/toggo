@@ -22,7 +22,7 @@ type GetImageError = ResponseErrorConfig<UploadError400 | UploadError500>;
 export function useGetImage(
   imageId: string,
   size: ImageSize,
-  options?: UseQueryOptions<GetImageURLResponse, GetImageError>,
+  options?: Omit<UseQueryOptions<GetImageURLResponse, GetImageError>, 'queryKey' | 'queryFn'>,
 ) {
   return useQuery<GetImageURLResponse, GetImageError>({
     queryKey: ["image", imageId, size],
