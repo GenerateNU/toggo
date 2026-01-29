@@ -15,6 +15,109 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/notifications/send": {
+            "post": {
+                "description": "Sends a push notification to a single user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send notification to user",
+                "operationId": "sendNotification",
+                "parameters": [
+                    {
+                        "description": "Notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/send-bulk": {
+            "post": {
+                "description": "Sends push notifications to multiple users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send bulk notifications",
+                "operationId": "sendBulkNotification",
+                "parameters": [
+                    {
+                        "description": "Bulk notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendBulkNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "post": {
                 "description": "Creates a new user with the provided payload",
@@ -319,9 +422,102 @@ const docTemplate = `{
                 }
             }
         },
+        "models.NotificationError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NotificationResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NotificationError"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "success_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.SendBulkNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_ids"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_ids": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.SendNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_id"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "device_token": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -337,6 +533,12 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "device_token": {
+                    "type": "string"
+                },
+                "device_token_updated_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },

@@ -13,6 +13,7 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	apiGroup := app.Group("/api")
 	apiV1Group := apiGroup.Group("/v1", middlewares...)
 	UserRoutes(apiV1Group, routeParams)
+	NotificationRoutes(apiV1Group, routeParams)
 
 	// 404 handler for routes not matched
 	setUpNotFoundHandler(app)

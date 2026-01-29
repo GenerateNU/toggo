@@ -76,3 +76,4 @@ func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, userBody mod
 func (u *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return u.User.Delete(ctx, id)
 }
+
