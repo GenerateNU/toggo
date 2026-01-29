@@ -12,7 +12,9 @@
     "kubb": "kubb --debug",
     "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
