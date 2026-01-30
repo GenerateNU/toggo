@@ -1,3 +1,4 @@
+import { NotificationProvider } from "@/contexts/notification";
 import { UserProvider } from "@/contexts/user";
 import { getTheme } from "@/design-system/config/theme";
 import { ThemeProvider } from "@shopify/restyle";
@@ -16,7 +17,9 @@ export default function RootLayout() {
       <ThemeProvider theme={getTheme()}>
         <QueryClientProvider client={queryClient}>
           <UserProvider>
-            <Slot />
+            <NotificationProvider>
+              <Slot />
+            </NotificationProvider>
           </UserProvider>
         </QueryClientProvider>
       </ThemeProvider>

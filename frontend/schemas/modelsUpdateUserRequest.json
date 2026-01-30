@@ -1,6 +1,7 @@
 {
   "type": "object",
   "properties": {
+    "device_token": { "type": "string" },
     "name": { "type": "string", "minLength": 1 },
     "phone_number": { "type": "string" },
     "username": { "type": "string" }

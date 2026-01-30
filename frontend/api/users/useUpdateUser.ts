@@ -6,6 +6,11 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
+import type {
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
   UpdateUserPathParams,
@@ -14,11 +19,6 @@ import type {
   UpdateUser422,
   UpdateUser500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const updateUserMutationKey = () =>

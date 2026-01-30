@@ -6,8 +6,24 @@
 import type {
   ErrsAPIError,
   ModelsCreateUserRequest,
+  ModelsNotificationError,
+  ModelsNotificationResponse,
+  ModelsSendBulkNotificationRequest,
+  ModelsSendNotificationRequest,
   ModelsUpdateUserRequest,
   ModelsUser,
+  SendNotification200,
+  SendNotification400,
+  SendNotification422,
+  SendNotification500,
+  SendNotificationMutationRequest,
+  SendNotificationMutationResponse,
+  SendBulkNotification200,
+  SendBulkNotification400,
+  SendBulkNotification422,
+  SendBulkNotification500,
+  SendBulkNotificationMutationRequest,
+  SendBulkNotificationMutationResponse,
   CreateUser201,
   CreateUser400,
   CreateUser422,
@@ -56,18 +72,126 @@ export const modelsCreateUserRequestSchema = z.object({
   username: z.string(),
 }) as unknown as z.ZodType<ModelsCreateUserRequest>;
 
+export const modelsNotificationErrorSchema = z.object({
+  message: z.optional(z.string()),
+  token: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsNotificationError>;
+
+export const modelsNotificationResponseSchema = z.object({
+  get errors() {
+    return z.array(modelsNotificationErrorSchema).optional();
+  },
+  failure_count: z.optional(z.int()),
+  success_count: z.optional(z.int()),
+}) as unknown as z.ZodType<ModelsNotificationResponse>;
+
+export const modelsSendBulkNotificationRequestSchema = z.object({
+  body: z.string().min(1).max(500),
+  data: z.optional(z.object({}).catchall(z.any())),
+  title: z.string().min(1).max(100),
+  user_ids: z.array(z.string()).min(1).max(1000),
+}) as unknown as z.ZodType<ModelsSendBulkNotificationRequest>;
+
+export const modelsSendNotificationRequestSchema = z.object({
+  body: z.string().min(1).max(500),
+  data: z.optional(z.object({}).catchall(z.any())),
+  title: z.string().min(1).max(100),
+  user_id: z.string(),
+}) as unknown as z.ZodType<ModelsSendNotificationRequest>;
+
 export const modelsUpdateUserRequestSchema = z.object({
+  device_token: z.optional(z.string()),
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateUserRequest>;
 
 export const modelsUserSchema = z.object({
+  device_token: z.optional(z.string()),
+  device_token_updated_at: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   phone_number: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
+
+/**
+ * @description OK
+ */
+export const sendNotification200Schema =
+  z.any() as unknown as z.ZodType<SendNotification200>;
+
+/**
+ * @description Bad Request
+ */
+export const sendNotification400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const sendNotification422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const sendNotification500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification500>;
+
+/**
+ * @description Notification request
+ */
+export const sendNotificationMutationRequestSchema = z.lazy(
+  () => modelsSendNotificationRequestSchema,
+) as unknown as z.ZodType<SendNotificationMutationRequest>;
+
+export const sendNotificationMutationResponseSchema = z.lazy(
+  () => sendNotification200Schema,
+) as unknown as z.ZodType<SendNotificationMutationResponse>;
+
+/**
+ * @description OK
+ */
+export const sendBulkNotification200Schema = z.lazy(
+  () => modelsNotificationResponseSchema,
+) as unknown as z.ZodType<SendBulkNotification200>;
+
+/**
+ * @description Bad Request
+ */
+export const sendBulkNotification400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const sendBulkNotification422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const sendBulkNotification500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification500>;
+
+/**
+ * @description Bulk notification request
+ */
+export const sendBulkNotificationMutationRequestSchema = z.lazy(
+  () => modelsSendBulkNotificationRequestSchema,
+) as unknown as z.ZodType<SendBulkNotificationMutationRequest>;
+
+export const sendBulkNotificationMutationResponseSchema = z.lazy(
+  () => sendBulkNotification200Schema,
+) as unknown as z.ZodType<SendBulkNotificationMutationResponse>;
 
 /**
  * @description Created
