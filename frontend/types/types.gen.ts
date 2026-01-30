@@ -11,6 +11,153 @@ export type ErrsAPIError = {
   statusCode?: number;
 };
 
+export const modelsEntityType = {
+  Activity: "activity",
+  Pitch: "pitch",
+} as const;
+
+export type ModelsEntityTypeEnumKey =
+  (typeof modelsEntityType)[keyof typeof modelsEntityType];
+
+export type ModelsEntityType = ModelsEntityTypeEnumKey;
+
+export type ModelsComment = {
+  /**
+   * @type string | undefined
+   */
+  content?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: ModelsEntityType;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+};
+
+export type ModelsCommentAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  content?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: ModelsEntityType;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @description pointer since some users don\'t have their avatar set
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export const modelsImageSize = {
+  ImageSizeLarge: "large",
+  ImageSizeMedium: "medium",
+  ImageSizeSmall: "small",
+} as const;
+
+export type ModelsImageSizeEnumKey =
+  (typeof modelsImageSize)[keyof typeof modelsImageSize];
+
+export type ModelsImageSize = ModelsImageSizeEnumKey;
+
+export type ModelsConfirmUploadRequest = {
+  /**
+   * @type string
+   */
+  imageId: string;
+  /**
+   * @description Optional: if nil, confirm all sizes
+   */
+  size?: ModelsImageSize;
+};
+
+export type ModelsConfirmUploadResponse = {
+  /**
+   * @type integer | undefined
+   */
+  confirmed?: number;
+  /**
+   * @type string | undefined
+   */
+  imageId?: string;
+  /**
+   * @type string | undefined
+   */
+  status?: string;
+};
+
+export type ModelsCreateCommentRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  content: string;
+  /**
+   * @type string
+   */
+  entity_id: string;
+  entity_type: ModelsEntityType;
+  /**
+   * @type string
+   */
+  trip_id: string;
+  /**
+   * @type string
+   */
+  user_id: string;
+};
+
 export type ModelsCreateUserRequest = {
   /**
    * @minLength 1
@@ -27,7 +174,161 @@ export type ModelsCreateUserRequest = {
   username: string;
 };
 
+export type ModelsGetFileResponse = {
+  /**
+   * @type string | undefined
+   */
+  contentType?: string;
+  /**
+   * @type string | undefined
+   */
+  imageId?: string;
+  /**
+   * @type string | undefined
+   */
+  size?: ModelsImageSize;
+  /**
+   * @type string | undefined
+   */
+  url?: string;
+};
+
+export type ModelsGetFileAllSizesResponse = {
+  /**
+   * @type array | undefined
+   */
+  files?: ModelsGetFileResponse[];
+  /**
+   * @type string | undefined
+   */
+  imageId?: string;
+};
+
+export type ModelsNotificationError = {
+  /**
+   * @type string | undefined
+   */
+  message?: string;
+  /**
+   * @type string | undefined
+   */
+  token?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+};
+
+export type ModelsNotificationResponse = {
+  /**
+   * @type array | undefined
+   */
+  errors?: ModelsNotificationError[];
+  /**
+   * @type integer | undefined
+   */
+  failure_count?: number;
+  /**
+   * @type integer | undefined
+   */
+  success_count?: number;
+};
+
+export type ModelsS3HealthCheckResponse = {
+  /**
+   * @type string | undefined
+   */
+  bucketName?: string;
+  /**
+   * @description Error contains the underlying error message when status is \"unhealthy\"
+   * @type string | undefined
+   */
+  error?: string;
+  /**
+   * @type string | undefined
+   */
+  region?: string;
+  /**
+   * @type string | undefined
+   */
+  status?: string;
+};
+
+export type ModelsSendBulkNotificationRequest = {
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string
+   */
+  body: string;
+  /**
+   * @type object | undefined
+   */
+  data?: {
+    [key: string]: any;
+  };
+  /**
+   * @minLength 1
+   * @maxLength 100
+   * @type string
+   */
+  title: string;
+  /**
+   * @type array
+   */
+  user_ids: string[];
+};
+
+export type ModelsSendNotificationRequest = {
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string
+   */
+  body: string;
+  /**
+   * @type object | undefined
+   */
+  data?: {
+    [key: string]: any;
+  };
+  /**
+   * @minLength 1
+   * @maxLength 100
+   * @type string
+   */
+  title: string;
+  /**
+   * @type string
+   */
+  user_id: string;
+};
+
+export type ModelsSizedUploadURL = {
+  /**
+   * @type string | undefined
+   */
+  size?: ModelsImageSize;
+  /**
+   * @type string | undefined
+   */
+  url?: string;
+};
+
+export type ModelsUpdateCommentRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  content: string;
+};
+
 export type ModelsUpdateUserRequest = {
+  /**
+   * @maxLength 200
+   * @type string | undefined
+   */
+  device_token?: string;
   /**
    * @minLength 1
    * @type string | undefined
@@ -40,10 +341,58 @@ export type ModelsUpdateUserRequest = {
   /**
    * @type string | undefined
    */
+  profile_picture?: string;
+  /**
+   * @type string | undefined
+   */
   username?: string;
 };
 
+export type ModelsUploadURLRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  contentType: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  fileKey: string;
+  /**
+   * @type array
+   */
+  sizes: ModelsImageSize[];
+};
+
+export type ModelsUploadURLResponse = {
+  /**
+   * @type string | undefined
+   */
+  expiresAt?: string;
+  /**
+   * @type string | undefined
+   */
+  fileKey?: string;
+  /**
+   * @type string | undefined
+   */
+  imageId?: string;
+  /**
+   * @type array | undefined
+   */
+  uploadUrls?: ModelsSizedUploadURL[];
+};
+
 export type ModelsUser = {
+  /**
+   * @type string | undefined
+   */
+  device_token?: string;
+  /**
+   * @type string | undefined
+   */
+  device_token_updated_at?: string;
   /**
    * @type string | undefined
    */
@@ -59,7 +408,433 @@ export type ModelsUser = {
   /**
    * @type string | undefined
    */
+  profile_picture?: string;
+  /**
+   * @type string | undefined
+   */
   username?: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateComment201 = ModelsComment;
+
+/**
+ * @description Bad Request
+ */
+export type CreateComment400 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateComment422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateComment500 = ErrsAPIError;
+
+/**
+ * @description Create comment request
+ */
+export type CreateCommentMutationRequest = ModelsCreateCommentRequest;
+
+export type CreateCommentMutationResponse = CreateComment201;
+
+export type CreateCommentMutation = {
+  Response: CreateComment201;
+  Request: CreateCommentMutationRequest;
+  Errors: CreateComment400 | CreateComment422 | CreateComment500;
+};
+
+export type DeleteCommentPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteComment204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteComment400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteComment404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteComment500 = ErrsAPIError;
+
+export type DeleteCommentMutationResponse = DeleteComment204;
+
+export type DeleteCommentMutation = {
+  Response: DeleteComment204;
+  PathParams: DeleteCommentPathParams;
+  Errors: DeleteComment400 | DeleteComment404 | DeleteComment500;
+};
+
+export type UpdateCommentPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateComment200 = ModelsComment;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateComment400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateComment404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateComment422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateComment500 = ErrsAPIError;
+
+/**
+ * @description Update comment request
+ */
+export type UpdateCommentMutationRequest = ModelsUpdateCommentRequest;
+
+export type UpdateCommentMutationResponse = UpdateComment200;
+
+export type UpdateCommentMutation = {
+  Response: UpdateComment200;
+  Request: UpdateCommentMutationRequest;
+  PathParams: UpdateCommentPathParams;
+  Errors:
+    | UpdateComment400
+    | UpdateComment404
+    | UpdateComment422
+    | UpdateComment500;
+};
+
+/**
+ * @description OK
+ */
+export type ConfirmUpload200 = ModelsConfirmUploadResponse;
+
+/**
+ * @description Bad Request
+ */
+export type ConfirmUpload400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ConfirmUpload404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type ConfirmUpload422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ConfirmUpload500 = ErrsAPIError;
+
+/**
+ * @description Confirm upload request
+ */
+export type ConfirmUploadMutationRequest = ModelsConfirmUploadRequest;
+
+export type ConfirmUploadMutationResponse = ConfirmUpload200;
+
+export type ConfirmUploadMutation = {
+  Response: ConfirmUpload200;
+  Request: ConfirmUploadMutationRequest;
+  Errors:
+    | ConfirmUpload400
+    | ConfirmUpload404
+    | ConfirmUpload422
+    | ConfirmUpload500;
+};
+
+/**
+ * @description OK
+ */
+export type CheckS3Health200 = ModelsS3HealthCheckResponse;
+
+/**
+ * @description Service Unavailable
+ */
+export type CheckS3Health503 = ErrsAPIError;
+
+export type CheckS3HealthQueryResponse = CheckS3Health200;
+
+export type CheckS3HealthQuery = {
+  Response: CheckS3Health200;
+  Errors: CheckS3Health503;
+};
+
+/**
+ * @description Created
+ */
+export type CreateUploadURLs201 = ModelsUploadURLResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreateUploadURLs400 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateUploadURLs422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateUploadURLs500 = ErrsAPIError;
+
+/**
+ * @description Upload URL request
+ */
+export type CreateUploadURLsMutationRequest = ModelsUploadURLRequest;
+
+export type CreateUploadURLsMutationResponse = CreateUploadURLs201;
+
+export type CreateUploadURLsMutation = {
+  Response: CreateUploadURLs201;
+  Request: CreateUploadURLsMutationRequest;
+  Errors: CreateUploadURLs400 | CreateUploadURLs422 | CreateUploadURLs500;
+};
+
+export type GetFileAllSizesPathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetFileAllSizes200 = ModelsGetFileAllSizesResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetFileAllSizes400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetFileAllSizes404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetFileAllSizes500 = ErrsAPIError;
+
+export type GetFileAllSizesQueryResponse = GetFileAllSizes200;
+
+export type GetFileAllSizesQuery = {
+  Response: GetFileAllSizes200;
+  PathParams: GetFileAllSizesPathParams;
+  Errors: GetFileAllSizes400 | GetFileAllSizes404 | GetFileAllSizes500;
+};
+
+export type GetFilePathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+  /**
+   * @description Image size (large, medium, small)
+   * @type string
+   */
+  size: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetFile200 = ModelsGetFileResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetFile400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetFile404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetFile500 = ErrsAPIError;
+
+export type GetFileQueryResponse = GetFile200;
+
+export type GetFileQuery = {
+  Response: GetFile200;
+  PathParams: GetFilePathParams;
+  Errors: GetFile400 | GetFile404 | GetFile500;
+};
+
+/**
+ * @description OK
+ */
+export type SendNotification200 = any;
+
+/**
+ * @description Bad Request
+ */
+export type SendNotification400 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SendNotification422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SendNotification500 = ErrsAPIError;
+
+/**
+ * @description Notification request
+ */
+export type SendNotificationMutationRequest = ModelsSendNotificationRequest;
+
+export type SendNotificationMutationResponse = SendNotification200;
+
+export type SendNotificationMutation = {
+  Response: SendNotification200;
+  Request: SendNotificationMutationRequest;
+  Errors: SendNotification400 | SendNotification422 | SendNotification500;
+};
+
+/**
+ * @description OK
+ */
+export type SendBulkNotification200 = ModelsNotificationResponse;
+
+/**
+ * @description Bad Request
+ */
+export type SendBulkNotification400 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SendBulkNotification422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SendBulkNotification500 = ErrsAPIError;
+
+/**
+ * @description Bulk notification request
+ */
+export type SendBulkNotificationMutationRequest =
+  ModelsSendBulkNotificationRequest;
+
+export type SendBulkNotificationMutationResponse = SendBulkNotification200;
+
+export type SendBulkNotificationMutation = {
+  Response: SendBulkNotification200;
+  Request: SendBulkNotificationMutationRequest;
+  Errors:
+    | SendBulkNotification400
+    | SendBulkNotification422
+    | SendBulkNotification500;
+};
+
+export type GetPaginatedCommentsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Entity type (activity, pitch)
+   * @type string
+   */
+  entityType: string;
+  /**
+   * @description Entity ID
+   * @type string
+   */
+  entityID: string;
+};
+
+export type GetPaginatedCommentsQueryParams = {
+  /**
+   * @description Max results
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Cursor timestamp (RFC3339)
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetPaginatedComments200 = ModelsCommentAPIResponse[];
+
+/**
+ * @description Bad Request
+ */
+export type GetPaginatedComments400 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type GetPaginatedComments422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPaginatedComments500 = ErrsAPIError;
+
+export type GetPaginatedCommentsQueryResponse = GetPaginatedComments200;
+
+export type GetPaginatedCommentsQuery = {
+  Response: GetPaginatedComments200;
+  PathParams: GetPaginatedCommentsPathParams;
+  QueryParams: GetPaginatedCommentsQueryParams;
+  Errors:
+    | GetPaginatedComments400
+    | GetPaginatedComments422
+    | GetPaginatedComments500;
 };
 
 /**

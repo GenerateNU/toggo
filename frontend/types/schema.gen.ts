@@ -5,9 +5,94 @@
 
 import type {
   ErrsAPIError,
+  ModelsEntityType,
+  ModelsComment,
+  ModelsCommentAPIResponse,
+  ModelsImageSize,
+  ModelsConfirmUploadRequest,
+  ModelsConfirmUploadResponse,
+  ModelsCreateCommentRequest,
   ModelsCreateUserRequest,
+  ModelsGetFileResponse,
+  ModelsGetFileAllSizesResponse,
+  ModelsNotificationError,
+  ModelsNotificationResponse,
+  ModelsS3HealthCheckResponse,
+  ModelsSendBulkNotificationRequest,
+  ModelsSendNotificationRequest,
+  ModelsSizedUploadURL,
+  ModelsUpdateCommentRequest,
   ModelsUpdateUserRequest,
+  ModelsUploadURLRequest,
+  ModelsUploadURLResponse,
   ModelsUser,
+  CreateComment201,
+  CreateComment400,
+  CreateComment422,
+  CreateComment500,
+  CreateCommentMutationRequest,
+  CreateCommentMutationResponse,
+  DeleteCommentPathParams,
+  DeleteComment204,
+  DeleteComment400,
+  DeleteComment404,
+  DeleteComment500,
+  DeleteCommentMutationResponse,
+  UpdateCommentPathParams,
+  UpdateComment200,
+  UpdateComment400,
+  UpdateComment404,
+  UpdateComment422,
+  UpdateComment500,
+  UpdateCommentMutationRequest,
+  UpdateCommentMutationResponse,
+  ConfirmUpload200,
+  ConfirmUpload400,
+  ConfirmUpload404,
+  ConfirmUpload422,
+  ConfirmUpload500,
+  ConfirmUploadMutationRequest,
+  ConfirmUploadMutationResponse,
+  CheckS3Health200,
+  CheckS3Health503,
+  CheckS3HealthQueryResponse,
+  CreateUploadURLs201,
+  CreateUploadURLs400,
+  CreateUploadURLs422,
+  CreateUploadURLs500,
+  CreateUploadURLsMutationRequest,
+  CreateUploadURLsMutationResponse,
+  GetFileAllSizesPathParams,
+  GetFileAllSizes200,
+  GetFileAllSizes400,
+  GetFileAllSizes404,
+  GetFileAllSizes500,
+  GetFileAllSizesQueryResponse,
+  GetFilePathParams,
+  GetFile200,
+  GetFile400,
+  GetFile404,
+  GetFile500,
+  GetFileQueryResponse,
+  SendNotification200,
+  SendNotification400,
+  SendNotification422,
+  SendNotification500,
+  SendNotificationMutationRequest,
+  SendNotificationMutationResponse,
+  SendBulkNotification200,
+  SendBulkNotification400,
+  SendBulkNotification422,
+  SendBulkNotification500,
+  SendBulkNotificationMutationRequest,
+  SendBulkNotificationMutationResponse,
+  GetPaginatedCommentsPathParams,
+  GetPaginatedCommentsQueryParams,
+  GetPaginatedComments200,
+  GetPaginatedComments400,
+  GetPaginatedComments422,
+  GetPaginatedComments500,
+  GetPaginatedCommentsQueryResponse,
   CreateUser201,
   CreateUser400,
   CreateUser422,
@@ -50,24 +135,602 @@ export const errsAPIErrorSchema = z.object({
   statusCode: z.optional(z.int()),
 }) as unknown as z.ZodType<ErrsAPIError>;
 
+export const modelsEntityTypeSchema = z.enum([
+  "activity",
+  "pitch",
+]) as unknown as z.ZodType<ModelsEntityType>;
+
+export const modelsCommentSchema = z.object({
+  content: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  entity_id: z.optional(z.string()),
+  get entity_type() {
+    return modelsEntityTypeSchema.optional();
+  },
+  id: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsComment>;
+
+export const modelsCommentAPIResponseSchema = z.object({
+  content: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  entity_id: z.optional(z.string()),
+  get entity_type() {
+    return modelsEntityTypeSchema.optional();
+  },
+  id: z.optional(z.string()),
+  profile_picture_url: z.optional(
+    z.string().describe("pointer since some users don't have their avatar set"),
+  ),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommentAPIResponse>;
+
+export const modelsImageSizeSchema = z.enum([
+  "large",
+  "medium",
+  "small",
+]) as unknown as z.ZodType<ModelsImageSize>;
+
+export const modelsConfirmUploadRequestSchema = z.object({
+  imageId: z.string(),
+  get size() {
+    return modelsImageSizeSchema
+      .describe("Optional: if nil, confirm all sizes")
+      .optional();
+  },
+}) as unknown as z.ZodType<ModelsConfirmUploadRequest>;
+
+export const modelsConfirmUploadResponseSchema = z.object({
+  confirmed: z.optional(z.int()),
+  imageId: z.optional(z.string()),
+  status: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsConfirmUploadResponse>;
+
+export const modelsCreateCommentRequestSchema = z.object({
+  content: z.string().min(1),
+  entity_id: z.string(),
+  get entity_type() {
+    return modelsEntityTypeSchema;
+  },
+  trip_id: z.string(),
+  user_id: z.string(),
+}) as unknown as z.ZodType<ModelsCreateCommentRequest>;
+
 export const modelsCreateUserRequestSchema = z.object({
   name: z.string().min(1),
   phone_number: z.string(),
   username: z.string(),
 }) as unknown as z.ZodType<ModelsCreateUserRequest>;
 
+export const modelsGetFileResponseSchema = z.object({
+  contentType: z.optional(z.string()),
+  imageId: z.optional(z.string()),
+  get size() {
+    return modelsImageSizeSchema.optional();
+  },
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsGetFileResponse>;
+
+export const modelsGetFileAllSizesResponseSchema = z.object({
+  get files() {
+    return z.array(modelsGetFileResponseSchema).optional();
+  },
+  imageId: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsGetFileAllSizesResponse>;
+
+export const modelsNotificationErrorSchema = z.object({
+  message: z.optional(z.string()),
+  token: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsNotificationError>;
+
+export const modelsNotificationResponseSchema = z.object({
+  get errors() {
+    return z.array(modelsNotificationErrorSchema).optional();
+  },
+  failure_count: z.optional(z.int()),
+  success_count: z.optional(z.int()),
+}) as unknown as z.ZodType<ModelsNotificationResponse>;
+
+export const modelsS3HealthCheckResponseSchema = z.object({
+  bucketName: z.optional(z.string()),
+  error: z.optional(
+    z
+      .string()
+      .describe(
+        'Error contains the underlying error message when status is "unhealthy"',
+      ),
+  ),
+  region: z.optional(z.string()),
+  status: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsS3HealthCheckResponse>;
+
+export const modelsSendBulkNotificationRequestSchema = z.object({
+  body: z.string().min(1).max(500),
+  data: z.optional(z.object({}).catchall(z.any())),
+  title: z.string().min(1).max(100),
+  user_ids: z.array(z.string()).min(1).max(1000),
+}) as unknown as z.ZodType<ModelsSendBulkNotificationRequest>;
+
+export const modelsSendNotificationRequestSchema = z.object({
+  body: z.string().min(1).max(500),
+  data: z.optional(z.object({}).catchall(z.any())),
+  title: z.string().min(1).max(100),
+  user_id: z.string(),
+}) as unknown as z.ZodType<ModelsSendNotificationRequest>;
+
+export const modelsSizedUploadURLSchema = z.object({
+  get size() {
+    return modelsImageSizeSchema.optional();
+  },
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsSizedUploadURL>;
+
+export const modelsUpdateCommentRequestSchema = z.object({
+  content: z.string().min(1),
+}) as unknown as z.ZodType<ModelsUpdateCommentRequest>;
+
 export const modelsUpdateUserRequestSchema = z.object({
+  device_token: z.optional(z.string().max(200)),
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
+  profile_picture: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateUserRequest>;
 
+export const modelsUploadURLRequestSchema = z.object({
+  contentType: z.string().min(1),
+  fileKey: z.string().min(1),
+  get sizes() {
+    return z.array(modelsImageSizeSchema).min(1).max(3);
+  },
+}) as unknown as z.ZodType<ModelsUploadURLRequest>;
+
+export const modelsUploadURLResponseSchema = z.object({
+  expiresAt: z.optional(z.string()),
+  fileKey: z.optional(z.string()),
+  imageId: z.optional(z.string()),
+  get uploadUrls() {
+    return z.array(modelsSizedUploadURLSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsUploadURLResponse>;
+
 export const modelsUserSchema = z.object({
+  device_token: z.optional(z.string()),
+  device_token_updated_at: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   phone_number: z.optional(z.string()),
+  profile_picture: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
+
+/**
+ * @description Created
+ */
+export const createComment201Schema = z.lazy(
+  () => modelsCommentSchema,
+) as unknown as z.ZodType<CreateComment201>;
+
+/**
+ * @description Bad Request
+ */
+export const createComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const createComment422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const createComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment500>;
+
+/**
+ * @description Create comment request
+ */
+export const createCommentMutationRequestSchema = z.lazy(
+  () => modelsCreateCommentRequestSchema,
+) as unknown as z.ZodType<CreateCommentMutationRequest>;
+
+export const createCommentMutationResponseSchema = z.lazy(
+  () => createComment201Schema,
+) as unknown as z.ZodType<CreateCommentMutationResponse>;
+
+export const deleteCommentPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<DeleteCommentPathParams>;
+
+/**
+ * @description No Content
+ */
+export const deleteComment204Schema =
+  z.any() as unknown as z.ZodType<DeleteComment204>;
+
+/**
+ * @description Bad Request
+ */
+export const deleteComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment400>;
+
+/**
+ * @description Not Found
+ */
+export const deleteComment404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deleteComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment500>;
+
+export const deleteCommentMutationResponseSchema = z.lazy(
+  () => deleteComment204Schema,
+) as unknown as z.ZodType<DeleteCommentMutationResponse>;
+
+export const updateCommentPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<UpdateCommentPathParams>;
+
+/**
+ * @description OK
+ */
+export const updateComment200Schema = z.lazy(
+  () => modelsCommentSchema,
+) as unknown as z.ZodType<UpdateComment200>;
+
+/**
+ * @description Bad Request
+ */
+export const updateComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment400>;
+
+/**
+ * @description Not Found
+ */
+export const updateComment404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const updateComment422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const updateComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment500>;
+
+/**
+ * @description Update comment request
+ */
+export const updateCommentMutationRequestSchema = z.lazy(
+  () => modelsUpdateCommentRequestSchema,
+) as unknown as z.ZodType<UpdateCommentMutationRequest>;
+
+export const updateCommentMutationResponseSchema = z.lazy(
+  () => updateComment200Schema,
+) as unknown as z.ZodType<UpdateCommentMutationResponse>;
+
+/**
+ * @description OK
+ */
+export const confirmUpload200Schema = z.lazy(
+  () => modelsConfirmUploadResponseSchema,
+) as unknown as z.ZodType<ConfirmUpload200>;
+
+/**
+ * @description Bad Request
+ */
+export const confirmUpload400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmUpload400>;
+
+/**
+ * @description Not Found
+ */
+export const confirmUpload404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmUpload404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const confirmUpload422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmUpload422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const confirmUpload500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmUpload500>;
+
+/**
+ * @description Confirm upload request
+ */
+export const confirmUploadMutationRequestSchema = z.lazy(
+  () => modelsConfirmUploadRequestSchema,
+) as unknown as z.ZodType<ConfirmUploadMutationRequest>;
+
+export const confirmUploadMutationResponseSchema = z.lazy(
+  () => confirmUpload200Schema,
+) as unknown as z.ZodType<ConfirmUploadMutationResponse>;
+
+/**
+ * @description OK
+ */
+export const checkS3Health200Schema = z.lazy(
+  () => modelsS3HealthCheckResponseSchema,
+) as unknown as z.ZodType<CheckS3Health200>;
+
+/**
+ * @description Service Unavailable
+ */
+export const checkS3Health503Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CheckS3Health503>;
+
+export const checkS3HealthQueryResponseSchema = z.lazy(
+  () => checkS3Health200Schema,
+) as unknown as z.ZodType<CheckS3HealthQueryResponse>;
+
+/**
+ * @description Created
+ */
+export const createUploadURLs201Schema = z.lazy(
+  () => modelsUploadURLResponseSchema,
+) as unknown as z.ZodType<CreateUploadURLs201>;
+
+/**
+ * @description Bad Request
+ */
+export const createUploadURLs400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateUploadURLs400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const createUploadURLs422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateUploadURLs422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const createUploadURLs500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateUploadURLs500>;
+
+/**
+ * @description Upload URL request
+ */
+export const createUploadURLsMutationRequestSchema = z.lazy(
+  () => modelsUploadURLRequestSchema,
+) as unknown as z.ZodType<CreateUploadURLsMutationRequest>;
+
+export const createUploadURLsMutationResponseSchema = z.lazy(
+  () => createUploadURLs201Schema,
+) as unknown as z.ZodType<CreateUploadURLsMutationResponse>;
+
+export const getFileAllSizesPathParamsSchema = z.object({
+  imageId: z.string().describe("Image ID (UUID)"),
+}) as unknown as z.ZodType<GetFileAllSizesPathParams>;
+
+/**
+ * @description OK
+ */
+export const getFileAllSizes200Schema = z.lazy(
+  () => modelsGetFileAllSizesResponseSchema,
+) as unknown as z.ZodType<GetFileAllSizes200>;
+
+/**
+ * @description Bad Request
+ */
+export const getFileAllSizes400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFileAllSizes400>;
+
+/**
+ * @description Not Found
+ */
+export const getFileAllSizes404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFileAllSizes404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getFileAllSizes500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFileAllSizes500>;
+
+export const getFileAllSizesQueryResponseSchema = z.lazy(
+  () => getFileAllSizes200Schema,
+) as unknown as z.ZodType<GetFileAllSizesQueryResponse>;
+
+export const getFilePathParamsSchema = z.object({
+  imageId: z.string().describe("Image ID (UUID)"),
+  size: z.string().describe("Image size (large, medium, small)"),
+}) as unknown as z.ZodType<GetFilePathParams>;
+
+/**
+ * @description OK
+ */
+export const getFile200Schema = z.lazy(
+  () => modelsGetFileResponseSchema,
+) as unknown as z.ZodType<GetFile200>;
+
+/**
+ * @description Bad Request
+ */
+export const getFile400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFile400>;
+
+/**
+ * @description Not Found
+ */
+export const getFile404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFile404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getFile500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetFile500>;
+
+export const getFileQueryResponseSchema = z.lazy(
+  () => getFile200Schema,
+) as unknown as z.ZodType<GetFileQueryResponse>;
+
+/**
+ * @description OK
+ */
+export const sendNotification200Schema =
+  z.any() as unknown as z.ZodType<SendNotification200>;
+
+/**
+ * @description Bad Request
+ */
+export const sendNotification400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const sendNotification422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const sendNotification500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendNotification500>;
+
+/**
+ * @description Notification request
+ */
+export const sendNotificationMutationRequestSchema = z.lazy(
+  () => modelsSendNotificationRequestSchema,
+) as unknown as z.ZodType<SendNotificationMutationRequest>;
+
+export const sendNotificationMutationResponseSchema = z.lazy(
+  () => sendNotification200Schema,
+) as unknown as z.ZodType<SendNotificationMutationResponse>;
+
+/**
+ * @description OK
+ */
+export const sendBulkNotification200Schema = z.lazy(
+  () => modelsNotificationResponseSchema,
+) as unknown as z.ZodType<SendBulkNotification200>;
+
+/**
+ * @description Bad Request
+ */
+export const sendBulkNotification400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const sendBulkNotification422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const sendBulkNotification500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<SendBulkNotification500>;
+
+/**
+ * @description Bulk notification request
+ */
+export const sendBulkNotificationMutationRequestSchema = z.lazy(
+  () => modelsSendBulkNotificationRequestSchema,
+) as unknown as z.ZodType<SendBulkNotificationMutationRequest>;
+
+export const sendBulkNotificationMutationResponseSchema = z.lazy(
+  () => sendBulkNotification200Schema,
+) as unknown as z.ZodType<SendBulkNotificationMutationResponse>;
+
+export const getPaginatedCommentsPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  entityType: z.string().describe("Entity type (activity, pitch)"),
+  entityID: z.string().describe("Entity ID"),
+}) as unknown as z.ZodType<GetPaginatedCommentsPathParams>;
+
+export const getPaginatedCommentsQueryParamsSchema = z
+  .object({
+    limit: z.optional(z.coerce.number().int().describe("Max results")),
+    cursor: z.optional(z.string().describe("Cursor timestamp (RFC3339)")),
+  })
+  .optional() as unknown as z.ZodType<GetPaginatedCommentsQueryParams>;
+
+/**
+ * @description OK
+ */
+export const getPaginatedComments200Schema = z.array(
+  z.lazy(() => modelsCommentAPIResponseSchema),
+) as unknown as z.ZodType<GetPaginatedComments200>;
+
+/**
+ * @description Bad Request
+ */
+export const getPaginatedComments400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments400>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const getPaginatedComments422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getPaginatedComments500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments500>;
+
+export const getPaginatedCommentsQueryResponseSchema = z.lazy(
+  () => getPaginatedComments200Schema,
+) as unknown as z.ZodType<GetPaginatedCommentsQueryResponse>;
 
 /**
  * @description Created

@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "content": { "type": "string" },
+    "created_at": { "type": "string" },
+    "entity_id": { "type": "string" },
+    "entity_type": {
+      "type": "string",
+      "enum": ["activity", "pitch"],
+      "x-enum-varnames": ["Activity", "Pitch"],
+      "x-readme-ref-name": "models.EntityType"
+    },
+    "id": { "type": "string" },
+    "trip_id": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "user_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.Comment"
+}
