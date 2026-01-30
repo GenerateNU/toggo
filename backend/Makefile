@@ -3,6 +3,7 @@ MAIN_FILE := cmd/main.go
 VERSION ?= dev
 APP_ENVIRONMENT ?= dev
 MIGRATIONS_DIR := internal/migrations
+TEST_FORMAT ?= testname
 
 build:
 	go build -ldflags "-X main.Version=$(VERSION)" -o $(BINARY_NAME) $(MAIN_FILE)
@@ -136,7 +137,9 @@ test:
 	docker compose -f docker-compose.test.yml up -d
 	@until docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
-	@doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4; \
+	@command -v gotestfmt >/dev/null 2>&1 || go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+	@command -v gotestsum >/dev/null 2>&1 || go install gotest.tools/gotestsum@latest
+	@bash -c 'set -o pipefail; doppler run --project backend --config test -- go test -json ./internal/tests -parallel 4 -coverprofile=/tmp/coverage.out -covermode=atomic 2>&1 | tee /tmp/test-results.json | gotestfmt; gotestsum --raw-command -- cat /tmp/test-results.json; test -f /tmp/coverage.out && go tool cover -func=/tmp/coverage.out | tail -n 1'; \
 	EXIT_CODE=$$?; \
 	docker compose -f docker-compose.test.yml down; \
 	exit $$EXIT_CODE
@@ -147,7 +150,7 @@ test-win:
 	@echo Waiting for database...
 	@powershell -Command "while (!(docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db 2>$$null)) { Start-Sleep -Seconds 1 }"
 	@echo Database ready
-	@powershell -Command "try { doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4 } finally { docker compose -f docker-compose.test.yml down }"
+	@powershell -Command "$$ErrorActionPreference='Stop'; if (-not (Get-Command gotestfmt -ErrorAction SilentlyContinue)) { go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest }; if (-not (Get-Command gotestsum -ErrorAction SilentlyContinue)) { go install gotest.tools/gotestsum@latest }; try { doppler run --project backend --config test -- go test -json ./internal/tests -parallel 4 -coverprofile=$$env:TEMP\\coverage.out -covermode=atomic 2>&1 | Tee-Object -FilePath $$env:TEMP\\test-results.json | gotestfmt; doppler run --project backend --config test -- gotestsum --format $(TEST_FORMAT) --raw-command -- Get-Content -Path $$env:TEMP\\test-results.json; if (Test-Path $$env:TEMP\\coverage.out) { go tool cover -func=$$env:TEMP\\coverage.out | Select-Object -Last 1 }; $$exitCode=$$LASTEXITCODE } finally { docker compose -f docker-compose.test.yml down }; exit $$exitCode"
 
 localstack-up:
 	./scripts/start-localstack.sh # if on windows, just use git bash to run this script
