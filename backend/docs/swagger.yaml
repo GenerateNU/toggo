@@ -40,7 +40,6 @@ definitions:
     - phone_number
     - username
     type: object
-<<<<<<< HEAD
   models.GetFileAllSizesResponse:
     properties:
       files:
@@ -71,25 +70,6 @@ definitions:
     - ImageSizeLarge
     - ImageSizeMedium
     - ImageSizeSmall
-  models.S3HealthCheckResponse:
-    properties:
-      bucketName:
-        type: string
-      error:
-        description: Error contains the underlying error message when status is "unhealthy"
-        type: string
-      region:
-        type: string
-      status:
-        type: string
-    type: object
-  models.SizedUploadURL:
-    properties:
-      size:
-        $ref: '#/definitions/models.ImageSize'
-      url:
-        type: string
-=======
   models.NotificationError:
     properties:
       message:
@@ -109,6 +89,18 @@ definitions:
         type: integer
       success_count:
         type: integer
+    type: object
+  models.S3HealthCheckResponse:
+    properties:
+      bucketName:
+        type: string
+      error:
+        description: Error contains the underlying error message when status is "unhealthy"
+        type: string
+      region:
+        type: string
+      status:
+        type: string
     type: object
   models.SendBulkNotificationRequest:
     properties:
@@ -153,11 +145,18 @@ definitions:
     - body
     - title
     - user_id
->>>>>>> 7aad9ab (generated notification hooks)
+    type: object
+  models.SizedUploadURL:
+    properties:
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
+        type: string
     type: object
   models.UpdateUserRequest:
     properties:
       device_token:
+        maxLength: 200
         type: string
       name:
         minLength: 1
@@ -225,7 +224,6 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
-<<<<<<< HEAD
   /api/v1/files/{imageId}:
     get:
       description: Retrieves presigned URLs for all sizes of an image
@@ -304,31 +302,16 @@ paths:
       operationId: confirmUpload
       parameters:
       - description: Confirm upload request
-=======
-  /api/v1/notifications/send:
-    post:
-      consumes:
-      - application/json
-      description: Sends a push notification to a single user
-      operationId: sendNotification
-      parameters:
-      - description: Notification request
->>>>>>> 7aad9ab (generated notification hooks)
         in: body
         name: request
         required: true
         schema:
-<<<<<<< HEAD
           $ref: '#/definitions/models.ConfirmUploadRequest'
-=======
-          $ref: '#/definitions/models.SendNotificationRequest'
->>>>>>> 7aad9ab (generated notification hooks)
       produces:
       - application/json
       responses:
         "200":
           description: OK
-<<<<<<< HEAD
           schema:
             $ref: '#/definitions/models.ConfirmUploadResponse'
         "400":
@@ -389,8 +372,6 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/models.UploadURLResponse'
-=======
->>>>>>> 7aad9ab (generated notification hooks)
         "400":
           description: Bad Request
           schema:
@@ -403,11 +384,39 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errs.APIError'
-<<<<<<< HEAD
       summary: Create upload URLs
       tags:
       - files
-=======
+  /api/v1/notifications/send:
+    post:
+      consumes:
+      - application/json
+      description: Sends a push notification to a single user
+      operationId: sendNotification
+      parameters:
+      - description: Notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
       summary: Send notification to user
       tags:
       - notifications
@@ -446,7 +455,6 @@ paths:
       summary: Send bulk notifications
       tags:
       - notifications
->>>>>>> 7aad9ab (generated notification hooks)
   /api/v1/users:
     post:
       consumes:

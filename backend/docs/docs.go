@@ -15,15 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-<<<<<<< HEAD
         "/api/v1/files/confirm": {
             "post": {
                 "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
-=======
-        "/api/v1/notifications/send": {
-            "post": {
-                "description": "Sends a push notification to a single user",
->>>>>>> 7aad9ab (generated notification hooks)
                 "consumes": [
                     "application/json"
                 ],
@@ -31,7 +25,6 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-<<<<<<< HEAD
                     "files"
                 ],
                 "summary": "Confirm upload",
@@ -39,37 +32,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Confirm upload request",
-=======
-                    "notifications"
-                ],
-                "summary": "Send notification to user",
-                "operationId": "sendNotification",
-                "parameters": [
-                    {
-                        "description": "Notification request",
->>>>>>> 7aad9ab (generated notification hooks)
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-<<<<<<< HEAD
                             "$ref": "#/definitions/models.ConfirmUploadRequest"
-=======
-                            "$ref": "#/definitions/models.SendNotificationRequest"
->>>>>>> 7aad9ab (generated notification hooks)
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-<<<<<<< HEAD
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.ConfirmUploadResponse"
                         }
-=======
-                        "description": "OK"
->>>>>>> 7aad9ab (generated notification hooks)
                     },
                     "400": {
                         "description": "Bad Request",
@@ -77,15 +53,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-<<<<<<< HEAD
                     "404": {
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-=======
->>>>>>> 7aad9ab (generated notification hooks)
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
@@ -101,7 +74,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
         "/api/v1/files/health": {
             "get": {
                 "description": "Verifies connectivity to the configured S3 bucket",
@@ -132,11 +104,6 @@ const docTemplate = `{
         "/api/v1/files/upload": {
             "post": {
                 "description": "Generates presigned PUT URLs for uploading files and creates pending records in DB",
-=======
-        "/api/v1/notifications/send-bulk": {
-            "post": {
-                "description": "Sends push notifications to multiple users",
->>>>>>> 7aad9ab (generated notification hooks)
                 "consumes": [
                     "application/json"
                 ],
@@ -144,7 +111,6 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-<<<<<<< HEAD
                     "files"
                 ],
                 "summary": "Create upload URLs",
@@ -152,39 +118,19 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Upload URL request",
-=======
-                    "notifications"
-                ],
-                "summary": "Send bulk notifications",
-                "operationId": "sendBulkNotification",
-                "parameters": [
-                    {
-                        "description": "Bulk notification request",
->>>>>>> 7aad9ab (generated notification hooks)
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-<<<<<<< HEAD
                             "$ref": "#/definitions/models.UploadURLRequest"
-=======
-                            "$ref": "#/definitions/models.SendBulkNotificationRequest"
->>>>>>> 7aad9ab (generated notification hooks)
                         }
                     }
                 ],
                 "responses": {
-<<<<<<< HEAD
                     "201": {
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.UploadURLResponse"
-=======
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.NotificationResponse"
->>>>>>> 7aad9ab (generated notification hooks)
                         }
                     },
                     "400": {
@@ -208,7 +154,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
         "/api/v1/files/{imageId}": {
             "get": {
                 "description": "Retrieves presigned URLs for all sizes of an image",
@@ -312,8 +257,109 @@ const docTemplate = `{
                 }
             }
         },
-=======
->>>>>>> 7aad9ab (generated notification hooks)
+        "/api/v1/notifications/send": {
+            "post": {
+                "description": "Sends a push notification to a single user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send notification to user",
+                "operationId": "sendNotification",
+                "parameters": [
+                    {
+                        "description": "Notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/send-bulk": {
+            "post": {
+                "description": "Sends push notifications to multiple users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send bulk notifications",
+                "operationId": "sendBulkNotification",
+                "parameters": [
+                    {
+                        "description": "Bulk notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendBulkNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "post": {
                 "description": "Creates a new user with the provided payload",
@@ -651,7 +697,6 @@ const docTemplate = `{
                 }
             }
         },
-<<<<<<< HEAD
         "models.GetFileAllSizesResponse": {
             "type": "object",
             "properties": {
@@ -696,32 +741,6 @@ const docTemplate = `{
                 "ImageSizeSmall"
             ]
         },
-        "models.S3HealthCheckResponse": {
-            "type": "object",
-            "properties": {
-                "bucketName": {
-                    "type": "string"
-                },
-                "error": {
-                    "description": "Error contains the underlying error message when status is \"unhealthy\"",
-                    "type": "string"
-                },
-                "region": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SizedUploadURL": {
-            "type": "object",
-            "properties": {
-                "size": {
-                    "$ref": "#/definitions/models.ImageSize"
-                },
-                "url": {
-=======
         "models.NotificationError": {
             "type": "object",
             "properties": {
@@ -750,6 +769,24 @@ const docTemplate = `{
                 },
                 "success_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.S3HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "bucketName": {
+                    "type": "string"
+                },
+                "error": {
+                    "description": "Error contains the underlying error message when status is \"unhealthy\"",
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -808,7 +845,17 @@ const docTemplate = `{
                     "minLength": 1
                 },
                 "user_id": {
->>>>>>> 7aad9ab (generated notification hooks)
+                    "type": "string"
+                }
+            }
+        },
+        "models.SizedUploadURL": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "$ref": "#/definitions/models.ImageSize"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -817,7 +864,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "device_token": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 200
                 },
                 "name": {
                     "type": "string",
