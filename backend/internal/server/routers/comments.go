@@ -14,11 +14,13 @@ func CommentRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.R
 
 	commentGroup := apiGroup.Group("/comments")
 	commentGroup.Post("", commentController.CreateComment)
-	commentGroup.Get("", commentController.GetPaginatedComments)
 
 	commentIDGroup := commentGroup.Group("/:commentID")
 	commentIDGroup.Patch("", commentController.UpdateComment)
 	commentIDGroup.Delete("", commentController.DeleteComment)
+
+	tripGroup := apiGroup.Group("/trips/:tripID/:entityType/:entityID/comments")
+	tripGroup.Get("", commentController.GetPaginatedComments)
 
 	return commentGroup
 }

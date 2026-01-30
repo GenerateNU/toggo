@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"net/http"
-	"strconv"
-	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
@@ -125,81 +123,52 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Description  Retrieves paginated comments for a trip entity
 // @Tags         comments
 // @Produce      json
-// @Param        trip_id query string true "Trip ID"
-// @Param        entity_type query string true "Entity type (activity, pitch)"
-// @Param        entity_id query string true "Entity ID"
+// @Param        tripID path string true "Trip ID"
+// @Param        entityType path string true "Entity type (activity, pitch)"
+// @Param        entityID path string true "Entity ID"
 // @Param        limit query int false "Max results"
 // @Param        cursor query string false "Cursor timestamp (RFC3339)"
 // @Success      200 {array} models.CommentAPIResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/comments [get]
+// @Router       /api/v1/trips/{tripID}/{entityType}/{entityID}/comments [get]
 // @ID           getPaginatedComments
 func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
-	tripIDStr := c.Query("trip_id")
-	entityTypeStr := c.Query("entity_type")
-	entityIDStr := c.Query("entity_id")
-
-	validationErrs := map[string]string{}
-
-	if tripIDStr == "" {
-		validationErrs["trip_id"] = "trip_id is required"
-	}
-
-	if entityTypeStr == "" {
-		validationErrs["entity_type"] = "entity_type is required"
-	}
-
-	if entityIDStr == "" {
-		validationErrs["entity_id"] = "entity_id is required"
-	}
-
-	if len(validationErrs) > 0 {
-		return errs.InvalidRequestData(validationErrs)
-	}
-
-	tripID, err := utilities.ValidateID(tripIDStr)
+	tripID, err := utilities.ValidateID(c.Params("tripID"))
 	if err != nil {
-		validationErrs["trip_id"] = "trip_id must be a valid UUID"
+		return errs.InvalidUUID()
 	}
 
-	entityID, err := utilities.ValidateID(entityIDStr)
+	entityID, err := utilities.ValidateID(c.Params("entityID"))
 	if err != nil {
-		validationErrs["entity_id"] = "entity_id must be a valid UUID"
+		return errs.InvalidUUID()
 	}
 
-	entityType := models.EntityType(entityTypeStr)
+	entityType := models.EntityType(c.Params("entityType"))
 	if entityType != models.Activity && entityType != models.Pitch {
-		validationErrs["entity_type"] = "entity_type must be one of: activity, pitch"
+		return errs.InvalidRequestData(map[string]string{
+			"entity_type": "entity_type must be one of: activity, pitch",
+		})
 	}
 
-	limitStr := c.Query("limit")
-	var limit *int
-	if limitStr != "" {
-		parsedLimit, err := strconv.Atoi(limitStr)
-		if err != nil || parsedLimit <= 0 {
-			validationErrs["limit"] = "limit must be a positive integer"
-		} else {
-			limit = &parsedLimit
-		}
+	var params models.GetCommentsQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return errs.InvalidRequestData(map[string]string{
+			"query": "invalid query parameters",
+		})
 	}
 
-	cursorStr := c.Query("cursor")
+	if err := utilities.Validate(cmt.validator, params); err != nil {
+		return err
+	}
+
 	var cursor *string
-	if cursorStr != "" {
-		if _, err := time.Parse(time.RFC3339, cursorStr); err != nil {
-			validationErrs["cursor"] = "cursor must be a valid RFC3339 timestamp"
-		} else {
-			cursor = &cursorStr
-		}
+	if params.Cursor != "" {
+		cursor = &params.Cursor
 	}
 
-	if len(validationErrs) > 0 {
-		return errs.InvalidRequestData(validationErrs)
-	}
-
-	comments, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, limit, cursor)
+	comments, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.Limit, cursor)
 	if err != nil {
 		return err
 	}

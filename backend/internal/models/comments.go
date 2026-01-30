@@ -61,3 +61,8 @@ type CommentAPIResponse struct {
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
 }
+
+type GetCommentsQueryParams struct {
+	Limit  *int   `query:"limit" validate:"omitempty,gt=0"`
+	Cursor string `query:"cursor" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+}
