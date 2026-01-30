@@ -19,11 +19,11 @@ func TestNotificationServiceSendNotification(t *testing.T) {
 		mockExpoClient := &services.MockExpoClient{}
 
 		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
-		
+
 		req := models.SendNotificationRequest{
 			UserID: userID,
-			Title: "Test Title",
-			Body: "Test Body",
+			Title:  "Test Title",
+			Body:   "Test Body",
 		}
 		err := notifService.SendNotification(context.Background(), req)
 
@@ -91,8 +91,8 @@ func TestNotificationServiceBatch(t *testing.T) {
 
 		req := models.SendBulkNotificationRequest{
 			UserIDs: []uuid.UUID{userID1, userID2},
-			Title:  "Batch Test",
-			Body:   "Batch Body",
+			Title:   "Batch Test",
+			Body:    "Batch Body",
 		}
 
 		_, err := notifService.SendNotificationBatch(context.Background(), req)
