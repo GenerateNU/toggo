@@ -30,19 +30,23 @@ func (r *commentRepository) GetPaginatedComments(ctx context.Context, tripID uui
 
 	query := r.db.NewSelect().
 		Model(&comments).
-		Column("comments.id", "comments.trip_id", "comments.entity_type", "comments.entity_id", "comments.user_id", "users.username", "users.profile_picture_key", "comments.content", "comments.created_at", "comments.updated_at").
-		Join("JOIN users ON users.id = comments.user_id").
-		Where("comments.trip_id = ?", tripID).
-		Where("comments.entity_type = ?", entityType).
-		Where("comments.entity_id = ?", entityID).
-		Order("comments.created_at DESC")
+		TableExpr("comments AS c").
+		ColumnExpr("c.id, c.trip_id, c.entity_type, c.entity_id, c.user_id, c.content, c.created_at, c.updated_at").
+		ColumnExpr("u.username").
+		ColumnExpr("img.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = c.user_id").
+		Join("LEFT JOIN images AS img ON img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("c.trip_id = ?", tripID).
+		Where("c.entity_type = ?", entityType).
+		Where("c.entity_id = ?", entityID).
+		Order("c.created_at DESC")
 
 	if limit != nil {
 		query = query.Limit(*limit)
 	}
 
 	if cursor != nil {
-		query = query.Where("comments.created_at < ?", *cursor)
+		query = query.Where("c.created_at < ?", *cursor)
 	}
 
 	err := query.Scan(ctx)
