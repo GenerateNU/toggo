@@ -28,10 +28,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
-      ]
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

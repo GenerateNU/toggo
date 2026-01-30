@@ -18,7 +18,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <UserProvider>
             <NotificationProvider>
-            <Slot />
+              <Slot />
             </NotificationProvider>
           </UserProvider>
         </QueryClientProvider>

@@ -4,7 +4,13 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 
 type NotificationData = {
@@ -39,11 +45,20 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
+export const NotificationProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-  const [lastNotification, setLastNotification] = useState<NotificationData | null>(null);
-  const notificationListener = useRef<Notifications.Subscription | undefined>(undefined);
-  const responseListener = useRef<Notifications.Subscription | undefined>(undefined);
+  const [lastNotification, setLastNotification] =
+    useState<NotificationData | null>(null);
+  const notificationListener = useRef<Notifications.Subscription | undefined>(
+    undefined,
+  );
+  const responseListener = useRef<Notifications.Subscription | undefined>(
+    undefined,
+  );
 
   const { userId, isAuthenticated } = useUser();
   const updateUser = useUpdateUser();
@@ -62,27 +77,31 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
       }
     });
 
-    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      const title: string | undefined = notification.request.content.title ?? undefined;
-      const body: string | undefined = notification.request.content.body ?? undefined;
-      const data = notification.request.content.data ?? undefined;
-      setLastNotification({ title, body, data });
-    });
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        const title: string | undefined =
+          notification.request.content.title ?? undefined;
+        const body: string | undefined =
+          notification.request.content.body ?? undefined;
+        const data = notification.request.content.data ?? undefined;
+        setLastNotification({ title, body, data });
+      });
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      const postId = data?.postId;
-      const id = data?.id;
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+        const postId = data?.postId;
+        const id = data?.id;
 
-      if (postId) {
-        router.push(`/(app)/view-post/${postId}`);
-        return;
-      }
+        if (postId) {
+          router.push(`/(app)/view-post/${postId}`);
+          return;
+        }
 
-      if (id) {
-        router.push(`/(app)/view-post/${id}`);
-      }
-    });
+        if (id) {
+          router.push(`/(app)/view-post/${id}`);
+        }
+      });
 
     return () => {
       notificationListener.current?.remove();
@@ -110,7 +129,9 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider",
+    );
   }
   return context;
 };
@@ -128,7 +149,8 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== "granted") {
@@ -142,7 +164,9 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
 
     try {
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        Constants.easConfig?.projectId;
 
       if (!projectId) {
         console.log("Project ID not found");

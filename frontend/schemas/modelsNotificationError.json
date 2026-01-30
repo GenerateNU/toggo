@@ -1,1 +1,9 @@
-{"type":"object","properties":{"message":{"type":"string"},"token":{"type":"string"},"user_id":{"type":"string"}},"x-readme-ref-name":"models.NotificationError"}
+{
+  "type": "object",
+  "properties": {
+    "message": { "type": "string" },
+    "token": { "type": "string" },
+    "user_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.NotificationError"
+}
