@@ -6,13 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type EntityType string
-
-const (
-	Activity EntityType = "activity"
-	Pitch    EntityType = "pitch"
-)
-
 type Comment struct {
 	ID         uuid.UUID  `bun:"id,pk,type:uuid,default:gen_random_uuid()" json:"id"`
 	TripID     uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
