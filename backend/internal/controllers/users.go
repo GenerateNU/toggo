@@ -172,4 +172,3 @@ func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 
 	return c.SendStatus(http.StatusNoContent)
 }
-

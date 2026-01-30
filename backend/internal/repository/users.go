@@ -110,17 +110,17 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *userRepository) GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error) {
 	var users []*models.User
-	
+
 	err := r.db.NewSelect().
 		Model(&users).
 		Where("id IN (?)", bun.In(userIDs)).
 		Where("device_token IS NOT NULL").
 		Where("device_token != ''").
 		Scan(ctx)
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get users with device tokens: %w", err)
 	}
-	
+
 	return users, nil
 }
