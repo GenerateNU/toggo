@@ -32,10 +32,8 @@ func TestUserLifecycle(t *testing.T) {
 				},
 			}).
 			AssertStatus(http.StatusCreated).
-			DebugLogging().
 			GetBody()
 
-		t.Logf("Response: %+v", resp)
 		createdUserID = resp["id"].(string)
 	})
 
