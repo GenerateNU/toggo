@@ -25,7 +25,7 @@ func (r *commentRepository) Create(ctx context.Context, comment *models.Comment)
 	return comment, nil
 }
 
-func (r *commentRepository) GetCommentsByEntity(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentDatabaseResponse, error) {
+func (r *commentRepository) GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentDatabaseResponse, error) {
 	var comments []*models.CommentDatabaseResponse
 
 	query := r.db.NewSelect().
