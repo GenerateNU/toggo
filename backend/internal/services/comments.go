@@ -77,7 +77,7 @@ func (s *CommentService) DeleteComment(ctx context.Context, id uuid.UUID) error 
 }
 
 func (s *CommentService) GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentAPIResponse, error) {
-	comments, err := s.commentRepo.GetPaginatedComments(ctx, tripID, entityType, entityID, limit, cursor)
+	comments, err := s.commentRepo.FindPaginatedComments(ctx, tripID, entityType, entityID, limit, cursor)
 	if err != nil {
 		return nil, err
 	}
