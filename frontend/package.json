@@ -12,7 +12,9 @@
     "kubb": "kubb --debug",
     "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -21,11 +23,14 @@
     "@supabase/supabase-js": "^2.90.1",
     "@tanstack/react-query": "^5.90.16",
     "autoprefixer": "10.4.14",
-    "expo": "~54.0.30",
+    "expo": "54.0.32",
+    "expo-crypto": "~15.0.8",
     "expo-device": "^8.0.10",
     "expo-image": "^3.0.11",
+    "expo-image-manipulator": "~14.0.8",
+    "expo-image-picker": "^17.0.10",
     "expo-notifications": "^0.32.16",
-    "expo-router": "~6.0.21",
+    "expo-router": "6.0.22",
     "expo-status-bar": "~3.0.9",
     "lucide-react-native": "^0.562.0",
     "nativewind": "2.0.11",
@@ -38,6 +43,7 @@
     "react-native-svg": "15.12.1",
     "rn-phone-number-input": "^0.3.2",
     "tailwindcss": "3.3.2",
+    "ws": "^8.19.0",
     "zod": "^4.3.5",
     "zustand": "^5.0.9"
   },
@@ -49,6 +55,7 @@
     "@kubb/plugin-tanstack-query": "^3.0.0-alpha.17",
     "@kubb/plugin-ts": "^4.13.1",
     "@kubb/plugin-zod": "^4.13.1",
+    "@types/jest": "29.5.14",
     "@types/react": "~19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.51.0",
     "@typescript-eslint/parser": "^8.51.0",
@@ -59,6 +66,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-unused-imports": "^4.3.0",
+    "jest-expo": "^54.0.16",
+    "prettier": "^3.8.1",
     "react-native-svg-transformer": "^1.5.2",
     "typescript": "~5.9.2"
   },

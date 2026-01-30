@@ -1,0 +1,25 @@
+all: false
+dir: 'internal/tests/mocks'
+filename: 'mock_{{.InterfaceName}}.go'
+force-file-write: true
+formatter: goimports
+generate: true
+include-auto-generated: false
+log-level: info
+structname: 'Mock{{.InterfaceName}}'
+pkgname: 'mocks'
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  toggo/internal/interfaces:
+    interfaces:
+      S3PresignClient:
+      S3Client:
+  toggo/internal/services:
+    interfaces:
+      FileServiceInterface:
+  toggo/internal/repository:
+    interfaces:
+      ImageRepository:

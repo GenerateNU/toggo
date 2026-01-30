@@ -98,6 +98,7 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 		Validator: utilities.NewValidator(),
 		ServiceParams: &types.ServiceParams{
 			Repository: repository.NewRepository(db),
+			Config:     cfg,
 		},
 	}
 	middlewares.SetUpMiddlewares(app, cfg)
