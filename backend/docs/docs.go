@@ -15,6 +15,248 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/files/confirm": {
+            "post": {
+                "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Confirm upload",
+                "operationId": "confirmUpload",
+                "parameters": [
+                    {
+                        "description": "Confirm upload request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmUploadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfirmUploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/health": {
+            "get": {
+                "description": "Verifies connectivity to the configured S3 bucket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Check S3 connection",
+                "operationId": "checkS3Health",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.S3HealthCheckResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/upload": {
+            "post": {
+                "description": "Generates presigned PUT URLs for uploading files and creates pending records in DB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Create upload URLs",
+                "operationId": "createUploadURLs",
+                "parameters": [
+                    {
+                        "description": "Upload URL request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UploadURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.UploadURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/{imageId}": {
+            "get": {
+                "description": "Retrieves presigned URLs for all sizes of an image",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get all sizes of a file",
+                "operationId": "getFileAllSizes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetFileAllSizesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/files/{imageId}/{size}": {
+            "get": {
+                "description": "Retrieves a presigned URL for downloading a specific file size",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get file by ID and size",
+                "operationId": "getFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Image size (large, medium, small)",
+                        "name": "size",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetFileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/memberships": {
             "post": {
                 "description": "Adds a user as a member of a trip",
@@ -45,6 +287,109 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.Membership"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/send": {
+            "post": {
+                "description": "Sends a push notification to a single user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send notification to user",
+                "operationId": "sendNotification",
+                "parameters": [
+                    {
+                        "description": "Notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/send-bulk": {
+            "post": {
+                "description": "Sends push notifications to multiple users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Send bulk notifications",
+                "operationId": "sendBulkNotification",
+                "parameters": [
+                    {
+                        "description": "Bulk notification request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SendBulkNotificationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationResponse"
                         }
                     },
                     "400": {
@@ -682,6 +1027,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/users/me": {
+            "get": {
+                "description": "Retrieves the authenticated user (from JWT claims)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get current user",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/{userID}": {
             "get": {
                 "description": "Retrieves a user by ID",
@@ -919,6 +1303,39 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ConfirmUploadRequest": {
+            "type": "object",
+            "required": [
+                "imageId"
+            ],
+            "properties": {
+                "imageId": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "Optional: if nil, confirm all sizes",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ImageSize"
+                        }
+                    ]
+                }
+            }
+        },
+        "models.ConfirmUploadResponse": {
+            "type": "object",
+            "properties": {
+                "confirmed": {
+                    "type": "integer"
+                },
+                "imageId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateMembershipRequest": {
             "type": "object",
             "required": [
@@ -973,6 +1390,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
+                "phone_number",
                 "username"
             ],
             "properties": {
@@ -980,10 +1398,57 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
+                "phone_number": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
             }
+        },
+        "models.GetFileAllSizesResponse": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.GetFileResponse"
+                    }
+                },
+                "imageId": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetFileResponse": {
+            "type": "object",
+            "properties": {
+                "contentType": {
+                    "type": "string"
+                },
+                "imageId": {
+                    "type": "string"
+                },
+                "size": {
+                    "$ref": "#/definitions/models.ImageSize"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ImageSize": {
+            "type": "string",
+            "enum": [
+                "large",
+                "medium",
+                "small"
+            ],
+            "x-enum-varnames": [
+                "ImageSizeLarge",
+                "ImageSizeMedium",
+                "ImageSizeSmall"
+            ]
         },
         "models.Membership": {
             "type": "object",
@@ -1011,6 +1476,125 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NotificationError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.NotificationResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NotificationError"
+                    }
+                },
+                "failure_count": {
+                    "type": "integer"
+                },
+                "success_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.S3HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "bucketName": {
+                    "type": "string"
+                },
+                "error": {
+                    "description": "Error contains the underlying error message when status is \"unhealthy\"",
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SendBulkNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_ids"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_ids": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.SendNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_id"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SizedUploadURL": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "$ref": "#/definitions/models.ImageSize"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -1078,22 +1662,90 @@ const docTemplate = `{
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "device_token": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
                 }
             }
         },
+        "models.UploadURLRequest": {
+            "type": "object",
+            "required": [
+                "contentType",
+                "fileKey",
+                "sizes"
+            ],
+            "properties": {
+                "contentType": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "fileKey": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sizes": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.ImageSize"
+                    }
+                }
+            }
+        },
+        "models.UploadURLResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
+                "fileKey": {
+                    "type": "string"
+                },
+                "imageId": {
+                    "type": "string"
+                },
+                "uploadUrls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SizedUploadURL"
+                    }
+                }
+            }
+        },
         "models.User": {
             "type": "object",
             "properties": {
+                "device_token": {
+                    "type": "string"
+                },
+                "device_token_updated_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_picture": {
                     "type": "string"
                 },
                 "username": {

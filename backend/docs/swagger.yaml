@@ -6,6 +6,26 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.ConfirmUploadRequest:
+    properties:
+      imageId:
+        type: string
+      size:
+        allOf:
+        - $ref: '#/definitions/models.ImageSize'
+        description: 'Optional: if nil, confirm all sizes'
+    required:
+    - imageId
+    type: object
+  models.ConfirmUploadResponse:
+    properties:
+      confirmed:
+        type: integer
+      imageId:
+        type: string
+      status:
+        type: string
+    type: object
   models.CreateMembershipRequest:
     properties:
       budget_max:
@@ -47,12 +67,45 @@ definitions:
       name:
         minLength: 1
         type: string
+      phone_number:
+        type: string
       username:
         type: string
     required:
     - name
+    - phone_number
     - username
     type: object
+  models.GetFileAllSizesResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/models.GetFileResponse'
+        type: array
+      imageId:
+        type: string
+    type: object
+  models.GetFileResponse:
+    properties:
+      contentType:
+        type: string
+      imageId:
+        type: string
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
+        type: string
+    type: object
+  models.ImageSize:
+    enum:
+    - large
+    - medium
+    - small
+    type: string
+    x-enum-varnames:
+    - ImageSizeLarge
+    - ImageSizeMedium
+    - ImageSizeSmall
   models.Membership:
     properties:
       availability:
@@ -71,6 +124,89 @@ definitions:
       updated_at:
         type: string
       user_id:
+        type: string
+    type: object
+  models.NotificationError:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.NotificationResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/models.NotificationError'
+        type: array
+      failure_count:
+        type: integer
+      success_count:
+        type: integer
+    type: object
+  models.S3HealthCheckResponse:
+    properties:
+      bucketName:
+        type: string
+      error:
+        description: Error contains the underlying error message when status is "unhealthy"
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+    type: object
+  models.SendBulkNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_ids:
+        items:
+          type: string
+        maxItems: 1000
+        minItems: 1
+        type: array
+    required:
+    - body
+    - title
+    - user_ids
+    type: object
+  models.SendNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_id:
+        type: string
+    required:
+    - body
+    - title
+    - user_id
+    type: object
+  models.SizedUploadURL:
+    properties:
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
         type: string
     type: object
   models.Trip:
@@ -116,17 +252,64 @@ definitions:
     type: object
   models.UpdateUserRequest:
     properties:
+      device_token:
+        maxLength: 200
+        type: string
       name:
         minLength: 1
+        type: string
+      phone_number:
+        type: string
+      profile_picture:
         type: string
       username:
         type: string
     type: object
+  models.UploadURLRequest:
+    properties:
+      contentType:
+        minLength: 1
+        type: string
+      fileKey:
+        minLength: 1
+        type: string
+      sizes:
+        items:
+          $ref: '#/definitions/models.ImageSize'
+        maxItems: 3
+        minItems: 1
+        type: array
+    required:
+    - contentType
+    - fileKey
+    - sizes
+    type: object
+  models.UploadURLResponse:
+    properties:
+      expiresAt:
+        type: string
+      fileKey:
+        type: string
+      imageId:
+        type: string
+      uploadUrls:
+        items:
+          $ref: '#/definitions/models.SizedUploadURL'
+        type: array
+    type: object
   models.User:
     properties:
+      device_token:
+        type: string
+      device_token_updated_at:
+        type: string
       id:
         type: string
       name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture:
         type: string
       username:
         type: string
@@ -138,6 +321,169 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/files/{imageId}:
+    get:
+      description: Retrieves presigned URLs for all sizes of an image
+      operationId: getFileAllSizes
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetFileAllSizesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get all sizes of a file
+      tags:
+      - files
+  /api/v1/files/{imageId}/{size}:
+    get:
+      description: Retrieves a presigned URL for downloading a specific file size
+      operationId: getFile
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      - description: Image size (large, medium, small)
+        in: path
+        name: size
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetFileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get file by ID and size
+      tags:
+      - files
+  /api/v1/files/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the file exists in S3 and marks the upload as confirmed
+        in DB
+      operationId: confirmUpload
+      parameters:
+      - description: Confirm upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConfirmUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ConfirmUploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Confirm upload
+      tags:
+      - files
+  /api/v1/files/health:
+    get:
+      description: Verifies connectivity to the configured S3 bucket
+      operationId: checkS3Health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.S3HealthCheckResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Check S3 connection
+      tags:
+      - files
+  /api/v1/files/upload:
+    post:
+      consumes:
+      - application/json
+      description: Generates presigned PUT URLs for uploading files and creates pending
+        records in DB
+      operationId: createUploadURLs
+      parameters:
+      - description: Upload URL request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UploadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UploadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create upload URLs
+      tags:
+      - files
   /api/v1/memberships:
     post:
       consumes:
@@ -173,6 +519,74 @@ paths:
       summary: Add member to trip
       tags:
       - memberships
+  /api/v1/notifications/send:
+    post:
+      consumes:
+      - application/json
+      description: Sends a push notification to a single user
+      operationId: sendNotification
+      parameters:
+      - description: Notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send notification to user
+      tags:
+      - notifications
+  /api/v1/notifications/send-bulk:
+    post:
+      consumes:
+      - application/json
+      description: Sends push notifications to multiple users
+      operationId: sendBulkNotification
+      parameters:
+      - description: Bulk notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendBulkNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send bulk notifications
+      tags:
+      - notifications
   /api/v1/trips:
     get:
       description: Retrieves all trips
@@ -717,6 +1131,32 @@ paths:
       summary: Get user's trips
       tags:
       - memberships
+  /api/v1/users/me:
+    get:
+      description: Retrieves the authenticated user (from JWT claims)
+      operationId: getCurrentUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get current user
+      tags:
+      - users
   /healthcheck:
     get:
       description: Returns OK if the server is running and database is healthy

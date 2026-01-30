@@ -106,7 +106,7 @@ func (r *tripRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		Model((*models.Trip)(nil)).
 		Where("id = ?", id).
 		Exec(ctx)
-	
+
 	// Idempotent - don't error if already deleted
 	return err
 }

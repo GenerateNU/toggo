@@ -5,7 +5,10 @@
 
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
-import type { GetHealthcheckQueryResponse } from "../../types/types.gen.ts";
+import type {
+  CheckS3HealthQueryResponse,
+  CheckS3Health503,
+} from "../../types/types.gen.ts";
 import type {
   QueryKey,
   QueryClient,
@@ -14,61 +17,62 @@ import type {
 } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getHealthcheckQueryKey = () => [{ url: "/healthcheck" }] as const;
+export const checkS3HealthQueryKey = () =>
+  [{ url: "/api/v1/files/health" }] as const;
 
-export type GetHealthcheckQueryKey = ReturnType<typeof getHealthcheckQueryKey>;
+export type CheckS3HealthQueryKey = ReturnType<typeof checkS3HealthQueryKey>;
 
 /**
- * @description Returns OK if the server is running
- * @summary Healthcheck endpoint
- * {@link /healthcheck}
+ * @description Verifies connectivity to the configured S3 bucket
+ * @summary Check S3 connection
+ * {@link /api/v1/files/health}
  */
-export async function getHealthcheck(
+export async function checkS3Health(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
   const res = await request<
-    GetHealthcheckQueryResponse,
-    ResponseErrorConfig<Error>,
+    CheckS3HealthQueryResponse,
+    ResponseErrorConfig<CheckS3Health503>,
     unknown
-  >({ method: "GET", url: `/healthcheck`, ...requestConfig });
+  >({ method: "GET", url: `/api/v1/files/health`, ...requestConfig });
   return res.data;
 }
 
-export function getHealthcheckQueryOptions(
+export function checkS3HealthQueryOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getHealthcheckQueryKey();
+  const queryKey = checkS3HealthQueryKey();
   return queryOptions<
-    GetHealthcheckQueryResponse,
-    ResponseErrorConfig<Error>,
-    GetHealthcheckQueryResponse,
+    CheckS3HealthQueryResponse,
+    ResponseErrorConfig<CheckS3Health503>,
+    CheckS3HealthQueryResponse,
     typeof queryKey
   >({
     queryKey,
     queryFn: async ({ signal }) => {
       config.signal = signal;
-      return getHealthcheck(config);
+      return checkS3Health(config);
     },
   });
 }
 
 /**
- * @description Returns OK if the server is running
- * @summary Healthcheck endpoint
- * {@link /healthcheck}
+ * @description Verifies connectivity to the configured S3 bucket
+ * @summary Check S3 connection
+ * {@link /api/v1/files/health}
  */
-export function useGetHealthcheck<
-  TData = GetHealthcheckQueryResponse,
-  TQueryData = GetHealthcheckQueryResponse,
-  TQueryKey extends QueryKey = GetHealthcheckQueryKey,
+export function useCheckS3Health<
+  TData = CheckS3HealthQueryResponse,
+  TQueryData = CheckS3HealthQueryResponse,
+  TQueryKey extends QueryKey = CheckS3HealthQueryKey,
 >(
   options: {
     query?: Partial<
       QueryObserverOptions<
-        GetHealthcheckQueryResponse,
-        ResponseErrorConfig<Error>,
+        CheckS3HealthQueryResponse,
+        ResponseErrorConfig<CheckS3Health503>,
         TData,
         TQueryData,
         TQueryKey
@@ -79,16 +83,16 @@ export function useGetHealthcheck<
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
-  const queryKey = queryOptions?.queryKey ?? getHealthcheckQueryKey();
+  const queryKey = queryOptions?.queryKey ?? checkS3HealthQueryKey();
 
   const query = useQuery(
     {
-      ...getHealthcheckQueryOptions(config),
+      ...checkS3HealthQueryOptions(config),
       queryKey,
       ...queryOptions,
     } as unknown as QueryObserverOptions,
     queryClient,
-  ) as UseQueryResult<TData, ResponseErrorConfig<Error>> & {
+  ) as UseQueryResult<TData, ResponseErrorConfig<CheckS3Health503>> & {
     queryKey: TQueryKey;
   };
 

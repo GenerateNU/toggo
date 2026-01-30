@@ -2,6 +2,7 @@ import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -116,21 +117,20 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
 }
 
 export function OTPVerificationForm() {
-  const { verifyOTP, sendOTP, isPending } = useUser();
+  const { verifyOTP, sendOTP, isPending, refreshCurrentUser } = useUser();
   const params = useLocalSearchParams();
   const router = useRouter();
   const phoneNumber = params.phone as string | undefined;
 
   const [error, setError] = useState<string | null>(null);
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
     if (!phoneNumber) {
       router.replace("/(auth)/login");
     }
   }, [phoneNumber, router]);
-
-  const [timer, setTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
     if (timer <= 0) return;
@@ -158,9 +158,44 @@ export function OTPVerificationForm() {
   const onSubmit = async (data: OTPFormData) => {
     setError(null);
     if (!phoneNumber) return;
+
     try {
-      await verifyOTP({ phone: phoneNumber, token: data.otp });
-      router.replace("/(app)");
+      const normalized = normalizePhone(phoneNumber);
+      if (!normalized) {
+        setError("Invalid phone number");
+        return;
+      }
+
+      await verifyOTP({ phone: normalized.digits, token: data.otp });
+
+      try {
+        const user = await refreshCurrentUser();
+
+        // If the profile is incomplete, send to completion even if the record exists
+        if (!user?.name || !user?.username) {
+          router.replace({
+            pathname: "/(auth)/complete-profile",
+            params: { phone: normalized.e164 },
+          });
+          return;
+        }
+
+        return;
+      } catch (err: any) {
+        const status =
+          err?.status ?? err?.data?.status ?? err?.response?.status;
+        if (status !== 404) {
+          setError(
+            err?.message || "Failed to fetch account. Please try again.",
+          );
+          return;
+        }
+
+        router.replace({
+          pathname: "/(auth)/complete-profile",
+          params: { phone: normalized.e164 },
+        });
+      }
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
     }
@@ -169,8 +204,15 @@ export function OTPVerificationForm() {
   const handleResendOTP = async () => {
     if (!phoneNumber) return;
     setError(null);
+
+    const normalized = normalizePhone(phoneNumber);
+    if (!normalized) {
+      setError("Invalid phone number");
+      return;
+    }
+
     try {
-      await sendOTP(phoneNumber);
+      await sendOTP(normalized.digits);
       setTimer(60);
       setCanResend(false);
     } catch (err: any) {
@@ -179,7 +221,7 @@ export function OTPVerificationForm() {
   };
 
   return (
-    <Box gap="m" marginTop="l">
+    <Box gap="m">
       {error && (
         <Box backgroundColor="sunsetOrange" padding="s" borderRadius="s">
           <Text variant="caption" color="cloudWhite">

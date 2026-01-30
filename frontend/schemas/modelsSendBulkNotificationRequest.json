@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": ["body", "title", "user_ids"],
+  "properties": {
+    "body": { "type": "string", "maxLength": 500, "minLength": 1 },
+    "data": { "type": "object", "additionalProperties": true },
+    "title": { "type": "string", "maxLength": 100, "minLength": 1 },
+    "user_ids": {
+      "type": "array",
+      "maxItems": 1000,
+      "minItems": 1,
+      "items": { "type": "string" }
+    }
+  },
+  "x-readme-ref-name": "models.SendBulkNotificationRequest"
+}

@@ -156,7 +156,7 @@ func (r *membershipRepository) Delete(ctx context.Context, userID, tripID uuid.U
 		Model((*models.Membership)(nil)).
 		Where("user_id = ? AND trip_id = ?", userID, tripID).
 		Exec(ctx)
-	
+
 	// Idempotent - don't error if already deleted
 	return err
 }

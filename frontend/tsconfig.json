@@ -8,7 +8,8 @@
     },
     "noUncheckedIndexedAccess": true,
     "allowImportingTsExtensions": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["jest"]
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }
