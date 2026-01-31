@@ -111,7 +111,6 @@ func (s *CommentService) GetPaginatedComments(
 	g.SetLimit(10)
 
 	for i, comment := range comments {
-		i, comment := i, comment
 		g.Go(func() error {
 			apiComment, err := s.toAPIResponse(ctx, comment)
 			if err != nil {
