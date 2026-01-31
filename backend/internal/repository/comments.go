@@ -29,13 +29,12 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 	var comments []*models.CommentDatabaseResponse
 
 	query := r.db.NewSelect().
-		Model(&comments).
 		TableExpr("comments AS c").
 		ColumnExpr("c.id, c.trip_id, c.entity_type, c.entity_id, c.user_id, c.content, c.created_at, c.updated_at").
 		ColumnExpr("u.username").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = c.user_id").
-		Join("LEFT JOIN images AS img ON img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Where("c.trip_id = ?", tripID).
 		Where("c.entity_type = ?", entityType).
 		Where("c.entity_id = ?", entityID).
@@ -49,7 +48,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 		query = query.Where("c.created_at < ?", *cursor)
 	}
 
-	err := query.Scan(ctx)
+	err := query.Scan(ctx, &comments)
 	if err != nil {
 		return nil, err
 	}
@@ -59,6 +58,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 
 func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error) {
 	comment := &models.Comment{
+		ID:      id,
 		Content: content,
 	}
 	result, err := r.db.NewUpdate().
@@ -66,7 +66,7 @@ func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, userID uui
 		Column("content").
 		Where("id = ?", id).
 		Where("user_id = ?", userID).
-		Where("EXISTS (SELECT 1 FROM memberships WHERE user_id = ? AND trip_id = comments.trip_id)", userID).
+		Where("EXISTS (SELECT 1 FROM memberships m WHERE m.user_id = ? AND m.trip_id = comment.trip_id)", userID).
 		Returning("*").
 		Exec(ctx)
 
@@ -91,7 +91,7 @@ func (r *commentRepository) Delete(ctx context.Context, id uuid.UUID, userID uui
 		Model((*models.Comment)(nil)).
 		Where("id = ?", id).
 		Where("user_id = ?", userID).
-		Where("EXISTS (SELECT 1 FROM memberships WHERE user_id = ? AND trip_id = comments.trip_id)", userID).
+		Where("EXISTS (SELECT 1 FROM memberships m WHERE m.user_id = ? AND m.trip_id = comment.trip_id)", userID).
 		Exec(ctx)
 
 	if err != nil {

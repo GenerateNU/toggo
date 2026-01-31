@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE comments (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     trip_id UUID NOT NULL,
     user_id UUID NOT NULL,
     entity_type VARCHAR(50) NOT NULL,

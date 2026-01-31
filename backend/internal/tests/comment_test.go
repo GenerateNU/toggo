@@ -72,7 +72,7 @@ func TestCommentCreate(t *testing.T) {
 			AssertStatus(http.StatusForbidden)
 	})
 
-	t.Run("returns 400 for invalid request body", func(t *testing.T) {
+	t.Run("returns 422 for invalid request body", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -81,7 +81,7 @@ func TestCommentCreate(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 				Body:   map[string]string{"invalid": "body"},
 			}).
-			AssertStatus(http.StatusBadRequest)
+			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
 	t.Run("returns 422 for empty content", func(t *testing.T) {
@@ -503,7 +503,7 @@ func TestCommentGetPaginated(t *testing.T) {
 		}
 	})
 
-	t.Run("returns 400 for invalid entity type", func(t *testing.T) {
+	t.Run("returns 422 for invalid entity type", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -511,7 +511,7 @@ func TestCommentGetPaginated(t *testing.T) {
 				Method: testkit.GET,
 				UserID: strPtr(commentTestUser1),
 			}).
-			AssertStatus(http.StatusBadRequest)
+			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
 	t.Run("returns 400 for invalid trip ID", func(t *testing.T) {
