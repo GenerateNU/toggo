@@ -25,7 +25,7 @@ func (r *commentRepository) Create(ctx context.Context, comment *models.Comment)
 	return comment, nil
 }
 
-func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentDatabaseResponse, error) {
+func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *string) ([]*models.CommentDatabaseResponse, error) {
 	var comments []*models.CommentDatabaseResponse
 
 	query := r.db.NewSelect().
@@ -38,11 +38,8 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 		Where("c.trip_id = ?", tripID).
 		Where("c.entity_type = ?", entityType).
 		Where("c.entity_id = ?", entityID).
-		Order("c.created_at DESC")
-
-	if limit != nil {
-		query = query.Limit(*limit)
-	}
+		Order("c.created_at DESC").
+		Limit(limit + 1)
 
 	if cursor != nil {
 		query = query.Where("c.created_at < ?", *cursor)

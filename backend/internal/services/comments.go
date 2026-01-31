@@ -19,7 +19,7 @@ type CommentServiceInterface interface {
 	CreateComment(ctx context.Context, req models.CreateCommentRequest, userID uuid.UUID) (*models.Comment, error)
 	UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error)
 	DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
-	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentAPIResponse, error)
+	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) (*models.PaginatedCommentsResponse, error)
 }
 
 var _ CommentServiceInterface = (*CommentService)(nil)
@@ -81,13 +81,27 @@ func (s *CommentService) GetPaginatedComments(
 	entityID uuid.UUID,
 	limit *int,
 	cursor *string,
-) ([]*models.CommentAPIResponse, error) {
+) (*models.PaginatedCommentsResponse, error) {
+	requestLimit := 20
+	if limit != nil && *limit > 0 {
+		requestLimit = *limit
+	}
 
 	comments, err := s.repository.Comment.FindPaginatedComments(
-		ctx, tripID, entityType, entityID, limit, cursor,
+		ctx, tripID, entityType, entityID, requestLimit, cursor,
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	// Determine if there are more results
+	var nextCursor *string
+	if len(comments) > requestLimit {
+		// Remove the extra record and set next cursor
+		comments = comments[:requestLimit]
+		lastComment := comments[len(comments)-1]
+		nextCursorValue := lastComment.CreatedAt.Format(time.RFC3339Nano)
+		nextCursor = &nextCursorValue
 	}
 
 	apiComments := make([]*models.CommentAPIResponse, len(comments))
@@ -111,7 +125,10 @@ func (s *CommentService) GetPaginatedComments(
 		return nil, err
 	}
 
-	return apiComments, nil
+	return &models.PaginatedCommentsResponse{
+		Comments:   apiComments,
+		NextCursor: nextCursor,
+	}, nil
 }
 
 func (s *CommentService) toAPIResponse(ctx context.Context, comment *models.CommentDatabaseResponse) (*models.CommentAPIResponse, error) {

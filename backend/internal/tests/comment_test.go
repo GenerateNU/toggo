@@ -359,7 +359,7 @@ func TestCommentGetPaginated(t *testing.T) {
 	})
 
 	t.Run("gets comments for trip member", func(t *testing.T) {
-		comments := testkit.New(t).
+		response := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
@@ -367,8 +367,9 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 			}).
 			AssertStatus(http.StatusOK).
-			GetBodyAsArray()
+			GetBody()
 
+		comments := response["comments"].([]interface{})
 		if len(comments) < 5 {
 			t.Errorf("expected at least 5 comments, got %d", len(comments))
 		}
@@ -397,7 +398,7 @@ func TestCommentGetPaginated(t *testing.T) {
 	})
 
 	t.Run("respects limit parameter", func(t *testing.T) {
-		comments := testkit.New(t).
+		response := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=2", commentTestTrip1, activityID),
@@ -405,8 +406,9 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 			}).
 			AssertStatus(http.StatusOK).
-			GetBodyAsArray()
+			GetBody()
 
+		comments := response["comments"].([]interface{})
 		if len(comments) != 2 {
 			t.Errorf("expected 2 comments with limit=2, got %d", len(comments))
 		}
@@ -432,7 +434,7 @@ func TestCommentGetPaginated(t *testing.T) {
 				AssertStatus(http.StatusCreated)
 		}
 
-		comments := testkit.New(t).
+		response := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
@@ -440,8 +442,9 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 			}).
 			AssertStatus(http.StatusOK).
-			GetBodyAsArray()
+			GetBody()
 
+		comments := response["comments"].([]interface{})
 		if len(comments) != 20 {
 			t.Errorf("expected default 20 comments, got %d", len(comments))
 		}
@@ -449,7 +452,7 @@ func TestCommentGetPaginated(t *testing.T) {
 
 	t.Run("supports cursor-based pagination", func(t *testing.T) {
 		// Get first page
-		comments := testkit.New(t).
+		response := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=3", commentTestTrip1, activityID),
@@ -457,10 +460,17 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 			}).
 			AssertStatus(http.StatusOK).
-			GetBodyAsArray()
+			GetBody()
 
+		comments := response["comments"].([]interface{})
 		if len(comments) == 0 {
 			t.Fatal("expected at least some comments in first page")
+		}
+
+		// Verify next_cursor is present
+		nextCursor := response["next_cursor"]
+		if nextCursor == nil {
+			t.Error("expected next_cursor to be present when there are more results")
 		}
 
 		// Use last comment's timestamp as cursor
@@ -468,7 +478,7 @@ func TestCommentGetPaginated(t *testing.T) {
 		cursor := lastComment["created_at"].(string)
 
 		// Get next page
-		secondPageComments := testkit.New(t).
+		secondPageResponse := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=3&cursor=%s", commentTestTrip1, activityID, cursor),
@@ -476,8 +486,9 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: strPtr(commentTestUser1),
 			}).
 			AssertStatus(http.StatusOK).
-			GetBodyAsArray()
+			GetBody()
 
+		secondPageComments := secondPageResponse["comments"].([]interface{})
 		if len(secondPageComments) == 0 {
 			t.Error("expected comments in second page")
 		}

@@ -57,3 +57,8 @@ type CommentAPIResponse struct {
 type GetCommentsQueryParams struct {
 	CursorPaginationParams
 }
+
+type PaginatedCommentsResponse struct {
+	Comments   []*CommentAPIResponse `json:"comments"`
+	NextCursor *string               `json:"next_cursor"`
+}

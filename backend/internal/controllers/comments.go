@@ -156,7 +156,7 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Param        entityID path string true "Entity ID"
 // @Param        limit query int false "Max results"
 // @Param        cursor query string false "Cursor timestamp (RFC3339)"
-// @Success      200 {array} models.CommentAPIResponse
+// @Success      200 {object} models.PaginatedCommentsResponse
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
@@ -185,10 +185,10 @@ func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
 		return err
 	}
 
-	comments, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.GetLimit(), params.GetCursor())
+	response, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.GetLimit(), params.GetCursor())
 	if err != nil {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(comments)
+	return c.Status(http.StatusOK).JSON(response)
 }
