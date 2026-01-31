@@ -836,7 +836,7 @@ export type GetPaginatedCommentsQueryParams = {
    */
   limit?: number;
   /**
-   * @description Cursor timestamp (RFC3339)
+   * @description Cursor (RFC3339Nano|UUID)
    * @type string | undefined
    */
   cursor?: string;

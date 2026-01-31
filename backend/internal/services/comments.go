@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"toggo/internal/config"
 	"toggo/internal/errs"
@@ -100,7 +101,7 @@ func (s *CommentService) GetPaginatedComments(
 		// Remove the extra record and set next cursor
 		comments = comments[:requestLimit]
 		lastComment := comments[len(comments)-1]
-		nextCursorValue := lastComment.CreatedAt.Format(time.RFC3339Nano)
+		nextCursorValue := fmt.Sprintf("%s|%s", lastComment.CreatedAt.Format(time.RFC3339Nano), lastComment.ID)
 		nextCursor = &nextCursorValue
 	}
 

@@ -469,9 +469,8 @@ func TestCommentGetPaginated(t *testing.T) {
 			t.Error("expected next_cursor to be present when there are more results")
 		}
 
-		// Use last comment's timestamp as cursor
-		lastComment := comments[len(comments)-1].(map[string]interface{})
-		cursor := lastComment["created_at"].(string)
+		// Use next_cursor from response
+		cursor := nextCursor.(string)
 
 		// Get next page
 		secondPageResponse := testkit.New(t).

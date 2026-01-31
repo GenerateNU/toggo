@@ -737,7 +737,7 @@ export const getPaginatedCommentsPathParamsSchema = z.object({
 export const getPaginatedCommentsQueryParamsSchema = z
   .object({
     limit: z.optional(z.coerce.number().int().describe("Max results")),
-    cursor: z.optional(z.string().describe("Cursor timestamp (RFC3339)")),
+    cursor: z.optional(z.string().describe("Cursor (RFC3339Nano|UUID)")),
   })
   .optional() as unknown as z.ZodType<GetPaginatedCommentsQueryParams>;
 

@@ -690,7 +690,7 @@ paths:
         in: query
         name: limit
         type: integer
-      - description: Cursor timestamp (RFC3339)
+      - description: Cursor (RFC3339Nano|UUID)
         in: query
         name: cursor
         type: string

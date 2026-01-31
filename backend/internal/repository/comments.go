@@ -2,6 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"strings"
+	"time"
 
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -38,11 +41,15 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 		Where("c.trip_id = ?", tripID).
 		Where("c.entity_type = ?", entityType).
 		Where("c.entity_id = ?", entityID).
-		Order("c.created_at DESC").
+		OrderExpr("c.created_at DESC, c.id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("c.created_at < ?", *cursor)
+		cursorTime, cursorID, err := parseCommentCursor(*cursor)
+		if err != nil {
+			return nil, err
+		}
+		query = query.Where("(c.created_at < ?) OR (c.created_at = ? AND c.id < ?)", cursorTime, cursorTime, cursorID)
 	}
 
 	err := query.Scan(ctx, &comments)
@@ -51,6 +58,25 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 	}
 
 	return comments, nil
+}
+
+func parseCommentCursor(cursor string) (time.Time, uuid.UUID, error) {
+	parts := strings.SplitN(cursor, "|", 2)
+	if len(parts) != 2 {
+		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor format"))
+	}
+
+	cursorTime, err := time.Parse(time.RFC3339Nano, parts[0])
+	if err != nil {
+		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor timestamp"))
+	}
+
+	cursorID, err := uuid.Parse(parts[1])
+	if err != nil {
+		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor id"))
+	}
+
+	return cursorTime, cursorID, nil
 }
 
 func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error) {

@@ -584,7 +584,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Cursor timestamp (RFC3339)",
+                        "description": "Cursor (RFC3339Nano|UUID)",
                         "name": "cursor",
                         "in": "query"
                     }

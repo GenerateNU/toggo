@@ -155,7 +155,7 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Param        entityType path string true "Entity type (activity, pitch)"
 // @Param        entityID path string true "Entity ID"
 // @Param        limit query int false "Max results"
-// @Param        cursor query string false "Cursor timestamp (RFC3339)"
+// @Param        cursor query string false "Cursor (RFC3339Nano|UUID)"
 // @Success      200 {object} models.PaginatedCommentsResponse
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
