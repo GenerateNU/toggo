@@ -203,3 +203,9 @@ func (tb *IntegrationTestBuilder) DebugLogging() *IntegrationTestBuilder {
 func (tb *IntegrationTestBuilder) GetBody() map[string]any {
 	return tb.body
 }
+
+func (tb *IntegrationTestBuilder) GetBodyAsArray() []interface{} {
+	var arr []interface{}
+	_ = json.Unmarshal(tb.raw, &arr)
+	return arr
+}
