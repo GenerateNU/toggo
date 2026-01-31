@@ -415,7 +415,7 @@ const docTemplate = `{
         },
         "/api/v1/trips": {
             "get": {
-                "description": "Retrieves all trips",
+                "description": "Retrieves trips with cursor-based pagination. Use limit and cursor query params.",
                 "produces": [
                     "application/json"
                 ],
@@ -424,14 +424,31 @@ const docTemplate = `{
                 ],
                 "summary": "Get all trips",
                 "operationId": "getAllTrips",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Max items per page (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque cursor from previous response next_cursor for next page",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Trip"
-                            }
+                            "$ref": "#/definitions/models.TripCursorPageResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid cursor",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
                         }
                     },
                     "500": {
@@ -670,10 +687,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Membership"
-                            }
+                            "$ref": "#/definitions/models.GetTripMembersResponse"
                         }
                     },
                     "400": {
@@ -1437,6 +1451,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.GetTripMembersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Membership"
+                    }
+                }
+            }
+        },
         "models.ImageSize": {
             "type": "string",
             "enum": [
@@ -1622,6 +1647,23 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TripCursorPageResult": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Trip"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
         "models.UpdateMembershipRequest": {
             "type": "object",
             "properties": {
@@ -1640,10 +1682,6 @@ const docTemplate = `{
         },
         "models.UpdateTripRequest": {
             "type": "object",
-            "required": [
-                "budget_max",
-                "budget_min"
-            ],
             "properties": {
                 "budget_max": {
                     "type": "integer",

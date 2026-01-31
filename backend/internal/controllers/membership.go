@@ -58,7 +58,7 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 // @Tags         memberships
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {array} models.Membership
+// @Success      200 {object} models.GetTripMembersResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/members [get]
@@ -74,9 +74,12 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"data": members,
-	})
+	// Return structured response
+	response := models.GetTripMembersResponse{
+		Data: members,
+	}
+
+	return c.Status(http.StatusOK).JSON(response)
 }
 
 // @Summary      Get user's trips

@@ -1,10 +1,1 @@
-{
-  "type": "object",
-  "required": ["budget_max", "budget_min"],
-  "properties": {
-    "budget_max": { "type": "integer", "minimum": 0 },
-    "budget_min": { "type": "integer", "minimum": 0 },
-    "name": { "type": "string", "minLength": 1 }
-  },
-  "x-readme-ref-name": "models.UpdateTripRequest"
-}
+{"type":"object","properties":{"budget_max":{"type":"integer","minimum":0},"budget_min":{"type":"integer","minimum":0},"name":{"type":"string","minLength":1}},"x-readme-ref-name":"models.UpdateTripRequest"}

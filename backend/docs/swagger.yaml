@@ -96,6 +96,13 @@ definitions:
       url:
         type: string
     type: object
+  models.GetTripMembersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Membership'
+        type: array
+    type: object
   models.ImageSize:
     enum:
     - large
@@ -224,6 +231,17 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.TripCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.Trip'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
   models.UpdateMembershipRequest:
     properties:
       budget_max:
@@ -246,9 +264,6 @@ definitions:
       name:
         minLength: 1
         type: string
-    required:
-    - budget_max
-    - budget_min
     type: object
   models.UpdateUserRequest:
     properties:
@@ -589,17 +604,29 @@ paths:
       - notifications
   /api/v1/trips:
     get:
-      description: Retrieves all trips
+      description: Retrieves trips with cursor-based pagination. Use limit and cursor
+        query params.
       operationId: getAllTrips
+      parameters:
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from previous response next_cursor for next page
+        in: query
+        name: cursor
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Trip'
-            type: array
+            $ref: '#/definitions/models.TripCursorPageResult'
+        "400":
+          description: Invalid cursor
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "500":
           description: Internal Server Error
           schema:
@@ -759,9 +786,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Membership'
-            type: array
+            $ref: '#/definitions/models.GetTripMembersResponse'
         "400":
           description: Bad Request
           schema:

@@ -16,17 +16,17 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 	membershipGroup := apiGroup.Group("/memberships")
 	membershipGroup.Post("", membershipController.AddMember)
 
-	// /api/v1/trips/:tripID/members
-	tripGroup := apiGroup.Group("/trips/:tripID/members")
-	tripGroup.Get("", membershipController.GetTripMembers)
-	tripGroup.Post("/:userID/promote", membershipController.PromoteToAdmin)
-	tripGroup.Post("/:userID/demote", membershipController.DemoteFromAdmin)
+	// /api/v1/trips/:tripID/memberships
+	tripMembershipGroup := apiGroup.Group("/trips/:tripID/memberships")
+	tripMembershipGroup.Get("", membershipController.GetTripMembers)
+	tripMembershipGroup.Post("/:userID/promote", membershipController.PromoteToAdmin)
+	tripMembershipGroup.Post("/:userID/demote", membershipController.DemoteFromAdmin)
 
-	// /api/v1/trips/:tripID/members/:userID
-	tripMemberIDGroup := tripGroup.Group("/:userID")
-	tripMemberIDGroup.Get("", membershipController.GetLatestMembership)
-	tripMemberIDGroup.Patch("", membershipController.UpdateMembership)
-	tripMemberIDGroup.Delete("", membershipController.RemoveMember)
+	// /api/v1/trips/:tripID/memberships/:userID
+	tripMembershipIDGroup := tripMembershipGroup.Group("/:userID")
+	tripMembershipIDGroup.Get("", membershipController.GetLatestMembership)
+	tripMembershipIDGroup.Patch("", membershipController.UpdateMembership)
+	tripMembershipIDGroup.Delete("", membershipController.RemoveMember)
 
 	// /api/v1/users/:userID/trips
 	userGroup := apiGroup.Group("/users/:userID")

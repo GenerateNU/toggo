@@ -27,6 +27,10 @@ type UpdateTripRequest struct {
 	BudgetMax *int    `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
 }
 
+type GetTripMembersResponse struct {
+	Data []*Membership `json:"data"`
+}
+
 // TripPageResult holds an offset-paginated list of trips and metadata.
 type TripPageResult struct {
 	Items  []*Trip `json:"items"`
