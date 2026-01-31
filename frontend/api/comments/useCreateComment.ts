@@ -9,6 +9,8 @@ import type {
   CreateCommentMutationRequest,
   CreateCommentMutationResponse,
   CreateComment400,
+  CreateComment401,
+  CreateComment403,
   CreateComment422,
   CreateComment500,
 } from "../../types/types.gen.ts";
@@ -43,7 +45,13 @@ export async function createComment(
 
   const res = await request<
     CreateCommentMutationResponse,
-    ResponseErrorConfig<CreateComment400 | CreateComment422 | CreateComment500>,
+    ResponseErrorConfig<
+      | CreateComment400
+      | CreateComment401
+      | CreateComment403
+      | CreateComment422
+      | CreateComment500
+    >,
     CreateCommentMutationRequest
   >({
     method: "POST",
@@ -62,7 +70,13 @@ export function createCommentMutationOptions(
   const mutationKey = createCommentMutationKey();
   return mutationOptions<
     CreateCommentMutationResponse,
-    ResponseErrorConfig<CreateComment400 | CreateComment422 | CreateComment500>,
+    ResponseErrorConfig<
+      | CreateComment400
+      | CreateComment401
+      | CreateComment403
+      | CreateComment422
+      | CreateComment500
+    >,
     { data: CreateCommentMutationRequest },
     typeof mutationKey
   >({
@@ -83,7 +97,11 @@ export function useCreateComment<TContext>(
     mutation?: UseMutationOptions<
       CreateCommentMutationResponse,
       ResponseErrorConfig<
-        CreateComment400 | CreateComment422 | CreateComment500
+        | CreateComment400
+        | CreateComment401
+        | CreateComment403
+        | CreateComment422
+        | CreateComment500
       >,
       { data: CreateCommentMutationRequest },
       TContext
@@ -101,14 +119,26 @@ export function useCreateComment<TContext>(
     config,
   ) as UseMutationOptions<
     CreateCommentMutationResponse,
-    ResponseErrorConfig<CreateComment400 | CreateComment422 | CreateComment500>,
+    ResponseErrorConfig<
+      | CreateComment400
+      | CreateComment401
+      | CreateComment403
+      | CreateComment422
+      | CreateComment500
+    >,
     { data: CreateCommentMutationRequest },
     TContext
   >;
 
   return useMutation<
     CreateCommentMutationResponse,
-    ResponseErrorConfig<CreateComment400 | CreateComment422 | CreateComment500>,
+    ResponseErrorConfig<
+      | CreateComment400
+      | CreateComment401
+      | CreateComment403
+      | CreateComment422
+      | CreateComment500
+    >,
     { data: CreateCommentMutationRequest },
     TContext
   >(
@@ -120,7 +150,13 @@ export function useCreateComment<TContext>(
     queryClient,
   ) as UseMutationResult<
     CreateCommentMutationResponse,
-    ResponseErrorConfig<CreateComment400 | CreateComment422 | CreateComment500>,
+    ResponseErrorConfig<
+      | CreateComment400
+      | CreateComment401
+      | CreateComment403
+      | CreateComment422
+      | CreateComment500
+    >,
     { data: CreateCommentMutationRequest },
     TContext
   >;

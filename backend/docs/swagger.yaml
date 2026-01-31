@@ -331,6 +331,14 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "422":
           description: Unprocessable Entity
           schema:
@@ -357,6 +365,10 @@ paths:
           description: No Content
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/errs.APIError'
         "404":
@@ -396,6 +408,10 @@ paths:
             $ref: '#/definitions/models.Comment'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/errs.APIError'
         "404":
@@ -683,6 +699,14 @@ paths:
             type: array
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/errs.APIError'
         "422":

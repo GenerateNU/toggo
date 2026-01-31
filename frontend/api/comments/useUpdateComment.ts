@@ -10,6 +10,7 @@ import type {
   UpdateCommentMutationResponse,
   UpdateCommentPathParams,
   UpdateComment400,
+  UpdateComment401,
   UpdateComment404,
   UpdateComment422,
   UpdateComment500,
@@ -47,7 +48,11 @@ export async function updateComment(
   const res = await request<
     UpdateCommentMutationResponse,
     ResponseErrorConfig<
-      UpdateComment400 | UpdateComment404 | UpdateComment422 | UpdateComment500
+      | UpdateComment400
+      | UpdateComment401
+      | UpdateComment404
+      | UpdateComment422
+      | UpdateComment500
     >,
     UpdateCommentMutationRequest
   >({
@@ -68,7 +73,11 @@ export function updateCommentMutationOptions(
   return mutationOptions<
     UpdateCommentMutationResponse,
     ResponseErrorConfig<
-      UpdateComment400 | UpdateComment404 | UpdateComment422 | UpdateComment500
+      | UpdateComment400
+      | UpdateComment401
+      | UpdateComment404
+      | UpdateComment422
+      | UpdateComment500
     >,
     {
       commentID: UpdateCommentPathParams["commentID"];
@@ -94,6 +103,7 @@ export function useUpdateComment<TContext>(
       UpdateCommentMutationResponse,
       ResponseErrorConfig<
         | UpdateComment400
+        | UpdateComment401
         | UpdateComment404
         | UpdateComment422
         | UpdateComment500
@@ -118,7 +128,11 @@ export function useUpdateComment<TContext>(
   ) as UseMutationOptions<
     UpdateCommentMutationResponse,
     ResponseErrorConfig<
-      UpdateComment400 | UpdateComment404 | UpdateComment422 | UpdateComment500
+      | UpdateComment400
+      | UpdateComment401
+      | UpdateComment404
+      | UpdateComment422
+      | UpdateComment500
     >,
     {
       commentID: UpdateCommentPathParams["commentID"];
@@ -130,7 +144,11 @@ export function useUpdateComment<TContext>(
   return useMutation<
     UpdateCommentMutationResponse,
     ResponseErrorConfig<
-      UpdateComment400 | UpdateComment404 | UpdateComment422 | UpdateComment500
+      | UpdateComment400
+      | UpdateComment401
+      | UpdateComment404
+      | UpdateComment422
+      | UpdateComment500
     >,
     {
       commentID: UpdateCommentPathParams["commentID"];
@@ -147,7 +165,11 @@ export function useUpdateComment<TContext>(
   ) as UseMutationResult<
     UpdateCommentMutationResponse,
     ResponseErrorConfig<
-      UpdateComment400 | UpdateComment404 | UpdateComment422 | UpdateComment500
+      | UpdateComment400
+      | UpdateComment401
+      | UpdateComment404
+      | UpdateComment422
+      | UpdateComment500
     >,
     {
       commentID: UpdateCommentPathParams["commentID"];

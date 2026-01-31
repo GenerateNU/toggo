@@ -30,6 +30,8 @@ func NewCommentController(commentService services.CommentServiceInterface, valid
 // @Produce      json
 // @Param        request body models.CreateCommentRequest true "Create comment request"
 // @Success      201 {object} models.Comment
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -61,6 +63,7 @@ func (cmt *CommentController) CreateComment(c *fiber.Ctx) error {
 // @Param        commentID path string true "Comment ID"
 // @Param        request body models.UpdateCommentRequest true "Update comment request"
 // @Success      200 {object} models.Comment
+// @Failure      401 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
@@ -105,6 +108,7 @@ func (cmt *CommentController) UpdateComment(c *fiber.Ctx) error {
 // @Tags         comments
 // @Param        commentID path string true "Comment ID"
 // @Success      204 "No Content"
+// @Failure      401 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -143,6 +147,8 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Param        limit query int false "Max results"
 // @Param        cursor query string false "Cursor timestamp (RFC3339)"
 // @Success      200 {array} models.CommentAPIResponse
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError

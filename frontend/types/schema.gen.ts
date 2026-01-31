@@ -28,6 +28,8 @@ import type {
   ModelsUser,
   CreateComment201,
   CreateComment400,
+  CreateComment401,
+  CreateComment403,
   CreateComment422,
   CreateComment500,
   CreateCommentMutationRequest,
@@ -35,12 +37,14 @@ import type {
   DeleteCommentPathParams,
   DeleteComment204,
   DeleteComment400,
+  DeleteComment401,
   DeleteComment404,
   DeleteComment500,
   DeleteCommentMutationResponse,
   UpdateCommentPathParams,
   UpdateComment200,
   UpdateComment400,
+  UpdateComment401,
   UpdateComment404,
   UpdateComment422,
   UpdateComment500,
@@ -90,6 +94,8 @@ import type {
   GetPaginatedCommentsQueryParams,
   GetPaginatedComments200,
   GetPaginatedComments400,
+  GetPaginatedComments401,
+  GetPaginatedComments403,
   GetPaginatedComments422,
   GetPaginatedComments500,
   GetPaginatedCommentsQueryResponse,
@@ -325,6 +331,20 @@ export const createComment400Schema = z.lazy(
 ) as unknown as z.ZodType<CreateComment400>;
 
 /**
+ * @description Unauthorized
+ */
+export const createComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment401>;
+
+/**
+ * @description Forbidden
+ */
+export const createComment403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment403>;
+
+/**
  * @description Unprocessable Entity
  */
 export const createComment422Schema = z.lazy(
@@ -367,6 +387,13 @@ export const deleteComment400Schema = z.lazy(
 ) as unknown as z.ZodType<DeleteComment400>;
 
 /**
+ * @description Unauthorized
+ */
+export const deleteComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment401>;
+
+/**
  * @description Not Found
  */
 export const deleteComment404Schema = z.lazy(
@@ -401,6 +428,13 @@ export const updateComment200Schema = z.lazy(
 export const updateComment400Schema = z.lazy(
   () => errsAPIErrorSchema,
 ) as unknown as z.ZodType<UpdateComment400>;
+
+/**
+ * @description Unauthorized
+ */
+export const updateComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment401>;
 
 /**
  * @description Not Found
@@ -713,6 +747,20 @@ export const getPaginatedComments200Schema = z.array(
 export const getPaginatedComments400Schema = z.lazy(
   () => errsAPIErrorSchema,
 ) as unknown as z.ZodType<GetPaginatedComments400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getPaginatedComments401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments401>;
+
+/**
+ * @description Forbidden
+ */
+export const getPaginatedComments403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments403>;
 
 /**
  * @description Unprocessable Entity

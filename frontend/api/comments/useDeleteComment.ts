@@ -9,6 +9,7 @@ import type {
   DeleteCommentMutationResponse,
   DeleteCommentPathParams,
   DeleteComment400,
+  DeleteComment401,
   DeleteComment404,
   DeleteComment500,
 } from "../../types/types.gen.ts";
@@ -39,7 +40,9 @@ export async function deleteComment(
 
   const res = await request<
     DeleteCommentMutationResponse,
-    ResponseErrorConfig<DeleteComment400 | DeleteComment404 | DeleteComment500>,
+    ResponseErrorConfig<
+      DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
+    >,
     unknown
   >({
     method: "DELETE",
@@ -55,7 +58,9 @@ export function deleteCommentMutationOptions(
   const mutationKey = deleteCommentMutationKey();
   return mutationOptions<
     DeleteCommentMutationResponse,
-    ResponseErrorConfig<DeleteComment400 | DeleteComment404 | DeleteComment500>,
+    ResponseErrorConfig<
+      DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
+    >,
     { commentID: DeleteCommentPathParams["commentID"] },
     typeof mutationKey
   >({
@@ -76,7 +81,10 @@ export function useDeleteComment<TContext>(
     mutation?: UseMutationOptions<
       DeleteCommentMutationResponse,
       ResponseErrorConfig<
-        DeleteComment400 | DeleteComment404 | DeleteComment500
+        | DeleteComment400
+        | DeleteComment401
+        | DeleteComment404
+        | DeleteComment500
       >,
       { commentID: DeleteCommentPathParams["commentID"] },
       TContext
@@ -92,14 +100,18 @@ export function useDeleteComment<TContext>(
     config,
   ) as UseMutationOptions<
     DeleteCommentMutationResponse,
-    ResponseErrorConfig<DeleteComment400 | DeleteComment404 | DeleteComment500>,
+    ResponseErrorConfig<
+      DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
+    >,
     { commentID: DeleteCommentPathParams["commentID"] },
     TContext
   >;
 
   return useMutation<
     DeleteCommentMutationResponse,
-    ResponseErrorConfig<DeleteComment400 | DeleteComment404 | DeleteComment500>,
+    ResponseErrorConfig<
+      DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
+    >,
     { commentID: DeleteCommentPathParams["commentID"] },
     TContext
   >(
@@ -111,7 +123,9 @@ export function useDeleteComment<TContext>(
     queryClient,
   ) as UseMutationResult<
     DeleteCommentMutationResponse,
-    ResponseErrorConfig<DeleteComment400 | DeleteComment404 | DeleteComment500>,
+    ResponseErrorConfig<
+      DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
+    >,
     { commentID: DeleteCommentPathParams["commentID"] },
     TContext
   >;

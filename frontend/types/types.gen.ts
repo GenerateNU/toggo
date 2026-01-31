@@ -426,6 +426,16 @@ export type CreateComment201 = ModelsComment;
 export type CreateComment400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type CreateComment401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreateComment403 = ErrsAPIError;
+
+/**
  * @description Unprocessable Entity
  */
 export type CreateComment422 = ErrsAPIError;
@@ -445,7 +455,12 @@ export type CreateCommentMutationResponse = CreateComment201;
 export type CreateCommentMutation = {
   Response: CreateComment201;
   Request: CreateCommentMutationRequest;
-  Errors: CreateComment400 | CreateComment422 | CreateComment500;
+  Errors:
+    | CreateComment400
+    | CreateComment401
+    | CreateComment403
+    | CreateComment422
+    | CreateComment500;
 };
 
 export type DeleteCommentPathParams = {
@@ -467,6 +482,11 @@ export type DeleteComment204 = any;
 export type DeleteComment400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type DeleteComment401 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type DeleteComment404 = ErrsAPIError;
@@ -481,7 +501,11 @@ export type DeleteCommentMutationResponse = DeleteComment204;
 export type DeleteCommentMutation = {
   Response: DeleteComment204;
   PathParams: DeleteCommentPathParams;
-  Errors: DeleteComment400 | DeleteComment404 | DeleteComment500;
+  Errors:
+    | DeleteComment400
+    | DeleteComment401
+    | DeleteComment404
+    | DeleteComment500;
 };
 
 export type UpdateCommentPathParams = {
@@ -501,6 +525,11 @@ export type UpdateComment200 = ModelsComment;
  * @description Bad Request
  */
 export type UpdateComment400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateComment401 = ErrsAPIError;
 
 /**
  * @description Not Found
@@ -530,6 +559,7 @@ export type UpdateCommentMutation = {
   PathParams: UpdateCommentPathParams;
   Errors:
     | UpdateComment400
+    | UpdateComment401
     | UpdateComment404
     | UpdateComment422
     | UpdateComment500;
@@ -816,6 +846,16 @@ export type GetPaginatedComments200 = ModelsCommentAPIResponse[];
 export type GetPaginatedComments400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type GetPaginatedComments401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetPaginatedComments403 = ErrsAPIError;
+
+/**
  * @description Unprocessable Entity
  */
 export type GetPaginatedComments422 = ErrsAPIError;
@@ -833,6 +873,8 @@ export type GetPaginatedCommentsQuery = {
   QueryParams: GetPaginatedCommentsQueryParams;
   Errors:
     | GetPaginatedComments400
+    | GetPaginatedComments401
+    | GetPaginatedComments403
     | GetPaginatedComments422
     | GetPaginatedComments500;
 };
