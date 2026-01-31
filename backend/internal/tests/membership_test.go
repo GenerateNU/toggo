@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"testing"
 	"toggo/internal/models"
@@ -22,6 +23,7 @@ func TestMembershipLifecycle(t *testing.T) {
 
 	t.Run("create user", func(t *testing.T) {
 		username := fakes.GenerateRandomUsername()
+		phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
 
 		resp := testkit.New(t).
 			Request(testkit.Request{
@@ -32,7 +34,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "Membership User",
 					Username:    username,
-					PhoneNumber: "+16175551234",
+					PhoneNumber: phoneNumber,
 				},
 			}).
 			AssertStatus(http.StatusCreated).
