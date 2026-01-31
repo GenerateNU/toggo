@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "token": { "type": "string" },
+          "user_id": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.NotificationError"
+      }
+    },
+    "failure_count": { "type": "integer" },
+    "success_count": { "type": "integer" }
+  },
+  "x-readme-ref-name": "models.NotificationResponse"
+}

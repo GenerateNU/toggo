@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "contentType": { "type": "string" },
+          "imageId": { "type": "string" },
+          "size": {
+            "type": "string",
+            "enum": ["large", "medium", "small"],
+            "x-enum-varnames": [
+              "ImageSizeLarge",
+              "ImageSizeMedium",
+              "ImageSizeSmall"
+            ],
+            "x-readme-ref-name": "models.ImageSize"
+          },
+          "url": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.GetFileResponse"
+      }
+    },
+    "imageId": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.GetFileAllSizesResponse"
+}
