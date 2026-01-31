@@ -159,21 +159,13 @@ func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	entityType := models.EntityType(c.Params("entityType"))
-	if entityType != models.Activity && entityType != models.Pitch {
-		return errs.InvalidRequestData(map[string]string{
-			"entity_type": "entity_type must be one of: activity, pitch",
-		})
+	entityType, err := parseEntityTypeParam(c, "entityType", "entity_type", models.Activity, models.Pitch)
+	if err != nil {
+		return err
 	}
 
 	var params models.GetCommentsQueryParams
-	if err := c.QueryParser(&params); err != nil {
-		return errs.InvalidRequestData(map[string]string{
-			"query": "invalid query parameters",
-		})
-	}
-
-	if err := utilities.Validate(cmt.validator, params); err != nil {
+	if err := parseAndValidateQueryParams(c, cmt.validator, &params); err != nil {
 		return err
 	}
 
