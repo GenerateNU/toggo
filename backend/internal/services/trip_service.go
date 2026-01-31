@@ -15,7 +15,6 @@ import (
 type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error)
-	GetAllTrips(ctx context.Context) ([]*models.Trip, error)
 	GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, id uuid.UUID) error
@@ -65,10 +64,6 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, 
 		return nil, errs.ErrNotFound
 	}
 	return trip, nil
-}
-
-func (s *TripService) GetAllTrips(ctx context.Context) ([]*models.Trip, error) {
-	return s.Trip.FindAll(ctx)
 }
 
 func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error) {

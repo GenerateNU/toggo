@@ -48,15 +48,39 @@ func TestTripLifecycle(t *testing.T) {
 			AssertField("budget_max", float64(500))
 	})
 
-	t.Run("get all trips", func(t *testing.T) {
-		testkit.New(t).
+	t.Run("get trips with cursor pagination", func(t *testing.T) {
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  "/api/v1/trips",
 				Method: testkit.GET,
 				UserID: &authUserID,
+				Query:  map[string]string{"limit": "20"},
 			}).
-			AssertStatus(http.StatusOK)
+			AssertStatus(http.StatusOK).
+			AssertFieldExists("items").
+			AssertField("limit", float64(20)).
+			GetBody()
+
+		items, ok := resp["items"].([]any)
+		if !ok {
+			t.Fatal("items is not an array")
+		}
+		// Created trip should appear in first page
+		var found bool
+		for _, it := range items {
+			m, ok := it.(map[string]any)
+			if !ok {
+				continue
+			}
+			if m["id"] == tripID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("created trip %s not found in paginated items", tripID)
+		}
 	})
 
 	t.Run("update trip", func(t *testing.T) {

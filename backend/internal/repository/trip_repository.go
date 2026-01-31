@@ -48,18 +48,6 @@ func (r *tripRepository) Find(ctx context.Context, id uuid.UUID) (*models.Trip, 
 	return trip, nil
 }
 
-// FindAll retrieves all trips
-func (r *tripRepository) FindAll(ctx context.Context) ([]*models.Trip, error) {
-	var trips []*models.Trip
-	err := r.db.NewSelect().
-		Model(&trips).
-		Scan(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return trips, nil
-}
-
 // FindAllWithCursor retrieves trips after the given cursor (cursor nil = first page).
 // Uses ORDER BY created_at DESC, id DESC. Fetches limit+1 to detect hasNext; returns
 // next cursor from the last row when there are more results.
