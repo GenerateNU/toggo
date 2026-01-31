@@ -84,14 +84,11 @@ definitions:
         - pitch
       trip_id:
         type: string
-      user_id:
-        type: string
     required:
     - content
     - entity_id
     - entity_type
     - trip_id
-    - user_id
     type: object
   models.CreateUserRequest:
     properties:

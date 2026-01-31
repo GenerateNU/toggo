@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "required": ["content", "entity_id", "entity_type", "trip_id", "user_id"],
+  "required": ["content", "entity_id", "entity_type", "trip_id"],
   "properties": {
     "content": { "type": "string", "minLength": 1 },
     "entity_id": { "type": "string" },
@@ -15,8 +15,7 @@
         }
       ]
     },
-    "trip_id": { "type": "string" },
-    "user_id": { "type": "string" }
+    "trip_id": { "type": "string" }
   },
   "x-readme-ref-name": "models.CreateCommentRequest"
 }

@@ -39,7 +39,6 @@ func TestCommentCreate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "This is a test comment",
 				},
 			}).
@@ -65,7 +64,6 @@ func TestCommentCreate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestNonMember),
 					Content:    "This should fail",
 				},
 			}).
@@ -95,7 +93,6 @@ func TestCommentCreate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "",
 				},
 			}).
@@ -113,7 +110,6 @@ func TestCommentCreate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: "invalid_type",
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "Test",
 				},
 			}).
@@ -132,7 +128,6 @@ func TestCommentCreate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "Test",
 				},
 			}).
@@ -157,7 +152,6 @@ func TestCommentUpdate(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "Original content",
 				},
 			}).
@@ -271,7 +265,6 @@ func TestCommentDelete(t *testing.T) {
 					TripID:     uuid.MustParse(commentTestTrip1),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					UserID:     uuid.MustParse(commentTestUser1),
 					Content:    "Comment to delete",
 				},
 			}).
@@ -354,8 +347,8 @@ func TestCommentGetPaginated(t *testing.T) {
 						TripID:     uuid.MustParse(commentTestTrip1),
 						EntityType: models.Activity,
 						EntityID:   uuid.MustParse(activityID),
-						UserID:     uuid.MustParse(commentTestUser1),
-						Content:    fmt.Sprintf("Comment %d", i),
+
+						Content: fmt.Sprintf("Comment %d", i),
 					},
 				}).
 				AssertStatus(http.StatusCreated)
@@ -432,8 +425,8 @@ func TestCommentGetPaginated(t *testing.T) {
 						TripID:     uuid.MustParse(commentTestTrip1),
 						EntityType: models.Activity,
 						EntityID:   uuid.MustParse(activityID),
-						UserID:     uuid.MustParse(commentTestUser1),
-						Content:    fmt.Sprintf("Comment %d", i),
+
+						Content: fmt.Sprintf("Comment %d", i),
 					},
 				}).
 				AssertStatus(http.StatusCreated)

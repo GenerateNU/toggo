@@ -21,7 +21,6 @@ type CreateCommentRequest struct {
 	TripID     uuid.UUID  `validate:"required" json:"trip_id"`
 	EntityType EntityType `validate:"required,oneof=activity pitch" json:"entity_type"`
 	EntityID   uuid.UUID  `validate:"required" json:"entity_id"`
-	UserID     uuid.UUID  `validate:"required" json:"user_id"`
 	Content    string     `validate:"required,min=1" json:"content"`
 }
 

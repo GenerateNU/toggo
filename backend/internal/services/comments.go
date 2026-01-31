@@ -16,7 +16,7 @@ import (
 )
 
 type CommentServiceInterface interface {
-	CreateComment(ctx context.Context, req models.CreateCommentRequest) (*models.Comment, error)
+	CreateComment(ctx context.Context, req models.CreateCommentRequest, userID uuid.UUID) (*models.Comment, error)
 	UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error)
 	DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentAPIResponse, error)
@@ -42,8 +42,8 @@ func NewCommentService(repo *repository.Repository, cfg *config.Configuration) C
 	}
 }
 
-func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCommentRequest) (*models.Comment, error) {
-	isMember, err := s.repository.Membership.IsMember(ctx, req.TripID, req.UserID)
+func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCommentRequest, userID uuid.UUID) (*models.Comment, error) {
+	isMember, err := s.repository.Membership.IsMember(ctx, req.TripID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCom
 		TripID:     req.TripID,
 		EntityType: req.EntityType,
 		EntityID:   req.EntityID,
-		UserID:     req.UserID,
+		UserID:     userID,
 		Content:    req.Content,
 	})
 	if err != nil {

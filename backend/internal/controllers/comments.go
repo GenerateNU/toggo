@@ -47,7 +47,17 @@ func (cmt *CommentController) CreateComment(c *fiber.Ctx) error {
 		return err
 	}
 
-	comment, err := cmt.commentService.CreateComment(c.Context(), req)
+	userIDStr := c.Locals("userID")
+	if userIDStr == nil {
+		return errs.Unauthorized()
+	}
+
+	userID, err := utilities.ValidateID(userIDStr.(string))
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	comment, err := cmt.commentService.CreateComment(c.Context(), req, userID)
 	if err != nil {
 		return err
 	}

@@ -152,10 +152,6 @@ export type ModelsCreateCommentRequest = {
    * @type string
    */
   trip_id: string;
-  /**
-   * @type string
-   */
-  user_id: string;
 };
 
 export type ModelsCreateUserRequest = {

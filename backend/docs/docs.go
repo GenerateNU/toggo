@@ -1020,8 +1020,7 @@ const docTemplate = `{
                 "content",
                 "entity_id",
                 "entity_type",
-                "trip_id",
-                "user_id"
+                "trip_id"
             ],
             "properties": {
                 "content": {
@@ -1043,9 +1042,6 @@ const docTemplate = `{
                     ]
                 },
                 "trip_id": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }

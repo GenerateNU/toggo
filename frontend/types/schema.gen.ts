@@ -204,7 +204,6 @@ export const modelsCreateCommentRequestSchema = z.object({
     return modelsEntityTypeSchema;
   },
   trip_id: z.string(),
-  user_id: z.string(),
 }) as unknown as z.ZodType<ModelsCreateCommentRequest>;
 
 export const modelsCreateUserRequestSchema = z.object({
