@@ -30,8 +30,9 @@ func TestMembershipLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateUserRequest{
-					Name:     "Membership User",
-					Username: username,
+					Name:        "Membership User",
+					Username:    username,
+					PhoneNumber: "+16175551234",
 				},
 			}).
 			AssertStatus(http.StatusCreated).

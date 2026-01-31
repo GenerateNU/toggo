@@ -70,9 +70,13 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("name = ?", *req.Name)
 	}
 
-	// BudgetMin and BudgetMax are not pointers, so always update
-	updateQuery = updateQuery.Set("budget_min = ?", req.BudgetMin)
-	updateQuery = updateQuery.Set("budget_max = ?", req.BudgetMax)
+	if req.BudgetMin != nil {
+		updateQuery = updateQuery.Set("budget_min = ?", *req.BudgetMin)
+	}
+
+	if req.BudgetMax != nil {
+		updateQuery = updateQuery.Set("budget_max = ?", *req.BudgetMax)
+	}
 
 	result, err := updateQuery.Exec(ctx)
 	if err != nil {

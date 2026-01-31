@@ -94,12 +94,6 @@ func (s *MembershipService) GetUserTrips(ctx context.Context, userID uuid.UUID) 
 }
 
 func (s *MembershipService) UpdateMembership(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateMembershipRequest) (*models.Membership, error) {
-	// Check membership exists
-	_, err := s.Membership.Find(ctx, userID, tripID)
-	if err != nil {
-		return nil, err
-	}
-
 	// Validate business rules
 	if req.BudgetMin < 0 {
 		return nil, errors.New("budget minimum cannot be negative")
@@ -109,6 +103,7 @@ func (s *MembershipService) UpdateMembership(ctx context.Context, userID, tripID
 		return nil, errors.New("budget maximum must be greater than or equal to minimum")
 	}
 
+	// Update directly - repository will return ErrNotFound if membership doesn't exist
 	return s.Membership.Update(ctx, userID, tripID, &req)
 }
 

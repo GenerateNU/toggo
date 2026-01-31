@@ -61,6 +61,8 @@ func TestTripLifecycle(t *testing.T) {
 
 	t.Run("update trip", func(t *testing.T) {
 		name := "Summer Beach Trip"
+		budgetMin := 150
+		budgetMax := 600
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -69,8 +71,8 @@ func TestTripLifecycle(t *testing.T) {
 				UserID: &authUserID,
 				Body: models.UpdateTripRequest{
 					Name:      &name,
-					BudgetMin: 150,
-					BudgetMax: 600,
+					BudgetMin: &budgetMin,
+					BudgetMax: &budgetMax,
 				},
 			}).
 			AssertStatus(http.StatusOK).
@@ -116,6 +118,8 @@ func TestTripLifecycle(t *testing.T) {
 
 	t.Run("update deleted trip returns 404", func(t *testing.T) {
 		name := "Ghost Trip"
+		budgetMin := 100
+		budgetMax := 500
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -124,8 +128,8 @@ func TestTripLifecycle(t *testing.T) {
 				UserID: &authUserID,
 				Body: models.UpdateTripRequest{
 					Name:      &name,
-					BudgetMin: 100,
-					BudgetMax: 500,
+					BudgetMin: &budgetMin,
+					BudgetMax: &budgetMax,
 				},
 			}).
 			AssertStatus(http.StatusNotFound)

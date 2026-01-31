@@ -16,13 +16,13 @@ type Trip struct {
 }
 
 type CreateTripRequest struct {
-	Name      string `validate:"required,min=1"`
+	Name      string `validate:"required,min=1" json:"name"`
 	BudgetMin int    `json:"budget_min" validate:"required,gte=0"`
 	BudgetMax int    `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
 }
 
 type UpdateTripRequest struct {
-	Name      *string `validate:"omitempty,min=1"`
-	BudgetMin int     `json:"budget_min" validate:"required,gte=0"`
-	BudgetMax int     `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
+	Name      *string `validate:"omitempty,min=1" json:"name"`
+	BudgetMin *int    `json:"budget_min" validate:"omitempty,gte=0"`
+	BudgetMax *int    `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
 }

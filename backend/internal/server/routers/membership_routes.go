@@ -25,10 +25,8 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 	// /api/v1/trips/:tripID/members/:userID
 	tripMemberIDGroup := tripGroup.Group("/:userID")
 	tripMemberIDGroup.Get("", membershipController.GetLatestMembership)
-	tripMemberIDGroup.Delete("", membershipController.RemoveMember)
-
-	// /api/v1/trips/:tripID/members/:userID/versions/:version
 	tripMemberIDGroup.Patch("", membershipController.UpdateMembership)
+	tripMemberIDGroup.Delete("", membershipController.RemoveMember)
 
 	// /api/v1/users/:userID/trips
 	userGroup := apiGroup.Group("/users/:userID")

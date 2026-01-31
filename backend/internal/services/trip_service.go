@@ -69,22 +69,16 @@ func (s *TripService) GetAllTrips(ctx context.Context) ([]*models.Trip, error) {
 }
 
 func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
-	// Check if trip exists
-	_, err := s.Trip.Find(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	// Validate business rules
+	// Validate business rules only if fields are provided
 	if req.Name != nil && *req.Name == "" {
 		return nil, errors.New("trip name cannot be empty")
 	}
 
-	if req.BudgetMin < 0 {
+	if req.BudgetMin != nil && *req.BudgetMin < 0 {
 		return nil, errors.New("budget minimum cannot be negative")
 	}
 
-	if req.BudgetMax < req.BudgetMin {
+	if req.BudgetMin != nil && req.BudgetMax != nil && *req.BudgetMax < *req.BudgetMin {
 		return nil, errors.New("budget maximum must be greater than or equal to minimum")
 	}
 
