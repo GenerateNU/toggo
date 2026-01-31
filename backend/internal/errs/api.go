@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrNotFound  = errors.New("not found")
-	ErrDuplicate = errors.New("already exists")
+	ErrNotFound     = errors.New("not found")
+	ErrDuplicate    = errors.New("already exists")
+	ErrInvalidCursor = errors.New("invalid cursor")
 )
 
 func IsNotFound(err error) bool {

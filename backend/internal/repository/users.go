@@ -124,3 +124,4 @@ func (r *userRepository) GetUsersWithDeviceTokens(ctx context.Context, userIDs [
 
 	return users, nil
 }
+
