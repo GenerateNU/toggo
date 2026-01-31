@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -14,6 +16,7 @@ type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error)
 	GetAllTrips(ctx context.Context) ([]*models.Trip, error)
+	GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, id uuid.UUID) error
 }
@@ -66,6 +69,47 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, 
 
 func (s *TripService) GetAllTrips(ctx context.Context) ([]*models.Trip, error) {
 	return s.Trip.FindAll(ctx)
+}
+
+func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
+	var cursor *models.TripCursor
+	if cursorToken != "" {
+		var c models.TripCursor
+		if err := decodeCursor(cursorToken, &c); err != nil {
+			return nil, err
+		}
+		cursor = &c
+	}
+
+	trips, nextCursor, err := s.Trip.FindAllWithCursor(ctx, limit, cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &models.TripCursorPageResult{
+		Items: trips,
+		Limit: limit,
+	}
+	if nextCursor != nil {
+		result.NextCursor = encodeCursor(nextCursor)
+	}
+	return result, nil
+}
+
+func encodeCursor(c *models.TripCursor) string {
+	b, _ := json.Marshal(c)
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+func decodeCursor(token string, c *models.TripCursor) error {
+	b, err := base64.URLEncoding.DecodeString(token)
+	if err != nil {
+		return errs.ErrInvalidCursor
+	}
+	if err := json.Unmarshal(b, c); err != nil {
+		return errs.ErrInvalidCursor
+	}
+	return nil
 }
 
 func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {

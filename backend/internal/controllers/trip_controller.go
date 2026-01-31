@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -79,19 +80,40 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 }
 
 // @Summary      Get all trips
-// @Description  Retrieves all trips
+// @Description  Retrieves all trips. Supports cursor-based pagination via query params limit and cursor.
 // @Tags         trips
 // @Produce      json
-// @Success      200 {array} models.Trip
+// @Param        limit  query int false "Max items per page (default 20, max 100)"
+// @Param        cursor query string false "Opaque cursor from previous response next_cursor for next page"
+// @Success      200 {object} models.TripCursorPageResult "When limit is set, returns cursor-paginated result"
+// @Success      200 {array} models.Trip "When limit is not set, returns all trips"
+// @Failure      400 {object} errs.APIError "Invalid cursor"
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips [get]
 // @ID           getAllTrips
 func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
+	limit := c.QueryInt("limit", 0)
+	cursor := c.Query("cursor", "")
+
+	if limit > 0 {
+		const defaultLimit, maxLimit = 20, 100
+		if limit > maxLimit {
+			limit = maxLimit
+		}
+		result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), limit, cursor)
+		if err != nil {
+			if errors.Is(err, errs.ErrInvalidCursor) {
+				return errs.BadRequest(err)
+			}
+			return err
+		}
+		return c.Status(http.StatusOK).JSON(result)
+	}
+
 	trips, err := ctrl.tripService.GetAllTrips(c.Context())
 	if err != nil {
 		return err
 	}
-
 	return c.Status(http.StatusOK).JSON(trips)
 }
 

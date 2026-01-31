@@ -60,6 +60,34 @@ func (r *tripRepository) FindAll(ctx context.Context) ([]*models.Trip, error) {
 	return trips, nil
 }
 
+// FindAllWithCursor retrieves trips after the given cursor (cursor nil = first page).
+// Uses ORDER BY created_at DESC, id DESC. Fetches limit+1 to detect hasNext; returns
+// next cursor from the last row when there are more results.
+func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error) {
+	query := r.db.NewSelect().
+		Model((*models.Trip)(nil)).
+		Order("created_at DESC", "id DESC").
+		Limit(limit + 1)
+
+	if cursor != nil {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	var trips []*models.Trip
+	if err := query.Scan(ctx, &trips); err != nil {
+		return nil, nil, err
+	}
+
+	var nextCursor *models.TripCursor
+	if len(trips) > limit {
+		last := trips[limit]
+		nextCursor = &models.TripCursor{CreatedAt: last.CreatedAt, ID: last.ID}
+		trips = trips[:limit]
+	}
+
+	return trips, nextCursor, nil
+}
+
 // Update modifies an existing trip
 func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error) {
 	updateQuery := r.db.NewUpdate().
