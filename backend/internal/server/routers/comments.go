@@ -2,6 +2,7 @@ package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/services"
 	"toggo/internal/types"
 
@@ -20,6 +21,7 @@ func CommentRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.R
 	commentIDGroup.Delete("", commentController.DeleteComment)
 
 	tripGroup := apiGroup.Group("/trips/:tripID/:entityType/:entityID/comments")
+	tripGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	tripGroup.Get("", commentController.GetPaginatedComments)
 
 	return commentGroup

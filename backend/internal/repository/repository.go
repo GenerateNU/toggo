@@ -10,18 +10,20 @@ import (
 )
 
 type Repository struct {
-	User    UserRepository
-	Health  HealthRepository
-	Image   ImageRepository
-	Comment CommentRepository
+	User       UserRepository
+	Health     HealthRepository
+	Image      ImageRepository
+	Comment    CommentRepository
+	Membership MembershipRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:    &userRepository{db: db},
-		Health:  &healthRepository{db: db},
-		Image:   &imageRepository{db: db},
-		Comment: &commentRepository{db: db},
+		User:       &userRepository{db: db},
+		Health:     &healthRepository{db: db},
+		Image:      &imageRepository{db: db},
+		Comment:    &commentRepository{db: db},
+		Membership: &membershipRepository{db: db},
 	}
 }
 
@@ -51,7 +53,11 @@ type ImageRepository interface {
 
 type CommentRepository interface {
 	Create(ctx context.Context, comment *models.Comment) (*models.Comment, error)
-	Update(ctx context.Context, id uuid.UUID, content string) (*models.Comment, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
+	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentDatabaseResponse, error)
+}
+
+type MembershipRepository interface {
+	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 }

@@ -57,7 +57,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 	return comments, nil
 }
 
-func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, content string) (*models.Comment, error) {
+func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error) {
 	comment := &models.Comment{
 		Content: content,
 	}
@@ -65,6 +65,8 @@ func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, content st
 		Model(comment).
 		Column("content").
 		Where("id = ?", id).
+		Where("user_id = ?", userID).
+		Where("EXISTS (SELECT 1 FROM memberships WHERE user_id = ? AND trip_id = comments.trip_id)", userID).
 		Returning("*").
 		Exec(ctx)
 
@@ -84,10 +86,12 @@ func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, content st
 	return comment, nil
 }
 
-func (r *commentRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *commentRepository) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	result, err := r.db.NewDelete().
 		Model((*models.Comment)(nil)).
 		Where("id = ?", id).
+		Where("user_id = ?", userID).
+		Where("EXISTS (SELECT 1 FROM memberships WHERE user_id = ? AND trip_id = comments.trip_id)", userID).
 		Exec(ctx)
 
 	if err != nil {

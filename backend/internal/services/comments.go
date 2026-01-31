@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-	"sync"
 	"time"
 	"toggo/internal/config"
+	"toggo/internal/errs"
 	"toggo/internal/interfaces"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -12,36 +12,30 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 type CommentServiceInterface interface {
 	CreateComment(ctx context.Context, req models.CreateCommentRequest) (*models.Comment, error)
-	UpdateComment(ctx context.Context, id uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error)
-	DeleteComment(ctx context.Context, id uuid.UUID) error
+	UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error)
+	DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentAPIResponse, error)
 }
 
 var _ CommentServiceInterface = (*CommentService)(nil)
 
 type CommentService struct {
-	commentRepo   repository.CommentRepository
+	repository    *repository.Repository
 	presignClient interfaces.S3PresignClient
 	bucketName    string
 	urlExpiration time.Duration
-}
-
-type CommentServiceConfig struct {
-	CommentRepo   repository.CommentRepository
-	PresignClient interfaces.S3PresignClient
-	BucketName    string
-	URLExpiration time.Duration
 }
 
 func NewCommentService(repo *repository.Repository, cfg *config.Configuration) CommentServiceInterface {
 	expiration := 15 * time.Minute
 
 	return &CommentService{
-		commentRepo:   repo.Comment,
+		repository:    repo,
 		presignClient: cfg.AWS.PresignClient,
 		bucketName:    cfg.AWS.BucketName,
 		urlExpiration: expiration,
@@ -49,7 +43,16 @@ func NewCommentService(repo *repository.Repository, cfg *config.Configuration) C
 }
 
 func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCommentRequest) (*models.Comment, error) {
-	comment, err := s.commentRepo.Create(ctx, &models.Comment{
+	isMember, err := s.repository.Membership.IsMember(ctx, req.TripID, req.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isMember {
+		return nil, errs.Forbidden()
+	}
+
+	comment, err := s.repository.Comment.Create(ctx, &models.Comment{
 		TripID:     req.TripID,
 		EntityType: req.EntityType,
 		EntityID:   req.EntityID,
@@ -63,52 +66,49 @@ func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCom
 	return comment, nil
 }
 
-func (s *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error) {
-	comment, err := s.commentRepo.Update(ctx, id, req.Content)
-	if err != nil {
-		return nil, err
-	}
-
-	return comment, nil
+func (s *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error) {
+	return s.repository.Comment.Update(ctx, id, userID, req.Content)
 }
 
-func (s *CommentService) DeleteComment(ctx context.Context, id uuid.UUID) error {
-	return s.commentRepo.Delete(ctx, id)
+func (s *CommentService) DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	return s.repository.Comment.Delete(ctx, id, userID)
 }
 
-func (s *CommentService) GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) ([]*models.CommentAPIResponse, error) {
-	comments, err := s.commentRepo.FindPaginatedComments(ctx, tripID, entityType, entityID, limit, cursor)
+func (s *CommentService) GetPaginatedComments(
+	ctx context.Context,
+	tripID uuid.UUID,
+	entityType models.EntityType,
+	entityID uuid.UUID,
+	limit *int,
+	cursor *string,
+) ([]*models.CommentAPIResponse, error) {
+
+	comments, err := s.repository.Comment.FindPaginatedComments(
+		ctx, tripID, entityType, entityID, limit, cursor,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	apiComments := make([]*models.CommentAPIResponse, len(comments))
-	var wg sync.WaitGroup
-	errChan := make(chan error, len(comments))
-	semaphore := make(chan struct{}, 10) // Limit to 10 concurrent goroutines
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(10)
 
 	for i, comment := range comments {
-		wg.Add(1)
-		go func(idx int, c *models.CommentDatabaseResponse) {
-			defer wg.Done()
-
-			semaphore <- struct{}{}        // Acquire
-			defer func() { <-semaphore }() // Release
-
-			apiComment, err := s.toAPIResponse(ctx, c)
+		i, comment := i, comment
+		g.Go(func() error {
+			apiComment, err := s.toAPIResponse(ctx, comment)
 			if err != nil {
-				errChan <- err
-				return
+				return err
 			}
-			apiComments[idx] = apiComment
-		}(i, comment)
+			apiComments[i] = apiComment
+			return nil
+		})
 	}
 
-	wg.Wait()
-	close(errChan)
-
-	if len(errChan) > 0 {
-		return nil, <-errChan
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
 
 	return apiComments, nil

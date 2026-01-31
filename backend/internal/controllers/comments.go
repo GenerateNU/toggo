@@ -82,11 +82,18 @@ func (cmt *CommentController) UpdateComment(c *fiber.Ctx) error {
 		return err
 	}
 
-	comment, err := cmt.commentService.UpdateComment(c.Context(), id, req)
+	userIDStr := c.Locals("userID")
+	if userIDStr == nil {
+		return errs.Unauthorized()
+	}
+
+	userID, err := utilities.ValidateID(userIDStr.(string))
 	if err != nil {
-		if errs.IsNotFound(err) {
-			return errs.NewAPIError(http.StatusNotFound, err)
-		}
+		return errs.Unauthorized()
+	}
+
+	comment, err := cmt.commentService.UpdateComment(c.Context(), id, userID, req)
+	if err != nil {
 		return err
 	}
 
@@ -109,10 +116,17 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	if err := cmt.commentService.DeleteComment(c.Context(), id); err != nil {
-		if errs.IsNotFound(err) {
-			return errs.NewAPIError(http.StatusNotFound, err)
-		}
+	userIDStr := c.Locals("userID")
+	if userIDStr == nil {
+		return errs.Unauthorized()
+	}
+
+	userID, err := utilities.ValidateID(userIDStr.(string))
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	if err := cmt.commentService.DeleteComment(c.Context(), id, userID); err != nil {
 		return err
 	}
 
@@ -163,12 +177,7 @@ func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
 		return err
 	}
 
-	var cursor *string
-	if params.Cursor != "" {
-		cursor = &params.Cursor
-	}
-
-	comments, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.Limit, cursor)
+	comments, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.GetLimit(), params.GetCursor())
 	if err != nil {
 		return err
 	}

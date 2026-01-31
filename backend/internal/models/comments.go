@@ -56,6 +56,5 @@ type CommentAPIResponse struct {
 }
 
 type GetCommentsQueryParams struct {
-	Limit  *int   `query:"limit" validate:"omitempty,gt=0"`
-	Cursor string `query:"cursor" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	CursorPaginationParams
 }
