@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-	"time"
 	"toggo/internal/models"
 	testkit "toggo/internal/tests/testkit/builders"
 	"toggo/internal/tests/testkit/fakes"
@@ -352,9 +351,6 @@ func TestCommentGetPaginated(t *testing.T) {
 					},
 				}).
 				AssertStatus(http.StatusCreated)
-
-			// Small delay to ensure different timestamps
-			time.Sleep(10 * time.Millisecond)
 		}
 	})
 
