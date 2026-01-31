@@ -162,6 +162,15 @@ definitions:
       success_count:
         type: integer
     type: object
+  models.PaginatedCommentsResponse:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/models.CommentAPIResponse'
+        type: array
+      next_cursor:
+        type: string
+    type: object
   models.S3HealthCheckResponse:
     properties:
       bucketName:
@@ -691,9 +700,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.CommentAPIResponse'
-            type: array
+            $ref: '#/definitions/models.PaginatedCommentsResponse'
         "400":
           description: Bad Request
           schema:

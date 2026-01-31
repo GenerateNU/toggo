@@ -230,6 +230,17 @@ export type ModelsNotificationResponse = {
   success_count?: number;
 };
 
+export type ModelsPaginatedCommentsResponse = {
+  /**
+   * @type array | undefined
+   */
+  comments?: ModelsCommentAPIResponse[];
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+};
+
 export type ModelsS3HealthCheckResponse = {
   /**
    * @type string | undefined
@@ -834,7 +845,7 @@ export type GetPaginatedCommentsQueryParams = {
 /**
  * @description OK
  */
-export type GetPaginatedComments200 = ModelsCommentAPIResponse[];
+export type GetPaginatedComments200 = ModelsPaginatedCommentsResponse;
 
 /**
  * @description Bad Request

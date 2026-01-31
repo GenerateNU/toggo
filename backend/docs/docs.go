@@ -593,10 +593,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.CommentAPIResponse"
-                            }
+                            "$ref": "#/definitions/models.PaginatedCommentsResponse"
                         }
                     },
                     "400": {
@@ -1149,6 +1146,20 @@ const docTemplate = `{
                 },
                 "success_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.PaginatedCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentAPIResponse"
+                    }
+                },
+                "next_cursor": {
+                    "type": "string"
                 }
             }
         },

@@ -17,6 +17,7 @@ import type {
   ModelsGetFileAllSizesResponse,
   ModelsNotificationError,
   ModelsNotificationResponse,
+  ModelsPaginatedCommentsResponse,
   ModelsS3HealthCheckResponse,
   ModelsSendBulkNotificationRequest,
   ModelsSendNotificationRequest,
@@ -241,6 +242,13 @@ export const modelsNotificationResponseSchema = z.object({
   failure_count: z.optional(z.int()),
   success_count: z.optional(z.int()),
 }) as unknown as z.ZodType<ModelsNotificationResponse>;
+
+export const modelsPaginatedCommentsResponseSchema = z.object({
+  get comments() {
+    return z.array(modelsCommentAPIResponseSchema).optional();
+  },
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPaginatedCommentsResponse>;
 
 export const modelsS3HealthCheckResponseSchema = z.object({
   bucketName: z.optional(z.string()),
@@ -736,8 +744,8 @@ export const getPaginatedCommentsQueryParamsSchema = z
 /**
  * @description OK
  */
-export const getPaginatedComments200Schema = z.array(
-  z.lazy(() => modelsCommentAPIResponseSchema),
+export const getPaginatedComments200Schema = z.lazy(
+  () => modelsPaginatedCommentsResponseSchema,
 ) as unknown as z.ZodType<GetPaginatedComments200>;
 
 /**
