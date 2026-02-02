@@ -27,7 +27,7 @@ export type GetAllTripsQueryKey = ReturnType<typeof getAllTripsQueryKey>;
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips
+ * @summary Get all trips user is a member of
  * {@link /api/v1/trips}
  */
 export async function getAllTrips(
@@ -65,7 +65,7 @@ export function getAllTripsQueryOptions(
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips
+ * @summary Get all trips user is a member of
  * {@link /api/v1/trips}
  */
 export function useGetAllTrips<

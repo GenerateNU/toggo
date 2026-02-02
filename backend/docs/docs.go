@@ -605,7 +605,7 @@ const docTemplate = `{
                 "tags": [
                     "trips"
                 ],
-                "summary": "Get all trips",
+                "summary": "Get all trips user is a member of",
                 "operationId": "getAllTrips",
                 "parameters": [
                     {

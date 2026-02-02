@@ -31,7 +31,6 @@ func NewTripService(repo *repository.Repository) TripServiceInterface {
 }
 
 func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripRequest, creatorUserID uuid.UUID) (*models.Trip, error) {
-	// Validate business rules
 	if req.Name == "" {
 		return nil, errors.New("trip name cannot be empty")
 	}

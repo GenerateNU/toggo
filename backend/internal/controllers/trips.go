@@ -95,7 +95,7 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(trip)
 }
 
-// @Summary      Get all trips
+// @Summary      Get all trips user is a member of
 // @Description  Retrieves trips with cursor-based pagination. Use limit and cursor query params.
 // @Tags         trips
 // @Produce      json
