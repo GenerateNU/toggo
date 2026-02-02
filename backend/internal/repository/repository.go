@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 	"toggo/internal/models"
 
 	"github.com/google/uuid"
@@ -9,14 +10,19 @@ import (
 )
 
 type Repository struct {
-	User   UserRepository
-	Health HealthRepository
+	User       UserRepository
+	Health     HealthRepository
+	Trip       TripRepository
+	Membership MembershipRepository
+	Image      ImageRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:   &userRepository{db: db},
-		Health: &healthRepository{db: db},
+		User:       &userRepository{db: db},
+		Health:     &healthRepository{db: db},
+		Trip:       &tripRepository{db: db},
+		Membership: &membershipRepository{db: db},
 	}
 }
 
@@ -29,4 +35,37 @@ type UserRepository interface {
 	Find(ctx context.Context, id uuid.UUID) (*models.User, error)
 	Update(ctx context.Context, id uuid.UUID, user *models.UpdateUserRequest) (*models.User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error)
+}
+
+type TripRepository interface {
+	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
+	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
+	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type MembershipRepository interface {
+	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.Membership, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Membership, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
+	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
+	Delete(ctx context.Context, userID, tripID uuid.UUID) error
+}
+
+type ImageRepository interface {
+	CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error)
+	ConfirmUpload(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	ConfirmAllUploads(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	MarkFailed(ctx context.Context, imageID uuid.UUID, size models.ImageSize) error
+	FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	FindByIDAndSize(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	DeleteByID(ctx context.Context, imageID uuid.UUID) error
+	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
 }

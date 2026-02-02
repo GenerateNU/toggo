@@ -6,6 +6,62 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.ConfirmUploadRequest:
+    properties:
+      imageId:
+        type: string
+      size:
+        allOf:
+        - $ref: '#/definitions/models.ImageSize'
+        description: 'Optional: if nil, confirm all sizes'
+    required:
+    - imageId
+    type: object
+  models.ConfirmUploadResponse:
+    properties:
+      confirmed:
+        type: integer
+      imageId:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CreateMembershipRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      is_admin:
+        type: boolean
+      trip_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - budget_max
+    - budget_min
+    - trip_id
+    - user_id
+    type: object
+  models.CreateTripRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      name:
+        minLength: 1
+        type: string
+    required:
+    - budget_max
+    - budget_min
+    - name
+    type: object
   models.CreateUserRequest:
     properties:
       name:
@@ -20,25 +76,257 @@ definitions:
     - phone_number
     - username
     type: object
+  models.GetFileAllSizesResponse:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/models.GetFileResponse'
+        type: array
+      imageId:
+        type: string
+    type: object
+  models.GetFileResponse:
+    properties:
+      contentType:
+        type: string
+      imageId:
+        type: string
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
+        type: string
+    type: object
+  models.GetTripMembersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Membership'
+        type: array
+    type: object
+  models.ImageSize:
+    enum:
+    - large
+    - medium
+    - small
+    type: string
+    x-enum-varnames:
+    - ImageSizeLarge
+    - ImageSizeMedium
+    - ImageSizeSmall
+  models.Membership:
+    properties:
+      availability:
+        additionalProperties: true
+        type: object
+      budget_max:
+        type: integer
+      budget_min:
+        type: integer
+      created_at:
+        type: string
+      is_admin:
+        type: boolean
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.NotificationError:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.NotificationResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/models.NotificationError'
+        type: array
+      failure_count:
+        type: integer
+      success_count:
+        type: integer
+    type: object
+  models.S3HealthCheckResponse:
+    properties:
+      bucketName:
+        type: string
+      error:
+        description: Error contains the underlying error message when status is "unhealthy"
+        type: string
+      region:
+        type: string
+      status:
+        type: string
+    type: object
+  models.SendBulkNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_ids:
+        items:
+          type: string
+        maxItems: 1000
+        minItems: 1
+        type: array
+    required:
+    - body
+    - title
+    - user_ids
+    type: object
+  models.SendNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_id:
+        type: string
+    required:
+    - body
+    - title
+    - user_id
+    type: object
+  models.SizedUploadURL:
+    properties:
+      size:
+        $ref: '#/definitions/models.ImageSize'
+      url:
+        type: string
+    type: object
+  models.Trip:
+    properties:
+      budget_max:
+        type: integer
+      budget_min:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TripCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.Trip'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
+  models.UpdateMembershipRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      is_admin:
+        type: boolean
+    type: object
+  models.UpdateTripRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      name:
+        minLength: 1
+        type: string
+    type: object
   models.UpdateUserRequest:
     properties:
+      device_token:
+        maxLength: 200
+        type: string
       name:
         minLength: 1
         type: string
       phone_number:
+        type: string
+      profile_picture:
         type: string
       timezone:
         type: string
       username:
         type: string
     type: object
+  models.UploadURLRequest:
+    properties:
+      contentType:
+        minLength: 1
+        type: string
+      fileKey:
+        minLength: 1
+        type: string
+      sizes:
+        items:
+          $ref: '#/definitions/models.ImageSize'
+        maxItems: 3
+        minItems: 1
+        type: array
+    required:
+    - contentType
+    - fileKey
+    - sizes
+    type: object
+  models.UploadURLResponse:
+    properties:
+      expiresAt:
+        type: string
+      fileKey:
+        type: string
+      imageId:
+        type: string
+      uploadUrls:
+        items:
+          $ref: '#/definitions/models.SizedUploadURL'
+        type: array
+    type: object
   models.User:
     properties:
+      device_token:
+        type: string
+      device_token_updated_at:
+        type: string
       id:
         type: string
       name:
         type: string
       phone_number:
+        type: string
+      profile_picture:
         type: string
       timezone:
         type: string
@@ -52,6 +340,659 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/files/{imageId}:
+    get:
+      description: Retrieves presigned URLs for all sizes of an image
+      operationId: getFileAllSizes
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetFileAllSizesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get all sizes of a file
+      tags:
+      - files
+  /api/v1/files/{imageId}/{size}:
+    get:
+      description: Retrieves a presigned URL for downloading a specific file size
+      operationId: getFile
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      - description: Image size (large, medium, small)
+        in: path
+        name: size
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetFileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get file by ID and size
+      tags:
+      - files
+  /api/v1/files/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the file exists in S3 and marks the upload as confirmed
+        in DB
+      operationId: confirmUpload
+      parameters:
+      - description: Confirm upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ConfirmUploadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ConfirmUploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Confirm upload
+      tags:
+      - files
+  /api/v1/files/health:
+    get:
+      description: Verifies connectivity to the configured S3 bucket
+      operationId: checkS3Health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.S3HealthCheckResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Check S3 connection
+      tags:
+      - files
+  /api/v1/files/upload:
+    post:
+      consumes:
+      - application/json
+      description: Generates presigned PUT URLs for uploading files and creates pending
+        records in DB
+      operationId: createUploadURLs
+      parameters:
+      - description: Upload URL request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UploadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UploadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create upload URLs
+      tags:
+      - files
+  /api/v1/memberships:
+    post:
+      consumes:
+      - application/json
+      description: Adds a user as a member of a trip
+      operationId: addMember
+      parameters:
+      - description: Create membership request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateMembershipRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add member to trip
+      tags:
+      - memberships
+  /api/v1/notifications/send:
+    post:
+      consumes:
+      - application/json
+      description: Sends a push notification to a single user
+      operationId: sendNotification
+      parameters:
+      - description: Notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send notification to user
+      tags:
+      - notifications
+  /api/v1/notifications/send-bulk:
+    post:
+      consumes:
+      - application/json
+      description: Sends push notifications to multiple users
+      operationId: sendBulkNotification
+      parameters:
+      - description: Bulk notification request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SendBulkNotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Send bulk notifications
+      tags:
+      - notifications
+  /api/v1/trips:
+    get:
+      description: Retrieves trips with cursor-based pagination. Use limit and cursor
+        query params.
+      operationId: getAllTrips
+      parameters:
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from previous response next_cursor for next page
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TripCursorPageResult'
+        "400":
+          description: Invalid cursor
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get all trips
+      tags:
+      - trips
+    post:
+      consumes:
+      - application/json
+      description: Creates a new trip with the provided payload
+      operationId: createTrip
+      parameters:
+      - description: Create trip request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTripRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Trip'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a new trip
+      tags:
+      - trips
+  /api/v1/trips/{tripID}:
+    delete:
+      description: Deletes a trip by ID
+      operationId: deleteTrip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a trip
+      tags:
+      - trips
+    get:
+      description: Retrieves a trip by ID
+      operationId: getTrip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Trip'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get a trip
+      tags:
+      - trips
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing trip by ID
+      operationId: updateTrip
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Update trip request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTripRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Trip'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a trip
+      tags:
+      - trips
+  /api/v1/trips/{tripID}/members:
+    get:
+      description: Retrieves all members of a trip
+      operationId: getTripMembers
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetTripMembersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get trip members
+      tags:
+      - memberships
+  /api/v1/trips/{tripID}/members/{userID}:
+    delete:
+      description: Removes a user from a trip
+      operationId: removeMember
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Remove member from trip
+      tags:
+      - memberships
+    get:
+      description: Retrieves the membership for a user in a trip
+      operationId: getMembership
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get membership
+      tags:
+      - memberships
+    patch:
+      consumes:
+      - application/json
+      description: Updates a membership
+      operationId: updateMembership
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Update membership request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateMembershipRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update membership
+      tags:
+      - memberships
+  /api/v1/trips/{tripID}/members/{userID}/demote:
+    post:
+      description: Demotes an admin to regular member role
+      operationId: demoteFromAdmin
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Demote admin to member
+      tags:
+      - memberships
+  /api/v1/trips/{tripID}/members/{userID}/promote:
+    post:
+      description: Promotes a member to admin role
+      operationId: promoteToAdmin
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Promote member to admin
+      tags:
+      - memberships
   /api/v1/users:
     post:
       consumes:
@@ -189,6 +1130,36 @@ paths:
       summary: Update a user
       tags:
       - users
+  /api/v1/users/{userID}/trips:
+    get:
+      description: Retrieves all trips a user is a member of
+      operationId: getUserTrips
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Membership'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get user's trips
+      tags:
+      - memberships
   /api/v1/users/me:
     get:
       description: Retrieves the authenticated user (from JWT claims)

@@ -2,6 +2,7 @@ import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { router } from "expo-router";
 
 export default function Home() {
   const { logout, isPending, currentUser } = useUser();
@@ -20,6 +21,12 @@ export default function Home() {
           @{currentUser.username}
         </Text>
       )}
+
+      <Button onPress={() => router.push("/test-upload")} variant="primary">
+        <Text variant="caption" color="cloudWhite">
+          Test Image Upload
+        </Text>
+      </Button>
 
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">

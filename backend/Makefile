@@ -3,6 +3,7 @@ MAIN_FILE := cmd/main.go
 VERSION ?= dev
 APP_ENVIRONMENT ?= dev
 MIGRATIONS_DIR := internal/migrations
+TEST_FORMAT ?= testname
 
 build:
 	go build -ldflags "-X main.Version=$(VERSION)" -o $(BINARY_NAME) $(MAIN_FILE)
@@ -13,6 +14,21 @@ clean:
 dev:
 	@echo "Starting Docker containers..."
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+	DOPPLER_CONFIG=dev \
+		docker-compose up --build
+
+	@until docker exec backend-db pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
+	@echo "Database ready"
+
+	$(MAKE) migrate-up
+
+	@echo "Following logs... (Ctrl+C to stop)"
+	docker-compose logs -f
+
+dev-personal:
+	@echo "Starting Docker containers..."
+	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev_personal --name dev-personal-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
+	DOPPLER_CONFIG=dev_personal \
 		docker-compose up --build
 
 	@until docker exec backend-db pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
@@ -66,7 +82,7 @@ migrate-up:
 	@echo "Applying migrations to $(APP_ENVIRONMENT) database..."
 	@doppler run --project backend --config $(APP_ENVIRONMENT) -- sh -c '\
 		HOST=$$( [ "$(APP_ENVIRONMENT)" = "dev" ] && echo localhost || echo $$DB_HOST ); \
-		goose -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up \
+		goose -allow-missing -dir $(MIGRATIONS_DIR) postgres "postgres://$$DB_USER:$$DB_PASSWORD@$$HOST:$$DB_PORT/$$DB_DATABASE?sslmode=disable" up \
 	'
 
 migrate-up-win:
@@ -75,7 +91,7 @@ migrate-up-win:
 		$$dbHost = if ('$(APP_ENVIRONMENT)' -eq 'dev') { 'localhost' } else { $$env:DB_HOST }; \
 		$$connectionString = \"postgres://$${env:DB_USER}:$${env:DB_PASSWORD}@$${dbHost}:$${env:DB_PORT}/$${env:DB_DATABASE}?sslmode=disable\"; \
 		Write-Host 'Applying migrations to $(APP_ENVIRONMENT) database...'; \
-		goose -dir $(MIGRATIONS_DIR) postgres $$connectionString up"
+		goose -allow-missing -dir $(MIGRATIONS_DIR) postgres $$connectionString up"
 
 migrate-down:
 	@echo "Rolling back last migration on $(APP_ENVIRONMENT) database..."
@@ -113,21 +129,28 @@ format:
 tidy:
 	go mod tidy
 
+mocks:
+	mockery --config .mockery.yml
+
 test:
+	$(MAKE) mocks
 	docker compose -f docker-compose.test.yml up -d
 	@until docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do sleep 1; done
 	@echo "Database ready"
-	@doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4; \
+	@command -v gotestfmt >/dev/null 2>&1 || go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+	@command -v gotestsum >/dev/null 2>&1 || go install gotest.tools/gotestsum@latest
+	@bash -c 'set -o pipefail; doppler run --project backend --config test -- go test -json ./internal/tests -parallel 4 -coverprofile=/tmp/coverage.out -covermode=atomic 2>&1 | tee /tmp/test-results.json | gotestfmt; gotestsum --raw-command -- cat /tmp/test-results.json; test -f /tmp/coverage.out && go tool cover -func=/tmp/coverage.out | tail -n 1'; \
 	EXIT_CODE=$$?; \
 	docker compose -f docker-compose.test.yml down; \
 	exit $$EXIT_CODE
 
 test-win:
+	$(MAKE) mocks
 	docker compose -f docker-compose.test.yml up -d
 	@echo Waiting for database...
 	@powershell -Command "while (!(docker exec backend-test-db-1 pg_isready -U dev_user -d dev_db 2>$$null)) { Start-Sleep -Seconds 1 }"
 	@echo Database ready
-	@powershell -Command "try { doppler run --project backend --config test -- go test -v ./internal/tests -parallel 4 } finally { docker compose -f docker-compose.test.yml down }"
+	@powershell -Command "$$ErrorActionPreference='Stop'; if (-not (Get-Command gotestfmt -ErrorAction SilentlyContinue)) { go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest }; if (-not (Get-Command gotestsum -ErrorAction SilentlyContinue)) { go install gotest.tools/gotestsum@latest }; try { doppler run --project backend --config test -- go test -json ./internal/tests -parallel 4 -coverprofile=$$env:TEMP\\coverage.out -covermode=atomic 2>&1 | Tee-Object -FilePath $$env:TEMP\\test-results.json | gotestfmt; doppler run --project backend --config test -- gotestsum --format $(TEST_FORMAT) --raw-command -- Get-Content -Path $$env:TEMP\\test-results.json; if (Test-Path $$env:TEMP\\coverage.out) { go tool cover -func=$$env:TEMP\\coverage.out | Select-Object -Last 1 }; $$exitCode=$$LASTEXITCODE } finally { docker compose -f docker-compose.test.yml down }; exit $$exitCode"
 
 localstack-up:
 	./scripts/start-localstack.sh # if on windows, just use git bash to run this script
@@ -138,4 +161,4 @@ localstack-down:
 	@echo "Removing LocalStack container..."
 	docker rm localstack-main 2>/dev/null || true
 
-.PHONY: format tidy build clean lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win
+.PHONY: format tidy mocks build clean lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win

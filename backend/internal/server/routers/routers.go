@@ -11,8 +11,18 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	app.Get("/healthcheck", controllers.HealthcheckHandler(routeParams.ServiceParams.Repository.Health))
 
 	apiGroup := app.Group("/api")
+
+	// uncomment this until login/jwt is set up properly
+	apiV0Group := apiGroup.Group("/v0")
+	FileRoutes(apiV0Group, routeParams)
+	// ^^^ is to skip auth for now, comment out later
+
 	apiV1Group := apiGroup.Group("/v1", middlewares...)
 	UserRoutes(apiV1Group, routeParams)
+	TripRoutes(apiV1Group, routeParams)
+	MembershipRoutes(apiV1Group, routeParams)
+	NotificationRoutes(apiV1Group, routeParams)
+	FileRoutes(apiV1Group, routeParams)
 
 	// 404 handler for routes not matched
 	setUpNotFoundHandler(app)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -70,6 +71,12 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("timezone = ?", *req.Timezone)
 	}
 
+	if req.DeviceToken != nil {
+		trimmedToken := strings.TrimSpace(*req.DeviceToken)
+		updateQuery = updateQuery.Set("device_token = ?", trimmedToken)
+		updateQuery = updateQuery.Set("device_token_updated_at = NOW()")
+	}
+
 	result, err := updateQuery.Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user: %w", err)
@@ -104,4 +111,21 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		Exec(ctx)
 
 	return err
+}
+
+func (r *userRepository) GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error) {
+	var users []*models.User
+
+	err := r.db.NewSelect().
+		Model(&users).
+		Where("id IN (?)", bun.In(userIDs)).
+		Where("device_token IS NOT NULL").
+		Where("device_token != ''").
+		Scan(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get users with device tokens: %w", err)
+	}
+
+	return users, nil
 }

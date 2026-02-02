@@ -73,6 +73,12 @@ func buildMessage(e validator.FieldError) string {
 		return fmt.Sprintf("%s must be greater than or equal to %s", e.Field(), e.Param())
 	case "lte":
 		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
+	case "image_size":
+		sizes := make([]string, len(allowedImageSizes))
+		for i, s := range allowedImageSizes {
+			sizes[i] = string(s)
+		}
+		return fmt.Sprintf("%s must be one of: %s", e.Field(), strings.Join(sizes, ", "))
 	default:
 		return fmt.Sprintf("%s failed %s validation", e.Field(), e.Tag())
 	}
@@ -82,6 +88,7 @@ func NewValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
 	registerUserValidator(v)
+	registerImageValidator(v)
 
 	return v
 }
