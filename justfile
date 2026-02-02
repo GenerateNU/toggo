@@ -149,14 +149,7 @@ fmt-lint:
 kubb:
     cd frontend {{ sep }} bun kubb
 
-clean-doc:
-    {{ backend_clean_docs }}
-    {{ frontend_clean_schemas }}
-    {{ frontend_clean_api }}
-    {{ frontend_clean_types }}
-
-regen-doc:
-    just clean-doc
+gen-doc:
     just api-doc
     just kubb
 # === Localstack ===
