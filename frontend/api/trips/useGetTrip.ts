@@ -6,18 +6,18 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  QueryKey,
-  QueryClient,
-  QueryObserverOptions,
-  UseQueryResult,
-} from "@tanstack/react-query";
-import type {
   GetTripQueryResponse,
   GetTripPathParams,
   GetTrip400,
   GetTrip404,
   GetTrip500,
 } from "../../types/types.gen.ts";
+import type {
+  QueryKey,
+  QueryClient,
+  QueryObserverOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const getTripQueryKey = (tripID: GetTripPathParams["tripID"]) =>

@@ -277,6 +277,8 @@ definitions:
         type: string
       profile_picture:
         type: string
+      timezone:
+        type: string
       username:
         type: string
     type: object
@@ -325,6 +327,8 @@ definitions:
       phone_number:
         type: string
       profile_picture:
+        type: string
+      timezone:
         type: string
       username:
         type: string

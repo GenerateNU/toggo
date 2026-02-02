@@ -6,15 +6,15 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
+  CheckS3HealthQueryResponse,
+  CheckS3Health503,
+} from "../../types/types.gen.ts";
+import type {
   QueryKey,
   QueryClient,
   QueryObserverOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
-import type {
-  CheckS3HealthQueryResponse,
-  CheckS3Health503,
-} from "../../types/types.gen.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const checkS3HealthQueryKey = () =>

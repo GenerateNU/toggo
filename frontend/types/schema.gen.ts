@@ -346,6 +346,7 @@ export const modelsUpdateUserRequestSchema = z.object({
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
   profile_picture: z.optional(z.string()),
+  timezone: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateUserRequest>;
 
@@ -373,6 +374,7 @@ export const modelsUserSchema = z.object({
   name: z.optional(z.string()),
   phone_number: z.optional(z.string()),
   profile_picture: z.optional(z.string()),
+  timezone: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
 

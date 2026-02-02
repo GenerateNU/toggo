@@ -6,17 +6,17 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
-import type {
   GetUserTripsQueryResponse,
   GetUserTripsPathParams,
   GetUserTrips400,
   GetUserTrips500,
 } from "../../types/types.gen.ts";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getUserTripsSuspenseQueryKey = (

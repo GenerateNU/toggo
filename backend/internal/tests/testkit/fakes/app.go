@@ -11,7 +11,7 @@ import (
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
 	"toggo/internal/types"
-	"toggo/internal/utilities"
+	utilities "toggo/internal/validators"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"

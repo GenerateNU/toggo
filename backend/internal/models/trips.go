@@ -34,9 +34,9 @@ type GetTripMembersResponse struct {
 // TripPageResult holds an offset-paginated list of trips and metadata.
 type TripPageResult struct {
 	Items  []*Trip `json:"items"`
-	Total  int    `json:"total"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	Total  int     `json:"total"`
+	Limit  int     `json:"limit"`
+	Offset int     `json:"offset"`
 }
 
 // TripCursor is the sort key for cursor-based pagination (created_at DESC, id DESC).
@@ -47,7 +47,7 @@ type TripCursor struct {
 
 // TripCursorPageResult holds a cursor-paginated list of trips and the next cursor.
 type TripCursorPageResult struct {
-	Items       []*Trip `json:"items"`
-	NextCursor  string  `json:"next_cursor,omitempty"`
-	Limit       int     `json:"limit"`
+	Items      []*Trip `json:"items"`
+	NextCursor string  `json:"next_cursor,omitempty"`
+	Limit      int     `json:"limit"`
 }

@@ -6,11 +6,6 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   ConfirmUploadMutationRequest,
   ConfirmUploadMutationResponse,
   ConfirmUpload400,
@@ -18,6 +13,11 @@ import type {
   ConfirmUpload422,
   ConfirmUpload500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const confirmUploadMutationKey = () =>

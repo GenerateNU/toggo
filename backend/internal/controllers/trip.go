@@ -6,7 +6,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -42,7 +42,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(ctrl.validator, req); err != nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID} [get]
 // @ID           getTrip
 func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("tripID"))
+	id, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -131,12 +131,12 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	id, err := utilities.ValidateID(c.Params("tripID"))
+	id, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	if err := utilities.Validate(ctrl.validator, req); err != nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
 		return err
 	}
 
@@ -159,7 +159,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID} [delete]
 // @ID           deleteTrip
 func (ctrl *TripController) DeleteTrip(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("tripID"))
+	id, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}

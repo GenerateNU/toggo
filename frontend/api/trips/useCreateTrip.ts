@@ -6,17 +6,17 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   CreateTripMutationRequest,
   CreateTripMutationResponse,
   CreateTrip400,
   CreateTrip422,
   CreateTrip500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const createTripMutationKey = () => [{ url: "/api/v1/trips" }] as const;

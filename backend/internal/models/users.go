@@ -14,6 +14,7 @@ type User struct {
 	ProfilePicture       *uuid.UUID `bun:"profile_picture,unique,type:uuid" json:"profile_picture,omitempty"`
 	DeviceToken          *string    `bun:"device_token" json:"device_token"`
 	DeviceTokenUpdatedAt *time.Time `bun:"device_token_updated_at" json:"device_token_updated_at"`
+	Timezone             string     `bun:"timezone" json:"timezone"`
 }
 
 type CreateUserRequest struct {
@@ -28,4 +29,5 @@ type UpdateUserRequest struct {
 	PhoneNumber    *string    `validate:"omitempty,phone" json:"phone_number"`
 	ProfilePicture *uuid.UUID `validate:"omitempty,uuid" json:"profile_picture,omitempty"`
 	DeviceToken    *string    `validate:"omitempty,max=200" json:"device_token"`
+	Timezone       *string    `validate:"omitempty,timezone" json:"timezone"`
 }

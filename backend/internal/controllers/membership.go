@@ -5,7 +5,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -41,7 +41,7 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(ctrl.validator, req); err != nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members [get]
 // @ID           getTripMembers
 func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -93,7 +93,7 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 // @Router       /api/v1/users/{userID}/trips [get]
 // @ID           getUserTrips
 func (ctrl *MembershipController) GetUserTrips(c *fiber.Ctx) error {
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -119,12 +119,12 @@ func (ctrl *MembershipController) GetUserTrips(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members/{userID} [get]
 // @ID           getMembership
 func (ctrl *MembershipController) GetLatestMembership(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -153,12 +153,12 @@ func (ctrl *MembershipController) GetLatestMembership(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members/{userID} [patch]
 // @ID           updateMembership
 func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -168,7 +168,7 @@ func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(ctrl.validator, req); err != nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
 		return err
 	}
 
@@ -192,12 +192,12 @@ func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members/{userID} [delete]
 // @ID           removeMember
 func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -221,12 +221,12 @@ func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members/{userID}/promote [post]
 // @ID           promoteToAdmin
 func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -252,12 +252,12 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/members/{userID}/demote [post]
 // @ID           demoteFromAdmin
 func (ctrl *MembershipController) DemoteFromAdmin(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := utilities.ValidateID(c.Params("userID"))
+	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}

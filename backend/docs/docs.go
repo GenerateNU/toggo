@@ -1714,6 +1714,9 @@ const docTemplate = `{
                 "profile_picture": {
                     "type": "string"
                 },
+                "timezone": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -1784,6 +1787,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                },
+                "timezone": {
                     "type": "string"
                 },
                 "username": {

@@ -6,11 +6,6 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   UpdateTripMutationRequest,
   UpdateTripMutationResponse,
   UpdateTripPathParams,
@@ -19,6 +14,11 @@ import type {
   UpdateTrip422,
   UpdateTrip500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const updateTripMutationKey = () =>

@@ -5,7 +5,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -68,7 +68,7 @@ func (f *FileController) CreateUploadURLs(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(f.validator, req); err != nil {
+	if err := validators.Validate(f.validator, req); err != nil {
 		return err
 	}
 
@@ -99,7 +99,7 @@ func (f *FileController) ConfirmUpload(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(f.validator, req); err != nil {
+	if err := validators.Validate(f.validator, req); err != nil {
 		return err
 	}
 
