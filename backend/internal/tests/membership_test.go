@@ -87,7 +87,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
 				UserID: &authUserID,
 			}).
@@ -98,27 +98,35 @@ func TestMembershipLifecycle(t *testing.T) {
 	})
 
 	t.Run("get trip members", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members", tripID),
-				Method: testkit.GET,
-				UserID: &authUserID,
-			}).
-			AssertStatus(http.StatusOK).
-			AssertArraySize(1)
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  fmt.Sprintf("/api/v1/trips/%s/memberships", tripID),
+			Method: testkit.GET,
+			UserID: &authUserID,
+		}).
+		AssertStatus(http.StatusOK).
+		GetBody()
+
+		// Check that data field exists and has 1 item
+		data, ok := resp["data"].([]interface{})
+		if !ok || len(data) != 1 {
+			t.Errorf("expected data array with 1 member, got: %+v", resp)
+		}
 	})
 
 	t.Run("update membership budget", func(t *testing.T) {
+		budgetMin := 200
+		budgetMax := 600
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.PATCH,
 				UserID: &authUserID,
 				Body: models.UpdateMembershipRequest{
-					BudgetMin: 200,
-					BudgetMax: 600,
+					BudgetMin: &budgetMin,
+					BudgetMax: &budgetMax,
 				},
 			}).
 			AssertStatus(http.StatusOK).
@@ -130,7 +138,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s/promote", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/promote", tripID, userID),
 				Method: testkit.POST,
 				UserID: &authUserID,
 			}).
@@ -141,7 +149,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
 				UserID: &authUserID,
 			}).
@@ -153,7 +161,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s/demote", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/demote", tripID, userID),
 				Method: testkit.POST,
 				UserID: &authUserID,
 			}).
@@ -164,7 +172,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.DELETE,
 				UserID: &authUserID,
 			}).
@@ -175,7 +183,7 @@ func TestMembershipLifecycle(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/members/%s", tripID, userID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
 				UserID: &authUserID,
 			}).

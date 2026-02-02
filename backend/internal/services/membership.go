@@ -94,16 +94,34 @@ func (s *MembershipService) GetUserTrips(ctx context.Context, userID uuid.UUID) 
 }
 
 func (s *MembershipService) UpdateMembership(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateMembershipRequest) (*models.Membership, error) {
-	// Validate business rules
-	if req.BudgetMin < 0 {
+	// Load current membership to validate against
+	membership, err := s.Membership.Find(ctx, userID, tripID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine final budget values (use existing if not provided)
+	budgetMin := membership.BudgetMin
+	budgetMax := membership.BudgetMax
+
+	if req.BudgetMin != nil {
+		budgetMin = *req.BudgetMin
+	}
+
+	if req.BudgetMax != nil {
+		budgetMax = *req.BudgetMax
+	}
+
+	// Validate business rules with final values
+	if budgetMin < 0 {
 		return nil, errors.New("budget minimum cannot be negative")
 	}
 
-	if req.BudgetMax < req.BudgetMin {
+	if budgetMax < budgetMin {
 		return nil, errors.New("budget maximum must be greater than or equal to minimum")
 	}
 
-	// Update directly - repository will return ErrNotFound if membership doesn't exist
+	// Update with validated request
 	return s.Membership.Update(ctx, userID, tripID, &req)
 }
 
@@ -132,11 +150,10 @@ func (s *MembershipService) PromoteToAdmin(ctx context.Context, tripID, userID u
 		return errors.New("user is already an admin")
 	}
 
-	// Update to admin
+	// Update to admin using pointer
+	isAdmin := true
 	updateReq := models.UpdateMembershipRequest{
-		IsAdmin:   true,
-		BudgetMin: membership.BudgetMin,
-		BudgetMax: membership.BudgetMax,
+		IsAdmin: &isAdmin,
 	}
 
 	_, err = s.Membership.Update(ctx, userID, tripID, &updateReq)
@@ -154,11 +171,10 @@ func (s *MembershipService) DemoteFromAdmin(ctx context.Context, tripID, userID 
 		return errors.New("user is not an admin")
 	}
 
-	// Update to non-admin
+	// Update to non-admin using pointer
+	isAdmin := false
 	updateReq := models.UpdateMembershipRequest{
-		IsAdmin:   false,
-		BudgetMin: membership.BudgetMin,
-		BudgetMax: membership.BudgetMax,
+		IsAdmin: &isAdmin,
 	}
 
 	_, err = s.Membership.Update(ctx, userID, tripID, &updateReq)

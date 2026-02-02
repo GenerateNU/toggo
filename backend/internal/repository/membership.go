@@ -114,15 +114,24 @@ func (r *membershipRepository) CountMembers(ctx context.Context, tripID uuid.UUI
 }
 
 // Update modifies a membership
+// Update modifies a membership
 func (r *membershipRepository) Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error) {
 	updateQuery := r.db.NewUpdate().
 		Model(&models.Membership{}).
 		Where("user_id = ? AND trip_id = ?", userID, tripID)
 
-	// All fields are non-pointers, so always update
-	updateQuery = updateQuery.Set("is_admin = ?", req.IsAdmin)
-	updateQuery = updateQuery.Set("budget_min = ?", req.BudgetMin)
-	updateQuery = updateQuery.Set("budget_max = ?", req.BudgetMax)
+	// Only update fields that are provided (not nil)
+	if req.IsAdmin != nil {
+		updateQuery = updateQuery.Set("is_admin = ?", *req.IsAdmin)
+	}
+
+	if req.BudgetMin != nil {
+		updateQuery = updateQuery.Set("budget_min = ?", *req.BudgetMin)
+	}
+
+	if req.BudgetMax != nil {
+		updateQuery = updateQuery.Set("budget_max = ?", *req.BudgetMax)
+	}
 
 	result, err := updateQuery.Exec(ctx)
 	if err != nil {
