@@ -15,6 +15,189 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/comments": {
+            "post": {
+                "description": "Creates a new comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Create a comment",
+                "operationId": "createComment",
+                "parameters": [
+                    {
+                        "description": "Create comment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Comment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/comments/{commentID}": {
+            "delete": {
+                "description": "Deletes a comment by ID",
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Delete a comment",
+                "operationId": "deleteComment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates an existing comment by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Update a comment",
+                "operationId": "updateComment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update comment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Comment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/confirm": {
             "post": {
                 "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
@@ -663,7 +846,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/trips/{tripID}/members": {
+        "/api/v1/trips/{tripID}/memberships": {
             "get": {
                 "description": "Retrieves all members of a trip",
                 "produces": [
@@ -681,13 +864,25 @@ const docTemplate = `{
                         "name": "tripID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max items per page (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque cursor returned in next_cursor",
+                        "name": "cursor",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetTripMembersResponse"
+                            "$ref": "#/definitions/models.MembershipCursorPageResult"
                         }
                     },
                     "400": {
@@ -705,7 +900,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/trips/{tripID}/members/{userID}": {
+        "/api/v1/trips/{tripID}/memberships/{userID}": {
             "get": {
                 "description": "Retrieves the membership for a user in a trip",
                 "produces": [
@@ -878,7 +1073,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/trips/{tripID}/members/{userID}/demote": {
+        "/api/v1/trips/{tripID}/memberships/{userID}/demote": {
             "post": {
                 "description": "Demotes an admin to regular member role",
                 "tags": [
@@ -933,7 +1128,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/trips/{tripID}/members/{userID}/promote": {
+        "/api/v1/trips/{tripID}/memberships/{userID}/promote": {
             "post": {
                 "description": "Promotes a member to admin role",
                 "tags": [
@@ -975,6 +1170,92 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/{entityType}/{entityID}/comments": {
+            "get": {
+                "description": "Retrieves paginated comments for a trip entity",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "Get comments",
+                "operationId": "getPaginatedComments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity type (activity, pitch)",
+                        "name": "entityType",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Entity ID",
+                        "name": "entityID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max items per page (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque cursor returned in next_cursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PaginatedCommentsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1317,6 +1598,71 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Comment": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "entity_type": {
+                    "$ref": "#/definitions/models.EntityType"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CommentAPIResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "entity_type": {
+                    "$ref": "#/definitions/models.EntityType"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "profile_picture_url": {
+                    "description": "pointer since some users don't have their avatar set",
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
@@ -1346,6 +1692,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateCommentRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "entity_id",
+                "entity_type",
+                "trip_id"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "entity_type": {
+                    "enum": [
+                        "activity",
+                        "pitch"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.EntityType"
+                        }
+                    ]
+                },
+                "trip_id": {
                     "type": "string"
                 }
             }
@@ -1420,6 +1798,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.EntityType": {
+            "type": "string",
+            "enum": [
+                "activity",
+                "pitch"
+            ],
+            "x-enum-varnames": [
+                "Activity",
+                "Pitch"
+            ]
+        },
         "models.GetFileAllSizesResponse": {
             "type": "object",
             "properties": {
@@ -1448,17 +1837,6 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string"
-                }
-            }
-        },
-        "models.GetTripMembersResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Membership"
-                    }
                 }
             }
         },
@@ -1505,6 +1883,59 @@ const docTemplate = `{
                 }
             }
         },
+        "models.MembershipAPIResponse": {
+            "type": "object",
+            "properties": {
+                "availability": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "budget_max": {
+                    "type": "integer"
+                },
+                "budget_min": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MembershipCursorPageResult": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MembershipAPIResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
         "models.NotificationError": {
             "type": "object",
             "properties": {
@@ -1533,6 +1964,23 @@ const docTemplate = `{
                 },
                 "success_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.PaginatedCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentAPIResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
                 }
             }
         },
@@ -1661,6 +2109,18 @@ const docTemplate = `{
                 },
                 "next_cursor": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateCommentRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },

@@ -91,15 +91,12 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 // @Router       /api/v1/trips [get]
 // @ID           getAllTrips
 func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
-	const defaultLimit, maxLimit = 20, 100
-	limit := c.QueryInt("limit", defaultLimit)
-	if limit < 1 {
-		limit = defaultLimit
+	var params models.CursorPaginationParams
+	if err := parseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
+		return err
 	}
-	if limit > maxLimit {
-		limit = maxLimit
-	}
-	cursor := c.Query("cursor", "")
+
+	limit, cursor := extractLimitAndCursor(&params)
 
 	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), limit, cursor)
 	if err != nil {

@@ -22,7 +22,7 @@ import type {
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const updateMembershipMutationKey = () =>
-  [{ url: "/api/v1/trips/:tripID/members/:userID" }] as const;
+  [{ url: "/api/v1/trips/:tripID/memberships/:userID" }] as const;
 
 export type UpdateMembershipMutationKey = ReturnType<
   typeof updateMembershipMutationKey
@@ -31,7 +31,7 @@ export type UpdateMembershipMutationKey = ReturnType<
 /**
  * @description Updates a membership
  * @summary Update membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export async function updateMembership(
   tripID: UpdateMembershipPathParams["tripID"],
@@ -56,7 +56,7 @@ export async function updateMembership(
     UpdateMembershipMutationRequest
   >({
     method: "PATCH",
-    url: `/api/v1/trips/${tripID}/members/${userID}`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}`,
     data: requestData,
     ...requestConfig,
   });
@@ -94,7 +94,7 @@ export function updateMembershipMutationOptions(
 /**
  * @description Updates a membership
  * @summary Update membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export function useUpdateMembership<TContext>(
   options: {

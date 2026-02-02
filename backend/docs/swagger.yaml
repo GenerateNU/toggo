@@ -6,6 +6,49 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.Comment:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/models.EntityType'
+      id:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.CommentAPIResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/models.EntityType'
+      id:
+        type: string
+      profile_picture_url:
+        description: pointer since some users don't have their avatar set
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -25,6 +68,27 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  models.CreateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        allOf:
+        - $ref: '#/definitions/models.EntityType'
+        enum:
+        - activity
+        - pitch
+      trip_id:
+        type: string
+    required:
+    - content
+    - entity_id
+    - entity_type
+    - trip_id
     type: object
   models.CreateMembershipRequest:
     properties:
@@ -76,6 +140,14 @@ definitions:
     - phone_number
     - username
     type: object
+  models.EntityType:
+    enum:
+    - activity
+    - pitch
+    type: string
+    x-enum-varnames:
+    - Activity
+    - Pitch
   models.GetFileAllSizesResponse:
     properties:
       files:
@@ -95,13 +167,6 @@ definitions:
         $ref: '#/definitions/models.ImageSize'
       url:
         type: string
-    type: object
-  models.GetTripMembersResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/models.Membership'
-        type: array
     type: object
   models.ImageSize:
     enum:
@@ -133,6 +198,41 @@ definitions:
       user_id:
         type: string
     type: object
+  models.MembershipAPIResponse:
+    properties:
+      availability:
+        additionalProperties: true
+        type: object
+      budget_max:
+        type: integer
+      budget_min:
+        type: integer
+      created_at:
+        type: string
+      is_admin:
+        type: boolean
+      profile_picture_url:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.MembershipCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.MembershipAPIResponse'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
   models.NotificationError:
     properties:
       message:
@@ -152,6 +252,17 @@ definitions:
         type: integer
       success_count:
         type: integer
+    type: object
+  models.PaginatedCommentsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.CommentAPIResponse'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
     type: object
   models.S3HealthCheckResponse:
     properties:
@@ -241,6 +352,14 @@ definitions:
         type: integer
       next_cursor:
         type: string
+    type: object
+  models.UpdateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+    required:
+    - content
     type: object
   models.UpdateMembershipRequest:
     properties:
@@ -340,6 +459,128 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/comments:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new comment
+      operationId: createComment
+      parameters:
+      - description: Create comment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a comment
+      tags:
+      - comments
+  /api/v1/comments/{commentID}:
+    delete:
+      description: Deletes a comment by ID
+      operationId: deleteComment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a comment
+      tags:
+      - comments
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing comment by ID
+      operationId: updateComment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Update comment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a comment
+      tags:
+      - comments
   /api/v1/files/{imageId}:
     get:
       description: Retrieves presigned URLs for all sizes of an image
@@ -774,7 +1015,65 @@ paths:
       summary: Update a trip
       tags:
       - trips
-  /api/v1/trips/{tripID}/members:
+  /api/v1/trips/{tripID}/{entityType}/{entityID}/comments:
+    get:
+      description: Retrieves paginated comments for a trip entity
+      operationId: getPaginatedComments
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Entity type (activity, pitch)
+        in: path
+        name: entityType
+        required: true
+        type: string
+      - description: Entity ID
+        in: path
+        name: entityID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedCommentsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get comments
+      tags:
+      - comments
+  /api/v1/trips/{tripID}/memberships:
     get:
       description: Retrieves all members of a trip
       operationId: getTripMembers
@@ -784,13 +1083,21 @@ paths:
         name: tripID
         required: true
         type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetTripMembersResponse'
+            $ref: '#/definitions/models.MembershipCursorPageResult'
         "400":
           description: Bad Request
           schema:
@@ -802,7 +1109,7 @@ paths:
       summary: Get trip members
       tags:
       - memberships
-  /api/v1/trips/{tripID}/members/{userID}:
+  /api/v1/trips/{tripID}/memberships/{userID}:
     delete:
       description: Removes a user from a trip
       operationId: removeMember
@@ -919,7 +1226,7 @@ paths:
       summary: Update membership
       tags:
       - memberships
-  /api/v1/trips/{tripID}/members/{userID}/demote:
+  /api/v1/trips/{tripID}/memberships/{userID}/demote:
     post:
       description: Demotes an admin to regular member role
       operationId: demoteFromAdmin
@@ -956,7 +1263,7 @@ paths:
       summary: Demote admin to member
       tags:
       - memberships
-  /api/v1/trips/{tripID}/members/{userID}/promote:
+  /api/v1/trips/{tripID}/memberships/{userID}/promote:
     post:
       description: Promotes a member to admin role
       operationId: promoteToAdmin

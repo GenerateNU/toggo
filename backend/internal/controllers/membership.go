@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -58,10 +59,12 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 // @Tags         memberships
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {object} models.GetTripMembersResponse
+// @Param        limit  query int false "Max items per page (default 20, max 100)"
+// @Param        cursor query string false "Opaque cursor returned in next_cursor"
+// @Success      200 {object} models.MembershipCursorPageResult
 // @Failure      400 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members [get]
+// @Router       /api/v1/trips/{tripID}/memberships [get]
 // @ID           getTripMembers
 func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -69,17 +72,22 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	members, err := ctrl.membershipService.GetTripMembers(c.Context(), tripID)
-	if err != nil {
+	var params models.CursorPaginationParams
+	if err := parseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	// Return structured response
-	response := models.GetTripMembersResponse{
-		Data: members,
+	limit, cursorToken := extractLimitAndCursor(&params)
+
+	result, err := ctrl.membershipService.GetTripMembers(c.Context(), tripID, limit, cursorToken)
+	if err != nil {
+		if errors.Is(err, errs.ErrInvalidCursor) {
+			return errs.BadRequest(err)
+		}
+		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(response)
+	return c.Status(http.StatusOK).JSON(result)
 }
 
 // @Summary      Get user's trips
@@ -116,7 +124,7 @@ func (ctrl *MembershipController) GetUserTrips(c *fiber.Ctx) error {
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members/{userID} [get]
+// @Router       /api/v1/trips/{tripID}/memberships/{userID} [get]
 // @ID           getMembership
 func (ctrl *MembershipController) GetLatestMembership(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -150,7 +158,7 @@ func (ctrl *MembershipController) GetLatestMembership(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members/{userID} [patch]
+// @Router       /api/v1/trips/{tripID}/memberships/{userID} [patch]
 // @ID           updateMembership
 func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -189,7 +197,7 @@ func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members/{userID} [delete]
+// @Router       /api/v1/trips/{tripID}/memberships/{userID} [delete]
 // @ID           removeMember
 func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -218,7 +226,7 @@ func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members/{userID}/promote [post]
+// @Router       /api/v1/trips/{tripID}/memberships/{userID}/promote [post]
 // @ID           promoteToAdmin
 func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -249,7 +257,7 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/members/{userID}/demote [post]
+// @Router       /api/v1/trips/{tripID}/memberships/{userID}/demote [post]
 // @ID           demoteFromAdmin
 func (ctrl *MembershipController) DemoteFromAdmin(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))

@@ -203,3 +203,11 @@ func (tb *IntegrationTestBuilder) DebugLogging() *IntegrationTestBuilder {
 func (tb *IntegrationTestBuilder) GetBody() map[string]any {
 	return tb.body
 }
+
+func (tb *IntegrationTestBuilder) GetBodyAsArray() []interface{} {
+	var arr []interface{}
+	if err := json.Unmarshal(tb.raw, &arr); err != nil {
+		tb.t.Logf("Warning: failed to parse response as JSON array: %v. Response: %s", err, string(tb.raw))
+	}
+	return arr
+}

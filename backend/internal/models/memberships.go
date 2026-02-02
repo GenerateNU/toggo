@@ -30,3 +30,38 @@ type UpdateMembershipRequest struct {
 	BudgetMin *int  `validate:"omitempty,gte=0" json:"budget_min"`
 	BudgetMax *int  `validate:"omitempty,gte=0,gtefield=BudgetMin" json:"budget_max"`
 }
+
+// MembershipCursor reuses the standard time+UUID cursor payload, using user_id as the UUID key.
+type MembershipCursor = TimeUUIDCursor
+
+type MembershipCursorPageResult struct {
+	Items      []*MembershipAPIResponse `json:"items"`
+	NextCursor *string                  `json:"next_cursor,omitempty"`
+	Limit      int                      `json:"limit"`
+}
+
+type MembershipDatabaseResponse struct {
+	UserID            uuid.UUID               `json:"user_id"`
+	TripID            uuid.UUID               `json:"trip_id"`
+	IsAdmin           bool                    `json:"is_admin"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	BudgetMin         int                     `json:"budget_min"`
+	BudgetMax         int                     `json:"budget_max"`
+	Availability      *map[string]interface{} `json:"availability,omitempty"`
+	Username          string                  `json:"username"`
+	ProfilePictureKey *string                 `json:"profile_picture_key"`
+}
+
+type MembershipAPIResponse struct {
+	UserID            uuid.UUID               `json:"user_id"`
+	TripID            uuid.UUID               `json:"trip_id"`
+	IsAdmin           bool                    `json:"is_admin"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	BudgetMin         int                     `json:"budget_min"`
+	BudgetMax         int                     `json:"budget_max"`
+	Availability      *map[string]interface{} `json:"availability,omitempty"`
+	Username          string                  `json:"username"`
+	ProfilePictureURL *string                 `json:"profile_picture_url"`
+}

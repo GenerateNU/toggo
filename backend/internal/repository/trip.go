@@ -68,8 +68,8 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, curso
 
 	var nextCursor *models.TripCursor
 	if len(trips) > limit {
-		last := trips[limit]
-		nextCursor = &models.TripCursor{CreatedAt: last.CreatedAt, ID: last.ID}
+		lastVisible := trips[limit-1]
+		nextCursor = &models.TripCursor{CreatedAt: lastVisible.CreatedAt, ID: lastVisible.ID}
 		trips = trips[:limit]
 	}
 

@@ -26,7 +26,7 @@ export const getMembershipQueryKey = (
 ) =>
   [
     {
-      url: "/api/v1/trips/:tripID/members/:userID",
+      url: "/api/v1/trips/:tripID/memberships/:userID",
       params: { tripID: tripID, userID: userID },
     },
   ] as const;
@@ -36,7 +36,7 @@ export type GetMembershipQueryKey = ReturnType<typeof getMembershipQueryKey>;
 /**
  * @description Retrieves the membership for a user in a trip
  * @summary Get membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export async function getMembership(
   tripID: GetMembershipPathParams["tripID"],
@@ -51,7 +51,7 @@ export async function getMembership(
     unknown
   >({
     method: "GET",
-    url: `/api/v1/trips/${tripID}/members/${userID}`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}`,
     ...requestConfig,
   });
   return res.data;
@@ -81,7 +81,7 @@ export function getMembershipQueryOptions(
 /**
  * @description Retrieves the membership for a user in a trip
  * @summary Get membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export function useGetMembership<
   TData = GetMembershipQueryResponse,

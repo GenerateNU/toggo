@@ -5,30 +5,61 @@
 
 import type {
   ErrsAPIError,
+  ModelsEntityType,
+  ModelsComment,
+  ModelsCommentAPIResponse,
   ModelsImageSize,
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
+  ModelsCreateCommentRequest,
   ModelsCreateMembershipRequest,
   ModelsCreateTripRequest,
   ModelsCreateUserRequest,
   ModelsGetFileResponse,
   ModelsGetFileAllSizesResponse,
   ModelsMembership,
-  ModelsGetTripMembersResponse,
+  ModelsMembershipAPIResponse,
+  ModelsMembershipCursorPageResult,
   ModelsNotificationError,
   ModelsNotificationResponse,
+  ModelsPaginatedCommentsResponse,
   ModelsS3HealthCheckResponse,
   ModelsSendBulkNotificationRequest,
   ModelsSendNotificationRequest,
   ModelsSizedUploadURL,
   ModelsTrip,
   ModelsTripCursorPageResult,
+  ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
   ModelsUpdateTripRequest,
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
   ModelsUploadURLResponse,
   ModelsUser,
+  CreateComment201,
+  CreateComment400,
+  CreateComment401,
+  CreateComment403,
+  CreateComment422,
+  CreateComment500,
+  CreateCommentMutationRequest,
+  CreateCommentMutationResponse,
+  DeleteCommentPathParams,
+  DeleteComment204,
+  DeleteComment400,
+  DeleteComment401,
+  DeleteComment404,
+  DeleteComment500,
+  DeleteCommentMutationResponse,
+  UpdateCommentPathParams,
+  UpdateComment200,
+  UpdateComment400,
+  UpdateComment401,
+  UpdateComment404,
+  UpdateComment422,
+  UpdateComment500,
+  UpdateCommentMutationRequest,
+  UpdateCommentMutationResponse,
   ConfirmUpload200,
   ConfirmUpload400,
   ConfirmUpload404,
@@ -107,6 +138,7 @@ import type {
   UpdateTripMutationRequest,
   UpdateTripMutationResponse,
   GetTripMembersPathParams,
+  GetTripMembersQueryParams,
   GetTripMembers200,
   GetTripMembers400,
   GetTripMembers500,
@@ -143,6 +175,15 @@ import type {
   PromoteToAdmin404,
   PromoteToAdmin500,
   PromoteToAdminMutationResponse,
+  GetPaginatedCommentsPathParams,
+  GetPaginatedCommentsQueryParams,
+  GetPaginatedComments200,
+  GetPaginatedComments400,
+  GetPaginatedComments401,
+  GetPaginatedComments403,
+  GetPaginatedComments422,
+  GetPaginatedComments500,
+  GetPaginatedCommentsQueryResponse,
   CreateUser201,
   CreateUser400,
   CreateUser422,
@@ -190,6 +231,41 @@ export const errsAPIErrorSchema = z.object({
   statusCode: z.optional(z.int()),
 }) as unknown as z.ZodType<ErrsAPIError>;
 
+export const modelsEntityTypeSchema = z.enum([
+  "activity",
+  "pitch",
+]) as unknown as z.ZodType<ModelsEntityType>;
+
+export const modelsCommentSchema = z.object({
+  content: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  entity_id: z.optional(z.string()),
+  get entity_type() {
+    return modelsEntityTypeSchema.optional();
+  },
+  id: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsComment>;
+
+export const modelsCommentAPIResponseSchema = z.object({
+  content: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  entity_id: z.optional(z.string()),
+  get entity_type() {
+    return modelsEntityTypeSchema.optional();
+  },
+  id: z.optional(z.string()),
+  profile_picture_url: z.optional(
+    z.string().describe("pointer since some users don't have their avatar set"),
+  ),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommentAPIResponse>;
+
 export const modelsImageSizeSchema = z.enum([
   "large",
   "medium",
@@ -210,6 +286,15 @@ export const modelsConfirmUploadResponseSchema = z.object({
   imageId: z.optional(z.string()),
   status: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsConfirmUploadResponse>;
+
+export const modelsCreateCommentRequestSchema = z.object({
+  content: z.string().min(1),
+  entity_id: z.string(),
+  get entity_type() {
+    return modelsEntityTypeSchema;
+  },
+  trip_id: z.string(),
+}) as unknown as z.ZodType<ModelsCreateCommentRequest>;
 
 export const modelsCreateMembershipRequestSchema = z.object({
   budget_max: z.int().min(0),
@@ -258,11 +343,26 @@ export const modelsMembershipSchema = z.object({
   user_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsMembership>;
 
-export const modelsGetTripMembersResponseSchema = z.object({
-  get data() {
-    return z.array(modelsMembershipSchema).optional();
+export const modelsMembershipAPIResponseSchema = z.object({
+  availability: z.optional(z.object({}).catchall(z.any())),
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
+  created_at: z.optional(z.string()),
+  is_admin: z.optional(z.boolean()),
+  profile_picture_url: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsMembershipAPIResponse>;
+
+export const modelsMembershipCursorPageResultSchema = z.object({
+  get items() {
+    return z.array(modelsMembershipAPIResponseSchema).optional();
   },
-}) as unknown as z.ZodType<ModelsGetTripMembersResponse>;
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsMembershipCursorPageResult>;
 
 export const modelsNotificationErrorSchema = z.object({
   message: z.optional(z.string()),
@@ -277,6 +377,14 @@ export const modelsNotificationResponseSchema = z.object({
   failure_count: z.optional(z.int()),
   success_count: z.optional(z.int()),
 }) as unknown as z.ZodType<ModelsNotificationResponse>;
+
+export const modelsPaginatedCommentsResponseSchema = z.object({
+  get items() {
+    return z.array(modelsCommentAPIResponseSchema).optional();
+  },
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPaginatedCommentsResponse>;
 
 export const modelsS3HealthCheckResponseSchema = z.object({
   bucketName: z.optional(z.string()),
@@ -329,6 +437,10 @@ export const modelsTripCursorPageResultSchema = z.object({
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripCursorPageResult>;
 
+export const modelsUpdateCommentRequestSchema = z.object({
+  content: z.string().min(1),
+}) as unknown as z.ZodType<ModelsUpdateCommentRequest>;
+
 export const modelsUpdateMembershipRequestSchema = z.object({
   budget_max: z.optional(z.int().min(0)),
   budget_min: z.optional(z.int().min(0)),
@@ -377,6 +489,158 @@ export const modelsUserSchema = z.object({
   timezone: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
+
+/**
+ * @description Created
+ */
+export const createComment201Schema = z.lazy(
+  () => modelsCommentSchema,
+) as unknown as z.ZodType<CreateComment201>;
+
+/**
+ * @description Bad Request
+ */
+export const createComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment400>;
+
+/**
+ * @description Unauthorized
+ */
+export const createComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment401>;
+
+/**
+ * @description Forbidden
+ */
+export const createComment403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment403>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const createComment422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const createComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateComment500>;
+
+/**
+ * @description Create comment request
+ */
+export const createCommentMutationRequestSchema = z.lazy(
+  () => modelsCreateCommentRequestSchema,
+) as unknown as z.ZodType<CreateCommentMutationRequest>;
+
+export const createCommentMutationResponseSchema = z.lazy(
+  () => createComment201Schema,
+) as unknown as z.ZodType<CreateCommentMutationResponse>;
+
+export const deleteCommentPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<DeleteCommentPathParams>;
+
+/**
+ * @description No Content
+ */
+export const deleteComment204Schema =
+  z.any() as unknown as z.ZodType<DeleteComment204>;
+
+/**
+ * @description Bad Request
+ */
+export const deleteComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment400>;
+
+/**
+ * @description Unauthorized
+ */
+export const deleteComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment401>;
+
+/**
+ * @description Not Found
+ */
+export const deleteComment404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deleteComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteComment500>;
+
+export const deleteCommentMutationResponseSchema = z.lazy(
+  () => deleteComment204Schema,
+) as unknown as z.ZodType<DeleteCommentMutationResponse>;
+
+export const updateCommentPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<UpdateCommentPathParams>;
+
+/**
+ * @description OK
+ */
+export const updateComment200Schema = z.lazy(
+  () => modelsCommentSchema,
+) as unknown as z.ZodType<UpdateComment200>;
+
+/**
+ * @description Bad Request
+ */
+export const updateComment400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment400>;
+
+/**
+ * @description Unauthorized
+ */
+export const updateComment401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment401>;
+
+/**
+ * @description Not Found
+ */
+export const updateComment404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const updateComment422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const updateComment500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateComment500>;
+
+/**
+ * @description Update comment request
+ */
+export const updateCommentMutationRequestSchema = z.lazy(
+  () => modelsUpdateCommentRequestSchema,
+) as unknown as z.ZodType<UpdateCommentMutationRequest>;
+
+export const updateCommentMutationResponseSchema = z.lazy(
+  () => updateComment200Schema,
+) as unknown as z.ZodType<UpdateCommentMutationResponse>;
 
 /**
  * @description OK
@@ -877,11 +1141,25 @@ export const getTripMembersPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
 }) as unknown as z.ZodType<GetTripMembersPathParams>;
 
+export const getTripMembersQueryParamsSchema = z
+  .object({
+    limit: z.optional(
+      z.coerce
+        .number()
+        .int()
+        .describe("Max items per page (default 20, max 100)"),
+    ),
+    cursor: z.optional(
+      z.string().describe("Opaque cursor returned in next_cursor"),
+    ),
+  })
+  .optional() as unknown as z.ZodType<GetTripMembersQueryParams>;
+
 /**
  * @description OK
  */
 export const getTripMembers200Schema = z.lazy(
-  () => modelsGetTripMembersResponseSchema,
+  () => modelsMembershipCursorPageResultSchema,
 ) as unknown as z.ZodType<GetTripMembers200>;
 
 /**
@@ -1099,6 +1377,72 @@ export const promoteToAdmin500Schema = z.lazy(
 export const promoteToAdminMutationResponseSchema = z.lazy(
   () => promoteToAdmin200Schema,
 ) as unknown as z.ZodType<PromoteToAdminMutationResponse>;
+
+export const getPaginatedCommentsPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  entityType: z.string().describe("Entity type (activity, pitch)"),
+  entityID: z.string().describe("Entity ID"),
+}) as unknown as z.ZodType<GetPaginatedCommentsPathParams>;
+
+export const getPaginatedCommentsQueryParamsSchema = z
+  .object({
+    limit: z.optional(
+      z.coerce
+        .number()
+        .int()
+        .describe("Max items per page (default 20, max 100)"),
+    ),
+    cursor: z.optional(
+      z.string().describe("Opaque cursor returned in next_cursor"),
+    ),
+  })
+  .optional() as unknown as z.ZodType<GetPaginatedCommentsQueryParams>;
+
+/**
+ * @description OK
+ */
+export const getPaginatedComments200Schema = z.lazy(
+  () => modelsPaginatedCommentsResponseSchema,
+) as unknown as z.ZodType<GetPaginatedComments200>;
+
+/**
+ * @description Bad Request
+ */
+export const getPaginatedComments400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getPaginatedComments401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments401>;
+
+/**
+ * @description Forbidden
+ */
+export const getPaginatedComments403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments403>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const getPaginatedComments422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getPaginatedComments500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPaginatedComments500>;
+
+export const getPaginatedCommentsQueryResponseSchema = z.lazy(
+  () => getPaginatedComments200Schema,
+) as unknown as z.ZodType<GetPaginatedCommentsQueryResponse>;
 
 /**
  * @description Created

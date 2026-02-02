@@ -9,7 +9,7 @@ import (
 )
 
 func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository)
+	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.Config)
 	membershipController := controllers.NewMembershipController(membershipService, routeParams.Validator)
 
 	// /api/v1/memberships

@@ -11,6 +11,95 @@ export type ErrsAPIError = {
   statusCode?: number;
 };
 
+export const modelsEntityType = {
+  Activity: "activity",
+  Pitch: "pitch",
+} as const;
+
+export type ModelsEntityTypeEnumKey =
+  (typeof modelsEntityType)[keyof typeof modelsEntityType];
+
+export type ModelsEntityType = ModelsEntityTypeEnumKey;
+
+export type ModelsComment = {
+  /**
+   * @type string | undefined
+   */
+  content?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: ModelsEntityType;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+};
+
+export type ModelsCommentAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  content?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: ModelsEntityType;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @description pointer since some users don\'t have their avatar set
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
 export const modelsImageSize = {
   ImageSizeLarge: "large",
   ImageSizeMedium: "medium",
@@ -46,6 +135,23 @@ export type ModelsConfirmUploadResponse = {
    * @type string | undefined
    */
   status?: string;
+};
+
+export type ModelsCreateCommentRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  content: string;
+  /**
+   * @type string
+   */
+  entity_id: string;
+  entity_type: ModelsEntityType;
+  /**
+   * @type string
+   */
+  trip_id: string;
 };
 
 export type ModelsCreateMembershipRequest = {
@@ -174,11 +280,64 @@ export type ModelsMembership = {
   user_id?: string;
 };
 
-export type ModelsGetTripMembersResponse = {
+export type ModelsMembershipAPIResponse = {
+  /**
+   * @type object | undefined
+   */
+  availability?: {
+    [key: string]: any;
+  };
+  /**
+   * @type integer | undefined
+   */
+  budget_max?: number;
+  /**
+   * @type integer | undefined
+   */
+  budget_min?: number;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_admin?: boolean;
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsMembershipCursorPageResult = {
   /**
    * @type array | undefined
    */
-  data?: ModelsMembership[];
+  items?: ModelsMembershipAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
 };
 
 export type ModelsNotificationError = {
@@ -209,6 +368,21 @@ export type ModelsNotificationResponse = {
    * @type integer | undefined
    */
   success_count?: number;
+};
+
+export type ModelsPaginatedCommentsResponse = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsCommentAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
 };
 
 export type ModelsS3HealthCheckResponse = {
@@ -332,6 +506,14 @@ export type ModelsTripCursorPageResult = {
    * @type string | undefined
    */
   next_cursor?: string;
+};
+
+export type ModelsUpdateCommentRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  content: string;
 };
 
 export type ModelsUpdateMembershipRequest = {
@@ -467,6 +649,156 @@ export type ModelsUser = {
    * @type string | undefined
    */
   username?: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateComment201 = ModelsComment;
+
+/**
+ * @description Bad Request
+ */
+export type CreateComment400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateComment401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreateComment403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateComment422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateComment500 = ErrsAPIError;
+
+/**
+ * @description Create comment request
+ */
+export type CreateCommentMutationRequest = ModelsCreateCommentRequest;
+
+export type CreateCommentMutationResponse = CreateComment201;
+
+export type CreateCommentMutation = {
+  Response: CreateComment201;
+  Request: CreateCommentMutationRequest;
+  Errors:
+    | CreateComment400
+    | CreateComment401
+    | CreateComment403
+    | CreateComment422
+    | CreateComment500;
+};
+
+export type DeleteCommentPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteComment204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteComment400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteComment401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteComment404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteComment500 = ErrsAPIError;
+
+export type DeleteCommentMutationResponse = DeleteComment204;
+
+export type DeleteCommentMutation = {
+  Response: DeleteComment204;
+  PathParams: DeleteCommentPathParams;
+  Errors:
+    | DeleteComment400
+    | DeleteComment401
+    | DeleteComment404
+    | DeleteComment500;
+};
+
+export type UpdateCommentPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateComment200 = ModelsComment;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateComment400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateComment401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateComment404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateComment422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateComment500 = ErrsAPIError;
+
+/**
+ * @description Update comment request
+ */
+export type UpdateCommentMutationRequest = ModelsUpdateCommentRequest;
+
+export type UpdateCommentMutationResponse = UpdateComment200;
+
+export type UpdateCommentMutation = {
+  Response: UpdateComment200;
+  Request: UpdateCommentMutationRequest;
+  PathParams: UpdateCommentPathParams;
+  Errors:
+    | UpdateComment400
+    | UpdateComment401
+    | UpdateComment404
+    | UpdateComment422
+    | UpdateComment500;
 };
 
 /**
@@ -937,10 +1269,23 @@ export type GetTripMembersPathParams = {
   tripID: string;
 };
 
+export type GetTripMembersQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
 /**
  * @description OK
  */
-export type GetTripMembers200 = ModelsGetTripMembersResponse;
+export type GetTripMembers200 = ModelsMembershipCursorPageResult;
 
 /**
  * @description Bad Request
@@ -957,6 +1302,7 @@ export type GetTripMembersQueryResponse = GetTripMembers200;
 export type GetTripMembersQuery = {
   Response: GetTripMembers200;
   PathParams: GetTripMembersPathParams;
+  QueryParams: GetTripMembersQueryParams;
   Errors: GetTripMembers400 | GetTripMembers500;
 };
 
@@ -1182,6 +1528,81 @@ export type PromoteToAdminMutation = {
   Response: PromoteToAdmin200;
   PathParams: PromoteToAdminPathParams;
   Errors: PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500;
+};
+
+export type GetPaginatedCommentsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Entity type (activity, pitch)
+   * @type string
+   */
+  entityType: string;
+  /**
+   * @description Entity ID
+   * @type string
+   */
+  entityID: string;
+};
+
+export type GetPaginatedCommentsQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetPaginatedComments200 = ModelsPaginatedCommentsResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetPaginatedComments400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetPaginatedComments401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetPaginatedComments403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type GetPaginatedComments422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPaginatedComments500 = ErrsAPIError;
+
+export type GetPaginatedCommentsQueryResponse = GetPaginatedComments200;
+
+export type GetPaginatedCommentsQuery = {
+  Response: GetPaginatedComments200;
+  PathParams: GetPaginatedCommentsPathParams;
+  QueryParams: GetPaginatedCommentsQueryParams;
+  Errors:
+    | GetPaginatedComments400
+    | GetPaginatedComments401
+    | GetPaginatedComments403
+    | GetPaginatedComments422
+    | GetPaginatedComments500;
 };
 
 /**

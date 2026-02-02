@@ -12,15 +12,18 @@ import (
 type Repository struct {
 	User       UserRepository
 	Health     HealthRepository
-	Trip       TripRepository
-	Membership MembershipRepository
 	Image      ImageRepository
+	Comment    CommentRepository
+	Membership MembershipRepository
+	Trip       TripRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
 		User:       &userRepository{db: db},
 		Health:     &healthRepository{db: db},
+		Image:      &imageRepository{db: db},
+		Comment:    &commentRepository{db: db},
 		Trip:       &tripRepository{db: db},
 		Membership: &membershipRepository{db: db},
 	}
@@ -48,8 +51,9 @@ type TripRepository interface {
 
 type MembershipRepository interface {
 	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
-	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.Membership, error)
-	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Membership, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error)
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
 	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
@@ -68,4 +72,11 @@ type ImageRepository interface {
 	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	DeleteByID(ctx context.Context, imageID uuid.UUID) error
 	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
+}
+
+type CommentRepository interface {
+	Create(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
+	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
 }

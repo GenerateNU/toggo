@@ -20,7 +20,7 @@ import type {
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const removeMemberMutationKey = () =>
-  [{ url: "/api/v1/trips/:tripID/members/:userID" }] as const;
+  [{ url: "/api/v1/trips/:tripID/memberships/:userID" }] as const;
 
 export type RemoveMemberMutationKey = ReturnType<
   typeof removeMemberMutationKey
@@ -29,7 +29,7 @@ export type RemoveMemberMutationKey = ReturnType<
 /**
  * @description Removes a user from a trip
  * @summary Remove member from trip
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export async function removeMember(
   tripID: RemoveMemberPathParams["tripID"],
@@ -44,7 +44,7 @@ export async function removeMember(
     unknown
   >({
     method: "DELETE",
-    url: `/api/v1/trips/${tripID}/members/${userID}`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}`,
     ...requestConfig,
   });
   return res.data;
@@ -73,7 +73,7 @@ export function removeMemberMutationOptions(
 /**
  * @description Removes a user from a trip
  * @summary Remove member from trip
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export function useRemoveMember<TContext>(
   options: {

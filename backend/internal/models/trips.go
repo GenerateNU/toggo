@@ -27,10 +27,6 @@ type UpdateTripRequest struct {
 	BudgetMax *int    `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
 }
 
-type GetTripMembersResponse struct {
-	Data []*Membership `json:"data"`
-}
-
 // TripPageResult holds an offset-paginated list of trips and metadata.
 type TripPageResult struct {
 	Items  []*Trip `json:"items"`
@@ -40,14 +36,11 @@ type TripPageResult struct {
 }
 
 // TripCursor is the sort key for cursor-based pagination (created_at DESC, id DESC).
-type TripCursor struct {
-	CreatedAt time.Time `json:"created_at"`
-	ID        uuid.UUID `json:"id"`
-}
+type TripCursor = TimeUUIDCursor
 
 // TripCursorPageResult holds a cursor-paginated list of trips and the next cursor.
 type TripCursorPageResult struct {
 	Items      []*Trip `json:"items"`
-	NextCursor string  `json:"next_cursor,omitempty"`
+	NextCursor *string `json:"next_cursor,omitempty"`
 	Limit      int     `json:"limit"`
 }
