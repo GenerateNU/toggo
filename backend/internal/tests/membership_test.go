@@ -98,15 +98,15 @@ func TestMembershipLifecycle(t *testing.T) {
 	})
 
 	t.Run("get trip members", func(t *testing.T) {
-	resp := testkit.New(t).
-		Request(testkit.Request{
-			App:    app,
-			Route:  fmt.Sprintf("/api/v1/trips/%s/memberships", tripID),
-			Method: testkit.GET,
-			UserID: &authUserID,
-		}).
-		AssertStatus(http.StatusOK).
-		GetBody()
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships", tripID),
+				Method: testkit.GET,
+				UserID: &authUserID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
 
 		// Check that data field exists and has 1 item
 		data, ok := resp["data"].([]interface{})
