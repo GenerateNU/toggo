@@ -51,9 +51,9 @@ type TripRepository interface {
 
 type MembershipRepository interface {
 	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
-	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.Membership, error)
-	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Membership, error)
-	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.Membership, *models.MembershipCursor, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error)
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
 	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)

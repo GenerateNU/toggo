@@ -20,7 +20,7 @@ import type {
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const promoteToAdminMutationKey = () =>
-  [{ url: "/api/v1/trips/:tripID/members/:userID/promote" }] as const;
+  [{ url: "/api/v1/trips/:tripID/memberships/:userID/promote" }] as const;
 
 export type PromoteToAdminMutationKey = ReturnType<
   typeof promoteToAdminMutationKey
@@ -29,7 +29,7 @@ export type PromoteToAdminMutationKey = ReturnType<
 /**
  * @description Promotes a member to admin role
  * @summary Promote member to admin
- * {@link /api/v1/trips/:tripID/members/:userID/promote}
+ * {@link /api/v1/trips/:tripID/memberships/:userID/promote}
  */
 export async function promoteToAdmin(
   tripID: PromoteToAdminPathParams["tripID"],
@@ -46,7 +46,7 @@ export async function promoteToAdmin(
     unknown
   >({
     method: "POST",
-    url: `/api/v1/trips/${tripID}/members/${userID}/promote`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}/promote`,
     ...requestConfig,
   });
   return res.data;
@@ -77,7 +77,7 @@ export function promoteToAdminMutationOptions(
 /**
  * @description Promotes a member to admin role
  * @summary Promote member to admin
- * {@link /api/v1/trips/:tripID/members/:userID/promote}
+ * {@link /api/v1/trips/:tripID/memberships/:userID/promote}
  */
 export function usePromoteToAdmin<TContext>(
   options: {

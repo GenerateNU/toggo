@@ -20,7 +20,7 @@ import type {
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const demoteFromAdminMutationKey = () =>
-  [{ url: "/api/v1/trips/:tripID/members/:userID/demote" }] as const;
+  [{ url: "/api/v1/trips/:tripID/memberships/:userID/demote" }] as const;
 
 export type DemoteFromAdminMutationKey = ReturnType<
   typeof demoteFromAdminMutationKey
@@ -29,7 +29,7 @@ export type DemoteFromAdminMutationKey = ReturnType<
 /**
  * @description Demotes an admin to regular member role
  * @summary Demote admin to member
- * {@link /api/v1/trips/:tripID/members/:userID/demote}
+ * {@link /api/v1/trips/:tripID/memberships/:userID/demote}
  */
 export async function demoteFromAdmin(
   tripID: DemoteFromAdminPathParams["tripID"],
@@ -46,7 +46,7 @@ export async function demoteFromAdmin(
     unknown
   >({
     method: "POST",
-    url: `/api/v1/trips/${tripID}/members/${userID}/demote`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}/demote`,
     ...requestConfig,
   });
   return res.data;
@@ -77,7 +77,7 @@ export function demoteFromAdminMutationOptions(
 /**
  * @description Demotes an admin to regular member role
  * @summary Demote admin to member
- * {@link /api/v1/trips/:tripID/members/:userID/demote}
+ * {@link /api/v1/trips/:tripID/memberships/:userID/demote}
  */
 export function useDemoteFromAdmin<TContext>(
   options: {

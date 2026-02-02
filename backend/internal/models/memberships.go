@@ -35,7 +35,33 @@ type UpdateMembershipRequest struct {
 type MembershipCursor = TimeUUIDCursor
 
 type MembershipCursorPageResult struct {
-	Items      []*Membership `json:"items"`
-	NextCursor *string       `json:"next_cursor,omitempty"`
-	Limit      int           `json:"limit"`
+	Items      []*MembershipAPIResponse `json:"items"`
+	NextCursor *string                  `json:"next_cursor,omitempty"`
+	Limit      int                      `json:"limit"`
+}
+
+type MembershipDatabaseResponse struct {
+	UserID            uuid.UUID               `json:"user_id"`
+	TripID            uuid.UUID               `json:"trip_id"`
+	IsAdmin           bool                    `json:"is_admin"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	BudgetMin         int                     `json:"budget_min"`
+	BudgetMax         int                     `json:"budget_max"`
+	Availability      *map[string]interface{} `json:"availability,omitempty"`
+	Username          string                  `json:"username"`
+	ProfilePictureKey *string                 `json:"profile_picture_key"`
+}
+
+type MembershipAPIResponse struct {
+	UserID            uuid.UUID               `json:"user_id"`
+	TripID            uuid.UUID               `json:"trip_id"`
+	IsAdmin           bool                    `json:"is_admin"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	BudgetMin         int                     `json:"budget_min"`
+	BudgetMax         int                     `json:"budget_max"`
+	Availability      *map[string]interface{} `json:"availability,omitempty"`
+	Username          string                  `json:"username"`
+	ProfilePictureURL *string                 `json:"profile_picture_url"`
 }

@@ -8,6 +8,7 @@ import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetTripMembersQueryResponse,
   GetTripMembersPathParams,
+  GetTripMembersQueryParams,
   GetTripMembers400,
   GetTripMembers500,
 } from "../../types/types.gen.ts";
@@ -21,9 +22,11 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getTripMembersSuspenseQueryKey = (
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
 ) =>
   [
-    { url: "/api/v1/trips/:tripID/members", params: { tripID: tripID } },
+    { url: "/api/v1/trips/:tripID/memberships", params: { tripID: tripID } },
+    ...(params ? [params] : []),
   ] as const;
 
 export type GetTripMembersSuspenseQueryKey = ReturnType<
@@ -33,10 +36,11 @@ export type GetTripMembersSuspenseQueryKey = ReturnType<
 /**
  * @description Retrieves all members of a trip
  * @summary Get trip members
- * {@link /api/v1/trips/:tripID/members}
+ * {@link /api/v1/trips/:tripID/memberships}
  */
 export async function getTripMembersSuspense(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -47,7 +51,8 @@ export async function getTripMembersSuspense(
     unknown
   >({
     method: "GET",
-    url: `/api/v1/trips/${tripID}/members`,
+    url: `/api/v1/trips/${tripID}/memberships`,
+    params,
     ...requestConfig,
   });
   return res.data;
@@ -55,9 +60,10 @@ export async function getTripMembersSuspense(
 
 export function getTripMembersSuspenseQueryOptions(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getTripMembersSuspenseQueryKey(tripID);
+  const queryKey = getTripMembersSuspenseQueryKey(tripID, params);
   return queryOptions<
     GetTripMembersQueryResponse,
     ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>,
@@ -68,7 +74,7 @@ export function getTripMembersSuspenseQueryOptions(
     queryKey,
     queryFn: async ({ signal }) => {
       config.signal = signal;
-      return getTripMembersSuspense(tripID, config);
+      return getTripMembersSuspense(tripID, params, config);
     },
   });
 }
@@ -76,13 +82,14 @@ export function getTripMembersSuspenseQueryOptions(
 /**
  * @description Retrieves all members of a trip
  * @summary Get trip members
- * {@link /api/v1/trips/:tripID/members}
+ * {@link /api/v1/trips/:tripID/memberships}
  */
 export function useGetTripMembersSuspense<
   TData = GetTripMembersQueryResponse,
   TQueryKey extends QueryKey = GetTripMembersSuspenseQueryKey,
 >(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   options: {
     query?: Partial<
       UseSuspenseQueryOptions<
@@ -98,11 +105,11 @@ export function useGetTripMembersSuspense<
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
   const queryKey =
-    queryOptions?.queryKey ?? getTripMembersSuspenseQueryKey(tripID);
+    queryOptions?.queryKey ?? getTripMembersSuspenseQueryKey(tripID, params);
 
   const query = useSuspenseQuery(
     {
-      ...getTripMembersSuspenseQueryOptions(tripID, config),
+      ...getTripMembersSuspenseQueryOptions(tripID, params, config),
       queryKey,
       ...queryOptions,
     } as unknown as UseSuspenseQueryOptions,

@@ -1,7 +1,7 @@
 {
   "type": "object",
   "properties": {
-    "comments": {
+    "items": {
       "type": "array",
       "items": {
         "type": "object",
@@ -28,6 +28,7 @@
         "x-readme-ref-name": "models.CommentAPIResponse"
       }
     },
+    "limit": { "type": "integer" },
     "next_cursor": { "type": "string" }
   },
   "x-readme-ref-name": "models.PaginatedCommentsResponse"

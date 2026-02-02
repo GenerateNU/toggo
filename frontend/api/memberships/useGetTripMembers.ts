@@ -8,6 +8,7 @@ import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetTripMembersQueryResponse,
   GetTripMembersPathParams,
+  GetTripMembersQueryParams,
   GetTripMembers400,
   GetTripMembers500,
 } from "../../types/types.gen.ts";
@@ -21,9 +22,11 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const getTripMembersQueryKey = (
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
 ) =>
   [
-    { url: "/api/v1/trips/:tripID/members", params: { tripID: tripID } },
+    { url: "/api/v1/trips/:tripID/memberships", params: { tripID: tripID } },
+    ...(params ? [params] : []),
   ] as const;
 
 export type GetTripMembersQueryKey = ReturnType<typeof getTripMembersQueryKey>;
@@ -31,10 +34,11 @@ export type GetTripMembersQueryKey = ReturnType<typeof getTripMembersQueryKey>;
 /**
  * @description Retrieves all members of a trip
  * @summary Get trip members
- * {@link /api/v1/trips/:tripID/members}
+ * {@link /api/v1/trips/:tripID/memberships}
  */
 export async function getTripMembers(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -45,7 +49,8 @@ export async function getTripMembers(
     unknown
   >({
     method: "GET",
-    url: `/api/v1/trips/${tripID}/members`,
+    url: `/api/v1/trips/${tripID}/memberships`,
+    params,
     ...requestConfig,
   });
   return res.data;
@@ -53,9 +58,10 @@ export async function getTripMembers(
 
 export function getTripMembersQueryOptions(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getTripMembersQueryKey(tripID);
+  const queryKey = getTripMembersQueryKey(tripID, params);
   return queryOptions<
     GetTripMembersQueryResponse,
     ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>,
@@ -66,7 +72,7 @@ export function getTripMembersQueryOptions(
     queryKey,
     queryFn: async ({ signal }) => {
       config.signal = signal;
-      return getTripMembers(tripID, config);
+      return getTripMembers(tripID, params, config);
     },
   });
 }
@@ -74,7 +80,7 @@ export function getTripMembersQueryOptions(
 /**
  * @description Retrieves all members of a trip
  * @summary Get trip members
- * {@link /api/v1/trips/:tripID/members}
+ * {@link /api/v1/trips/:tripID/memberships}
  */
 export function useGetTripMembers<
   TData = GetTripMembersQueryResponse,
@@ -82,6 +88,7 @@ export function useGetTripMembers<
   TQueryKey extends QueryKey = GetTripMembersQueryKey,
 >(
   tripID: GetTripMembersPathParams["tripID"],
+  params?: GetTripMembersQueryParams,
   options: {
     query?: Partial<
       QueryObserverOptions<
@@ -97,11 +104,12 @@ export function useGetTripMembers<
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
-  const queryKey = queryOptions?.queryKey ?? getTripMembersQueryKey(tripID);
+  const queryKey =
+    queryOptions?.queryKey ?? getTripMembersQueryKey(tripID, params);
 
   const query = useQuery(
     {
-      ...getTripMembersQueryOptions(tripID, config),
+      ...getTripMembersQueryOptions(tripID, params, config),
       queryKey,
       ...queryOptions,
     } as unknown as QueryObserverOptions,

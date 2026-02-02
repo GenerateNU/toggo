@@ -3,6 +3,30 @@ set windows-shell := ["powershell.exe", "-Command"]
 suffix := if os() == "windows" { "-win" } else { "" }
 sep := if os() == "windows" { ";" } else { "&&" }
 
+backend_clean_docs := if os() == "windows" {
+    "cd backend ; if (Test-Path 'docs') { Remove-Item -Recurse -Force 'docs' } ; New-Item -ItemType Directory 'docs' | Out-Null"
+} else {
+    "cd backend && rm -rf docs && mkdir -p docs"
+}
+
+frontend_clean_schemas := if os() == "windows" {
+    "cd frontend ; if (Test-Path 'schemas') { Remove-Item -Recurse -Force 'schemas' } ; New-Item -ItemType Directory 'schemas' | Out-Null"
+} else {
+    "cd frontend && rm -rf schemas && mkdir -p schemas"
+}
+
+frontend_clean_api := if os() == "windows" {
+    "cd frontend ; if (Test-Path 'api') { Remove-Item -Recurse -Force 'api' }"
+} else {
+    "cd frontend && rm -rf api"
+}
+
+frontend_clean_types := if os() == "windows" {
+    "cd frontend ; Get-ChildItem -Path 'types' -Filter '*.gen.ts' -File -Recurse | Remove-Item -Force"
+} else {
+    "cd frontend && find types -type f -name '*.gen.ts' -delete"
+}
+
 alias i := setup
 alias bd := dev-be
 alias fd := dev-fe
@@ -126,21 +150,15 @@ kubb:
     cd frontend {{ sep }} bun kubb
 
 clean-doc:
-    {{ if os() == "windows" {
-        "cd backend ; if (Test-Path 'docs') { Remove-Item -Recurse -Force 'docs' } ; New-Item -ItemType Directory 'docs' | Out-Null"
-    } else {
-        "cd backend && rm -rf docs && mkdir -p docs"
-    } }}
-    {{ if os() == "windows" {
-        "cd frontend ; if (Test-Path 'schemas') { Remove-Item -Recurse -Force 'schemas' } ; New-Item -ItemType Directory 'schemas' | Out-Null"
-    } else {
-        "cd frontend && rm -rf schemas && mkdir -p schemas"
-    } }}
-    {{ if os() == "windows" {
-        "cd frontend ; Get-ChildItem -Path 'types' -Filter '*.gen.ts' -File -Recurse | Remove-Item -Force"
-    } else {
-        "cd frontend && find types -type f -name '*.gen.ts' -delete"
-    } }}
+    {{ backend_clean_docs }}
+    {{ frontend_clean_schemas }}
+    {{ frontend_clean_api }}
+    {{ frontend_clean_types }}
+
+regen-doc:
+    just clean-doc
+    just api-doc
+    just kubb
 # === Localstack ===
 
 # Create a localstack container

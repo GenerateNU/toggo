@@ -26,7 +26,7 @@ export const getMembershipSuspenseQueryKey = (
 ) =>
   [
     {
-      url: "/api/v1/trips/:tripID/members/:userID",
+      url: "/api/v1/trips/:tripID/memberships/:userID",
       params: { tripID: tripID, userID: userID },
     },
   ] as const;
@@ -38,7 +38,7 @@ export type GetMembershipSuspenseQueryKey = ReturnType<
 /**
  * @description Retrieves the membership for a user in a trip
  * @summary Get membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export async function getMembershipSuspense(
   tripID: GetMembershipPathParams["tripID"],
@@ -53,7 +53,7 @@ export async function getMembershipSuspense(
     unknown
   >({
     method: "GET",
-    url: `/api/v1/trips/${tripID}/members/${userID}`,
+    url: `/api/v1/trips/${tripID}/memberships/${userID}`,
     ...requestConfig,
   });
   return res.data;
@@ -83,7 +83,7 @@ export function getMembershipSuspenseQueryOptions(
 /**
  * @description Retrieves the membership for a user in a trip
  * @summary Get membership
- * {@link /api/v1/trips/:tripID/members/:userID}
+ * {@link /api/v1/trips/:tripID/memberships/:userID}
  */
 export function useGetMembershipSuspense<
   TData = GetMembershipQueryResponse,

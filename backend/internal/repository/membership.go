@@ -33,12 +33,18 @@ func (r *membershipRepository) Create(ctx context.Context, membership *models.Me
 }
 
 // Find retrieves a specific membership by composite primary key
-func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUID) (*models.Membership, error) {
-	membership := &models.Membership{}
+func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error) {
+	membership := &models.MembershipDatabaseResponse{}
 	err := r.db.NewSelect().
-		Model(membership).
-		Where("user_id = ? AND trip_id = ?", userID, tripID).
-		Scan(ctx)
+		TableExpr("memberships AS m").
+		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("u.username").
+		ColumnExpr("img.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = m.user_id").
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("m.user_id = ? AND m.trip_id = ?", userID, tripID).
+		Scan(ctx, membership)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errs.ErrNotFound
@@ -49,13 +55,18 @@ func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUI
 }
 
 // FindByTripID retrieves all members of a trip
-func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Membership, error) {
-	var memberships []*models.Membership
+func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error) {
+	var memberships []*models.MembershipDatabaseResponse
 	err := r.db.NewSelect().
-		Model(&memberships).
-		Where("trip_id = ?", tripID).
-		Order("created_at DESC").
-		Scan(ctx)
+		TableExpr("memberships AS m").
+		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("u.username").
+		ColumnExpr("img.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = m.user_id").
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("m.trip_id = ?", tripID).
+		OrderExpr("m.created_at DESC, m.user_id DESC").
+		Scan(ctx, &memberships)
 	if err != nil {
 		return nil, err
 	}
@@ -63,18 +74,23 @@ func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUI
 }
 
 // FindByTripIDWithCursor retrieves trip members using cursor-based pagination.
-func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.Membership, *models.MembershipCursor, error) {
+func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error) {
 	query := r.db.NewSelect().
-		Model((*models.Membership)(nil)).
-		Where("trip_id = ?", tripID).
-		Order("created_at DESC", "user_id DESC").
+		TableExpr("memberships AS m").
+		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("u.username").
+		ColumnExpr("img.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = m.user_id").
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("m.trip_id = ?", tripID).
+		OrderExpr("m.created_at DESC, m.user_id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(created_at, user_id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(m.created_at < ?) OR (m.created_at = ? AND m.user_id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
 
-	var memberships []*models.Membership
+	var memberships []*models.MembershipDatabaseResponse
 	if err := query.Scan(ctx, &memberships); err != nil {
 		return nil, nil, err
 	}

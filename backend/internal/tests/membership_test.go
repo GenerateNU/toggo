@@ -17,8 +17,9 @@ func TestMembershipLifecycle(t *testing.T) {
 	authUserID := fakes.GenerateUUID()
 
 	var (
-		userID string
-		tripID string
+		userID         string
+		tripID         string
+		memberUsername string
 	)
 
 	t.Run("create user", func(t *testing.T) {
@@ -41,6 +42,9 @@ func TestMembershipLifecycle(t *testing.T) {
 			GetBody()
 
 		userID = resp["id"].(string)
+		if usernameVal, ok := resp["username"].(string); ok {
+			memberUsername = usernameVal
+		}
 	})
 
 	t.Run("create trip", func(t *testing.T) {
@@ -84,7 +88,7 @@ func TestMembershipLifecycle(t *testing.T) {
 	})
 
 	t.Run("get membership", func(t *testing.T) {
-		testkit.New(t).
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
@@ -94,7 +98,13 @@ func TestMembershipLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			AssertField("user_id", userID).
 			AssertField("trip_id", tripID).
-			AssertField("is_admin", false)
+			AssertField("is_admin", false).
+			AssertField("username", memberUsername).
+			AssertField("profile_picture_url", nil)
+
+		if body := resp.GetBody(); body["profile_picture_url"] != nil {
+			t.Fatalf("expected profile_picture_url to be nil, got %v", body["profile_picture_url"])
+		}
 	})
 
 	t.Run("get trip members", func(t *testing.T) {
@@ -111,6 +121,22 @@ func TestMembershipLifecycle(t *testing.T) {
 		items, ok := resp["items"].([]interface{})
 		if !ok || len(items) != 1 {
 			t.Errorf("expected items array with 1 member, got: %+v", resp)
+		}
+
+		if ok && len(items) == 1 {
+			member, castOK := items[0].(map[string]interface{})
+			if !castOK {
+				t.Fatalf("expected membership item to be a map, got %T", items[0])
+			}
+			if memberUsername != "" && member["username"] != memberUsername {
+				t.Fatalf("expected username %s, got %v", memberUsername, member["username"])
+			}
+			if _, exists := member["profile_picture_url"]; !exists {
+				t.Fatalf("expected profile_picture_url field in membership response")
+			}
+			if member["profile_picture_url"] != nil {
+				t.Fatalf("expected profile_picture_url to be nil, got %v", member["profile_picture_url"])
+			}
 		}
 
 		if limitValue, ok := resp["limit"].(float64); !ok || int(limitValue) != 20 {
@@ -149,7 +175,7 @@ func TestMembershipLifecycle(t *testing.T) {
 	})
 
 	t.Run("get membership after promote", func(t *testing.T) {
-		testkit.New(t).
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
@@ -157,7 +183,13 @@ func TestMembershipLifecycle(t *testing.T) {
 				UserID: &authUserID,
 			}).
 			AssertStatus(http.StatusOK).
-			AssertField("is_admin", true)
+			AssertField("is_admin", true).
+			AssertField("username", memberUsername).
+			AssertField("profile_picture_url", nil)
+
+		if body := resp.GetBody(); body["profile_picture_url"] != nil {
+			t.Fatalf("expected profile_picture_url to be nil after promote")
+		}
 	})
 
 	t.Run("demote from admin", func(t *testing.T) {

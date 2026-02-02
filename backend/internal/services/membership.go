@@ -4,17 +4,22 @@ import (
 	"context"
 	"errors"
 	"time"
+	"toggo/internal/config"
 	"toggo/internal/errs"
+	"toggo/internal/interfaces"
 	"toggo/internal/models"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 type MembershipServiceInterface interface {
 	AddMember(ctx context.Context, req models.CreateMembershipRequest) (*models.Membership, error)
-	GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.Membership, error)
+	GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.MembershipAPIResponse, error)
 	GetTripMembers(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.MembershipCursorPageResult, error)
 	GetUserTrips(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
 	UpdateMembership(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateMembershipRequest) (*models.Membership, error)
@@ -30,10 +35,23 @@ var _ MembershipServiceInterface = (*MembershipService)(nil)
 
 type MembershipService struct {
 	*repository.Repository
+	presignClient interfaces.S3PresignClient
+	bucketName    string
+	urlExpiration time.Duration
 }
 
-func NewMembershipService(repo *repository.Repository) MembershipServiceInterface {
-	return &MembershipService{Repository: repo}
+func NewMembershipService(repo *repository.Repository, cfg *config.Configuration) MembershipServiceInterface {
+	service := &MembershipService{
+		Repository:    repo,
+		urlExpiration: 15 * time.Minute,
+	}
+
+	if cfg != nil {
+		service.presignClient = cfg.AWS.PresignClient
+		service.bucketName = cfg.AWS.BucketName
+	}
+
+	return service
 }
 
 func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMembershipRequest) (*models.Membership, error) {
@@ -75,7 +93,7 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 	return s.Membership.Create(ctx, membership)
 }
 
-func (s *MembershipService) GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.Membership, error) {
+func (s *MembershipService) GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.MembershipAPIResponse, error) {
 	membership, err := s.Membership.Find(ctx, userID, tripID)
 	if err != nil {
 		return nil, err
@@ -83,7 +101,8 @@ func (s *MembershipService) GetMembership(ctx context.Context, tripID, userID uu
 	if membership == nil {
 		return nil, errs.ErrNotFound
 	}
-	return membership, nil
+
+	return s.toAPIResponse(ctx, membership)
 }
 
 func (s *MembershipService) GetTripMembers(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.MembershipCursorPageResult, error) {
@@ -101,8 +120,30 @@ func (s *MembershipService) GetTripMembers(ctx context.Context, tripID uuid.UUID
 		return nil, err
 	}
 
+	apiMemberships := make([]*models.MembershipAPIResponse, len(memberships))
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(10)
+
+	for i := range memberships {
+		i := i
+		membership := memberships[i]
+		g.Go(func() error {
+			apiMembership, convErr := s.toAPIResponse(ctx, membership)
+			if convErr != nil {
+				return convErr
+			}
+			apiMemberships[i] = apiMembership
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
 	result := &models.MembershipCursorPageResult{
-		Items: memberships,
+		Items: apiMemberships,
 		Limit: limit,
 	}
 
@@ -219,4 +260,40 @@ func (s *MembershipService) IsAdmin(ctx context.Context, tripID, userID uuid.UUI
 
 func (s *MembershipService) GetMemberCount(ctx context.Context, tripID uuid.UUID) (int, error) {
 	return s.Membership.CountMembers(ctx, tripID)
+}
+
+func (s *MembershipService) toAPIResponse(ctx context.Context, membership *models.MembershipDatabaseResponse) (*models.MembershipAPIResponse, error) {
+	profilePictureURL, err := s.getProfilePictureURL(ctx, membership.ProfilePictureKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.MembershipAPIResponse{
+		UserID:            membership.UserID,
+		TripID:            membership.TripID,
+		IsAdmin:           membership.IsAdmin,
+		CreatedAt:         membership.CreatedAt,
+		UpdatedAt:         membership.UpdatedAt,
+		BudgetMin:         membership.BudgetMin,
+		BudgetMax:         membership.BudgetMax,
+		Availability:      membership.Availability,
+		Username:          membership.Username,
+		ProfilePictureURL: profilePictureURL,
+	}, nil
+}
+
+func (s *MembershipService) getProfilePictureURL(ctx context.Context, fileKey *string) (*string, error) {
+	if fileKey == nil || *fileKey == "" || s.presignClient == nil {
+		return nil, nil
+	}
+
+	presignedURL, err := s.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.bucketName),
+		Key:    aws.String(*fileKey),
+	}, s3.WithPresignExpires(s.urlExpiration))
+	if err != nil {
+		return nil, err
+	}
+
+	return &presignedURL.URL, nil
 }
