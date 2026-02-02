@@ -24,3 +24,17 @@ INSERT INTO memberships (user_id, trip_id, is_admin, budget_min, budget_max) VAL
 ('00000000-0000-0000-0000-000000000102', '00000000-0000-0000-0000-000000000201', false, 1500, 4000),
 ('00000000-0000-0000-0000-000000000103', '00000000-0000-0000-0000-000000000202', true, 2000, 6000)
 ON CONFLICT (user_id, trip_id) DO NOTHING;
+
+-- Profile pictures for comment and membership tests
+INSERT INTO images (image_id, size, file_key, status) VALUES
+('00000000-0000-0000-0000-000000001001', 'small', 'fixtures/comment_test_user1_small.jpg', 'confirmed'),
+('00000000-0000-0000-0000-000000001002', 'small', 'fixtures/comment_test_user2_small.jpg', 'confirmed')
+ON CONFLICT (image_id, size) DO NOTHING;
+
+UPDATE users
+SET profile_picture = '00000000-0000-0000-0000-000000001001'
+WHERE id = '00000000-0000-0000-0000-000000000101';
+
+UPDATE users
+SET profile_picture = '00000000-0000-0000-0000-000000001002'
+WHERE id = '00000000-0000-0000-0000-000000000102';
