@@ -365,7 +365,7 @@ func TestCommentGetPaginated(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		comments := response["comments"].([]interface{})
+		comments := response["items"].([]interface{})
 		if len(comments) < 5 {
 			t.Errorf("expected at least 5 comments, got %d", len(comments))
 		}
@@ -404,9 +404,13 @@ func TestCommentGetPaginated(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		comments := response["comments"].([]interface{})
+		comments := response["items"].([]interface{})
 		if len(comments) != 2 {
 			t.Errorf("expected 2 comments with limit=2, got %d", len(comments))
+		}
+
+		if limitValue, ok := response["limit"].(float64); !ok || int(limitValue) != 2 {
+			t.Errorf("expected limit field to be 2, got: %+v", response["limit"])
 		}
 	})
 
@@ -440,9 +444,13 @@ func TestCommentGetPaginated(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		comments := response["comments"].([]interface{})
+		comments := response["items"].([]interface{})
 		if len(comments) != 20 {
 			t.Errorf("expected default 20 comments, got %d", len(comments))
+		}
+
+		if limitValue, ok := response["limit"].(float64); !ok || int(limitValue) != 20 {
+			t.Errorf("expected default limit field to be 20, got: %+v", response["limit"])
 		}
 	})
 
@@ -458,7 +466,7 @@ func TestCommentGetPaginated(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		comments := response["comments"].([]interface{})
+		comments := response["items"].([]interface{})
 		if len(comments) == 0 {
 			t.Fatal("expected at least some comments in first page")
 		}
@@ -483,7 +491,7 @@ func TestCommentGetPaginated(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		secondPageComments := secondPageResponse["comments"].([]interface{})
+		secondPageComments := secondPageResponse["items"].([]interface{})
 		if len(secondPageComments) == 0 {
 			t.Error("expected comments in second page")
 		}

@@ -5,7 +5,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -44,7 +44,7 @@ func (n *NotificationController) SendNotification(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(n.validator, req); err != nil {
+	if err := validators.Validate(n.validator, req); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (n *NotificationController) SendBulkNotification(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(n.validator, req); err != nil {
+	if err := validators.Validate(n.validator, req); err != nil {
 		return err
 	}
 

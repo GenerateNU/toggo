@@ -337,6 +337,11 @@ export type ModelsUpdateUserRequest = {
    */
   device_token?: string;
   /**
+   * @maxLength 200
+   * @type string | undefined
+   */
+  device_token?: string;
+  /**
    * @minLength 1
    * @type string | undefined
    */
@@ -391,7 +396,51 @@ export type ModelsUploadURLResponse = {
   uploadUrls?: ModelsSizedUploadURL[];
 };
 
+export type ModelsUploadURLRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  contentType: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  fileKey: string;
+  /**
+   * @type array
+   */
+  sizes: ModelsImageSize[];
+};
+
+export type ModelsUploadURLResponse = {
+  /**
+   * @type string | undefined
+   */
+  expiresAt?: string;
+  /**
+   * @type string | undefined
+   */
+  fileKey?: string;
+  /**
+   * @type string | undefined
+   */
+  imageId?: string;
+  /**
+   * @type array | undefined
+   */
+  uploadUrls?: ModelsSizedUploadURL[];
+};
+
 export type ModelsUser = {
+  /**
+   * @type string | undefined
+   */
+  device_token?: string;
+  /**
+   * @type string | undefined
+   */
+  device_token_updated_at?: string;
   /**
    * @type string | undefined
    */
@@ -1063,6 +1112,37 @@ export type UpdateUserMutation = {
   Request: UpdateUserMutationRequest;
   PathParams: UpdateUserPathParams;
   Errors: UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500;
+};
+
+export type GetUserTripsPathParams = {
+  /**
+   * @description User ID
+   * @type string
+   */
+  userID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetUserTrips200 = ModelsMembership[];
+
+/**
+ * @description Bad Request
+ */
+export type GetUserTrips400 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetUserTrips500 = ErrsAPIError;
+
+export type GetUserTripsQueryResponse = GetUserTrips200;
+
+export type GetUserTripsQuery = {
+  Response: GetUserTrips200;
+  PathParams: GetUserTripsPathParams;
+  Errors: GetUserTrips400 | GetUserTrips500;
 };
 
 /**

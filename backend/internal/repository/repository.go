@@ -15,6 +15,7 @@ type Repository struct {
 	Image      ImageRepository
 	Comment    CommentRepository
 	Membership MembershipRepository
+	Trip       TripRepository
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -23,6 +24,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Health:     &healthRepository{db: db},
 		Image:      &imageRepository{db: db},
 		Comment:    &commentRepository{db: db},
+		Trip:       &tripRepository{db: db},
 		Membership: &membershipRepository{db: db},
 	}
 }
@@ -37,6 +39,27 @@ type UserRepository interface {
 	Update(ctx context.Context, id uuid.UUID, user *models.UpdateUserRequest) (*models.User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error)
+}
+
+type TripRepository interface {
+	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
+	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
+	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type MembershipRepository interface {
+	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.Membership, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Membership, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.Membership, *models.MembershipCursor, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
+	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
+	Delete(ctx context.Context, userID, tripID uuid.UUID) error
 }
 
 type ImageRepository interface {
@@ -55,9 +78,5 @@ type CommentRepository interface {
 	Create(ctx context.Context, comment *models.Comment) (*models.Comment, error)
 	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
-	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *string) ([]*models.CommentDatabaseResponse, error)
-}
-
-type MembershipRepository interface {
-	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
 }

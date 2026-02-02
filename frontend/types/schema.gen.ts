@@ -26,6 +26,8 @@ import type {
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
   ModelsUploadURLResponse,
+  ModelsUploadURLRequest,
+  ModelsUploadURLResponse,
   ModelsUser,
   CreateComment201,
   CreateComment400,
@@ -131,6 +133,11 @@ import type {
   UpdateUser500,
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
+  GetUserTripsPathParams,
+  GetUserTrips200,
+  GetUserTrips400,
+  GetUserTrips500,
+  GetUserTripsQueryResponse,
   Healthcheck200,
   Healthcheck500,
   HealthcheckQueryResponse,
@@ -290,6 +297,7 @@ export const modelsUpdateCommentRequestSchema = z.object({
 
 export const modelsUpdateUserRequestSchema = z.object({
   device_token: z.optional(z.string().max(200)),
+  device_token: z.optional(z.string().max(200)),
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
   profile_picture: z.optional(z.string()),
@@ -313,7 +321,26 @@ export const modelsUploadURLResponseSchema = z.object({
   },
 }) as unknown as z.ZodType<ModelsUploadURLResponse>;
 
+export const modelsUploadURLRequestSchema = z.object({
+  contentType: z.string().min(1),
+  fileKey: z.string().min(1),
+  get sizes() {
+    return z.array(modelsImageSizeSchema).min(1).max(3);
+  },
+}) as unknown as z.ZodType<ModelsUploadURLRequest>;
+
+export const modelsUploadURLResponseSchema = z.object({
+  expiresAt: z.optional(z.string()),
+  fileKey: z.optional(z.string()),
+  imageId: z.optional(z.string()),
+  get uploadUrls() {
+    return z.array(modelsSizedUploadURLSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsUploadURLResponse>;
+
 export const modelsUserSchema = z.object({
+  device_token: z.optional(z.string()),
+  device_token_updated_at: z.optional(z.string()),
   device_token: z.optional(z.string()),
   device_token_updated_at: z.optional(z.string()),
   id: z.optional(z.string()),
@@ -978,6 +1005,35 @@ export const updateUserMutationRequestSchema = z.lazy(
 export const updateUserMutationResponseSchema = z.lazy(
   () => updateUser200Schema,
 ) as unknown as z.ZodType<UpdateUserMutationResponse>;
+
+export const getUserTripsPathParamsSchema = z.object({
+  userID: z.string().describe("User ID"),
+}) as unknown as z.ZodType<GetUserTripsPathParams>;
+
+/**
+ * @description OK
+ */
+export const getUserTrips200Schema = z.array(
+  z.lazy(() => modelsMembershipSchema),
+) as unknown as z.ZodType<GetUserTrips200>;
+
+/**
+ * @description Bad Request
+ */
+export const getUserTrips400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetUserTrips400>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getUserTrips500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetUserTrips500>;
+
+export const getUserTripsQueryResponseSchema = z.lazy(
+  () => getUserTrips200Schema,
+) as unknown as z.ZodType<GetUserTripsQueryResponse>;
 
 /**
  * @description OK

@@ -3,6 +3,8 @@
   "properties": {
     "device_token": { "type": "string" },
     "device_token_updated_at": { "type": "string" },
+    "device_token": { "type": "string" },
+    "device_token_updated_at": { "type": "string" },
     "id": { "type": "string" },
     "name": { "type": "string" },
     "phone_number": { "type": "string" },

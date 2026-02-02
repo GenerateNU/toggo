@@ -5,7 +5,7 @@ import (
 	"strings"
 	"toggo/internal/errs"
 	"toggo/internal/models"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -36,5 +36,33 @@ func parseAndValidateQueryParams(c *fiber.Ctx, validator *validator.Validate, pa
 		})
 	}
 
-	return utilities.Validate(validator, params)
+	return validators.Validate(validator, params)
+}
+
+type cursorQueryParams interface {
+	GetLimit() *int
+	GetCursor() *string
+}
+
+func extractLimitAndCursor(params cursorQueryParams) (int, string) {
+	const defaultLimit, maxLimit = 20, 100
+
+	limit := defaultLimit
+	if l := params.GetLimit(); l != nil {
+		limit = *l
+	}
+
+	if limit <= 0 {
+		limit = defaultLimit
+	}
+	if limit > maxLimit {
+		limit = maxLimit
+	}
+
+	cursor := ""
+	if c := params.GetCursor(); c != nil {
+		cursor = *c
+	}
+
+	return limit, cursor
 }

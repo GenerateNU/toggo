@@ -873,6 +873,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/users/{userID}/trips": {
+            "get": {
+                "description": "Retrieves all trips a user is a member of",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memberships"
+                ],
+                "summary": "Get user's trips",
+                "operationId": "getUserTrips",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Membership"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/healthcheck": {
             "get": {
                 "description": "Returns OK if the server is running and database is healthy",
@@ -1105,6 +1150,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.GetTripMembersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Membership"
+                    }
+                }
+            }
+        },
         "models.ImageSize": {
             "type": "string",
             "enum": [
@@ -1240,6 +1296,65 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SendBulkNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_ids"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_ids": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.SendNotificationRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "title",
+                "user_id"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SizedUploadURL": {
             "type": "object",
             "properties": {
@@ -1270,6 +1385,10 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 200
                 },
+                "device_token": {
+                    "type": "string",
+                    "maxLength": 200
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -1278,6 +1397,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                },
+                "timezone": {
                     "type": "string"
                 },
                 "username": {
@@ -1340,6 +1462,12 @@ const docTemplate = `{
                 "device_token_updated_at": {
                     "type": "string"
                 },
+                "device_token": {
+                    "type": "string"
+                },
+                "device_token_updated_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -1350,6 +1478,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "profile_picture": {
+                    "type": "string"
+                },
+                "timezone": {
                     "type": "string"
                 },
                 "username": {

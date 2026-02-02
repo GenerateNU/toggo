@@ -3,7 +3,7 @@ package middlewares
 import (
 	"toggo/internal/errs"
 	"toggo/internal/repository"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -23,7 +23,7 @@ func TripMemberRequired(repo *repository.Repository) fiber.Handler {
 		}
 
 		// Get trip ID from path parameter
-		tripID, err := utilities.ValidateID(c.Params("tripID"))
+		tripID, err := validators.ValidateID(c.Params("tripID"))
 		if err != nil {
 			return errs.InvalidUUID()
 		}

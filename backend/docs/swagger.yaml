@@ -132,6 +132,13 @@ definitions:
       url:
         type: string
     type: object
+  models.GetTripMembersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Membership'
+        type: array
+    type: object
   models.ImageSize:
     enum:
     - large
@@ -227,6 +234,50 @@ definitions:
     - title
     - user_id
     type: object
+  models.SendBulkNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_ids:
+        items:
+          type: string
+        maxItems: 1000
+        minItems: 1
+        type: array
+    required:
+    - body
+    - title
+    - user_ids
+    type: object
+  models.SendNotificationRequest:
+    properties:
+      body:
+        maxLength: 500
+        minLength: 1
+        type: string
+      data:
+        additionalProperties: true
+        type: object
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      user_id:
+        type: string
+    required:
+    - body
+    - title
+    - user_id
+    type: object
   models.SizedUploadURL:
     properties:
       size:
@@ -247,12 +298,17 @@ definitions:
       device_token:
         maxLength: 200
         type: string
+      device_token:
+        maxLength: 200
+        type: string
       name:
         minLength: 1
         type: string
       phone_number:
         type: string
       profile_picture:
+        type: string
+      timezone:
         type: string
       username:
         type: string
@@ -295,6 +351,10 @@ definitions:
         type: string
       device_token_updated_at:
         type: string
+      device_token:
+        type: string
+      device_token_updated_at:
+        type: string
       id:
         type: string
       name:
@@ -302,6 +362,8 @@ definitions:
       phone_number:
         type: string
       profile_picture:
+        type: string
+      timezone:
         type: string
       username:
         type: string
@@ -861,6 +923,36 @@ paths:
       summary: Update a user
       tags:
       - users
+  /api/v1/users/{userID}/trips:
+    get:
+      description: Retrieves all trips a user is a member of
+      operationId: getUserTrips
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Membership'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get user's trips
+      tags:
+      - memberships
   /api/v1/users/me:
     get:
       description: Retrieves the authenticated user (from JWT claims)

@@ -2,13 +2,13 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"toggo/internal/config"
 	"toggo/internal/errs"
 	"toggo/internal/interfaces"
 	"toggo/internal/models"
 	"toggo/internal/repository"
+	"toggo/internal/utilities/pagination"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -20,7 +20,7 @@ type CommentServiceInterface interface {
 	CreateComment(ctx context.Context, req models.CreateCommentRequest, userID uuid.UUID) (*models.Comment, error)
 	UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error)
 	DeleteComment(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
-	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit *int, cursor *string) (*models.PaginatedCommentsResponse, error)
+	GetPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursorToken string) (*models.PaginatedCommentsResponse, error)
 }
 
 var _ CommentServiceInterface = (*CommentService)(nil)
@@ -80,16 +80,25 @@ func (s *CommentService) GetPaginatedComments(
 	tripID uuid.UUID,
 	entityType models.EntityType,
 	entityID uuid.UUID,
-	limit *int,
-	cursor *string,
+	limit int,
+	cursorToken string,
 ) (*models.PaginatedCommentsResponse, error) {
-	requestLimit := 20
-	if limit != nil && *limit > 0 {
-		requestLimit = *limit
+	requestLimit := limit
+	if requestLimit <= 0 {
+		requestLimit = 20
+	}
+
+	var commentCursor *models.CommentCursor
+	if cursorToken != "" {
+		decoded, err := pagination.DecodeTimeUUIDCursor(cursorToken)
+		if err != nil {
+			return nil, err
+		}
+		commentCursor = decoded
 	}
 
 	comments, err := s.repository.Comment.FindPaginatedComments(
-		ctx, tripID, entityType, entityID, requestLimit, cursor,
+		ctx, tripID, entityType, entityID, requestLimit, commentCursor,
 	)
 	if err != nil {
 		return nil, err
@@ -101,8 +110,11 @@ func (s *CommentService) GetPaginatedComments(
 		// Remove the extra record and set next cursor
 		comments = comments[:requestLimit]
 		lastComment := comments[len(comments)-1]
-		nextCursorValue := fmt.Sprintf("%s|%s", lastComment.CreatedAt.Format(time.RFC3339Nano), lastComment.ID)
-		nextCursor = &nextCursorValue
+		token, err := pagination.EncodeTimeUUIDCursorFromValues(lastComment.CreatedAt, lastComment.ID)
+		if err != nil {
+			return nil, err
+		}
+		nextCursor = &token
 	}
 
 	apiComments := make([]*models.CommentAPIResponse, len(comments))
@@ -126,8 +138,9 @@ func (s *CommentService) GetPaginatedComments(
 	}
 
 	return &models.PaginatedCommentsResponse{
-		Comments:   apiComments,
+		Items:      apiComments,
 		NextCursor: nextCursor,
+		Limit:      requestLimit,
 	}, nil
 }
 

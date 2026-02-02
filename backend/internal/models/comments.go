@@ -58,7 +58,11 @@ type GetCommentsQueryParams struct {
 	CursorPaginationParams
 }
 
+// CommentCursor reuses the standard time+UUID cursor payload.
+type CommentCursor = TimeUUIDCursor
+
 type PaginatedCommentsResponse struct {
-	Comments   []*CommentAPIResponse `json:"comments"`
-	NextCursor *string               `json:"next_cursor"`
+	Items      []*CommentAPIResponse `json:"items"`
+	NextCursor *string               `json:"next_cursor,omitempty"`
+	Limit      int                   `json:"limit"`
 }

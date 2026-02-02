@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
-	"toggo/internal/utilities"
+	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -43,7 +44,7 @@ func (cmt *CommentController) CreateComment(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	if err := utilities.Validate(cmt.validator, req); err != nil {
+	if err := validators.Validate(cmt.validator, req); err != nil {
 		return err
 	}
 
@@ -52,7 +53,7 @@ func (cmt *CommentController) CreateComment(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	userID, err := utilities.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr.(string))
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -86,12 +87,12 @@ func (cmt *CommentController) UpdateComment(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	id, err := utilities.ValidateID(c.Params("commentID"))
+	id, err := validators.ValidateID(c.Params("commentID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	if err := utilities.Validate(cmt.validator, req); err != nil {
+	if err := validators.Validate(cmt.validator, req); err != nil {
 		return err
 	}
 
@@ -100,7 +101,7 @@ func (cmt *CommentController) UpdateComment(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	userID, err := utilities.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr.(string))
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -125,7 +126,7 @@ func (cmt *CommentController) UpdateComment(c *fiber.Ctx) error {
 // @Router       /api/v1/comments/{commentID} [delete]
 // @ID           deleteComment
 func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
-	id, err := utilities.ValidateID(c.Params("commentID"))
+	id, err := validators.ValidateID(c.Params("commentID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -135,7 +136,7 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	userID, err := utilities.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr.(string))
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -154,8 +155,8 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        entityType path string true "Entity type (activity, pitch)"
 // @Param        entityID path string true "Entity ID"
-// @Param        limit query int false "Max results"
-// @Param        cursor query string false "Cursor (RFC3339Nano|UUID)"
+// @Param        limit query int false "Max items per page (default 20, max 100)"
+// @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.PaginatedCommentsResponse
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
@@ -165,12 +166,12 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/{entityType}/{entityID}/comments [get]
 // @ID           getPaginatedComments
 func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
-	tripID, err := utilities.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	entityID, err := utilities.ValidateID(c.Params("entityID"))
+	entityID, err := validators.ValidateID(c.Params("entityID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -185,8 +186,13 @@ func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
 		return err
 	}
 
-	response, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, params.GetLimit(), params.GetCursor())
+	limit, cursorToken := extractLimitAndCursor(&params.CursorPaginationParams)
+
+	response, err := cmt.commentService.GetPaginatedComments(c.Context(), tripID, entityType, entityID, limit, cursorToken)
 	if err != nil {
+		if errors.Is(err, errs.ErrInvalidCursor) {
+			return errs.BadRequest(err)
+		}
 		return err
 	}
 

@@ -20,13 +20,22 @@ type Membership struct {
 type CreateMembershipRequest struct {
 	UserID    uuid.UUID `validate:"required,uuid" json:"user_id"`
 	TripID    uuid.UUID `validate:"required,uuid" json:"trip_id"`
-	IsAdmin   bool      `validate:"required" json:"is_admin"`
+	IsAdmin   bool      `json:"is_admin"`
 	BudgetMin int       `validate:"required,gte=0" json:"budget_min"`
 	BudgetMax int       `validate:"required,gte=0,gtefield=BudgetMin" json:"budget_max"`
 }
 
 type UpdateMembershipRequest struct {
-	IsAdmin   bool `validate:"omitempty" json:"is_admin"`
-	BudgetMin int  `validate:"omitempty,gte=0" json:"budget_min"`
-	BudgetMax int  `validate:"omitempty,gte=0,gtefield=BudgetMin" json:"budget_max"`
+	IsAdmin   *bool `validate:"omitempty" json:"is_admin"`
+	BudgetMin *int  `validate:"omitempty,gte=0" json:"budget_min"`
+	BudgetMax *int  `validate:"omitempty,gte=0,gtefield=BudgetMin" json:"budget_max"`
+}
+
+// MembershipCursor reuses the standard time+UUID cursor payload, using user_id as the UUID key.
+type MembershipCursor = TimeUUIDCursor
+
+type MembershipCursorPageResult struct {
+	Items      []*Membership `json:"items"`
+	NextCursor *string       `json:"next_cursor,omitempty"`
+	Limit      int           `json:"limit"`
 }

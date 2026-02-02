@@ -2,9 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
-	"strings"
-	"time"
 
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -28,7 +25,7 @@ func (r *commentRepository) Create(ctx context.Context, comment *models.Comment)
 	return comment, nil
 }
 
-func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *string) ([]*models.CommentDatabaseResponse, error) {
+func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error) {
 	var comments []*models.CommentDatabaseResponse
 
 	query := r.db.NewSelect().
@@ -45,11 +42,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 		Limit(limit + 1)
 
 	if cursor != nil {
-		cursorTime, cursorID, err := parseCommentCursor(*cursor)
-		if err != nil {
-			return nil, err
-		}
-		query = query.Where("(c.created_at < ?) OR (c.created_at = ? AND c.id < ?)", cursorTime, cursorTime, cursorID)
+		query = query.Where("(c.created_at < ?) OR (c.created_at = ? AND c.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
 
 	err := query.Scan(ctx, &comments)
@@ -58,25 +51,6 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 	}
 
 	return comments, nil
-}
-
-func parseCommentCursor(cursor string) (time.Time, uuid.UUID, error) {
-	parts := strings.SplitN(cursor, "|", 2)
-	if len(parts) != 2 {
-		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor format"))
-	}
-
-	cursorTime, err := time.Parse(time.RFC3339Nano, parts[0])
-	if err != nil {
-		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor timestamp"))
-	}
-
-	cursorID, err := uuid.Parse(parts[1])
-	if err != nil {
-		return time.Time{}, uuid.UUID{}, errs.BadRequest(errors.New("invalid cursor id"))
-	}
-
-	return cursorTime, cursorID, nil
 }
 
 func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error) {

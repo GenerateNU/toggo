@@ -124,6 +124,23 @@ fmt-lint:
 
 kubb:
     cd frontend {{ sep }} bun kubb
+
+clean-doc:
+    {{ if os() == "windows" {
+        "cd backend ; if (Test-Path 'docs') { Remove-Item -Recurse -Force 'docs' } ; New-Item -ItemType Directory 'docs' | Out-Null"
+    } else {
+        "cd backend && rm -rf docs && mkdir -p docs"
+    } }}
+    {{ if os() == "windows" {
+        "cd frontend ; if (Test-Path 'schemas') { Remove-Item -Recurse -Force 'schemas' } ; New-Item -ItemType Directory 'schemas' | Out-Null"
+    } else {
+        "cd frontend && rm -rf schemas && mkdir -p schemas"
+    } }}
+    {{ if os() == "windows" {
+        "cd frontend ; Get-ChildItem -Path 'types' -Filter '*.gen.ts' -File -Recurse | Remove-Item -Force"
+    } else {
+        "cd frontend && find types -type f -name '*.gen.ts' -delete"
+    } }}
 # === Localstack ===
 
 # Create a localstack container
