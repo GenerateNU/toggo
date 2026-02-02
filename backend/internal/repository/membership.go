@@ -75,6 +75,11 @@ func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUI
 
 // FindByTripIDWithCursor retrieves trip members using cursor-based pagination.
 func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error) {
+	fetchLimit := limit
+	if fetchLimit < 1 {
+		fetchLimit = 1
+	}
+
 	query := r.db.NewSelect().
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
@@ -84,7 +89,7 @@ func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripI
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Where("m.trip_id = ?", tripID).
 		OrderExpr("m.created_at DESC, m.user_id DESC").
-		Limit(limit + 1)
+		Limit(fetchLimit + 1)
 
 	if cursor != nil {
 		query = query.Where("(m.created_at < ?) OR (m.created_at = ? AND m.user_id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
@@ -96,10 +101,10 @@ func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripI
 	}
 
 	var nextCursor *models.MembershipCursor
-	if len(memberships) > limit {
-		lastVisible := memberships[limit-1]
+	if len(memberships) > fetchLimit {
+		lastVisible := memberships[fetchLimit-1]
 		nextCursor = &models.MembershipCursor{CreatedAt: lastVisible.CreatedAt, ID: lastVisible.UserID}
-		memberships = memberships[:limit]
+		memberships = memberships[:fetchLimit]
 	}
 
 	return memberships, nextCursor, nil
