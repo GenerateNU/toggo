@@ -872,6 +872,10 @@ paths:
           description: Invalid cursor
           schema:
             $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "500":
           description: Internal Server Error
           schema:
@@ -882,7 +886,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new trip with the provided payload
+      description: Creates a new trip for the authenticated user
       operationId: createTrip
       parameters:
       - description: Create trip request
@@ -902,6 +906,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "422":
           description: Unprocessable Entity
           schema:
@@ -910,7 +918,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errs.APIError'
-      summary: Create a new trip
+      summary: Create a trip
       tags:
       - trips
   /api/v1/trips/{tripID}:
@@ -1437,36 +1445,6 @@ paths:
       summary: Update a user
       tags:
       - users
-  /api/v1/users/{userID}/trips:
-    get:
-      description: Retrieves all trips a user is a member of
-      operationId: getUserTrips
-      parameters:
-      - description: User ID
-        in: path
-        name: userID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Membership'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errs.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/errs.APIError'
-      summary: Get user's trips
-      tags:
-      - memberships
   /api/v1/users/me:
     get:
       description: Retrieves the authenticated user (from JWT claims)

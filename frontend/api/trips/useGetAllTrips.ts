@@ -9,6 +9,7 @@ import type {
   GetAllTripsQueryResponse,
   GetAllTripsQueryParams,
   GetAllTrips400,
+  GetAllTrips401,
   GetAllTrips500,
 } from "../../types/types.gen.ts";
 import type {
@@ -37,7 +38,7 @@ export async function getAllTrips(
 
   const res = await request<
     GetAllTripsQueryResponse,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
     unknown
   >({ method: "GET", url: `/api/v1/trips`, params, ...requestConfig });
   return res.data;
@@ -50,7 +51,7 @@ export function getAllTripsQueryOptions(
   const queryKey = getAllTripsQueryKey(params);
   return queryOptions<
     GetAllTripsQueryResponse,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
     GetAllTripsQueryResponse,
     typeof queryKey
   >({
@@ -77,7 +78,7 @@ export function useGetAllTrips<
     query?: Partial<
       QueryObserverOptions<
         GetAllTripsQueryResponse,
-        ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+        ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
         TData,
         TQueryData,
         TQueryKey
@@ -99,7 +100,7 @@ export function useGetAllTrips<
     queryClient,
   ) as UseQueryResult<
     TData,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>
   > & { queryKey: TQueryKey };
 
   query.queryKey = queryKey as TQueryKey;

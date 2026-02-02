@@ -9,6 +9,7 @@ import type {
   CreateTripMutationRequest,
   CreateTripMutationResponse,
   CreateTrip400,
+  CreateTrip401,
   CreateTrip422,
   CreateTrip500,
 } from "../../types/types.gen.ts";
@@ -24,8 +25,8 @@ export const createTripMutationKey = () => [{ url: "/api/v1/trips" }] as const;
 export type CreateTripMutationKey = ReturnType<typeof createTripMutationKey>;
 
 /**
- * @description Creates a new trip with the provided payload
- * @summary Create a new trip
+ * @description Creates a new trip for the authenticated user
+ * @summary Create a trip
  * {@link /api/v1/trips}
  */
 export async function createTrip(
@@ -40,7 +41,9 @@ export async function createTrip(
 
   const res = await request<
     CreateTripMutationResponse,
-    ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+    ResponseErrorConfig<
+      CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+    >,
     CreateTripMutationRequest
   >({
     method: "POST",
@@ -59,7 +62,9 @@ export function createTripMutationOptions(
   const mutationKey = createTripMutationKey();
   return mutationOptions<
     CreateTripMutationResponse,
-    ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+    ResponseErrorConfig<
+      CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+    >,
     { data: CreateTripMutationRequest },
     typeof mutationKey
   >({
@@ -71,15 +76,17 @@ export function createTripMutationOptions(
 }
 
 /**
- * @description Creates a new trip with the provided payload
- * @summary Create a new trip
+ * @description Creates a new trip for the authenticated user
+ * @summary Create a trip
  * {@link /api/v1/trips}
  */
 export function useCreateTrip<TContext>(
   options: {
     mutation?: UseMutationOptions<
       CreateTripMutationResponse,
-      ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+      ResponseErrorConfig<
+        CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+      >,
       { data: CreateTripMutationRequest },
       TContext
     > & { client?: QueryClient };
@@ -94,14 +101,18 @@ export function useCreateTrip<TContext>(
 
   const baseOptions = createTripMutationOptions(config) as UseMutationOptions<
     CreateTripMutationResponse,
-    ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+    ResponseErrorConfig<
+      CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+    >,
     { data: CreateTripMutationRequest },
     TContext
   >;
 
   return useMutation<
     CreateTripMutationResponse,
-    ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+    ResponseErrorConfig<
+      CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+    >,
     { data: CreateTripMutationRequest },
     TContext
   >(
@@ -113,7 +124,9 @@ export function useCreateTrip<TContext>(
     queryClient,
   ) as UseMutationResult<
     CreateTripMutationResponse,
-    ResponseErrorConfig<CreateTrip400 | CreateTrip422 | CreateTrip500>,
+    ResponseErrorConfig<
+      CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
+    >,
     { data: CreateTripMutationRequest },
     TContext
   >;

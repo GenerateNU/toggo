@@ -48,17 +48,19 @@ func (r *tripRepository) Find(ctx context.Context, id uuid.UUID) (*models.Trip, 
 	return trip, nil
 }
 
-// FindAllWithCursor retrieves trips after the given cursor (cursor nil = first page).
-// Uses ORDER BY created_at DESC, id DESC. Fetches limit+1 to detect hasNext; returns
+// FindAllWithCursor retrieves trips a user belongs to after the given cursor (cursor nil = first page).
+// Uses ORDER BY trip.created_at DESC, trip.id DESC. Fetches limit+1 to detect hasNext; returns
 // next cursor from the last row when there are more results.
-func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error) {
+func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		Model((*models.Trip)(nil)).
-		Order("created_at DESC", "id DESC").
+		Join("JOIN memberships AS m ON m.trip_id = trip.id").
+		Where("m.user_id = ?", userID).
+		OrderExpr("trip.created_at DESC, trip.id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(trip.created_at, trip.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
 
 	var trips []*models.Trip
