@@ -9,6 +9,7 @@ import (
 	"toggo/internal/utilities/pagination"
 
 	"github.com/google/uuid"
+	"github.com/uptrace/bun"
 )
 
 type TripServiceInterface interface {
@@ -51,25 +52,37 @@ func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripReque
 		BudgetMax: req.BudgetMax,
 	}
 
-	createdTrip, err := s.Trip.Create(ctx, trip)
+	// Use transaction to ensure trip creation and membership creation are atomic
+	var createdTrip *models.Trip
+	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		// Create trip within transaction
+		_, err := tx.NewInsert().
+			Model(trip).
+			Returning("*").
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		createdTrip = trip
+
+		// Create membership within the same transaction
+		membership := &models.Membership{
+			UserID:    creatorUserID,
+			TripID:    trip.ID,
+			IsAdmin:   true,
+			BudgetMin: req.BudgetMin,
+			BudgetMax: req.BudgetMax,
+		}
+
+		_, err = tx.NewInsert().
+			Model(membership).
+			Returning("*").
+			Exec(ctx)
+		return err
+	})
+
 	if err != nil {
 		return nil, err
-	}
-
-	// Automatically add creator as admin member
-	membership := &models.Membership{
-		UserID:    creatorUserID,
-		TripID:    createdTrip.ID,
-		IsAdmin:   true,
-		BudgetMin: req.BudgetMin,
-		BudgetMax: req.BudgetMax,
-	}
-
-	_, err = s.Membership.Create(ctx, membership)
-	if err != nil {
-		// If membership creation fails, return the trip anyway
-		// The trip exists, just without automatic membership
-		return createdTrip, nil
 	}
 
 	return createdTrip, nil

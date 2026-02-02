@@ -16,6 +16,7 @@ type Repository struct {
 	Comment    CommentRepository
 	Membership MembershipRepository
 	Trip       TripRepository
+	db         *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -26,7 +27,13 @@ func NewRepository(db *bun.DB) *Repository {
 		Comment:    &commentRepository{db: db},
 		Trip:       &tripRepository{db: db},
 		Membership: &membershipRepository{db: db},
+		db:         db,
 	}
+}
+
+// GetDB returns the underlying database connection for transactions
+func (r *Repository) GetDB() *bun.DB {
+	return r.db
 }
 
 type HealthRepository interface {
