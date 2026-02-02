@@ -90,30 +90,6 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(result)
 }
 
-// @Summary      Get user's trips
-// @Description  Retrieves all trips a user is a member of
-// @Tags         memberships
-// @Produce      json
-// @Param        userID path string true "User ID"
-// @Success      200 {array} models.Membership
-// @Failure      400 {object} errs.APIError
-// @Failure      500 {object} errs.APIError
-// @Router       /api/v1/users/{userID}/trips [get]
-// @ID           getUserTrips
-func (ctrl *MembershipController) GetUserTrips(c *fiber.Ctx) error {
-	userID, err := validators.ValidateID(c.Params("userID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	trips, err := ctrl.membershipService.GetUserTrips(c.Context(), userID)
-	if err != nil {
-		return err
-	}
-
-	return c.Status(http.StatusOK).JSON(trips)
-}
-
 // @Summary      Get membership
 // @Description  Retrieves the membership for a user in a trip
 // @Tags         memberships

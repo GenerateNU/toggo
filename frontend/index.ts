@@ -19,8 +19,6 @@ export type { GetMembershipQueryKey } from "./api/memberships/useGetMembership.t
 export type { GetMembershipSuspenseQueryKey } from "./api/memberships/useGetMembershipSuspense.ts";
 export type { GetTripMembersQueryKey } from "./api/memberships/useGetTripMembers.ts";
 export type { GetTripMembersSuspenseQueryKey } from "./api/memberships/useGetTripMembersSuspense.ts";
-export type { GetUserTripsQueryKey } from "./api/memberships/useGetUserTrips.ts";
-export type { GetUserTripsSuspenseQueryKey } from "./api/memberships/useGetUserTripsSuspense.ts";
 export type { PromoteToAdminMutationKey } from "./api/memberships/usePromoteToAdmin.ts";
 export type { RemoveMemberMutationKey } from "./api/memberships/useRemoveMember.ts";
 export type { UpdateMembershipMutationKey } from "./api/memberships/useUpdateMembership.ts";
@@ -124,14 +122,6 @@ export { getTripMembersSuspenseQueryKey } from "./api/memberships/useGetTripMemb
 export { getTripMembersSuspense } from "./api/memberships/useGetTripMembersSuspense.ts";
 export { getTripMembersSuspenseQueryOptions } from "./api/memberships/useGetTripMembersSuspense.ts";
 export { useGetTripMembersSuspense } from "./api/memberships/useGetTripMembersSuspense.ts";
-export { getUserTripsQueryKey } from "./api/memberships/useGetUserTrips.ts";
-export { getUserTrips } from "./api/memberships/useGetUserTrips.ts";
-export { getUserTripsQueryOptions } from "./api/memberships/useGetUserTrips.ts";
-export { useGetUserTrips } from "./api/memberships/useGetUserTrips.ts";
-export { getUserTripsSuspenseQueryKey } from "./api/memberships/useGetUserTripsSuspense.ts";
-export { getUserTripsSuspense } from "./api/memberships/useGetUserTripsSuspense.ts";
-export { getUserTripsSuspenseQueryOptions } from "./api/memberships/useGetUserTripsSuspense.ts";
-export { useGetUserTripsSuspense } from "./api/memberships/useGetUserTripsSuspense.ts";
 export { promoteToAdminMutationKey } from "./api/memberships/usePromoteToAdmin.ts";
 export { promoteToAdmin } from "./api/memberships/usePromoteToAdmin.ts";
 export { promoteToAdminMutationOptions } from "./api/memberships/usePromoteToAdmin.ts";

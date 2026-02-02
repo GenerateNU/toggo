@@ -9,12 +9,13 @@ import (
 	"toggo/internal/utilities/pagination"
 
 	"github.com/google/uuid"
+	"github.com/uptrace/bun"
 )
 
 type TripServiceInterface interface {
-	CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error)
+	CreateTrip(ctx context.Context, req models.CreateTripRequest, creatorUserID uuid.UUID) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error)
-	GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error)
+	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, id uuid.UUID) error
 }
@@ -29,8 +30,7 @@ func NewTripService(repo *repository.Repository) TripServiceInterface {
 	return &TripService{Repository: repo}
 }
 
-func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error) {
-	// Validate business rules
+func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripRequest, creatorUserID uuid.UUID) (*models.Trip, error) {
 	if req.Name == "" {
 		return nil, errors.New("trip name cannot be empty")
 	}
@@ -51,7 +51,40 @@ func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripReque
 		BudgetMax: req.BudgetMax,
 	}
 
-	return s.Trip.Create(ctx, trip)
+	// Use transaction to ensure trip creation and membership creation are atomic
+	var createdTrip *models.Trip
+	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		// Create trip within transaction
+		_, err := tx.NewInsert().
+			Model(trip).
+			Returning("*").
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		createdTrip = trip
+
+		// Create membership within the same transaction
+		membership := &models.Membership{
+			UserID:    creatorUserID,
+			TripID:    trip.ID,
+			IsAdmin:   true,
+			BudgetMin: req.BudgetMin,
+			BudgetMax: req.BudgetMax,
+		}
+
+		_, err = tx.NewInsert().
+			Model(membership).
+			Returning("*").
+			Exec(ctx)
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return createdTrip, nil
 }
 
 func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error) {
@@ -65,7 +98,7 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, 
 	return trip, nil
 }
 
-func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
+func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
 	var cursor *models.TripCursor
 	if cursorToken != "" {
 		decoded, err := pagination.DecodeTimeUUIDCursor(cursorToken)
@@ -75,11 +108,10 @@ func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorT
 		cursor = decoded
 	}
 
-	trips, nextCursor, err := s.Trip.FindAllWithCursor(ctx, limit, cursor)
+	trips, nextCursor, err := s.Trip.FindAllWithCursor(ctx, userID, limit, cursor)
 	if err != nil {
 		return nil, err
 	}
-
 	result := &models.TripCursorPageResult{
 		Items: trips,
 		Limit: limit,

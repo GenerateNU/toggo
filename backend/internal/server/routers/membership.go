@@ -28,9 +28,5 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 	tripMembershipIDGroup.Patch("", membershipController.UpdateMembership)
 	tripMembershipIDGroup.Delete("", membershipController.RemoveMember)
 
-	// /api/v1/users/:userID/trips
-	userGroup := apiGroup.Group("/users/:userID")
-	userGroup.Get("/trips", membershipController.GetUserTrips)
-
 	return membershipGroup
 }

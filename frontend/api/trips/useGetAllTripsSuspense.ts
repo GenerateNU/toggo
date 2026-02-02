@@ -9,6 +9,7 @@ import type {
   GetAllTripsQueryResponse,
   GetAllTripsQueryParams,
   GetAllTrips400,
+  GetAllTrips401,
   GetAllTrips500,
 } from "../../types/types.gen.ts";
 import type {
@@ -28,7 +29,7 @@ export type GetAllTripsSuspenseQueryKey = ReturnType<
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips
+ * @summary Get all trips user is a member of
  * {@link /api/v1/trips}
  */
 export async function getAllTripsSuspense(
@@ -39,7 +40,7 @@ export async function getAllTripsSuspense(
 
   const res = await request<
     GetAllTripsQueryResponse,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
     unknown
   >({ method: "GET", url: `/api/v1/trips`, params, ...requestConfig });
   return res.data;
@@ -52,7 +53,7 @@ export function getAllTripsSuspenseQueryOptions(
   const queryKey = getAllTripsSuspenseQueryKey(params);
   return queryOptions<
     GetAllTripsQueryResponse,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
     GetAllTripsQueryResponse,
     typeof queryKey
   >({
@@ -66,7 +67,7 @@ export function getAllTripsSuspenseQueryOptions(
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips
+ * @summary Get all trips user is a member of
  * {@link /api/v1/trips}
  */
 export function useGetAllTripsSuspense<
@@ -78,7 +79,7 @@ export function useGetAllTripsSuspense<
     query?: Partial<
       UseSuspenseQueryOptions<
         GetAllTripsQueryResponse,
-        ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>,
+        ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>,
         TData,
         TQueryKey
       >
@@ -100,7 +101,7 @@ export function useGetAllTripsSuspense<
     queryClient,
   ) as UseSuspenseQueryResult<
     TData,
-    ResponseErrorConfig<GetAllTrips400 | GetAllTrips500>
+    ResponseErrorConfig<GetAllTrips400 | GetAllTrips401 | GetAllTrips500>
   > & { queryKey: TQueryKey };
 
   query.queryKey = queryKey as TQueryKey;

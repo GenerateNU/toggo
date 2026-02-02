@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"testing"
 	"toggo/internal/models"
@@ -14,6 +15,25 @@ func TestTripLifecycle(t *testing.T) {
 	authUserID := fakes.GenerateUUID()
 
 	var tripID string
+
+	t.Run("create user first", func(t *testing.T) {
+		username := fakes.GenerateRandomUsername()
+		phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &authUserID,
+				Body: models.CreateUserRequest{
+					Name:        "Trip Creator",
+					Username:    username,
+					PhoneNumber: phoneNumber,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
 
 	t.Run("create trip", func(t *testing.T) {
 		resp := testkit.New(t).

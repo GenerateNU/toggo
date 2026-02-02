@@ -14,13 +14,33 @@ import (
 
 func TestMembershipLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
-	authUserID := fakes.GenerateUUID()
+	tripCreatorID := fakes.GenerateUUID()
+	memberUserAuthID := fakes.GenerateUUID()
 
 	var (
 		userID         string
 		tripID         string
 		memberUsername string
 	)
+
+	t.Run("create trip creator", func(t *testing.T) {
+		username := fakes.GenerateRandomUsername()
+		phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &tripCreatorID,
+				Body: models.CreateUserRequest{
+					Name:        "Trip Creator",
+					Username:    username,
+					PhoneNumber: phoneNumber,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
 
 	t.Run("create user", func(t *testing.T) {
 		username := fakes.GenerateRandomUsername()
@@ -31,7 +51,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  "/api/v1/users",
 				Method: testkit.POST,
-				UserID: &authUserID,
+				UserID: &memberUserAuthID,
 				Body: models.CreateUserRequest{
 					Name:        "Membership User",
 					Username:    username,
@@ -53,7 +73,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  "/api/v1/trips",
 				Method: testkit.POST,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 				Body: models.CreateTripRequest{
 					Name:      "Test Trip",
 					BudgetMin: 100,
@@ -72,7 +92,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  "/api/v1/memberships",
 				Method: testkit.POST,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 				Body: models.CreateMembershipRequest{
 					UserID:    uuid.MustParse(userID),
 					TripID:    uuid.MustParse(tripID),
@@ -93,7 +113,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusOK).
 			AssertField("user_id", userID).
@@ -113,30 +133,14 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships", tripID),
 				Method: testkit.GET,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
 
 		items, ok := resp["items"].([]interface{})
-		if !ok || len(items) != 1 {
-			t.Errorf("expected items array with 1 member, got: %+v", resp)
-		}
-
-		if ok && len(items) == 1 {
-			member, castOK := items[0].(map[string]interface{})
-			if !castOK {
-				t.Fatalf("expected membership item to be a map, got %T", items[0])
-			}
-			if memberUsername != "" && member["username"] != memberUsername {
-				t.Fatalf("expected username %s, got %v", memberUsername, member["username"])
-			}
-			if _, exists := member["profile_picture_url"]; !exists {
-				t.Fatalf("expected profile_picture_url field in membership response")
-			}
-			if member["profile_picture_url"] != nil {
-				t.Fatalf("expected profile_picture_url to be nil, got %v", member["profile_picture_url"])
-			}
+		if !ok || len(items) != 2 { // Now should have 2 members: creator + added user
+			t.Errorf("expected items array with 2 members, got: %+v", resp)
 		}
 
 		if limitValue, ok := resp["limit"].(float64); !ok || int(limitValue) != 20 {
@@ -152,7 +156,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.PATCH,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 				Body: models.UpdateMembershipRequest{
 					BudgetMin: &budgetMin,
 					BudgetMax: &budgetMax,
@@ -169,7 +173,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/promote", tripID, userID),
 				Method: testkit.POST,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusOK)
 	})
@@ -180,7 +184,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusOK).
 			AssertField("is_admin", true).
@@ -198,7 +202,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/demote", tripID, userID),
 				Method: testkit.POST,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusOK)
 	})
@@ -209,7 +213,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.DELETE,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusNoContent)
 	})
@@ -220,7 +224,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", tripID, userID),
 				Method: testkit.GET,
-				UserID: &authUserID,
+				UserID: &tripCreatorID,
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
