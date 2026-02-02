@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["body", "title", "user_id"],
+  "properties": {
+    "body": { "type": "string", "maxLength": 500, "minLength": 1 },
+    "data": { "type": "object", "additionalProperties": true },
+    "title": { "type": "string", "maxLength": 100, "minLength": 1 },
+    "user_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.SendNotificationRequest"
+}

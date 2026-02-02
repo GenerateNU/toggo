@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strings"
 	"testing"
@@ -14,6 +15,7 @@ func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
+	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
 	normalizedUsername := strings.ToLower(username)
 
 	var createdUserID string
@@ -28,7 +30,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "John Doe",
 					Username:    username,
-					PhoneNumber: "+16175551234",
+					PhoneNumber: phoneNumber,
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -48,7 +50,7 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			AssertField("username", normalizedUsername).
 			AssertField("name", "John Doe").
-			AssertField("phone_number", "+16175551234")
+			AssertField("phone_number", phoneNumber)
 	})
 
 	t.Run("get created user", func(t *testing.T) {
@@ -179,6 +181,7 @@ func TestDeviceTokenUpdate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
+	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
 
 	var userID string
 
@@ -191,7 +194,7 @@ func TestDeviceTokenUpdate(t *testing.T) {
 			Body: models.CreateUserRequest{
 				Name:        "Device Token User",
 				Username:    username,
-				PhoneNumber: "+16175551234",
+				PhoneNumber: phoneNumber,
 			},
 		}).
 		AssertStatus(http.StatusCreated).
