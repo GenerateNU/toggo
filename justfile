@@ -117,10 +117,6 @@ format:
     just format-be
     just format-fe
 
-lint: 
-    just lint-be
-    just lint-fe
-
 fmt-lint: 
     just format
     just lint

@@ -440,110 +440,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/notifications/send": {
-            "post": {
-                "description": "Sends a push notification to a single user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notifications"
-                ],
-                "summary": "Send notification to user",
-                "operationId": "sendNotification",
-                "parameters": [
-                    {
-                        "description": "Notification request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SendNotificationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/notifications/send-bulk": {
-            "post": {
-                "description": "Sends push notifications to multiple users",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "notifications"
-                ],
-                "summary": "Send bulk notifications",
-                "operationId": "sendBulkNotification",
-                "parameters": [
-                    {
-                        "description": "Bulk notification request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SendBulkNotificationRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.NotificationResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users": {
+        "/api/v1/memberships": {
             "post": {
                 "description": "Adds a user as a member of a trip",
                 "consumes": [
@@ -1923,6 +1820,89 @@ const docTemplate = `{
                 "ImageSizeSmall"
             ]
         },
+        "models.Membership": {
+            "type": "object",
+            "properties": {
+                "availability": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "budget_max": {
+                    "type": "integer"
+                },
+                "budget_min": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MembershipAPIResponse": {
+            "type": "object",
+            "properties": {
+                "availability": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "budget_max": {
+                    "type": "integer"
+                },
+                "budget_min": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "is_admin": {
+                    "type": "boolean"
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MembershipCursorPageResult": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MembershipAPIResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
         "models.NotificationError": {
             "type": "object",
             "properties": {
@@ -1951,6 +1931,23 @@ const docTemplate = `{
                 },
                 "success_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.PaginatedCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentAPIResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "next_cursor": {
+                    "type": "string"
                 }
             }
         },
