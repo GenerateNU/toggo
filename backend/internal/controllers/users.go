@@ -84,6 +84,12 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
+	// Check authorization
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok || authUserID != id.String() {
+		return errs.ErrNotFound
+	}
+
 	if err := validators.Validate(u.validator, req); err != nil {
 		return err
 	}

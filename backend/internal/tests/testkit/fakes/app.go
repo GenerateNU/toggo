@@ -18,9 +18,6 @@ import (
 	"github.com/uptrace/bun"
 )
 
-//go:embed fixtures.sql
-var fixturesSQL string
-
 var (
 	sharedApp     *fiber.App
 	sharedDB      *bun.DB

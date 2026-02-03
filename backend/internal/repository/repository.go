@@ -67,6 +67,7 @@ type MembershipRepository interface {
 	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
 	Delete(ctx context.Context, userID, tripID uuid.UUID) error
 }

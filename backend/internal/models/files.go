@@ -52,8 +52,8 @@ type GetFileAllSizesResponse struct {
 // ---- Batch File Operations ----
 
 type GetFilesByKeysRequest struct {
-	FileKeys []string    `json:"fileKeys" validate:"required,min=1"`
-	Size     ImageSize   `json:"size" validate:"required,image_size"`
+	FileKeys []string  `json:"fileKeys" validate:"required,min=1"`
+	Size     ImageSize `json:"size" validate:"required,image_size"`
 }
 
 type FileKeyResponse struct {

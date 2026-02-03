@@ -136,26 +136,3 @@ func (s *CommentService) GetPaginatedComments(
 		Limit:      requestLimit,
 	}, nil
 }
-
-func (s *CommentService) toAPIResponse(ctx context.Context, comment *models.CommentDatabaseResponse) (*models.CommentAPIResponse, error) {
-	var profilePictureURL *string
-	if comment.ProfilePictureID != nil {
-		fileResp, err := s.fileService.GetFile(ctx, *comment.ProfilePictureID, models.ImageSizeSmall)
-		if err == nil {
-			profilePictureURL = &fileResp.URL
-		}
-	}
-
-	return &models.CommentAPIResponse{
-		ID:                comment.ID,
-		TripID:            comment.TripID,
-		EntityType:        comment.EntityType,
-		EntityID:          comment.EntityID,
-		UserID:            comment.UserID,
-		Username:          comment.Username,
-		ProfilePictureURL: profilePictureURL,
-		Content:           comment.Content,
-		CreatedAt:         comment.CreatedAt,
-		UpdatedAt:         comment.UpdatedAt,
-	}, nil
-}

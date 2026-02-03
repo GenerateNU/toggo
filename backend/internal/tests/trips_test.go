@@ -209,7 +209,7 @@ func TestTripLifecycle(t *testing.T) {
 			Method: testkit.DELETE,
 			UserID: &authUserID,
 		}).
-		AssertStatus(http.StatusNoContent)
+		AssertStatus(http.StatusNotFound)
 }
 
 func TestTripPagination(t *testing.T) {
@@ -442,5 +442,51 @@ func TestTripValidation(t *testing.T) {
 				},
 			}).
 			AssertStatus(http.StatusBadRequest) // 400 for referential integrity
+	})
+
+	t.Run("non-member cannot view trip details", func(t *testing.T) {
+		// Create trip with authUserID
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &authUserID,
+				Body: models.CreateTripRequest{
+					Name:      "Private Trip",
+					BudgetMin: 100,
+					BudgetMax: 500,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		tripID := resp["id"].(string)
+
+		// Create another user who is not a member
+		nonMemberID := fakes.GenerateUUID()
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &nonMemberID,
+				Body: models.CreateUserRequest{
+					Name:        "Non Member",
+					Username:    fakes.GenerateRandomUsername(),
+					PhoneNumber: fakes.GenerateRandomPhoneNumber(),
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		// Non-member tries to view trip - should be not found
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.GET,
+				UserID: &nonMemberID,
+			}).
+			AssertStatus(http.StatusNotFound)
 	})
 }

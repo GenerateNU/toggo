@@ -222,6 +222,23 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
+	// Check if authenticated user is an admin
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	isAdmin, err := ctrl.membershipService.IsAdmin(c.Context(), tripID, authUserUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
+	}
+
 	if err := ctrl.membershipService.PromoteToAdmin(c.Context(), tripID, userID); err != nil {
 		return err
 	}
@@ -252,6 +269,23 @@ func (ctrl *MembershipController) DemoteFromAdmin(c *fiber.Ctx) error {
 	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
+	}
+
+	// Check if authenticated user is an admin
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	isAdmin, err := ctrl.membershipService.IsAdmin(c.Context(), tripID, authUserUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
 	}
 
 	if err := ctrl.membershipService.DemoteFromAdmin(c.Context(), tripID, userID); err != nil {

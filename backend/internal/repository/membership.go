@@ -164,6 +164,15 @@ func (r *membershipRepository) CountMembers(ctx context.Context, tripID uuid.UUI
 	return count, err
 }
 
+// CountAdmins returns the number of admins in a trip
+func (r *membershipRepository) CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error) {
+	count, err := r.db.NewSelect().
+		Model((*models.Membership)(nil)).
+		Where("trip_id = ? AND is_admin = true", tripID).
+		Count(ctx)
+	return count, err
+}
+
 // Update modifies a membership
 func (r *membershipRepository) Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error) {
 	updateQuery := r.db.NewUpdate().

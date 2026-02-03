@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -119,13 +118,11 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAP
 func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
-		log.Printf("GetTripsWithCursor: Failed to parse cursor '%s': %v", cursorToken, err)
 		return nil, err
 	}
 
 	tripsData, nextCursor, err := s.Trip.FindAllWithCursorAndCoverImage(ctx, userID, limit, cursor)
 	if err != nil {
-		log.Printf("GetTripsWithCursor: Database error for userID=%s, limit=%d, cursor=%+v: %v", userID, limit, cursor, err)
 		return nil, err
 	}
 

@@ -44,25 +44,30 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 	// Validate trip exists
 	_, err := s.Trip.Find(ctx, req.TripID)
 	if err != nil {
-		return nil, errors.New("trip not found")
+		return nil, errs.ErrNotFound
 	}
 
 	// Validate business rules
 	if req.BudgetMin < 0 {
-		return nil, errors.New("budget minimum cannot be negative")
+		return nil, errs.BadRequest(errors.New("budget minimum cannot be negative"))
 	}
 
 	if req.BudgetMax < req.BudgetMin {
-		return nil, errors.New("budget maximum must be greater than or equal to minimum")
+		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
-	// Check if already a member
-	isMember, err := s.Membership.IsMember(ctx, req.TripID, req.UserID)
-	if err != nil {
-		return nil, err
-	}
-	if isMember {
-		return nil, errors.New("user is already a member of this trip")
+	existingMembership, err := s.Membership.Find(ctx, req.UserID, req.TripID)
+	if err == nil {
+		return &models.Membership{
+			UserID:       existingMembership.UserID,
+			TripID:       existingMembership.TripID,
+			IsAdmin:      existingMembership.IsAdmin,
+			BudgetMin:    existingMembership.BudgetMin,
+			BudgetMax:    existingMembership.BudgetMax,
+			Availability: existingMembership.Availability,
+			CreatedAt:    existingMembership.CreatedAt,
+			UpdatedAt:    existingMembership.UpdatedAt,
+		}, nil
 	}
 
 	// Create membership
@@ -189,6 +194,15 @@ func (s *MembershipService) DemoteFromAdmin(ctx context.Context, tripID, userID 
 
 	if !membership.IsAdmin {
 		return errors.New("user is not an admin")
+	}
+
+	// Check if this is the last admin
+	admins, err := s.Membership.CountAdmins(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	if admins <= 1 {
+		return errs.BadRequest(errors.New("cannot demote the last admin"))
 	}
 
 	// Update to non-admin using pointer

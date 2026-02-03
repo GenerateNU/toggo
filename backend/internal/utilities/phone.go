@@ -1,4 +1,4 @@
-package utilities
+package utilities // nolint:revive // utilities is an appropriate package name for utility functions
 
 import (
 	"fmt"

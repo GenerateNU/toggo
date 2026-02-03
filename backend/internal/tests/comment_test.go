@@ -185,6 +185,23 @@ func TestCommentUpdate(t *testing.T) {
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
+
+	t.Run("invalid entity type", func(t *testing.T) {
+		// Try to create comment with invalid entity type
+		_ = testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/comments",
+				Method: testkit.POST,
+				UserID: &user1,
+				Body: map[string]interface{}{
+					"trip_id":     tripID,
+					"entity_type": "invalid_type",
+					"entity_id":   activityID,
+					"content":     "test",
+				},
+			}).AssertStatus(http.StatusUnprocessableEntity)
+	})
 }
 
 /* =========================
@@ -393,5 +410,296 @@ func TestCommentPagination(t *testing.T) {
 		items := resp["items"].([]interface{})
 		require.Equal(t, 0, len(items))
 		require.Nil(t, resp["next_cursor"])
+	})
+
+	t.Run("default limit behavior", func(t *testing.T) {
+		// Create fresh activity with 25 comments
+		defaultActivityID := uuid.New()
+
+		for i := 0; i < 25; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   defaultActivityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		// Test without limit parameter (should use default)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", tripID, defaultActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.True(t, len(items) <= 20, "Should use default limit")
+		require.NotNil(t, resp["next_cursor"], "Should have next page")
+	})
+
+	t.Run("max limit boundary", func(t *testing.T) {
+		// Test with exactly limit=100 (the maximum allowed)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=100", tripID, activityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.True(t, len(items) <= 100)
+	})
+
+	t.Run("single item pagination", func(t *testing.T) {
+		// Create activity with only 1 comment
+		singleActivityID := uuid.New()
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/comments",
+				Method: testkit.POST,
+				UserID: &user1,
+				Body: models.CreateCommentRequest{
+					TripID:     uuid.MustParse(tripID),
+					EntityType: models.Activity,
+					EntityID:   singleActivityID,
+					Content:    "Single comment",
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5", tripID, singleActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		require.Nil(t, resp["next_cursor"], "Should not have next page")
+	})
+
+	t.Run("exact page boundary", func(t *testing.T) {
+		// Create exactly 10 comments with limit=5
+		boundaryActivityID := uuid.New()
+
+		for i := 0; i < 10; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   boundaryActivityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		// First page
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5", tripID, boundaryActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, 5, len(resp["items"].([]interface{})))
+		require.NotNil(t, resp["next_cursor"])
+
+		// Second page (exactly 5 items, no more)
+		resp2 := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5&cursor=%s", tripID, boundaryActivityID, resp["next_cursor"]),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, 5, len(resp2["items"].([]interface{})))
+		require.Nil(t, resp2["next_cursor"], "Should not have cursor on last page")
+	})
+
+	t.Run("last page cursor returns empty", func(t *testing.T) {
+		// Create activity with 3 comments, get all in one page
+		lastActivityID := uuid.New()
+
+		for i := 0; i < 3; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   lastActivityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		// Get all items
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=10", tripID, lastActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, 3, len(resp["items"].([]interface{})))
+		require.Nil(t, resp["next_cursor"])
+	})
+
+	t.Run("no duplicates across pages", func(t *testing.T) {
+		// Create activity with 12 comments
+		dupActivityID := uuid.New()
+
+		for i := 0; i < 12; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   dupActivityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		seenIDs := make(map[string]bool)
+
+		// Get first page
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5", tripID, dupActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		for _, item := range resp["items"].([]interface{}) {
+			comment := item.(map[string]interface{})
+			commentID := comment["id"].(string)
+			require.False(t, seenIDs[commentID], "Found duplicate comment id: %s", commentID)
+			seenIDs[commentID] = true
+		}
+
+		// Get second page
+		if resp["next_cursor"] != nil {
+			resp2 := testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5&cursor=%s", tripID, dupActivityID, resp["next_cursor"]),
+					Method: testkit.GET,
+					UserID: &user1,
+				}).
+				AssertStatus(http.StatusOK).
+				GetBody()
+
+			for _, item := range resp2["items"].([]interface{}) {
+				comment := item.(map[string]interface{})
+				commentID := comment["id"].(string)
+				require.False(t, seenIDs[commentID], "Found duplicate comment id: %s", commentID)
+				seenIDs[commentID] = true
+			}
+		}
+	})
+
+	t.Run("correct ordering", func(t *testing.T) {
+		// Create activity with multiple comments
+		orderActivityID := uuid.New()
+
+		for i := 0; i < 5; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   orderActivityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=10", tripID, orderActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		// Verify items are ordered by created_at DESC (newest first)
+		for i := 0; i < len(items)-1; i++ {
+			current := items[i].(map[string]interface{})
+			next := items[i+1].(map[string]interface{})
+			currentTime := current["created_at"].(string)
+			nextTime := next["created_at"].(string)
+			require.True(t, currentTime >= nextTime, "Items should be ordered by created_at DESC")
+		}
+	})
+
+	t.Run("non-member cannot paginate comments", func(t *testing.T) {
+		// Create a user who is not a member of the trip
+		nonMember := createTestUser(t, app, "NonMember", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", tripID, activityID),
+				Method: testkit.GET,
+				UserID: &nonMember,
+			}).
+			AssertStatus(http.StatusNotFound)
 	})
 }

@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 	"strings"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -30,20 +29,13 @@ func NewUserService(repo *repository.Repository) UserServiceInterface {
 }
 
 func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUserRequest, userID uuid.UUID) (*models.User, error) {
-	log.Printf("CreateUser Service: Input phone number: %s", userBody.PhoneNumber)
-
 	phone, err := utilities.NormalizeUSPhone(userBody.PhoneNumber)
 	if err != nil {
-		log.Printf("CreateUser Service: Phone normalization failed: %v", err)
 		return nil, errs.InvalidRequestData(map[string]string{"phone_number": err.Error()})
 	}
 
-	log.Printf("CreateUser Service: Normalized phone: %s", phone)
-
 	username := strings.ToLower(strings.TrimSpace(userBody.Username))
 	name := userBody.Name
-
-	log.Printf("CreateUser Service: Creating user with username: %s, name: %s, phone: %s", username, name, phone)
 
 	user, err := u.User.Create(ctx, &models.User{
 		Name:        name,
@@ -54,7 +46,7 @@ func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUser
 	})
 
 	if err != nil {
-		log.Printf("CreateUser Service: Repository create failed: %v", err)
+		return nil, err
 	}
 
 	return user, err
