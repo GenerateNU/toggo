@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.Config)
+func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams, fileService services.FileServiceInterface) fiber.Router {
+	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository, fileService)
 	membershipController := controllers.NewMembershipController(membershipService, routeParams.Validator)
 
 	// /api/v1/memberships

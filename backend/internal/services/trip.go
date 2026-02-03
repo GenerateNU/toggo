@@ -13,7 +13,7 @@ import (
 
 type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error)
-	GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAPIResponse, error)
 	GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, id uuid.UUID) error
@@ -23,10 +23,14 @@ var _ TripServiceInterface = (*TripService)(nil)
 
 type TripService struct {
 	*repository.Repository
+	fileService FileServiceInterface
 }
 
-func NewTripService(repo *repository.Repository) TripServiceInterface {
-	return &TripService{Repository: repo}
+func NewTripService(repo *repository.Repository, fileService FileServiceInterface) TripServiceInterface {
+	return &TripService{
+		Repository:  repo,
+		fileService: fileService,
+	}
 }
 
 func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripRequest) (*models.Trip, error) {
@@ -45,43 +49,73 @@ func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripReque
 
 	// Create trip
 	trip := &models.Trip{
-		ID:        uuid.New(),
-		Name:      req.Name,
-		BudgetMin: req.BudgetMin,
-		BudgetMax: req.BudgetMax,
+		ID:           uuid.New(),
+		Name:         req.Name,
+		CoverImageID: req.CoverImageID,
+		BudgetMin:    req.BudgetMin,
+		BudgetMax:    req.BudgetMax,
 	}
 
 	return s.Trip.Create(ctx, trip)
 }
 
-func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.Trip, error) {
-	trip, err := s.Trip.Find(ctx, id)
+func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAPIResponse, error) {
+	tripData, err := s.Trip.FindWithCoverImage(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if trip == nil {
+	if tripData == nil {
 		return nil, errs.ErrNotFound
 	}
-	return trip, nil
+
+	return s.toAPIResponse(ctx, tripData)
 }
 
 func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
-	var cursor *models.TripCursor
-	if cursorToken != "" {
-		decoded, err := pagination.DecodeTimeUUIDCursor(cursorToken)
-		if err != nil {
-			return nil, err
-		}
-		cursor = decoded
-	}
-
-	trips, nextCursor, err := s.Trip.FindAllWithCursor(ctx, limit, cursor)
+	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
 		return nil, err
 	}
 
+	tripsData, nextCursor, err := s.Trip.FindAllWithCursorAndCoverImage(ctx, limit, cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, tripsData, func(item *models.TripDatabaseResponse) *string {
+		return item.CoverImageKey
+	}, models.ImageSizeMedium)
+	tripResponses := s.convertToAPITrips(tripsData, fileURLMap)
+
+	return s.buildTripPageResult(tripResponses, nextCursor, limit)
+}
+
+func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse, fileURLMap map[string]string) []*models.TripAPIResponse {
+	tripResponses := make([]*models.TripAPIResponse, 0, len(tripsData))
+	for _, tripData := range tripsData {
+		var coverImageURL *string
+		if tripData.CoverImageKey != nil && *tripData.CoverImageKey != "" {
+			if url, exists := fileURLMap[*tripData.CoverImageKey]; exists {
+				coverImageURL = &url
+			}
+		}
+
+		tripResponses = append(tripResponses, &models.TripAPIResponse{
+			ID:            tripData.TripID,
+			Name:          tripData.Name,
+			CoverImageURL: coverImageURL,
+			BudgetMin:     tripData.BudgetMin,
+			BudgetMax:     tripData.BudgetMax,
+			CreatedAt:     tripData.CreatedAt,
+			UpdatedAt:     tripData.UpdatedAt,
+		})
+	}
+	return tripResponses
+}
+
+func (s *TripService) buildTripPageResult(tripResponses []*models.TripAPIResponse, nextCursor *models.TripCursor, limit int) (*models.TripCursorPageResult, error) {
 	result := &models.TripCursorPageResult{
-		Items: trips,
+		Items: tripResponses,
 		Limit: limit,
 	}
 	if nextCursor != nil {
@@ -95,7 +129,6 @@ func (s *TripService) GetTripsWithCursor(ctx context.Context, limit int, cursorT
 }
 
 func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
-	// Validate business rules only if fields are provided
 	if req.Name != nil && *req.Name == "" {
 		return nil, errors.New("trip name cannot be empty")
 	}
@@ -113,4 +146,25 @@ func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.U
 
 func (s *TripService) DeleteTrip(ctx context.Context, id uuid.UUID) error {
 	return s.Trip.Delete(ctx, id)
+}
+
+func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDatabaseResponse) (*models.TripAPIResponse, error) {
+	var coverImageURL *string
+
+	if tripData.CoverImageID != nil {
+		fileResp, err := s.fileService.GetFile(ctx, *tripData.CoverImageID, models.ImageSizeMedium)
+		if err == nil {
+			coverImageURL = &fileResp.URL
+		}
+	}
+
+	return &models.TripAPIResponse{
+		ID:            tripData.TripID,
+		Name:          tripData.Name,
+		CoverImageURL: coverImageURL,
+		BudgetMin:     tripData.BudgetMin,
+		BudgetMax:     tripData.BudgetMax,
+		CreatedAt:     tripData.CreatedAt,
+		UpdatedAt:     tripData.UpdatedAt,
+	}, nil
 }

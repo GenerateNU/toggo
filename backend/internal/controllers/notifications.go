@@ -37,7 +37,7 @@ func NewNotificationController(
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/notifications/send [post]
-// @ID 			sendNotification
+// @ID           sendNotification
 func (n *NotificationController) SendNotification(c *fiber.Ctx) error {
 	var req models.SendNotificationRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -66,7 +66,7 @@ func (n *NotificationController) SendNotification(c *fiber.Ctx) error {
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/notifications/send-bulk [post]
-// @ID 			sendBulkNotification
+// @ID           sendBulkNotification
 func (n *NotificationController) SendBulkNotification(c *fiber.Ctx) error {
 	var req models.SendBulkNotificationRequest
 	if err := c.BodyParser(&req); err != nil {

@@ -41,16 +41,17 @@ type MembershipCursorPageResult struct {
 }
 
 type MembershipDatabaseResponse struct {
-	UserID            uuid.UUID               `json:"user_id"`
-	TripID            uuid.UUID               `json:"trip_id"`
-	IsAdmin           bool                    `json:"is_admin"`
-	CreatedAt         time.Time               `json:"created_at"`
-	UpdatedAt         time.Time               `json:"updated_at"`
-	BudgetMin         int                     `json:"budget_min"`
-	BudgetMax         int                     `json:"budget_max"`
-	Availability      *map[string]interface{} `json:"availability,omitempty"`
-	Username          string                  `json:"username"`
-	ProfilePictureKey *string                 `json:"profile_picture_key"`
+	UserID             uuid.UUID               `json:"user_id"`
+	TripID             uuid.UUID               `json:"trip_id"`
+	IsAdmin            bool                    `json:"is_admin"`
+	CreatedAt          time.Time               `json:"created_at"`
+	UpdatedAt          time.Time               `json:"updated_at"`
+	BudgetMin          int                     `json:"budget_min"`
+	BudgetMax          int                     `json:"budget_max"`
+	Availability       *map[string]interface{} `json:"availability,omitempty"`
+	Username           string                  `json:"username"`
+	ProfilePictureID   *uuid.UUID              `json:"profile_picture_id"`
+	ProfilePictureKey  *string                 `bun:"profile_picture_key" json:"-"`
 }
 
 type MembershipAPIResponse struct {

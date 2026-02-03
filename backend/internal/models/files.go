@@ -49,6 +49,22 @@ type GetFileAllSizesResponse struct {
 	Files   []GetFileResponse `json:"files" maxItems:"3"`
 }
 
+// ---- Batch File Operations ----
+
+type GetFilesByKeysRequest struct {
+	FileKeys []string    `json:"fileKeys" validate:"required,min=1"`
+	Size     ImageSize   `json:"size" validate:"required,image_size"`
+}
+
+type FileKeyResponse struct {
+	FileKey string `json:"fileKey"`
+	URL     string `json:"url"`
+}
+
+type GetFilesByKeysResponse struct {
+	Files []FileKeyResponse `json:"files"`
+}
+
 // ---- S3 Health Check ----
 
 type S3HealthCheckResponse struct {

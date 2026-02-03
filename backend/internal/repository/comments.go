@@ -32,6 +32,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 		TableExpr("comments AS c").
 		ColumnExpr("c.id, c.trip_id, c.entity_type, c.entity_id, c.user_id, c.content, c.created_at, c.updated_at").
 		ColumnExpr("u.username").
+		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = c.user_id").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).

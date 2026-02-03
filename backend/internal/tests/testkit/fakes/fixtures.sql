@@ -38,3 +38,18 @@ WHERE id = '00000000-0000-0000-0000-000000000101';
 UPDATE users
 SET profile_picture = '00000000-0000-0000-0000-000000001002'
 WHERE id = '00000000-0000-0000-0000-000000000102';
+
+-- Trip cover image test fixtures
+INSERT INTO images (image_id, size, file_key, status) VALUES
+('00000000-0000-0000-0000-000000002001', 'medium', 'test-images/trip_cover1.jpg', 'confirmed'),
+('00000000-0000-0000-0000-000000002002', 'medium', 'test-images/trip_cover2.jpg', 'confirmed')
+ON CONFLICT (image_id, size) DO NOTHING;
+
+-- Update trips with cover images
+UPDATE trips
+SET cover_image = '00000000-0000-0000-0000-000000002001'
+WHERE id = '00000000-0000-0000-0000-000000000201';
+
+UPDATE trips
+SET cover_image = '00000000-0000-0000-0000-000000002002'
+WHERE id = '00000000-0000-0000-0000-000000000202';

@@ -29,16 +29,17 @@ type UpdateCommentRequest struct {
 }
 
 type CommentDatabaseResponse struct {
-	ID                uuid.UUID  `json:"id"`
-	TripID            uuid.UUID  `json:"trip_id"`
-	EntityType        EntityType `json:"entity_type"`
-	EntityID          uuid.UUID  `json:"entity_id"`
-	UserID            uuid.UUID  `json:"user_id"`
-	Username          string     `json:"username"`
-	ProfilePictureKey *string    `json:"profile_picture_key"` // pointer since some users don't have their avatar set
-	Content           string     `json:"content"`
-	CreatedAt         time.Time  `json:"created_at"`
-	UpdatedAt         time.Time  `json:"updated_at"`
+	ID                 uuid.UUID  `json:"id"`
+	TripID             uuid.UUID  `json:"trip_id"`
+	EntityType         EntityType `json:"entity_type"`
+	EntityID           uuid.UUID  `json:"entity_id"`
+	UserID             uuid.UUID  `json:"user_id"`
+	Username           string     `json:"username"`
+	ProfilePictureID   *uuid.UUID `json:"profile_picture_id"` // pointer since some users don't have their avatar set
+	ProfilePictureKey  *string    `bun:"profile_picture_key" json:"-"`
+	Content            string     `json:"content"`
+	CreatedAt          time.Time  `json:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at"`
 }
 
 type CommentAPIResponse struct {

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strings"
 	"testing"
@@ -15,7 +14,7 @@ func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
-	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+	phoneNumber := fakes.GenerateRandomPhoneNumber()
 	normalizedUsername := strings.ToLower(username)
 
 	var createdUserID string
@@ -261,7 +260,7 @@ func TestDeviceTokenUpdate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
-	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+	phoneNumber := fakes.GenerateRandomPhoneNumber()
 
 	var userID string
 

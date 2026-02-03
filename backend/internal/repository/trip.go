@@ -48,6 +48,26 @@ func (r *tripRepository) Find(ctx context.Context, id uuid.UUID) (*models.Trip, 
 	return trip, nil
 }
 
+// FindWithCoverImage retrieves a trip by ID with cover image ID
+func (r *tripRepository) FindWithCoverImage(ctx context.Context, id uuid.UUID) (*models.TripDatabaseResponse, error) {
+	tripData := &models.TripDatabaseResponse{}
+	err := r.db.NewSelect().
+		TableExpr("trips AS t").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.created_at, t.updated_at").
+		ColumnExpr("t.cover_image").
+		ColumnExpr("img.file_key AS cover_image_key").
+		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
+		Where("t.id = ?", id).
+		Scan(ctx, tripData)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errs.ErrNotFound
+		}
+		return nil, err
+	}
+	return tripData, nil
+}
+
 // FindAllWithCursor retrieves trips after the given cursor (cursor nil = first page).
 // Uses ORDER BY created_at DESC, id DESC. Fetches limit+1 to detect hasNext; returns
 // next cursor from the last row when there are more results.
@@ -74,6 +94,36 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, curso
 	}
 
 	return trips, nextCursor, nil
+}
+
+// FindAllWithCursorAndCoverImage retrieves trips with cursor pagination and cover image IDs
+func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
+	query := r.db.NewSelect().
+		TableExpr("trips AS t").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.created_at, t.updated_at").
+		ColumnExpr("t.cover_image").
+		ColumnExpr("img.file_key AS cover_image_key").
+		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
+		Order("t.created_at DESC", "t.id DESC").
+		Limit(limit + 1)
+
+	if cursor != nil {
+		query = query.Where("(t.created_at, t.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+	}
+
+	var tripsData []*models.TripDatabaseResponse
+	if err := query.Scan(ctx, &tripsData); err != nil {
+		return nil, nil, err
+	}
+
+	var nextCursor *models.TripCursor
+	if len(tripsData) > limit {
+		lastVisible := tripsData[limit-1]
+		nextCursor = &models.TripCursor{CreatedAt: lastVisible.CreatedAt, ID: lastVisible.TripID}
+		tripsData = tripsData[:limit]
+	}
+
+	return tripsData, nextCursor, nil
 }
 
 // Update modifies an existing trip

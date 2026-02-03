@@ -8,8 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	tripService := services.NewTripService(routeParams.ServiceParams.Repository)
+func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams, fileService services.FileServiceInterface) fiber.Router {
+	tripService := services.NewTripService(
+		routeParams.ServiceParams.Repository,
+		fileService,
+	)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
 
 	// /api/v1/trips

@@ -44,7 +44,9 @@ type UserRepository interface {
 type TripRepository interface {
 	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
 	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	FindWithCoverImage(ctx context.Context, id uuid.UUID) (*models.TripDatabaseResponse, error)
 	FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
+	FindAllWithCursorAndCoverImage(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }

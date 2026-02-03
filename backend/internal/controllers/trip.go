@@ -6,6 +6,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
+	"toggo/internal/utilities"
 	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
@@ -32,6 +33,7 @@ func NewTripController(tripService services.TripServiceInterface, validator *val
 // @Param        request body models.CreateTripRequest true "Create trip request"
 // @Success      201 {object} models.Trip
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips [post]
@@ -87,16 +89,17 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 // @Param        cursor query string false "Opaque cursor from previous response next_cursor for next page"
 // @Success      200 {object} models.TripCursorPageResult
 // @Failure      400 {object} errs.APIError "Invalid cursor"
+// @Failure      401 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips [get]
 // @ID           getAllTrips
 func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 	var params models.CursorPaginationParams
-	if err := parseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
+	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	limit, cursor := extractLimitAndCursor(&params)
+	limit, cursor := utilities.ExtractLimitAndCursor(&params)
 
 	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), limit, cursor)
 	if err != nil {
@@ -117,6 +120,7 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 // @Param        request body models.UpdateTripRequest true "Update trip request"
 // @Success      200 {object} models.Trip
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -151,6 +155,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Success      204 "No Content"
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID} [delete]

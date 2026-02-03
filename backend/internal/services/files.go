@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 type FileServiceInterface interface {
@@ -19,6 +20,7 @@ type FileServiceInterface interface {
 	ConfirmUpload(ctx context.Context, req models.ConfirmUploadRequest) (*models.ConfirmUploadResponse, error)
 	GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error)
 	GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)
+	GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error)
 }
 
 var _ FileServiceInterface = (*FileService)(nil)
@@ -249,6 +251,58 @@ func (f *FileService) GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*
 	return &models.GetFileAllSizesResponse{
 		ImageID: imageID,
 		Files:   files,
+	}, nil
+}
+
+// GetFilesByKeys retrieves presigned URLs for multiple file keys at once
+func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error) {
+	if len(req.FileKeys) == 0 {
+		return &models.GetFilesByKeysResponse{Files: []models.FileKeyResponse{}}, nil
+	}
+
+	g, gctx := errgroup.WithContext(ctx)
+	results := make([]models.FileKeyResponse, len(req.FileKeys))
+
+	for i, fileKey := range req.FileKeys {
+		if fileKey == "" {
+			continue
+		}
+
+		i, fileKey := i, fileKey
+
+		g.Go(func() error {
+			sizedKey := buildSizedKey(fileKey, req.Size)
+
+			presignedURL, err := f.presignClient.PresignGetObject(gctx, &s3.GetObjectInput{
+				Bucket: aws.String(f.bucketName),
+				Key:    aws.String(sizedKey),
+			}, s3.WithPresignExpires(f.urlExpiration))
+
+			if err != nil {
+				return nil
+			}
+
+			results[i] = models.FileKeyResponse{
+				FileKey: fileKey,
+				URL:     presignedURL.URL,
+			}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	files := make([]models.FileKeyResponse, 0, len(results))
+	for _, result := range results {
+		if result.FileKey != "" {
+			files = append(files, result)
+		}
+	}
+
+	return &models.GetFilesByKeysResponse{
+		Files: files,
 	}, nil
 }
 

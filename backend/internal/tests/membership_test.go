@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"testing"
 	"toggo/internal/models"
@@ -24,7 +23,7 @@ func TestMembershipLifecycle(t *testing.T) {
 
 	t.Run("create user", func(t *testing.T) {
 		username := fakes.GenerateRandomUsername()
-		phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+		phoneNumber := fakes.GenerateRandomPhoneNumber()
 
 		resp := testkit.New(t).
 			Request(testkit.Request{
@@ -63,10 +62,29 @@ func TestMembershipLifecycle(t *testing.T) {
 			AssertStatus(http.StatusCreated).
 			GetBody()
 
-		tripID = resp["id"].(string)
+		if id, ok := resp["id"].(string); ok {
+			tripID = id
+		} else {
+			t.Fatalf("Expected trip ID to be a string, got: %v", resp["id"])
+		}
 	})
 
 	t.Run("add member", func(t *testing.T) {
+		if tripID == "" {
+			t.Skip("Skipping add member test because trip creation failed")
+		}
+
+		// Parse UUIDs safely
+		userUUID, err := uuid.Parse(userID)
+		if err != nil {
+			t.Fatalf("Failed to parse userID '%s': %v", userID, err)
+		}
+
+		tripUUID, err := uuid.Parse(tripID)
+		if err != nil {
+			t.Fatalf("Failed to parse tripID '%s': %v", tripID, err)
+		}
+
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -74,14 +92,13 @@ func TestMembershipLifecycle(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &authUserID,
 				Body: models.CreateMembershipRequest{
-					UserID:    uuid.MustParse(userID),
-					TripID:    uuid.MustParse(tripID),
+					UserID:    userUUID,
+					TripID:    tripUUID,
 					IsAdmin:   false,
 					BudgetMin: 100,
 					BudgetMax: 500,
 				},
-			}).
-			AssertStatus(http.StatusCreated).
+			}).AssertStatus(http.StatusCreated).
 			AssertField("user_id", userID).
 			AssertField("trip_id", tripID).
 			AssertField("is_admin", false)
