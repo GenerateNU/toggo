@@ -27,6 +27,9 @@ func LoadRedisConfig() (*RedisConfig, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid REDIS_DB value: %w", err)
 		}
+		if parsedDB < 0 {
+			return nil, fmt.Errorf("REDIS_DB must be non-negative, got: %d", parsedDB)
+		}
 		db = parsedDB
 	}
 
