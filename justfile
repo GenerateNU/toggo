@@ -82,7 +82,7 @@ lint: lint-be lint-fe
 
 # Run Go linter
 lint-be:
-    cd backend {{ sep }} golangci-lint run -v
+    cd backend {{ sep }} golangci-lint run
 
 # Format Go code
 format-be:
