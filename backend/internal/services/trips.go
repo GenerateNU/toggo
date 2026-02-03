@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -24,10 +26,11 @@ var _ TripServiceInterface = (*TripService)(nil)
 
 type TripService struct {
 	*repository.Repository
+	publisher realtime.EventPublisher
 }
 
-func NewTripService(repo *repository.Repository) TripServiceInterface {
-	return &TripService{Repository: repo}
+func NewTripService(repo *repository.Repository, publisher realtime.EventPublisher) TripServiceInterface {
+	return &TripService{Repository: repo, publisher: publisher}
 }
 
 func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripRequest, creatorUserID uuid.UUID) (*models.Trip, error) {
@@ -82,6 +85,16 @@ func (s *TripService) CreateTrip(ctx context.Context, req models.CreateTripReque
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Publish trip.created event
+	if s.publisher != nil {
+		event, err := realtime.NewEvent("trip.created", createdTrip.ID.String(), createdTrip)
+		if err != nil {
+			log.Printf("Failed to create trip.created event: %v", err)
+		} else if err := s.publisher.Publish(ctx, event); err != nil {
+			log.Printf("Failed to publish trip.created event: %v", err)
+		}
 	}
 
 	return createdTrip, nil
@@ -140,7 +153,22 @@ func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.U
 		return nil, errors.New("budget maximum must be greater than or equal to minimum")
 	}
 
-	return s.Trip.Update(ctx, id, &req)
+	trip, err := s.Trip.Update(ctx, id, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Publish trip.updated event
+	if s.publisher != nil {
+		event, err := realtime.NewEvent("trip.updated", id.String(), trip)
+		if err != nil {
+			log.Printf("Failed to create trip.updated event: %v", err)
+		} else if err := s.publisher.Publish(ctx, event); err != nil {
+			log.Printf("Failed to publish trip.updated event: %v", err)
+		}
+	}
+
+	return trip, nil
 }
 
 func (s *TripService) DeleteTrip(ctx context.Context, id uuid.UUID) error {

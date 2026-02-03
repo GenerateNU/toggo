@@ -9,7 +9,7 @@ import (
 )
 
 func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	tripService := services.NewTripService(routeParams.ServiceParams.Repository)
+	tripService := services.NewTripService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
 
 	// /api/v1/trips

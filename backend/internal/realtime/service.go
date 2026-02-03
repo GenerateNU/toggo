@@ -9,11 +9,12 @@ import (
 
 // RealtimeService orchestrates the WebSocket gateway and Redis pub/sub infrastructure.
 type RealtimeService struct {
-	redisClient *RedisClient
-	publisher   *RedisEventPublisher
-	hub         *Hub
-	auth        *AuthMiddleware
-	handler     *WSHandler
+	redisClient  *RedisClient
+	publisher    *RedisEventPublisher
+	hub          *Hub
+	auth         *AuthMiddleware
+	handler      *WSHandler
+	fiberHandler *FiberWSHandler
 }
 
 // NewRealtimeService initializes all realtime components from configuration.
@@ -31,13 +32,15 @@ func NewRealtimeService(cfg *config.Configuration) (*RealtimeService, error) {
 	hub := NewHub(redisClient)
 	auth := NewAuthMiddleware(cfg.Auth.JWTSecretKey)
 	handler := NewWSHandler(hub, auth)
+	fiberHandler := NewFiberWSHandler(hub, auth)
 
 	return &RealtimeService{
-		redisClient: redisClient,
-		publisher:   publisher,
-		hub:         hub,
-		auth:        auth,
-		handler:     handler,
+		redisClient:  redisClient,
+		publisher:    publisher,
+		hub:          hub,
+		auth:         auth,
+		handler:      handler,
+		fiberHandler: fiberHandler,
 	}, nil
 }
 
@@ -60,6 +63,11 @@ func (s *RealtimeService) Shutdown(ctx context.Context) error {
 // GetHandler returns the WebSocket HTTP handler for routing.
 func (s *RealtimeService) GetHandler() *WSHandler {
 	return s.handler
+}
+
+// GetFiberHandler returns the Fiber WebSocket handler for routing.
+func (s *RealtimeService) GetFiberHandler() *FiberWSHandler {
+	return s.fiberHandler
 }
 
 // GetPublisher returns the event publisher interface for dependency injection.

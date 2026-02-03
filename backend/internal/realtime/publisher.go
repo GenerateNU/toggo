@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 )
 
 // EventPublisher defines the interface for publishing events to subscribers.
@@ -38,7 +39,13 @@ func (p *RedisEventPublisher) Publish(ctx context.Context, event *Event) error {
 	}
 
 	channel := getTripChannel(event.TripID)
-	return p.client.Publish(ctx, channel, eventData)
+	if err := p.client.Publish(ctx, channel, eventData); err != nil {
+		log.Printf("Failed to publish event to Redis channel %s: %v", channel, err)
+		return err
+	}
+	
+	log.Printf("Published event to Redis: channel=%s, topic=%s, trip=%s", channel, event.Topic, event.TripID)
+	return nil
 }
 
 // Close closes the underlying Redis client connection.

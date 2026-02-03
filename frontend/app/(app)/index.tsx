@@ -28,6 +28,12 @@ export default function Home() {
         </Text>
       </Button>
 
+      <Button onPress={() => router.push("/test-realtime")} variant="primary">
+        <Text variant="caption" color="cloudWhite">
+          Test WebSocket Realtime
+        </Text>
+      </Button>
+
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">
           Logout

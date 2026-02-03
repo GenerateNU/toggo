@@ -41,6 +41,11 @@ func (r *RedisClient) Subscribe(ctx context.Context, channels ...string) *redis.
 	return r.client.Subscribe(ctx, channels...)
 }
 
+// PSubscribe creates a Redis pub/sub subscription to the specified channel patterns.
+func (r *RedisClient) PSubscribe(ctx context.Context, patterns ...string) *redis.PubSub {
+	return r.client.PSubscribe(ctx, patterns...)
+}
+
 // Close closes the Redis pub/sub and client connections.
 func (r *RedisClient) Close() error {
 	if r.pubsub != nil {
