@@ -6,17 +6,17 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   CreateUserMutationRequest,
   CreateUserMutationResponse,
   CreateUser400,
   CreateUser422,
   CreateUser500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const createUserMutationKey = () => [{ url: "/api/v1/users" }] as const;
@@ -51,7 +51,7 @@ export async function createUser(
   return res.data;
 }
 
-export function createUserMutationOptions(
+export function createUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateUserMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -61,7 +61,7 @@ export function createUserMutationOptions(
     CreateUserMutationResponse,
     ResponseErrorConfig<CreateUser400 | CreateUser422 | CreateUser500>,
     { data: CreateUserMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

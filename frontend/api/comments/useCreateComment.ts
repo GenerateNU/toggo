@@ -62,7 +62,7 @@ export async function createComment(
   return res.data;
 }
 
-export function createCommentMutationOptions(
+export function createCommentMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateCommentMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -78,7 +78,7 @@ export function createCommentMutationOptions(
       | CreateComment500
     >,
     { data: CreateCommentMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

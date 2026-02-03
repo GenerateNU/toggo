@@ -15,14 +15,85 @@ import type {
   ModelsCreateMembershipRequest,
   ModelsCreateTripRequest,
   ModelsCreateUserRequest,
+  ModelsGetFileResponse,
+  ModelsGetFileAllSizesResponse,
+  ModelsMembership,
+  ModelsMembershipAPIResponse,
+  ModelsMembershipCursorPageResult,
   ModelsNotificationError,
   ModelsNotificationResponse,
+  ModelsPaginatedCommentsResponse,
+  ModelsS3HealthCheckResponse,
   ModelsSendBulkNotificationRequest,
   ModelsSendNotificationRequest,
+  ModelsSizedUploadURL,
+  ModelsTrip,
+  ModelsTripCursorPageResult,
+  ModelsUpdateCommentRequest,
+  ModelsUpdateMembershipRequest,
+  ModelsUpdateTripRequest,
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
   ModelsUploadURLResponse,
   ModelsUser,
+  CreateComment201,
+  CreateComment400,
+  CreateComment401,
+  CreateComment403,
+  CreateComment422,
+  CreateComment500,
+  CreateCommentMutationRequest,
+  CreateCommentMutationResponse,
+  DeleteCommentPathParams,
+  DeleteComment204,
+  DeleteComment400,
+  DeleteComment401,
+  DeleteComment404,
+  DeleteComment500,
+  DeleteCommentMutationResponse,
+  UpdateCommentPathParams,
+  UpdateComment200,
+  UpdateComment400,
+  UpdateComment401,
+  UpdateComment404,
+  UpdateComment422,
+  UpdateComment500,
+  UpdateCommentMutationRequest,
+  UpdateCommentMutationResponse,
+  ConfirmUpload200,
+  ConfirmUpload400,
+  ConfirmUpload404,
+  ConfirmUpload422,
+  ConfirmUpload500,
+  ConfirmUploadMutationRequest,
+  ConfirmUploadMutationResponse,
+  CheckS3Health200,
+  CheckS3Health503,
+  CheckS3HealthQueryResponse,
+  CreateUploadURLs201,
+  CreateUploadURLs400,
+  CreateUploadURLs422,
+  CreateUploadURLs500,
+  CreateUploadURLsMutationRequest,
+  CreateUploadURLsMutationResponse,
+  GetFileAllSizesPathParams,
+  GetFileAllSizes200,
+  GetFileAllSizes400,
+  GetFileAllSizes404,
+  GetFileAllSizes500,
+  GetFileAllSizesQueryResponse,
+  GetFilePathParams,
+  GetFile200,
+  GetFile400,
+  GetFile404,
+  GetFile500,
+  GetFileQueryResponse,
+  AddMember201,
+  AddMember400,
+  AddMember422,
+  AddMember500,
+  AddMemberMutationRequest,
+  AddMemberMutationResponse,
   SendNotification200,
   SendNotification400,
   SendNotification422,
@@ -35,6 +106,86 @@ import type {
   SendBulkNotification500,
   SendBulkNotificationMutationRequest,
   SendBulkNotificationMutationResponse,
+  GetAllTripsQueryParams,
+  GetAllTrips200,
+  GetAllTrips400,
+  GetAllTrips401,
+  GetAllTrips500,
+  GetAllTripsQueryResponse,
+  CreateTrip201,
+  CreateTrip400,
+  CreateTrip401,
+  CreateTrip422,
+  CreateTrip500,
+  CreateTripMutationRequest,
+  CreateTripMutationResponse,
+  GetTripPathParams,
+  GetTrip200,
+  GetTrip400,
+  GetTrip404,
+  GetTrip500,
+  GetTripQueryResponse,
+  DeleteTripPathParams,
+  DeleteTrip204,
+  DeleteTrip400,
+  DeleteTrip404,
+  DeleteTrip500,
+  DeleteTripMutationResponse,
+  UpdateTripPathParams,
+  UpdateTrip200,
+  UpdateTrip400,
+  UpdateTrip404,
+  UpdateTrip422,
+  UpdateTrip500,
+  UpdateTripMutationRequest,
+  UpdateTripMutationResponse,
+  GetTripMembersPathParams,
+  GetTripMembersQueryParams,
+  GetTripMembers200,
+  GetTripMembers400,
+  GetTripMembers500,
+  GetTripMembersQueryResponse,
+  GetMembershipPathParams,
+  GetMembership200,
+  GetMembership400,
+  GetMembership404,
+  GetMembership500,
+  GetMembershipQueryResponse,
+  RemoveMemberPathParams,
+  RemoveMember204,
+  RemoveMember400,
+  RemoveMember404,
+  RemoveMember500,
+  RemoveMemberMutationResponse,
+  UpdateMembershipPathParams,
+  UpdateMembership200,
+  UpdateMembership400,
+  UpdateMembership404,
+  UpdateMembership422,
+  UpdateMembership500,
+  UpdateMembershipMutationRequest,
+  UpdateMembershipMutationResponse,
+  DemoteFromAdminPathParams,
+  DemoteFromAdmin200,
+  DemoteFromAdmin400,
+  DemoteFromAdmin404,
+  DemoteFromAdmin500,
+  DemoteFromAdminMutationResponse,
+  PromoteToAdminPathParams,
+  PromoteToAdmin200,
+  PromoteToAdmin400,
+  PromoteToAdmin404,
+  PromoteToAdmin500,
+  PromoteToAdminMutationResponse,
+  GetPaginatedCommentsPathParams,
+  GetPaginatedCommentsQueryParams,
+  GetPaginatedComments200,
+  GetPaginatedComments400,
+  GetPaginatedComments401,
+  GetPaginatedComments403,
+  GetPaginatedComments422,
+  GetPaginatedComments500,
+  GetPaginatedCommentsQueryResponse,
   CreateUser201,
   CreateUser400,
   CreateUser422,
@@ -162,6 +313,54 @@ export const modelsCreateUserRequestSchema = z.object({
   username: z.string(),
 }) as unknown as z.ZodType<ModelsCreateUserRequest>;
 
+export const modelsGetFileResponseSchema = z.object({
+  contentType: z.optional(z.string()),
+  imageId: z.optional(z.string()),
+  get size() {
+    return modelsImageSizeSchema.optional();
+  },
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsGetFileResponse>;
+
+export const modelsGetFileAllSizesResponseSchema = z.object({
+  get files() {
+    return z.array(modelsGetFileResponseSchema).optional();
+  },
+  imageId: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsGetFileAllSizesResponse>;
+
+export const modelsMembershipSchema = z.object({
+  availability: z.optional(z.object({}).catchall(z.any())),
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
+  created_at: z.optional(z.string()),
+  is_admin: z.optional(z.boolean()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsMembership>;
+
+export const modelsMembershipAPIResponseSchema = z.object({
+  availability: z.optional(z.object({}).catchall(z.any())),
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
+  created_at: z.optional(z.string()),
+  is_admin: z.optional(z.boolean()),
+  profile_picture_url: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsMembershipAPIResponse>;
+
+export const modelsMembershipCursorPageResultSchema = z.object({
+  get items() {
+    return z.array(modelsMembershipAPIResponseSchema).optional();
+  },
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsMembershipCursorPageResult>;
+
 export const modelsNotificationErrorSchema = z.object({
   message: z.optional(z.string()),
   token: z.optional(z.string()),
@@ -175,6 +374,27 @@ export const modelsNotificationResponseSchema = z.object({
   failure_count: z.optional(z.int()),
   success_count: z.optional(z.int()),
 }) as unknown as z.ZodType<ModelsNotificationResponse>;
+
+export const modelsPaginatedCommentsResponseSchema = z.object({
+  get items() {
+    return z.array(modelsCommentAPIResponseSchema).optional();
+  },
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPaginatedCommentsResponse>;
+
+export const modelsS3HealthCheckResponseSchema = z.object({
+  bucketName: z.optional(z.string()),
+  error: z.optional(
+    z
+      .string()
+      .describe(
+        'Error contains the underlying error message when status is "unhealthy"',
+      ),
+  ),
+  region: z.optional(z.string()),
+  status: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsS3HealthCheckResponse>;
 
 export const modelsSendBulkNotificationRequestSchema = z.object({
   body: z.string().min(1).max(500),
@@ -190,8 +410,48 @@ export const modelsSendNotificationRequestSchema = z.object({
   user_id: z.string(),
 }) as unknown as z.ZodType<ModelsSendNotificationRequest>;
 
+export const modelsSizedUploadURLSchema = z.object({
+  get size() {
+    return modelsImageSizeSchema.optional();
+  },
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsSizedUploadURL>;
+
+export const modelsTripSchema = z.object({
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
+  created_at: z.optional(z.string()),
+  id: z.optional(z.string()),
+  name: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsTrip>;
+
+export const modelsTripCursorPageResultSchema = z.object({
+  get items() {
+    return z.array(modelsTripSchema).optional();
+  },
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsTripCursorPageResult>;
+
+export const modelsUpdateCommentRequestSchema = z.object({
+  content: z.string().min(1),
+}) as unknown as z.ZodType<ModelsUpdateCommentRequest>;
+
+export const modelsUpdateMembershipRequestSchema = z.object({
+  budget_max: z.optional(z.int().min(0)),
+  budget_min: z.optional(z.int().min(0)),
+  is_admin: z.optional(z.boolean()),
+}) as unknown as z.ZodType<ModelsUpdateMembershipRequest>;
+
+export const modelsUpdateTripRequestSchema = z.object({
+  budget_max: z.optional(z.int().min(0)),
+  budget_min: z.optional(z.int().min(0)),
+  name: z.optional(z.string().min(1)),
+}) as unknown as z.ZodType<ModelsUpdateTripRequest>;
+
 export const modelsUpdateUserRequestSchema = z.object({
-  device_token: z.optional(z.string()),
+  device_token: z.optional(z.string().max(200)),
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
   profile_picture: z.optional(z.string()),
@@ -226,83 +486,6 @@ export const modelsUserSchema = z.object({
   timezone: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
-
-/**
- * @description OK
- */
-export const sendNotification200Schema =
-  z.any() as unknown as z.ZodType<SendNotification200>;
-
-/**
- * @description Bad Request
- */
-export const sendNotification400Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendNotification400>;
-
-/**
- * @description Unprocessable Entity
- */
-export const sendNotification422Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendNotification422>;
-
-/**
- * @description Internal Server Error
- */
-export const sendNotification500Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendNotification500>;
-
-/**
- * @description Notification request
- */
-export const sendNotificationMutationRequestSchema = z.lazy(
-  () => modelsSendNotificationRequestSchema,
-) as unknown as z.ZodType<SendNotificationMutationRequest>;
-
-export const sendNotificationMutationResponseSchema = z.lazy(
-  () => sendNotification200Schema,
-) as unknown as z.ZodType<SendNotificationMutationResponse>;
-
-/**
- * @description OK
- */
-export const sendBulkNotification200Schema = z.lazy(
-  () => modelsNotificationResponseSchema,
-) as unknown as z.ZodType<SendBulkNotification200>;
-
-/**
- * @description Bad Request
- */
-export const sendBulkNotification400Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendBulkNotification400>;
-
-/**
- * @description Unprocessable Entity
- */
-export const sendBulkNotification422Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendBulkNotification422>;
-
-/**
- * @description Internal Server Error
- */
-export const sendBulkNotification500Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<SendBulkNotification500>;
-
-/**
- * @description Bulk notification request
- */
-export const sendBulkNotificationMutationRequestSchema = z.lazy(
-  () => modelsSendBulkNotificationRequestSchema,
-) as unknown as z.ZodType<SendBulkNotificationMutationRequest>;
-
-export const sendBulkNotificationMutationResponseSchema = z.lazy(
-  () => sendBulkNotification200Schema,
-) as unknown as z.ZodType<SendBulkNotificationMutationResponse>;
 
 /**
  * @description Created
