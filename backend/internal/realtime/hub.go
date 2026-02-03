@@ -42,7 +42,7 @@ func NewHub(redisClient *RedisClient) *Hub {
 // Run starts the hub's main event loop for managing connections and subscriptions.
 func (h *Hub) Run() {
 	go h.subscribeToRedis()
-	go h.batcher.Run()
+	go h.batcher.Run(h.ctx)
 
 	for {
 		select {
