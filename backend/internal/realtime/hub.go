@@ -8,24 +8,24 @@ import (
 	"time"
 )
 
-// Hub manages WebSocket client connections and trip-scoped subscriptions.
-type Hub struct {
+// WebSocketHub manages WebSocket client connections and trip-scoped subscriptions.
+type WebSocketHub struct {
 	clients         map[*Client]bool
 	tripSubscribers map[string]map[*Client]bool
 	Register        chan *Client
 	Unregister      chan *Client
-	redisClient     *RedisClient
-	batcher         *EventBatcher
+	redisClient     RedisClient
+	batcher         EventBatcher
 	mu              sync.RWMutex
 	ctx             context.Context
 	cancel          context.CancelFunc
 }
 
 // NewHub creates a new hub for managing WebSocket connections.
-func NewHub(redisClient *RedisClient) *Hub {
+func NewHub(redisClient RedisClient) *WebSocketHub {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	hub := &Hub{
+	hub := &WebSocketHub{
 		clients:         make(map[*Client]bool),
 		tripSubscribers: make(map[string]map[*Client]bool),
 		Register:        make(chan *Client),
@@ -40,7 +40,7 @@ func NewHub(redisClient *RedisClient) *Hub {
 }
 
 // Run starts the hub's main event loop for managing connections and subscriptions.
-func (h *Hub) Run() {
+func (h *WebSocketHub) Run() {
 	go h.subscribeToRedis()
 	go h.batcher.Run(h.ctx)
 
@@ -56,14 +56,24 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) registerClient(client *Client) {
+// RegisterClient adds a client to the hub (convenience method for interface).
+func (h *WebSocketHub) RegisterClient(client *Client) {
+	h.Register <- client
+}
+
+// UnregisterClient removes a client from the hub (convenience method for interface).
+func (h *WebSocketHub) UnregisterClient(client *Client) {
+	h.Unregister <- client
+}
+
+func (h *WebSocketHub) registerClient(client *Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.clients[client] = true
 	log.Printf("Client registered: %s (user: %s)", client.ID, client.UserID)
 }
 
-func (h *Hub) unregisterClient(client *Client) {
+func (h *WebSocketHub) unregisterClient(client *Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -79,7 +89,7 @@ func (h *Hub) unregisterClient(client *Client) {
 }
 
 // HandleClientMessage processes incoming messages from WebSocket clients.
-func (h *Hub) HandleClientMessage(client *Client, msg *ClientMessage) {
+func (h *WebSocketHub) HandleClientMessage(client *Client, msg *ClientMessage) {
 	switch msg.Type {
 	case MessageTypeSubscribe:
 		if msg.TripID != "" {
@@ -98,7 +108,7 @@ func (h *Hub) HandleClientMessage(client *Client, msg *ClientMessage) {
 }
 
 // SubscribeClientToTrip subscribes a client to receive events for a specific trip.
-func (h *Hub) SubscribeClientToTrip(client *Client, tripID string) {
+func (h *WebSocketHub) SubscribeClientToTrip(client *Client, tripID string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -111,7 +121,7 @@ func (h *Hub) SubscribeClientToTrip(client *Client, tripID string) {
 	log.Printf("Client %s subscribed to trip %s", client.ID, tripID)
 }
 
-func (h *Hub) UnsubscribeClientFromTrip(client *Client, tripID string) {
+func (h *WebSocketHub) UnsubscribeClientFromTrip(client *Client, tripID string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -119,7 +129,7 @@ func (h *Hub) UnsubscribeClientFromTrip(client *Client, tripID string) {
 	client.RemoveSubscription(tripID)
 }
 
-func (h *Hub) removeClientFromTrip(client *Client, tripID string) {
+func (h *WebSocketHub) removeClientFromTrip(client *Client, tripID string) {
 	if subscribers, ok := h.tripSubscribers[tripID]; ok {
 		delete(subscribers, client)
 		if len(subscribers) == 0 {
@@ -128,7 +138,7 @@ func (h *Hub) removeClientFromTrip(client *Client, tripID string) {
 	}
 }
 
-func (h *Hub) subscribeToRedis() {
+func (h *WebSocketHub) subscribeToRedis() {
 	pubsub := h.redisClient.PSubscribe(h.ctx, "trip:*")
 	defer func() {
 		if err := pubsub.Close(); err != nil {
@@ -164,7 +174,7 @@ func (h *Hub) subscribeToRedis() {
 }
 
 // BroadcastToTrip sends events to all clients subscribed to a trip.
-func (h *Hub) BroadcastToTrip(tripID string, events []Event) {
+func (h *WebSocketHub) BroadcastToTrip(tripID string, events []Event) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -192,7 +202,7 @@ func (h *Hub) BroadcastToTrip(tripID string, events []Event) {
 }
 
 // Shutdown gracefully closes all WebSocket connections and stops the hub.
-func (h *Hub) Shutdown() {
+func (h *WebSocketHub) Shutdown() {
 	h.cancel()
 
 	h.mu.Lock()

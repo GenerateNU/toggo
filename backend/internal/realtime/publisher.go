@@ -15,12 +15,12 @@ type EventPublisher interface {
 
 // RedisEventPublisher publishes events to Redis with topic validation.
 type RedisEventPublisher struct {
-	client   *RedisClient
-	registry *EventRegistry
+	client   RedisClient
+	registry EventRegistry
 }
 
 // NewRedisEventPublisher creates a publisher with event registry validation.
-func NewRedisEventPublisher(client *RedisClient) *RedisEventPublisher {
+func NewRedisEventPublisher(client RedisClient) *RedisEventPublisher {
 	return &RedisEventPublisher{
 		client:   client,
 		registry: NewEventRegistry(),
@@ -54,7 +54,7 @@ func (p *RedisEventPublisher) Close() error {
 }
 
 // GetRegistry returns the event registry for topic management.
-func (p *RedisEventPublisher) GetRegistry() *EventRegistry {
+func (p *RedisEventPublisher) GetRegistry() EventRegistry {
 	return p.registry
 }
 

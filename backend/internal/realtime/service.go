@@ -9,10 +9,10 @@ import (
 
 // RealtimeService orchestrates the WebSocket gateway and Redis pub/sub infrastructure.
 type RealtimeService struct {
-	redisClient *RedisClient
-	publisher   *RedisEventPublisher
-	hub         *Hub
-	auth        *AuthMiddleware
+	redisClient RedisClient
+	publisher   EventPublisher
+	hub         Hub
+	auth        Auth
 	handler     *WSHandler
 }
 

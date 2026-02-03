@@ -8,12 +8,12 @@ import (
 
 // WSHandler handles WebSocket connections.
 type WSHandler struct {
-	hub  *Hub
-	auth *AuthMiddleware
+	hub  Hub
+	auth Auth
 }
 
 // NewWSHandler creates a new WebSocket handler.
-func NewWSHandler(hub *Hub, auth *AuthMiddleware) *WSHandler {
+func NewWSHandler(hub Hub, auth Auth) *WSHandler {
 	return &WSHandler{
 		hub:  hub,
 		auth: auth,
@@ -68,7 +68,7 @@ func (h *WSHandler) Handler() fiber.Handler {
 		userID := "test-user-" + clientID[:8]
 
 		client := NewClient(clientID, userID, h.hub, c)
-		h.hub.Register <- client
+		h.hub.RegisterClient(client)
 
 		go client.WritePump()
 		client.ReadPump()

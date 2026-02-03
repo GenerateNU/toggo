@@ -24,7 +24,7 @@ const (
 type Client struct {
 	ID             string
 	UserID         string
-	Hub            *Hub
+	Hub            Hub
 	Conn           *websocket.Conn
 	Send           chan ServerMessage
 	Subscriptions  map[string]bool
@@ -32,7 +32,7 @@ type Client struct {
 }
 
 // NewClient creates a new WebSocket client instance.
-func NewClient(id string, userID string, hub *Hub, conn *websocket.Conn) *Client {
+func NewClient(id string, userID string, hub Hub, conn *websocket.Conn) *Client {
 	return &Client{
 		ID:            id,
 		UserID:        userID,
@@ -76,7 +76,7 @@ func (c *Client) GetSubscriptions() []string {
 // ReadPump reads messages from the WebSocket connection and handles client requests.
 func (c *Client) ReadPump() {
 	defer func() {
-		c.Hub.Unregister <- c
+		c.Hub.UnregisterClient(c)
 		_ = c.Conn.Close()
 	}()
 	c.Conn.SetReadLimit(maxMessageSize)

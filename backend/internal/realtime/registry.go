@@ -9,15 +9,15 @@ var (
 	ErrInvalidTopic = errors.New("topic not registered in event registry")
 )
 
-// EventRegistry validates event topics against a whitelist of allowed event names.
-type EventRegistry struct {
+// TopicRegistry validates event topics against a whitelist of allowed event names.
+type TopicRegistry struct {
 	allowedTopics map[string]bool
 	mu            sync.RWMutex
 }
 
 // NewEventRegistry creates a registry with predefined allowed event topics.
-func NewEventRegistry() *EventRegistry {
-	registry := &EventRegistry{
+func NewEventRegistry() *TopicRegistry {
+	registry := &TopicRegistry{
 		allowedTopics: make(map[string]bool),
 	}
 
@@ -25,7 +25,7 @@ func NewEventRegistry() *EventRegistry {
 	return registry
 }
 
-func (r *EventRegistry) registerDefaultTopics() {
+func (r *TopicRegistry) registerDefaultTopics() {
 	topics := []string{
 		"poll.created",
 		"poll.updated",
@@ -52,28 +52,28 @@ func (r *EventRegistry) registerDefaultTopics() {
 }
 
 // IsAllowed returns true if the topic is registered in the whitelist.
-func (r *EventRegistry) IsAllowed(topic string) bool {
+func (r *TopicRegistry) IsAllowed(topic string) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.allowedTopics[topic]
 }
 
 // Register adds a new topic to the whitelist.
-func (r *EventRegistry) Register(topic string) {
+func (r *TopicRegistry) Register(topic string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.allowedTopics[topic] = true
 }
 
 // Unregister removes a topic from the whitelist.
-func (r *EventRegistry) Unregister(topic string) {
+func (r *TopicRegistry) Unregister(topic string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	delete(r.allowedTopics, topic)
 }
 
 // GetAllTopics returns all registered topics.
-func (r *EventRegistry) GetAllTopics() []string {
+func (r *TopicRegistry) GetAllTopics() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

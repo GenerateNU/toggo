@@ -43,8 +43,8 @@ services:
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       DOPPLER_CONFIG: ${DOPPLER_CONFIG:-dev}
       APP_PORT: 8000
-      REDIS_ADDRESS: redis:6379
-      REDIS_PASSWORD: dev_redis_password
+      REDIS_ADDRESS: ${REDIS_ADDRESS}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - .:/app
       - /app/tmp

@@ -6,17 +6,17 @@ import (
 	"time"
 )
 
-// EventBatcher collects events in 200ms windows and collapses them into snapshots.
-type EventBatcher struct {
-	hub         *Hub
+// WindowedEventBatcher collects events in 200ms windows and collapses them into snapshots.
+type WindowedEventBatcher struct {
+	hub         Hub
 	buffers     map[string][]Event
 	mu          sync.RWMutex
 	batchPeriod time.Duration
 }
 
 // NewEventBatcher creates a batcher with 200ms batch windows.
-func NewEventBatcher(hub *Hub) *EventBatcher {
-	return &EventBatcher{
+func NewEventBatcher(hub Hub) *WindowedEventBatcher {
+	return &WindowedEventBatcher{
 		hub:         hub,
 		buffers:     make(map[string][]Event),
 		batchPeriod: 200 * time.Millisecond,
@@ -24,7 +24,7 @@ func NewEventBatcher(hub *Hub) *EventBatcher {
 }
 
 // Run starts the periodic batch flushing ticker.
-func (b *EventBatcher) Run(ctx context.Context) {
+func (b *WindowedEventBatcher) Run(ctx context.Context) {
 	ticker := time.NewTicker(b.batchPeriod)
 	defer ticker.Stop()
 
@@ -39,7 +39,7 @@ func (b *EventBatcher) Run(ctx context.Context) {
 }
 
 // AddEvent adds an event to the batch buffer for the event's trip.
-func (b *EventBatcher) AddEvent(event *Event) {
+func (b *WindowedEventBatcher) AddEvent(event *Event) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -50,7 +50,7 @@ func (b *EventBatcher) AddEvent(event *Event) {
 	b.buffers[tripID] = append(b.buffers[tripID], *event)
 }
 
-func (b *EventBatcher) flushAll() {
+func (b *WindowedEventBatcher) flushAll() {
 	b.mu.Lock()
 	batches := b.buffers
 	b.buffers = make(map[string][]Event)
@@ -64,7 +64,7 @@ func (b *EventBatcher) flushAll() {
 	}
 }
 
-func (b *EventBatcher) collapseEvents(events []Event) []Event {
+func (b *WindowedEventBatcher) collapseEvents(events []Event) []Event {
 	eventMap := make(map[string]*Event)
 
 	for i := range events {

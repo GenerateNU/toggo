@@ -2,31 +2,30 @@ package realtime
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
+	"toggo/internal/utilities"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// AuthMiddleware handles JWT authentication for WebSocket connections.
-type AuthMiddleware struct {
-	jwtSecret string
+// JWTAuth handles JWT authentication for WebSocket connections.
+type JWTAuth struct {
+	jwtSecret []byte
 }
 
 // NewAuthMiddleware creates a new authentication middleware with the given JWT secret.
-func NewAuthMiddleware(jwtSecret string) *AuthMiddleware {
+func NewAuthMiddleware(jwtSecret string) *JWTAuth {
 	if jwtSecret == "" {
 		panic("jwtSecret cannot be empty")
 	}
-	return &AuthMiddleware{
-		jwtSecret: jwtSecret,
+	return &JWTAuth{
+		jwtSecret: []byte(jwtSecret),
 	}
 }
 
 // ValidateConnection validates the JWT token from the request and returns the user ID.
-func (a *AuthMiddleware) ValidateConnection(r *http.Request) (string, error) {
+func (a *JWTAuth) ValidateConnection(r *http.Request) (string, error) {
 	token := a.extractToken(r)
 	if token == "" {
 		return "", errors.New("missing authentication token")
@@ -34,18 +33,18 @@ func (a *AuthMiddleware) ValidateConnection(r *http.Request) (string, error) {
 
 	userID, err := a.verifyToken(token)
 	if err != nil {
-		return "", fmt.Errorf("invalid token: %w", err)
+		return "", err
 	}
 
 	return userID, nil
 }
 
-func (a *AuthMiddleware) extractToken(r *http.Request) string {
+func (a *JWTAuth) extractToken(r *http.Request) string {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "" {
-		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
-			return parts[1]
+		tokenString, err := utilities.ExtractBearerToken(authHeader)
+		if err == nil {
+			return tokenString
 		}
 	}
 
@@ -57,31 +56,18 @@ func (a *AuthMiddleware) extractToken(r *http.Request) string {
 	return ""
 }
 
-func (a *AuthMiddleware) verifyToken(tokenString string) (string, error) {
-	parser := jwt.NewParser(jwt.WithExpirationRequired())
-	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(a.jwtSecret), nil
-	})
-
+func (a *JWTAuth) verifyToken(tokenString string) (string, error) {
+	claims, err := utilities.ParseJWT(tokenString, a.jwtSecret)
 	if err != nil {
 		return "", err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userID, ok := claims["user_id"].(string); ok {
-			return userID, nil
-		}
-		if sub, ok := claims["sub"].(string); ok {
-			return sub, nil
-		}
-
-		return "", errors.New("user_id not found in token claims")
+	userID, err := utilities.GetUserIDFromClaims(claims)
+	if err != nil {
+		return "", err
 	}
 
-	return "", errors.New("invalid token claims")
+	return userID.String(), nil
 }
 
 // GenerateTestToken creates a JWT token for testing purposes.
