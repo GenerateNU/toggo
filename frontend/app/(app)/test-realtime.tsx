@@ -224,8 +224,8 @@ export default function TestRealtimeScreen() {
       return;
     }
 
-    const min = parseInt(budgetMin) || 0;
-    const max = parseInt(budgetMax) || 0;
+    const min = parseInt(budgetMin, 10) || 0;
+    const max = parseInt(budgetMax, 10) || 0;
 
     if (min < 0 || max < 0 || max < min) {
       addLog("Invalid budget values");
