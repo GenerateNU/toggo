@@ -213,93 +213,8 @@ export type ModelsCreateUserRequest = {
   username: string;
 };
 
-export type ModelsNotificationError = {
+export type ModelsGetFileResponse = {
   /**
-   * @type string | undefined
-   */
-  message?: string;
-  /**
-   * @type string | undefined
-   */
-  token?: string;
-  /**
-   * @type string | undefined
-   */
-  user_id?: string;
-};
-
-export type ModelsNotificationResponse = {
-  /**
-   * @type array | undefined
-   */
-  errors?: ModelsNotificationError[];
-  /**
-   * @type integer | undefined
-   */
-  failure_count?: number;
-  /**
-   * @type integer | undefined
-   */
-  success_count?: number;
-};
-
-export type ModelsSendBulkNotificationRequest = {
-  /**
-   * @minLength 1
-   * @maxLength 500
-   * @type string
-   */
-  body: string;
-  /**
-   * @type object | undefined
-   */
-  data?: {
-    [key: string]: any;
-  };
-  /**
-   * @minLength 1
-   * @maxLength 100
-   * @type string
-   */
-  title: string;
-  /**
-   * @type array
-   */
-  user_ids: string[];
-};
-
-export type ModelsSendNotificationRequest = {
-  /**
-   * @minLength 1
-   * @maxLength 500
-   * @type string
-   */
-  body: string;
-  /**
-   * @type object | undefined
-   */
-  data?: {
-    [key: string]: any;
-  };
-  /**
-   * @minLength 1
-   * @maxLength 100
-   * @type string
-   */
-  title: string;
-  /**
-   * @type string
-   */
-  user_id: string;
-};
-
-export type ModelsUpdateUserRequest = {
-  /**
-   * @type string | undefined
-   */
-  device_token?: string;
-  /**
-   * @minLength 1
    * @type string | undefined
    */
   contentType?: string;
@@ -325,15 +240,24 @@ export type ModelsGetFileAllSizesResponse = {
   /**
    * @type string | undefined
    */
-  device_token?: string;
+  imageId?: string;
+};
+
+export type ModelsMembership = {
   /**
-   * @type string | undefined
+   * @type object | undefined
    */
-  device_token_updated_at?: string;
+  availability?: {
+    [key: string]: any;
+  };
   /**
-   * @type string | undefined
+   * @type integer | undefined
    */
-  id?: string;
+  budget_max?: number;
+  /**
+   * @type integer | undefined
+   */
+  budget_min?: number;
   /**
    * @type string | undefined
    */
@@ -1689,76 +1613,6 @@ export type GetPaginatedCommentsQuery = {
     | GetPaginatedComments403
     | GetPaginatedComments422
     | GetPaginatedComments500;
-};
-
-/**
- * @description OK
- */
-export type SendNotification200 = any;
-
-/**
- * @description Bad Request
- */
-export type SendNotification400 = ErrsAPIError;
-
-/**
- * @description Unprocessable Entity
- */
-export type SendNotification422 = ErrsAPIError;
-
-/**
- * @description Internal Server Error
- */
-export type SendNotification500 = ErrsAPIError;
-
-/**
- * @description Notification request
- */
-export type SendNotificationMutationRequest = ModelsSendNotificationRequest;
-
-export type SendNotificationMutationResponse = SendNotification200;
-
-export type SendNotificationMutation = {
-  Response: SendNotification200;
-  Request: SendNotificationMutationRequest;
-  Errors: SendNotification400 | SendNotification422 | SendNotification500;
-};
-
-/**
- * @description OK
- */
-export type SendBulkNotification200 = ModelsNotificationResponse;
-
-/**
- * @description Bad Request
- */
-export type SendBulkNotification400 = ErrsAPIError;
-
-/**
- * @description Unprocessable Entity
- */
-export type SendBulkNotification422 = ErrsAPIError;
-
-/**
- * @description Internal Server Error
- */
-export type SendBulkNotification500 = ErrsAPIError;
-
-/**
- * @description Bulk notification request
- */
-export type SendBulkNotificationMutationRequest =
-  ModelsSendBulkNotificationRequest;
-
-export type SendBulkNotificationMutationResponse = SendBulkNotification200;
-
-export type SendBulkNotificationMutation = {
-  Response: SendBulkNotification200;
-  Request: SendBulkNotificationMutationRequest;
-  Errors:
-    | SendBulkNotification400
-    | SendBulkNotification422
-    | SendBulkNotification500;
 };
 
 /**

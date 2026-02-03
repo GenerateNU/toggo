@@ -20,8 +20,9 @@ import type {
 } from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
-export const getAllTripsSuspenseQueryKey = (params?: GetAllTripsQueryParams) =>
-  [{ url: "/api/v1/trips" }, ...(params ? [params] : [])] as const;
+export const getAllTripsSuspenseQueryKey = (
+  params: GetAllTripsQueryParams = {},
+) => [{ url: "/api/v1/trips" }, ...(params ? [params] : [])] as const;
 
 export type GetAllTripsSuspenseQueryKey = ReturnType<
   typeof getAllTripsSuspenseQueryKey

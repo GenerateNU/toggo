@@ -6,17 +6,17 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   SendBulkNotificationMutationRequest,
   SendBulkNotificationMutationResponse,
   SendBulkNotification400,
   SendBulkNotification422,
   SendBulkNotification500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const sendBulkNotificationMutationKey = () =>
@@ -58,7 +58,7 @@ export async function sendBulkNotification(
   return res.data;
 }
 
-export function sendBulkNotificationMutationOptions(
+export function sendBulkNotificationMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<SendBulkNotificationMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -72,7 +72,7 @@ export function sendBulkNotificationMutationOptions(
       | SendBulkNotification500
     >,
     { data: SendBulkNotificationMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

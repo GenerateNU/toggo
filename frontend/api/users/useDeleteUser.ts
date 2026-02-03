@@ -6,17 +6,17 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
-import type {
   DeleteUserMutationResponse,
   DeleteUserPathParams,
   DeleteUser400,
   DeleteUser404,
   DeleteUser500,
 } from "../../types/types.gen.ts";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const deleteUserMutationKey = () =>
@@ -43,7 +43,7 @@ export async function deleteUser(
   return res.data;
 }
 
-export function deleteUserMutationOptions(
+export function deleteUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteUserMutationKey();
@@ -51,7 +51,7 @@ export function deleteUserMutationOptions(
     DeleteUserMutationResponse,
     ResponseErrorConfig<DeleteUser400 | DeleteUser404 | DeleteUser500>,
     { userID: DeleteUserPathParams["userID"] },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ userID }) => {

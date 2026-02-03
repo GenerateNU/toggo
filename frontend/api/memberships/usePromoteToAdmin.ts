@@ -52,7 +52,7 @@ export async function promoteToAdmin(
   return res.data;
 }
 
-export function promoteToAdminMutationOptions(
+export function promoteToAdminMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = promoteToAdminMutationKey();
@@ -65,7 +65,7 @@ export function promoteToAdminMutationOptions(
       tripID: PromoteToAdminPathParams["tripID"];
       userID: PromoteToAdminPathParams["userID"];
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID }) => {

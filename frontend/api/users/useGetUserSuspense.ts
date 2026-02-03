@@ -6,18 +6,18 @@
 import fetch from "../client";
 import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
-import type {
   GetUserQueryResponse,
   GetUserPathParams,
   GetUser400,
   GetUser404,
   GetUser500,
 } from "../../types/types.gen.ts";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getUserSuspenseQueryKey = (userID: GetUserPathParams["userID"]) =>
