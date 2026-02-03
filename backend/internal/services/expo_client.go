@@ -31,21 +31,21 @@ func NewExpoClient(accessToken string) ExpoClient {
 
 // ExpoNotificationRequest matches Expo API format
 type ExpoNotificationRequest struct {
-	To    string `json:"to"`
-	Title string `json:"title"`
-	Body  string `json:"body"`
-    Data  map[string]interface{} `json:"data,omitempty"`
+	To    string                 `json:"to"`
+	Title string                 `json:"title"`
+	Body  string                 `json:"body"`
+	Data  map[string]interface{} `json:"data,omitempty"`
 }
 
 type ExpoNotificationResponse struct {
-    Status string `json:"status"`
-    ID     string `json:"id,omitempty"`
-    Message string `json:"message,omitempty"`
-    Details map[string]interface{} `json:"details,omitempty"`
+	Status  string                 `json:"status"`
+	ID      string                 `json:"id,omitempty"`
+	Message string                 `json:"message,omitempty"`
+	Details map[string]interface{} `json:"details,omitempty"`
 }
 
 type ExpoBulkResponse struct {
-    Data   []ExpoNotificationResponse `json:"data"`
+	Data []ExpoNotificationResponse `json:"data"`
 }
 
 // sends notifications to multiple devices (max 100 per call per Expo limits)

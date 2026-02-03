@@ -113,6 +113,24 @@ format-fe:
 lint-fe:
     cd frontend {{ sep }} bun lint
 
+format:
+    just format-be
+    just format-fe
+
+lint: 
+    just lint-be
+    just lint-fe
+
+fmt-lint: 
+    just format
+    just lint
+
+kubb:
+    cd frontend {{ sep }} bun kubb
+
+gen-doc:
+    just api-doc
+    just kubb
 # === Localstack ===
 
 # Create a localstack container

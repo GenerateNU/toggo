@@ -1,8 +1,10 @@
 import { useCreateUser } from "@/api/users/useCreateUser";
+import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
 import { Box } from "@/design-system/base/box";
 import { Button } from "@/design-system/base/button";
 import { Text } from "@/design-system/base/text";
+import { getDeviceTimeZone } from "@/utilities/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -30,6 +32,7 @@ type ProfileFormData = z.infer<typeof PROFILE_SCHEMA>;
 export function CompleteProfileForm() {
   const { refreshCurrentUser } = useUser();
   const { mutateAsync: createUser } = useCreateUser();
+  const { mutateAsync: updateUser } = useUpdateUser();
   const params = useLocalSearchParams();
   const router = useRouter();
   const phone = params.phone as string | undefined;
@@ -58,13 +61,26 @@ export function CompleteProfileForm() {
     const normalizedName = data.name;
 
     try {
-      await createUser({
+      const created = await createUser({
         data: {
           name: normalizedName,
           username: normalizedUsername,
           phone_number: phone,
         },
       });
+
+      // Best-effort: set timezone from device if available
+      const timezone = getDeviceTimeZone();
+      if (timezone && created?.id) {
+        try {
+          await updateUser({
+            userID: created.id,
+            data: { timezone },
+          });
+        } catch (err) {
+          console.warn("Failed to update timezone", err);
+        }
+      }
 
       await refreshCurrentUser();
       router.replace("/(app)");

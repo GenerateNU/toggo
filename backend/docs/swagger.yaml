@@ -6,6 +6,49 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.Comment:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/models.EntityType'
+      id:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.CommentAPIResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/models.EntityType'
+      id:
+        type: string
+      profile_picture_url:
+        description: pointer since some users don't have their avatar set
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -26,6 +69,63 @@ definitions:
       status:
         type: string
     type: object
+  models.CreateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      entity_id:
+        type: string
+      entity_type:
+        allOf:
+        - $ref: '#/definitions/models.EntityType'
+        enum:
+        - activity
+        - pitch
+      trip_id:
+        type: string
+    required:
+    - content
+    - entity_id
+    - entity_type
+    - trip_id
+    type: object
+  models.CreateMembershipRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      is_admin:
+        type: boolean
+      trip_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - budget_max
+    - budget_min
+    - trip_id
+    - user_id
+    type: object
+  models.CreateTripRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      name:
+        minLength: 1
+        type: string
+    required:
+    - budget_max
+    - budget_min
+    - name
+    type: object
   models.CreateUserRequest:
     properties:
       name:
@@ -40,6 +140,14 @@ definitions:
     - phone_number
     - username
     type: object
+  models.EntityType:
+    enum:
+    - activity
+    - pitch
+    type: string
+    x-enum-varnames:
+    - Activity
+    - Pitch
   models.GetFileAllSizesResponse:
     properties:
       files:
@@ -153,6 +261,63 @@ definitions:
       url:
         type: string
     type: object
+  models.Trip:
+    properties:
+      budget_max:
+        type: integer
+      budget_min:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TripCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.Trip'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
+  models.UpdateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  models.UpdateMembershipRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      is_admin:
+        type: boolean
+    type: object
+  models.UpdateTripRequest:
+    properties:
+      budget_max:
+        minimum: 0
+        type: integer
+      budget_min:
+        minimum: 0
+        type: integer
+      name:
+        minLength: 1
+        type: string
+    type: object
   models.UpdateUserRequest:
     properties:
       device_token:
@@ -164,6 +329,8 @@ definitions:
       phone_number:
         type: string
       profile_picture:
+        type: string
+      timezone:
         type: string
       username:
         type: string
@@ -214,6 +381,8 @@ definitions:
         type: string
       profile_picture:
         type: string
+      timezone:
+        type: string
       username:
         type: string
     type: object
@@ -224,6 +393,128 @@ info:
   title: Toggo API
   version: "1.0"
 paths:
+  /api/v1/comments:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new comment
+      operationId: createComment
+      parameters:
+      - description: Create comment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a comment
+      tags:
+      - comments
+  /api/v1/comments/{commentID}:
+    delete:
+      description: Deletes a comment by ID
+      operationId: deleteComment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a comment
+      tags:
+      - comments
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing comment by ID
+      operationId: updateComment
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Update comment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a comment
+      tags:
+      - comments
   /api/v1/files/{imageId}:
     get:
       description: Retrieves presigned URLs for all sizes of an image

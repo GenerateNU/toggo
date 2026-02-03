@@ -10,17 +10,30 @@ import (
 )
 
 type Repository struct {
-	User   UserRepository
-	Health HealthRepository
-	Image  ImageRepository
+	User       UserRepository
+	Health     HealthRepository
+	Image      ImageRepository
+	Comment    CommentRepository
+	Membership MembershipRepository
+	Trip       TripRepository
+	db         *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:   &userRepository{db: db},
-		Health: &healthRepository{db: db},
-		Image:  &imageRepository{db: db},
+		User:       &userRepository{db: db},
+		Health:     &healthRepository{db: db},
+		Image:      &imageRepository{db: db},
+		Comment:    &commentRepository{db: db},
+		Trip:       &tripRepository{db: db},
+		Membership: &membershipRepository{db: db},
+		db:         db,
 	}
+}
+
+// GetDB returns the underlying database connection for transactions
+func (r *Repository) GetDB() *bun.DB {
+	return r.db
 }
 
 type HealthRepository interface {
@@ -35,6 +48,27 @@ type UserRepository interface {
 	GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error)
 }
 
+type TripRepository interface {
+	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
+	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
+	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type MembershipRepository interface {
+	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
+	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
+	Delete(ctx context.Context, userID, tripID uuid.UUID) error
+}
+
 type ImageRepository interface {
 	CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error)
 	ConfirmUpload(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
@@ -45,4 +79,11 @@ type ImageRepository interface {
 	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	DeleteByID(ctx context.Context, imageID uuid.UUID) error
 	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
+}
+
+type CommentRepository interface {
+	Create(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
+	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
 }

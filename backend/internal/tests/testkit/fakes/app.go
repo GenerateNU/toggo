@@ -2,6 +2,7 @@ package fakes
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"sync"
 	"toggo/internal/config"
@@ -11,11 +12,14 @@ import (
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
 	"toggo/internal/types"
-	"toggo/internal/utilities"
+	utilities "toggo/internal/validators"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
 )
+
+//go:embed fixtures.sql
+var fixturesSQL string
 
 var (
 	sharedApp     *fiber.App
@@ -90,7 +94,19 @@ func connectAndMigrateDBOrPanic(ctx context.Context, cfg *config.Configuration) 
 	if err := database.ApplyGooseMigrations(ctx, cfg.Database.Host, cfg.Database.Port, cfg.Database.Username, cfg.Database.Password, cfg.Database.Name); err != nil {
 		panic(fmt.Sprintf("failed to migrate test DB: %v", err))
 	}
+	if err := loadFixtures(ctx, db); err != nil {
+		panic(fmt.Sprintf("failed to load fixtures: %v", err))
+	}
 	return db
+}
+
+func loadFixtures(ctx context.Context, db *bun.DB) error {
+	_, err := db.ExecContext(ctx, fixturesSQL)
+	if err != nil {
+		return fmt.Errorf("failed to execute fixtures SQL: %w", err)
+	}
+
+	return nil
 }
 
 func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bun.DB) {

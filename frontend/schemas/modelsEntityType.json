@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "enum": ["activity", "pitch"],
+  "x-enum-varnames": ["Activity", "Pitch"],
+  "x-readme-ref-name": "models.EntityType"
+}
