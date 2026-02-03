@@ -9,6 +9,7 @@ import type {
   PromoteToAdminMutationResponse,
   PromoteToAdminPathParams,
   PromoteToAdmin400,
+  PromoteToAdmin401,
   PromoteToAdmin404,
   PromoteToAdmin500,
 } from "../../types/types.gen.ts";
@@ -41,7 +42,10 @@ export async function promoteToAdmin(
   const res = await request<
     PromoteToAdminMutationResponse,
     ResponseErrorConfig<
-      PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+      | PromoteToAdmin400
+      | PromoteToAdmin401
+      | PromoteToAdmin404
+      | PromoteToAdmin500
     >,
     unknown
   >({
@@ -59,7 +63,10 @@ export function promoteToAdminMutationOptions(
   return mutationOptions<
     PromoteToAdminMutationResponse,
     ResponseErrorConfig<
-      PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+      | PromoteToAdmin400
+      | PromoteToAdmin401
+      | PromoteToAdmin404
+      | PromoteToAdmin500
     >,
     {
       tripID: PromoteToAdminPathParams["tripID"];
@@ -84,7 +91,10 @@ export function usePromoteToAdmin<TContext>(
     mutation?: UseMutationOptions<
       PromoteToAdminMutationResponse,
       ResponseErrorConfig<
-        PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+        | PromoteToAdmin400
+        | PromoteToAdmin401
+        | PromoteToAdmin404
+        | PromoteToAdmin500
       >,
       {
         tripID: PromoteToAdminPathParams["tripID"];
@@ -105,7 +115,10 @@ export function usePromoteToAdmin<TContext>(
   ) as UseMutationOptions<
     PromoteToAdminMutationResponse,
     ResponseErrorConfig<
-      PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+      | PromoteToAdmin400
+      | PromoteToAdmin401
+      | PromoteToAdmin404
+      | PromoteToAdmin500
     >,
     {
       tripID: PromoteToAdminPathParams["tripID"];
@@ -117,7 +130,10 @@ export function usePromoteToAdmin<TContext>(
   return useMutation<
     PromoteToAdminMutationResponse,
     ResponseErrorConfig<
-      PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+      | PromoteToAdmin400
+      | PromoteToAdmin401
+      | PromoteToAdmin404
+      | PromoteToAdmin500
     >,
     {
       tripID: PromoteToAdminPathParams["tripID"];
@@ -134,7 +150,10 @@ export function usePromoteToAdmin<TContext>(
   ) as UseMutationResult<
     PromoteToAdminMutationResponse,
     ResponseErrorConfig<
-      PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500
+      | PromoteToAdmin400
+      | PromoteToAdmin401
+      | PromoteToAdmin404
+      | PromoteToAdmin500
     >,
     {
       tripID: PromoteToAdminPathParams["tripID"];

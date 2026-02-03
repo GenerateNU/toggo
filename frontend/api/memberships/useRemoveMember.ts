@@ -9,6 +9,7 @@ import type {
   RemoveMemberMutationResponse,
   RemoveMemberPathParams,
   RemoveMember400,
+  RemoveMember401,
   RemoveMember404,
   RemoveMember500,
 } from "../../types/types.gen.ts";
@@ -40,7 +41,9 @@ export async function removeMember(
 
   const res = await request<
     RemoveMemberMutationResponse,
-    ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+    ResponseErrorConfig<
+      RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+    >,
     unknown
   >({
     method: "DELETE",
@@ -56,7 +59,9 @@ export function removeMemberMutationOptions(
   const mutationKey = removeMemberMutationKey();
   return mutationOptions<
     RemoveMemberMutationResponse,
-    ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+    ResponseErrorConfig<
+      RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+    >,
     {
       tripID: RemoveMemberPathParams["tripID"];
       userID: RemoveMemberPathParams["userID"];
@@ -79,7 +84,9 @@ export function useRemoveMember<TContext>(
   options: {
     mutation?: UseMutationOptions<
       RemoveMemberMutationResponse,
-      ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+      ResponseErrorConfig<
+        RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+      >,
       {
         tripID: RemoveMemberPathParams["tripID"];
         userID: RemoveMemberPathParams["userID"];
@@ -95,7 +102,9 @@ export function useRemoveMember<TContext>(
 
   const baseOptions = removeMemberMutationOptions(config) as UseMutationOptions<
     RemoveMemberMutationResponse,
-    ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+    ResponseErrorConfig<
+      RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+    >,
     {
       tripID: RemoveMemberPathParams["tripID"];
       userID: RemoveMemberPathParams["userID"];
@@ -105,7 +114,9 @@ export function useRemoveMember<TContext>(
 
   return useMutation<
     RemoveMemberMutationResponse,
-    ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+    ResponseErrorConfig<
+      RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+    >,
     {
       tripID: RemoveMemberPathParams["tripID"];
       userID: RemoveMemberPathParams["userID"];
@@ -120,7 +131,9 @@ export function useRemoveMember<TContext>(
     queryClient,
   ) as UseMutationResult<
     RemoveMemberMutationResponse,
-    ResponseErrorConfig<RemoveMember400 | RemoveMember404 | RemoveMember500>,
+    ResponseErrorConfig<
+      RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500
+    >,
     {
       tripID: RemoveMemberPathParams["tripID"];
       userID: RemoveMemberPathParams["userID"];

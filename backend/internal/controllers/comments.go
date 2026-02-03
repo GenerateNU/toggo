@@ -33,7 +33,7 @@ func NewCommentController(commentService services.CommentServiceInterface, valid
 // @Param        request body models.CreateCommentRequest true "Create comment request"
 // @Success      201 {object} models.Comment
 // @Failure      401 {object} errs.APIError
-// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -160,7 +160,7 @@ func (cmt *CommentController) DeleteComment(c *fiber.Ctx) error {
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.PaginatedCommentsResponse
 // @Failure      401 {object} errs.APIError
-// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError

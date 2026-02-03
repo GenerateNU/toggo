@@ -9,6 +9,7 @@ import type {
   GetMembershipQueryResponse,
   GetMembershipPathParams,
   GetMembership400,
+  GetMembership401,
   GetMembership404,
   GetMembership500,
 } from "../../types/types.gen.ts";
@@ -47,7 +48,9 @@ export async function getMembership(
 
   const res = await request<
     GetMembershipQueryResponse,
-    ResponseErrorConfig<GetMembership400 | GetMembership404 | GetMembership500>,
+    ResponseErrorConfig<
+      GetMembership400 | GetMembership401 | GetMembership404 | GetMembership500
+    >,
     unknown
   >({
     method: "GET",
@@ -65,7 +68,9 @@ export function getMembershipQueryOptions(
   const queryKey = getMembershipQueryKey(tripID, userID);
   return queryOptions<
     GetMembershipQueryResponse,
-    ResponseErrorConfig<GetMembership400 | GetMembership404 | GetMembership500>,
+    ResponseErrorConfig<
+      GetMembership400 | GetMembership401 | GetMembership404 | GetMembership500
+    >,
     GetMembershipQueryResponse,
     typeof queryKey
   >({
@@ -95,7 +100,10 @@ export function useGetMembership<
       QueryObserverOptions<
         GetMembershipQueryResponse,
         ResponseErrorConfig<
-          GetMembership400 | GetMembership404 | GetMembership500
+          | GetMembership400
+          | GetMembership401
+          | GetMembership404
+          | GetMembership500
         >,
         TData,
         TQueryData,
@@ -119,7 +127,9 @@ export function useGetMembership<
     queryClient,
   ) as UseQueryResult<
     TData,
-    ResponseErrorConfig<GetMembership400 | GetMembership404 | GetMembership500>
+    ResponseErrorConfig<
+      GetMembership400 | GetMembership401 | GetMembership404 | GetMembership500
+    >
   > & { queryKey: TQueryKey };
 
   query.queryKey = queryKey as TQueryKey;

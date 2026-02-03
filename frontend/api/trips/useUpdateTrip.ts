@@ -10,6 +10,7 @@ import type {
   UpdateTripMutationResponse,
   UpdateTripPathParams,
   UpdateTrip400,
+  UpdateTrip401,
   UpdateTrip404,
   UpdateTrip422,
   UpdateTrip500,
@@ -45,7 +46,11 @@ export async function updateTrip(
   const res = await request<
     UpdateTripMutationResponse,
     ResponseErrorConfig<
-      UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+      | UpdateTrip400
+      | UpdateTrip401
+      | UpdateTrip404
+      | UpdateTrip422
+      | UpdateTrip500
     >,
     UpdateTripMutationRequest
   >({
@@ -66,7 +71,11 @@ export function updateTripMutationOptions(
   return mutationOptions<
     UpdateTripMutationResponse,
     ResponseErrorConfig<
-      UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+      | UpdateTrip400
+      | UpdateTrip401
+      | UpdateTrip404
+      | UpdateTrip422
+      | UpdateTrip500
     >,
     {
       tripID: UpdateTripPathParams["tripID"];
@@ -91,7 +100,11 @@ export function useUpdateTrip<TContext>(
     mutation?: UseMutationOptions<
       UpdateTripMutationResponse,
       ResponseErrorConfig<
-        UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+        | UpdateTrip400
+        | UpdateTrip401
+        | UpdateTrip404
+        | UpdateTrip422
+        | UpdateTrip500
       >,
       {
         tripID: UpdateTripPathParams["tripID"];
@@ -111,7 +124,11 @@ export function useUpdateTrip<TContext>(
   const baseOptions = updateTripMutationOptions(config) as UseMutationOptions<
     UpdateTripMutationResponse,
     ResponseErrorConfig<
-      UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+      | UpdateTrip400
+      | UpdateTrip401
+      | UpdateTrip404
+      | UpdateTrip422
+      | UpdateTrip500
     >,
     {
       tripID: UpdateTripPathParams["tripID"];
@@ -123,7 +140,11 @@ export function useUpdateTrip<TContext>(
   return useMutation<
     UpdateTripMutationResponse,
     ResponseErrorConfig<
-      UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+      | UpdateTrip400
+      | UpdateTrip401
+      | UpdateTrip404
+      | UpdateTrip422
+      | UpdateTrip500
     >,
     {
       tripID: UpdateTripPathParams["tripID"];
@@ -140,7 +161,11 @@ export function useUpdateTrip<TContext>(
   ) as UseMutationResult<
     UpdateTripMutationResponse,
     ResponseErrorConfig<
-      UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500
+      | UpdateTrip400
+      | UpdateTrip401
+      | UpdateTrip404
+      | UpdateTrip422
+      | UpdateTrip500
     >,
     {
       tripID: UpdateTripPathParams["tripID"];

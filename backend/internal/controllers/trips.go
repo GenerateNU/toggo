@@ -77,7 +77,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 // @Tags         trips
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {object} models.Trip
+// @Success      200 {object} models.TripAPIResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError

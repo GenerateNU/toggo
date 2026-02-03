@@ -9,6 +9,7 @@ import type {
   DeleteTripMutationResponse,
   DeleteTripPathParams,
   DeleteTrip400,
+  DeleteTrip401,
   DeleteTrip404,
   DeleteTrip500,
 } from "../../types/types.gen.ts";
@@ -37,7 +38,9 @@ export async function deleteTrip(
 
   const res = await request<
     DeleteTripMutationResponse,
-    ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+    ResponseErrorConfig<
+      DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+    >,
     unknown
   >({ method: "DELETE", url: `/api/v1/trips/${tripID}`, ...requestConfig });
   return res.data;
@@ -49,7 +52,9 @@ export function deleteTripMutationOptions(
   const mutationKey = deleteTripMutationKey();
   return mutationOptions<
     DeleteTripMutationResponse,
-    ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+    ResponseErrorConfig<
+      DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+    >,
     { tripID: DeleteTripPathParams["tripID"] },
     typeof mutationKey
   >({
@@ -69,7 +74,9 @@ export function useDeleteTrip<TContext>(
   options: {
     mutation?: UseMutationOptions<
       DeleteTripMutationResponse,
-      ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+      ResponseErrorConfig<
+        DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+      >,
       { tripID: DeleteTripPathParams["tripID"] },
       TContext
     > & { client?: QueryClient };
@@ -82,14 +89,18 @@ export function useDeleteTrip<TContext>(
 
   const baseOptions = deleteTripMutationOptions(config) as UseMutationOptions<
     DeleteTripMutationResponse,
-    ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+    ResponseErrorConfig<
+      DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+    >,
     { tripID: DeleteTripPathParams["tripID"] },
     TContext
   >;
 
   return useMutation<
     DeleteTripMutationResponse,
-    ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+    ResponseErrorConfig<
+      DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+    >,
     { tripID: DeleteTripPathParams["tripID"] },
     TContext
   >(
@@ -101,7 +112,9 @@ export function useDeleteTrip<TContext>(
     queryClient,
   ) as UseMutationResult<
     DeleteTripMutationResponse,
-    ResponseErrorConfig<DeleteTrip400 | DeleteTrip404 | DeleteTrip500>,
+    ResponseErrorConfig<
+      DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
+    >,
     { tripID: DeleteTripPathParams["tripID"] },
     TContext
   >;

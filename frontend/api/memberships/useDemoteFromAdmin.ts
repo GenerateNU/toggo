@@ -9,6 +9,7 @@ import type {
   DemoteFromAdminMutationResponse,
   DemoteFromAdminPathParams,
   DemoteFromAdmin400,
+  DemoteFromAdmin401,
   DemoteFromAdmin404,
   DemoteFromAdmin500,
 } from "../../types/types.gen.ts";
@@ -41,7 +42,10 @@ export async function demoteFromAdmin(
   const res = await request<
     DemoteFromAdminMutationResponse,
     ResponseErrorConfig<
-      DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+      | DemoteFromAdmin400
+      | DemoteFromAdmin401
+      | DemoteFromAdmin404
+      | DemoteFromAdmin500
     >,
     unknown
   >({
@@ -59,7 +63,10 @@ export function demoteFromAdminMutationOptions(
   return mutationOptions<
     DemoteFromAdminMutationResponse,
     ResponseErrorConfig<
-      DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+      | DemoteFromAdmin400
+      | DemoteFromAdmin401
+      | DemoteFromAdmin404
+      | DemoteFromAdmin500
     >,
     {
       tripID: DemoteFromAdminPathParams["tripID"];
@@ -84,7 +91,10 @@ export function useDemoteFromAdmin<TContext>(
     mutation?: UseMutationOptions<
       DemoteFromAdminMutationResponse,
       ResponseErrorConfig<
-        DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+        | DemoteFromAdmin400
+        | DemoteFromAdmin401
+        | DemoteFromAdmin404
+        | DemoteFromAdmin500
       >,
       {
         tripID: DemoteFromAdminPathParams["tripID"];
@@ -105,7 +115,10 @@ export function useDemoteFromAdmin<TContext>(
   ) as UseMutationOptions<
     DemoteFromAdminMutationResponse,
     ResponseErrorConfig<
-      DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+      | DemoteFromAdmin400
+      | DemoteFromAdmin401
+      | DemoteFromAdmin404
+      | DemoteFromAdmin500
     >,
     {
       tripID: DemoteFromAdminPathParams["tripID"];
@@ -117,7 +130,10 @@ export function useDemoteFromAdmin<TContext>(
   return useMutation<
     DemoteFromAdminMutationResponse,
     ResponseErrorConfig<
-      DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+      | DemoteFromAdmin400
+      | DemoteFromAdmin401
+      | DemoteFromAdmin404
+      | DemoteFromAdmin500
     >,
     {
       tripID: DemoteFromAdminPathParams["tripID"];
@@ -134,7 +150,10 @@ export function useDemoteFromAdmin<TContext>(
   ) as UseMutationResult<
     DemoteFromAdminMutationResponse,
     ResponseErrorConfig<
-      DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500
+      | DemoteFromAdmin400
+      | DemoteFromAdmin401
+      | DemoteFromAdmin404
+      | DemoteFromAdmin500
     >,
     {
       tripID: DemoteFromAdminPathParams["tripID"];

@@ -10,7 +10,7 @@ import type {
   CreateCommentMutationResponse,
   CreateComment400,
   CreateComment401,
-  CreateComment403,
+  CreateComment404,
   CreateComment422,
   CreateComment500,
 } from "../../types/types.gen.ts";
@@ -48,7 +48,7 @@ export async function createComment(
     ResponseErrorConfig<
       | CreateComment400
       | CreateComment401
-      | CreateComment403
+      | CreateComment404
       | CreateComment422
       | CreateComment500
     >,
@@ -73,7 +73,7 @@ export function createCommentMutationOptions(
     ResponseErrorConfig<
       | CreateComment400
       | CreateComment401
-      | CreateComment403
+      | CreateComment404
       | CreateComment422
       | CreateComment500
     >,
@@ -99,7 +99,7 @@ export function useCreateComment<TContext>(
       ResponseErrorConfig<
         | CreateComment400
         | CreateComment401
-        | CreateComment403
+        | CreateComment404
         | CreateComment422
         | CreateComment500
       >,
@@ -122,7 +122,7 @@ export function useCreateComment<TContext>(
     ResponseErrorConfig<
       | CreateComment400
       | CreateComment401
-      | CreateComment403
+      | CreateComment404
       | CreateComment422
       | CreateComment500
     >,
@@ -135,7 +135,7 @@ export function useCreateComment<TContext>(
     ResponseErrorConfig<
       | CreateComment400
       | CreateComment401
-      | CreateComment403
+      | CreateComment404
       | CreateComment422
       | CreateComment500
     >,
@@ -153,7 +153,7 @@ export function useCreateComment<TContext>(
     ResponseErrorConfig<
       | CreateComment400
       | CreateComment401
-      | CreateComment403
+      | CreateComment404
       | CreateComment422
       | CreateComment500
     >,

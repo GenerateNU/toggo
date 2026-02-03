@@ -10,6 +10,7 @@ import type {
   UpdateMembershipMutationResponse,
   UpdateMembershipPathParams,
   UpdateMembership400,
+  UpdateMembership401,
   UpdateMembership404,
   UpdateMembership422,
   UpdateMembership500,
@@ -49,6 +50,7 @@ export async function updateMembership(
     UpdateMembershipMutationResponse,
     ResponseErrorConfig<
       | UpdateMembership400
+      | UpdateMembership401
       | UpdateMembership404
       | UpdateMembership422
       | UpdateMembership500
@@ -73,6 +75,7 @@ export function updateMembershipMutationOptions(
     UpdateMembershipMutationResponse,
     ResponseErrorConfig<
       | UpdateMembership400
+      | UpdateMembership401
       | UpdateMembership404
       | UpdateMembership422
       | UpdateMembership500
@@ -102,6 +105,7 @@ export function useUpdateMembership<TContext>(
       UpdateMembershipMutationResponse,
       ResponseErrorConfig<
         | UpdateMembership400
+        | UpdateMembership401
         | UpdateMembership404
         | UpdateMembership422
         | UpdateMembership500
@@ -129,6 +133,7 @@ export function useUpdateMembership<TContext>(
     UpdateMembershipMutationResponse,
     ResponseErrorConfig<
       | UpdateMembership400
+      | UpdateMembership401
       | UpdateMembership404
       | UpdateMembership422
       | UpdateMembership500
@@ -145,6 +150,7 @@ export function useUpdateMembership<TContext>(
     UpdateMembershipMutationResponse,
     ResponseErrorConfig<
       | UpdateMembership400
+      | UpdateMembership401
       | UpdateMembership404
       | UpdateMembership422
       | UpdateMembership500
@@ -166,6 +172,7 @@ export function useUpdateMembership<TContext>(
     UpdateMembershipMutationResponse,
     ResponseErrorConfig<
       | UpdateMembership400
+      | UpdateMembership401
       | UpdateMembership404
       | UpdateMembership422
       | UpdateMembership500

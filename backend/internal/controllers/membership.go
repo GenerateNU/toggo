@@ -66,6 +66,7 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 // @Success      200 {object} models.MembershipCursorPageResult
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships [get]
 // @ID           getTripMembers
@@ -99,7 +100,7 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        userID path string true "User ID"
-// @Success      200 {object} models.Membership
+// @Success      200 {object} models.MembershipAPIResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
