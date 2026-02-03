@@ -1,22 +1,12 @@
 package realtime
 
 import (
-	"log"
-	"net/http"
-
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/websocket/v2"
 	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-// WSHandler handles WebSocket upgrade requests and client registration.
+// WSHandler handles WebSocket connections.
 type WSHandler struct {
 	hub  *Hub
 	auth *AuthMiddleware
@@ -30,25 +20,57 @@ func NewWSHandler(hub *Hub, auth *AuthMiddleware) *WSHandler {
 	}
 }
 
-// ServeHTTP handles WebSocket upgrade requests and starts client goroutines.
-func (h *WSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	userID, err := h.auth.ValidateConnection(r)
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
+// Middleware checks if the connection is a WebSocket upgrade request.
+func (h *WSHandler) Middleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if websocket.IsWebSocketUpgrade(c) {
+			// TODO: Uncomment to enable JWT verification
+			// token := c.Get("Authorization")
+			// if token == "" {
+			// 	token = c.Query("token")
+			// }
+			// if token == "" {
+			// 	return fiber.NewError(fiber.StatusUnauthorized, "Missing authentication token")
+			// }
+			//
+			// claims, err := h.auth.ValidateToken(token)
+			// if err != nil {
+			// 	return fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
+
+			// TODO: Uncomment to use authenticated user ID from JWT
+			// userID := c.Locals("userID").(string)
+
+			// }
+			//
+			// c.Locals("userID", claims.UserID)
+
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
 	}
+}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("WebSocket upgrade error: %v", err)
-		return
-	}
+// Handler handles WebSocket connections.
+func (h *WSHandler) Handler() fiber.Handler {
+	return websocket.New(func(c *websocket.Conn) {
+		clientID := uuid.New().String()
 
-	clientID := uuid.New().String()
-	client := NewClient(clientID, userID, h.hub, conn)
+		// TODO: Uncomment to use authenticated user ID from JWT
+		// userID, ok := c.Locals("userID").(string)
+		// if !ok || userID == "" {
+		// 	log.Printf("Failed to get userID from context for client %s", clientID)
+		// 	c.Close()
+		// 	return
+		// }
 
-	h.hub.Register <- client
+		// Use a test user ID for now (no JWT auth required for testing), delete this later
+		userID := "test-user-" + clientID[:8]
 
-	go client.WritePump()
-	go client.ReadPump()
+		client := NewClient(clientID, userID, h.hub, c)
+		h.hub.Register <- client
+
+		go client.WritePump()
+		client.ReadPump()
+	})
 }

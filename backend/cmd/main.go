@@ -34,9 +34,8 @@ func main() {
 	realtimeService.Start()
 
 	ctx := setupSignalHandler()
-	
-	// Pass the Fiber WebSocket handler to CreateApp
-	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetFiberHandler())
+
+	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler())
 
 	go startServer(app, cfg.App.Port)
 

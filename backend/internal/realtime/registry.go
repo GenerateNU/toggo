@@ -20,7 +20,7 @@ func NewEventRegistry() *EventRegistry {
 	registry := &EventRegistry{
 		allowedTopics: make(map[string]bool),
 	}
-	
+
 	registry.registerDefaultTopics()
 	return registry
 }
@@ -44,10 +44,8 @@ func (r *EventRegistry) registerDefaultTopics() {
 		"file.uploaded",
 		"file.deleted",
 		"notification.sent",
-		"test.event",
-		"test.message",
 	}
-	
+
 	for _, topic := range topics {
 		r.allowedTopics[topic] = true
 	}
@@ -78,7 +76,7 @@ func (r *EventRegistry) Unregister(topic string) {
 func (r *EventRegistry) GetAllTopics() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	topics := make([]string, 0, len(r.allowedTopics))
 	for topic := range r.allowedTopics {
 		topics = append(topics, topic)

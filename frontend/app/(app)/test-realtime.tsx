@@ -2,13 +2,13 @@ import { getAuthToken } from "@/api/client";
 import Constants from "expo-constants";
 import { useEffect, useRef, useState } from "react";
 import {
-    Button,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Button,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 interface ServerMessage {
@@ -83,7 +83,7 @@ export default function TestRealtimeScreen() {
         if (message.type === "events" && message.events) {
           message.events.forEach((evt) => {
             addLog(
-              `📥 Event: ${evt.topic}\nTrip: ${evt.trip_id}\nData: ${JSON.stringify(evt.data, null, 2)}`
+              `📥 Event: ${evt.topic}\nTrip: ${evt.trip_id}\nData: ${JSON.stringify(evt.data, null, 2)}`,
             );
           });
         } else if (message.type === "pong") {
@@ -183,7 +183,9 @@ export default function TestRealtimeScreen() {
 
       if (response.ok) {
         const data = await response.json();
-        addLog(`✅ Trip updated successfully:\n${JSON.stringify(data, null, 2)}`);
+        addLog(
+          `✅ Trip updated successfully:\n${JSON.stringify(data, null, 2)}`,
+        );
       } else {
         const errorText = await response.text();
         addLog(`❌ Update failed: ${response.status}\n${errorText}`);
@@ -237,7 +239,7 @@ export default function TestRealtimeScreen() {
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
-      
+
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
@@ -254,7 +256,9 @@ export default function TestRealtimeScreen() {
 
       if (response.ok) {
         const data = await response.json();
-        addLog(`✅ Trip created successfully!\nID: ${data.id}\n${JSON.stringify(data, null, 2)}`);
+        addLog(
+          `✅ Trip created successfully!\nID: ${data.id}\n${JSON.stringify(data, null, 2)}`,
+        );
         setTripId(data.id);
         setCreateTripName("");
       } else {
@@ -275,7 +279,10 @@ export default function TestRealtimeScreen() {
   }, []);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <Text style={styles.title}>Realtime Test</Text>
       <Text style={styles.subtitle}>
         API: {API_URL} | WS: {WS_URL}
@@ -288,7 +295,11 @@ export default function TestRealtimeScreen() {
         </Text>
         <View style={styles.row}>
           <Button title="Connect" onPress={connect} disabled={connected} />
-          <Button title="Disconnect" onPress={disconnect} disabled={!connected} />
+          <Button
+            title="Disconnect"
+            onPress={disconnect}
+            disabled={!connected}
+          />
           <Button title="Ping" onPress={sendPing} disabled={!connected} />
         </View>
       </View>
@@ -355,10 +366,7 @@ export default function TestRealtimeScreen() {
           value={newTripName}
           onChangeText={setNewTripName}
         />
-        <Button
-          title="Update Trip from App"
-          onPress={updateTripFromApp}
-        />
+        <Button title="Update Trip from App" onPress={updateTripFromApp} />
       </View>
 
       {/* Logs */}

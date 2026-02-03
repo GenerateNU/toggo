@@ -15,7 +15,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.FiberWSHandler) *fiber.App {
+func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.WSHandler) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ServerHeader: config.App.Name,
 		AppName:      fmt.Sprintf("%s API %s", config.App.Name, config.App.Version),

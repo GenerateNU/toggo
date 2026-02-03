@@ -43,7 +43,7 @@ func (p *RedisEventPublisher) Publish(ctx context.Context, event *Event) error {
 		log.Printf("Failed to publish event to Redis channel %s: %v", channel, err)
 		return err
 	}
-	
+
 	log.Printf("Published event to Redis: channel=%s, topic=%s, trip=%s", channel, event.Topic, event.TripID)
 	return nil
 }
