@@ -16,8 +16,8 @@ type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAPIResponse, error)
 	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error)
-	UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
-	DeleteTrip(ctx context.Context, id uuid.UUID) error
+	UpdateTrip(ctx context.Context, tripID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
+	DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error
 }
 
 var _ TripServiceInterface = (*TripService)(nil)
@@ -37,15 +37,15 @@ func NewTripService(repo *repository.Repository, fileService FileServiceInterfac
 func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error) {
 	// Validate business rules
 	if req.Name == "" {
-		return nil, errors.New("trip name cannot be empty")
+		return nil, errs.BadRequest(errors.New("trip name cannot be empty"))
 	}
 
 	if req.BudgetMin < 0 {
-		return nil, errors.New("budget minimum cannot be negative")
+		return nil, errs.BadRequest(errors.New("budget minimum cannot be negative"))
 	}
 
 	if req.BudgetMax < req.BudgetMin {
-		return nil, errors.New("budget maximum must be greater than or equal to minimum")
+		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
 	// Validate cover image ID exists if provided
@@ -172,25 +172,34 @@ func (s *TripService) buildTripPageResult(tripResponses []*models.TripAPIRespons
 	return result, nil
 }
 
-func (s *TripService) UpdateTrip(ctx context.Context, id uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
+func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
 	// Validate business rules only if fields are provided
 	if req.Name != nil && *req.Name == "" {
-		return nil, errors.New("trip name cannot be empty")
+		return nil, errs.BadRequest(errors.New("trip name cannot be empty"))
 	}
 
 	if req.BudgetMin != nil && *req.BudgetMin < 0 {
-		return nil, errors.New("budget minimum cannot be negative")
+		return nil, errs.BadRequest(errors.New("budget minimum cannot be negative"))
 	}
 
 	if req.BudgetMin != nil && req.BudgetMax != nil && *req.BudgetMax < *req.BudgetMin {
-		return nil, errors.New("budget maximum must be greater than or equal to minimum")
+		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
-	return s.Trip.Update(ctx, id, &req)
+	return s.Trip.Update(ctx, tripID, &req)
 }
 
-func (s *TripService) DeleteTrip(ctx context.Context, id uuid.UUID) error {
-	return s.Trip.Delete(ctx, id)
+func (s *TripService) DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error {
+	// Only admins can delete trips
+	isAdmin, err := s.Membership.IsAdmin(ctx, tripID, userID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
+	}
+
+	return s.Trip.Delete(ctx, tripID)
 }
 
 func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDatabaseResponse) (*models.TripAPIResponse, error) {

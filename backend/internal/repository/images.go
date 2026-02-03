@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -63,7 +64,7 @@ func (r *imageRepository) ConfirmUpload(ctx context.Context, imageID uuid.UUID, 
 		Where("status = ?", models.UploadStatusConfirmed).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err
@@ -153,7 +154,7 @@ func (r *imageRepository) FindByIDAndSize(ctx context.Context, imageID uuid.UUID
 		Where("status = ?", models.UploadStatusConfirmed).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err

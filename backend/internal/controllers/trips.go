@@ -163,7 +163,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	id, err := validators.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -172,7 +172,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return err
 	}
 
-	trip, err := ctrl.tripService.UpdateTrip(c.Context(), id, req)
+	trip, err := ctrl.tripService.UpdateTrip(c.Context(), tripID, req)
 	if err != nil {
 		return err
 	}
@@ -192,12 +192,27 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID} [delete]
 // @ID           deleteTrip
 func (ctrl *TripController) DeleteTrip(c *fiber.Ctx) error {
-	id, err := validators.ValidateID(c.Params("tripID"))
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	if err := ctrl.tripService.DeleteTrip(c.Context(), id); err != nil {
+	if err := ctrl.tripService.DeleteTrip(c.Context(), userID, tripID); err != nil {
 		return err
 	}
 

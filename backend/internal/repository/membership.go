@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -47,7 +48,7 @@ func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUI
 		Scan(ctx, membership)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err
@@ -147,7 +148,7 @@ func (r *membershipRepository) IsAdmin(ctx context.Context, tripID, userID uuid.
 		Where("trip_id = ? AND user_id = ? AND is_admin = true", tripID, userID).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 		return false, err

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -40,7 +41,7 @@ func (r *tripRepository) Find(ctx context.Context, id uuid.UUID) (*models.Trip, 
 		Where("id = ?", id).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err
