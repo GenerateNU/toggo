@@ -1,6 +1,7 @@
 package realtime
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -23,12 +24,17 @@ func NewEventBatcher(hub *Hub) *EventBatcher {
 }
 
 // Run starts the periodic batch flushing ticker.
-func (b *EventBatcher) Run() {
+func (b *EventBatcher) Run(ctx context.Context) {
 	ticker := time.NewTicker(b.batchPeriod)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		b.flushAll()
+	for {
+		select {
+		case <-ticker.C:
+			b.flushAll()
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 

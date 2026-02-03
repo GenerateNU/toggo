@@ -68,7 +68,7 @@ func (h *Hub) unregisterClient(client *Client) {
 	defer h.mu.Unlock()
 
 	if _, ok := h.clients[client]; ok {
-		for tripID := range client.Subscriptions {
+		for _, tripID := range client.GetSubscriptions() {
 			h.removeClientFromTrip(client, tripID)
 		}
 

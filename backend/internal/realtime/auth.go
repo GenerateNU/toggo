@@ -55,7 +55,8 @@ func (a *AuthMiddleware) extractToken(r *http.Request) string {
 }
 
 func (a *AuthMiddleware) verifyToken(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	parser := jwt.NewParser(jwt.WithExpirationRequired())
+	token, err := parser.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -67,12 +68,6 @@ func (a *AuthMiddleware) verifyToken(tokenString string) (string, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if exp, ok := claims["exp"].(float64); ok {
-			if time.Now().Unix() > int64(exp) {
-				return "", errors.New("token expired")
-			}
-		}
-
 		if userID, ok := claims["user_id"].(string); ok {
 			return userID, nil
 		}

@@ -16,6 +16,8 @@ const (
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
+
+	maxMessageSize = 64 * 1024
 )
 
 // Client represents a WebSocket connection.
@@ -77,7 +79,7 @@ func (c *Client) ReadPump() {
 		c.Hub.Unregister <- c
 		_ = c.Conn.Close()
 	}()
-
+	c.Conn.SetReadLimit(maxMessageSize)
 	_ = c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.Conn.SetPongHandler(func(string) error {
 		_ = c.Conn.SetReadDeadline(time.Now().Add(pongWait))
