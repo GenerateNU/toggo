@@ -159,7 +159,6 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
 
     if (finalStatus !== "granted") {
-      console.log("Failed to get push token for push notification!");
       return null;
     }
 
@@ -169,18 +168,13 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
         Constants.easConfig?.projectId;
 
       if (!projectId) {
-        console.log("Project ID not found");
         return null;
       }
 
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log("Got push token:", token);
     } catch (e) {
-      console.log("Error getting push token:", e);
       return null;
     }
-  } else {
-    console.log("Must use physical device for Push Notifications");
   }
 
   return token;
