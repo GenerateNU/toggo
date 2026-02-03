@@ -1097,6 +1097,11 @@ export type GetAllTrips200 = ModelsTripCursorPageResult;
 export type GetAllTrips400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type GetAllTrips401 = ErrsAPIError;
+
+/**
  * @description Internal Server Error
  */
 export type GetAllTrips500 = ErrsAPIError;
@@ -1106,7 +1111,7 @@ export type GetAllTripsQueryResponse = GetAllTrips200;
 export type GetAllTripsQuery = {
   Response: GetAllTrips200;
   QueryParams: GetAllTripsQueryParams;
-  Errors: GetAllTrips400 | GetAllTrips500;
+  Errors: GetAllTrips400 | GetAllTrips401 | GetAllTrips500;
 };
 
 /**
@@ -1118,6 +1123,11 @@ export type CreateTrip201 = ModelsTrip;
  * @description Bad Request
  */
 export type CreateTrip400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateTrip401 = ErrsAPIError;
 
 /**
  * @description Unprocessable Entity
@@ -1139,7 +1149,7 @@ export type CreateTripMutationResponse = CreateTrip201;
 export type CreateTripMutation = {
   Response: CreateTrip201;
   Request: CreateTripMutationRequest;
-  Errors: CreateTrip400 | CreateTrip422 | CreateTrip500;
+  Errors: CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500;
 };
 
 export type GetTripPathParams = {
@@ -1782,37 +1792,6 @@ export type UpdateUserMutation = {
   Request: UpdateUserMutationRequest;
   PathParams: UpdateUserPathParams;
   Errors: UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500;
-};
-
-export type GetUserTripsPathParams = {
-  /**
-   * @description User ID
-   * @type string
-   */
-  userID: string;
-};
-
-/**
- * @description OK
- */
-export type GetUserTrips200 = ModelsMembership[];
-
-/**
- * @description Bad Request
- */
-export type GetUserTrips400 = ErrsAPIError;
-
-/**
- * @description Internal Server Error
- */
-export type GetUserTrips500 = ErrsAPIError;
-
-export type GetUserTripsQueryResponse = GetUserTrips200;
-
-export type GetUserTripsQuery = {
-  Response: GetUserTrips200;
-  PathParams: GetUserTripsPathParams;
-  Errors: GetUserTrips400 | GetUserTrips500;
 };
 
 /**

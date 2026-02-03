@@ -109,10 +109,12 @@ import type {
   GetAllTripsQueryParams,
   GetAllTrips200,
   GetAllTrips400,
+  GetAllTrips401,
   GetAllTrips500,
   GetAllTripsQueryResponse,
   CreateTrip201,
   CreateTrip400,
+  CreateTrip401,
   CreateTrip422,
   CreateTrip500,
   CreateTripMutationRequest,
@@ -215,11 +217,6 @@ import type {
   UpdateUser500,
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
-  GetUserTripsPathParams,
-  GetUserTrips200,
-  GetUserTrips400,
-  GetUserTrips500,
-  GetUserTripsQueryResponse,
   Healthcheck200,
   Healthcheck500,
   HealthcheckQueryResponse,
@@ -967,6 +964,13 @@ export const getAllTrips400Schema = z.lazy(
 ) as unknown as z.ZodType<GetAllTrips400>;
 
 /**
+ * @description Unauthorized
+ */
+export const getAllTrips401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetAllTrips401>;
+
+/**
  * @description Internal Server Error
  */
 export const getAllTrips500Schema = z.lazy(
@@ -990,6 +994,13 @@ export const createTrip201Schema = z.lazy(
 export const createTrip400Schema = z.lazy(
   () => errsAPIErrorSchema,
 ) as unknown as z.ZodType<CreateTrip400>;
+
+/**
+ * @description Unauthorized
+ */
+export const createTrip401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateTrip401>;
 
 /**
  * @description Unprocessable Entity
@@ -1635,35 +1646,6 @@ export const updateUserMutationRequestSchema = z.lazy(
 export const updateUserMutationResponseSchema = z.lazy(
   () => updateUser200Schema,
 ) as unknown as z.ZodType<UpdateUserMutationResponse>;
-
-export const getUserTripsPathParamsSchema = z.object({
-  userID: z.string().describe("User ID"),
-}) as unknown as z.ZodType<GetUserTripsPathParams>;
-
-/**
- * @description OK
- */
-export const getUserTrips200Schema = z.array(
-  z.lazy(() => modelsMembershipSchema),
-) as unknown as z.ZodType<GetUserTrips200>;
-
-/**
- * @description Bad Request
- */
-export const getUserTrips400Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<GetUserTrips400>;
-
-/**
- * @description Internal Server Error
- */
-export const getUserTrips500Schema = z.lazy(
-  () => errsAPIErrorSchema,
-) as unknown as z.ZodType<GetUserTrips500>;
-
-export const getUserTripsQueryResponseSchema = z.lazy(
-  () => getUserTrips200Schema,
-) as unknown as z.ZodType<GetUserTripsQueryResponse>;
 
 /**
  * @description OK

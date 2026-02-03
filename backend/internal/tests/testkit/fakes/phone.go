@@ -2,14 +2,17 @@ package fakes
 
 import (
 	"fmt"
-	"math/rand"
+	"time"
 )
 
 // GenerateRandomPhoneNumber generates a unique phone number for testing
-// Format: +1617{7-digit-random-suffix} to stay within 15 digit limit
+// Format: +1617{timestamp-based-suffix} to ensure uniqueness
 func GenerateRandomPhoneNumber() string {
-	// Generate a random 7-digit suffix
-	randomNumber := rand.Intn(10000000) // 0 to 9999999
+	// Use microsecond timestamp to ensure uniqueness
+	timestamp := time.Now().UnixMicro()
 
-	return fmt.Sprintf("+1617%07d", randomNumber)
+	// Use last 7 digits of timestamp for the suffix
+	suffix := timestamp % 10000000
+
+	return fmt.Sprintf("+1617%07d", suffix)
 }

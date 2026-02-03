@@ -25,13 +25,14 @@ func NewTripController(tripService services.TripServiceInterface, validator *val
 	}
 }
 
-// @Summary      Create a new trip
-// @Description  Creates a new trip with the provided payload
+// @Summary      Create a trip
+// @Description  Creates a new trip for the authenticated user
 // @Tags         trips
 // @Accept       json
 // @Produce      json
 // @Param        request body models.CreateTripRequest true "Create trip request"
 // @Success      201 {object} models.Trip
+// @Failure      401 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
@@ -39,6 +40,21 @@ func NewTripController(tripService services.TripServiceInterface, validator *val
 // @Router       /api/v1/trips [post]
 // @ID           createTrip
 func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
 	var req models.CreateTripRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.InvalidJSON()
@@ -48,7 +64,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 		return err
 	}
 
-	trip, err := ctrl.tripService.CreateTrip(c.Context(), req)
+	trip, err := ctrl.tripService.CreateTrip(c.Context(), userID, req)
 	if err != nil {
 		return err
 	}
@@ -94,14 +110,29 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 // @Router       /api/v1/trips [get]
 // @ID           getAllTrips
 func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
 	var params models.CursorPaginationParams
 	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	limit, cursor := utilities.ExtractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), limit, cursor)
+	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), userID, limit, cursorToken)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
 			return errs.BadRequest(err)

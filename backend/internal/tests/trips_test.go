@@ -15,6 +15,25 @@ func TestTripLifecycle(t *testing.T) {
 
 	var tripID string
 
+	t.Run("create user first", func(t *testing.T) {
+		username := fakes.GenerateRandomUsername()
+		phoneNumber := fakes.GenerateRandomPhoneNumber()
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &authUserID,
+				Body: models.CreateUserRequest{
+					Name:        "Trip Creator",
+					Username:    username,
+					PhoneNumber: phoneNumber,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
+
 	t.Run("create trip", func(t *testing.T) {
 		resp := testkit.New(t).
 			Request(testkit.Request{

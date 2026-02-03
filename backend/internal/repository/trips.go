@@ -68,17 +68,19 @@ func (r *tripRepository) FindWithCoverImage(ctx context.Context, id uuid.UUID) (
 	return tripData, nil
 }
 
-// FindAllWithCursor retrieves trips after the given cursor (cursor nil = first page).
-// Uses ORDER BY created_at DESC, id DESC. Fetches limit+1 to detect hasNext; returns
+// FindAllWithCursor retrieves trips a user belongs to after the given cursor (cursor nil = first page).
+// Uses ORDER BY trip.created_at DESC, trip.id DESC. Fetches limit+1 to detect hasNext; returns
 // next cursor from the last row when there are more results.
-func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error) {
+func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		Model((*models.Trip)(nil)).
-		Order("created_at DESC", "id DESC").
+		Join("JOIN memberships AS m ON m.trip_id = trip.id").
+		Where("m.user_id = ?", userID).
+		OrderExpr("trip.created_at DESC, trip.id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(trip.created_at, trip.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
 
 	var trips []*models.Trip
@@ -96,14 +98,16 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, limit int, curso
 	return trips, nextCursor, nil
 }
 
-// FindAllWithCursorAndCoverImage retrieves trips with cursor pagination and cover image IDs
-func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
+// FindAllWithCursorAndCoverImage retrieves trips a user belongs to with cursor pagination and cover image IDs
+func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		TableExpr("trips AS t").
 		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
+		Join("JOIN memberships AS m ON m.trip_id = t.id").
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
+		Where("m.user_id = ?", userID).
 		Order("t.created_at DESC", "t.id DESC").
 		Limit(limit + 1)
 

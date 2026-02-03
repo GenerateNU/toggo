@@ -17,6 +17,26 @@ func TestTripCoverImageEndpoints(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 
+	// Create user first
+	t.Run("create user", func(t *testing.T) {
+		username := fakes.GenerateRandomUsername()
+		phoneNumber := fakes.GenerateRandomPhoneNumber()
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &authUserID,
+				Body: models.CreateUserRequest{
+					Name:        "Test User",
+					Username:    username,
+					PhoneNumber: phoneNumber,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
+
 	t.Run("create trip without cover image returns null cover_image_url", func(t *testing.T) {
 		// Create trip without cover image
 		resp := testkit.New(t).
@@ -39,7 +59,7 @@ func TestTripCoverImageEndpoints(t *testing.T) {
 		if tripIDInterface == nil {
 			t.Fatalf("Trip creation failed - ID is nil. Response: %+v", resp)
 		}
-		
+
 		tripID, ok := tripIDInterface.(string)
 		if !ok {
 			t.Fatalf("Expected trip ID to be a string, got: %T %v", tripIDInterface, tripIDInterface)
@@ -91,7 +111,16 @@ func TestTripCoverImageEndpoints(t *testing.T) {
 			AssertStatus(http.StatusCreated).
 			GetBody()
 
-		tripID = resp["id"].(string)
+		// Check if trip creation succeeded
+		tripIDInterface := resp["id"]
+		if tripIDInterface == nil {
+			t.Fatalf("Trip creation failed - ID is nil. Response: %+v", resp)
+		}
+
+		tripID, ok := tripIDInterface.(string)
+		if !ok {
+			t.Fatalf("Expected trip ID to be a string, got: %T %v", tripIDInterface, tripIDInterface)
+		}
 
 		// Get trip and verify cover image URL is present
 		testkit.New(t).

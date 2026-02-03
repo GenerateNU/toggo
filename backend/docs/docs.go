@@ -605,7 +605,7 @@ const docTemplate = `{
                 "tags": [
                     "trips"
                 ],
-                "summary": "Get all trips",
+                "summary": "Get all trips user is a member of",
                 "operationId": "getAllTrips",
                 "parameters": [
                     {
@@ -634,6 +634,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -643,7 +649,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a new trip with the provided payload",
+                "description": "Creates a new trip for the authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -653,7 +659,7 @@ const docTemplate = `{
                 "tags": [
                     "trips"
                 ],
-                "summary": "Create a new trip",
+                "summary": "Create a trip",
                 "operationId": "createTrip",
                 "parameters": [
                     {
@@ -675,6 +681,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1500,51 +1512,6 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users/{userID}/trips": {
-            "get": {
-                "description": "Retrieves all trips a user is a member of",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "memberships"
-                ],
-                "summary": "Get user's trips",
-                "operationId": "getUserTrips",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "userID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Membership"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
