@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"golang.org/x/sync/errgroup"
 )
 
 type FileServiceInterface interface {
@@ -260,45 +259,28 @@ func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByK
 		return &models.GetFilesByKeysResponse{Files: []models.FileKeyResponse{}}, nil
 	}
 
-	g, gctx := errgroup.WithContext(ctx)
-	results := make([]models.FileKeyResponse, len(req.FileKeys))
+	files := make([]models.FileKeyResponse, 0, len(req.FileKeys))
 
-	for i, fileKey := range req.FileKeys {
+	for _, fileKey := range req.FileKeys {
 		if fileKey == "" {
 			continue
 		}
 
-		i, fileKey := i, fileKey
+		sizedKey := buildSizedKey(fileKey, req.Size)
 
-		g.Go(func() error {
-			sizedKey := buildSizedKey(fileKey, req.Size)
+		presignedURL, err := f.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(f.bucketName),
+			Key:    aws.String(sizedKey),
+		}, s3.WithPresignExpires(f.urlExpiration))
 
-			presignedURL, err := f.presignClient.PresignGetObject(gctx, &s3.GetObjectInput{
-				Bucket: aws.String(f.bucketName),
-				Key:    aws.String(sizedKey),
-			}, s3.WithPresignExpires(f.urlExpiration))
-
-			if err != nil {
-				return nil
-			}
-
-			results[i] = models.FileKeyResponse{
-				FileKey: fileKey,
-				URL:     presignedURL.URL,
-			}
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-
-	files := make([]models.FileKeyResponse, 0, len(results))
-	for _, result := range results {
-		if result.FileKey != "" {
-			files = append(files, result)
+		if err != nil {
+			continue
 		}
+
+		files = append(files, models.FileKeyResponse{
+			FileKey: fileKey,
+			URL:     presignedURL.URL,
+		})
 	}
 
 	return &models.GetFilesByKeysResponse{
