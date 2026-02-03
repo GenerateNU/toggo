@@ -12,8 +12,8 @@ type Trip struct {
 	CoverImageID *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
 	BudgetMin    int        `bun:"budget_min" json:"budget_min"`
 	BudgetMax    int        `bun:"budget_max" json:"budget_max"`
-	CreatedAt    time.Time  `bun:"created_at" json:"created_at"`
-	UpdatedAt    time.Time  `bun:"updated_at" json:"updated_at"`
+	CreatedAt    time.Time  `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt    time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 type CreateTripRequest struct {

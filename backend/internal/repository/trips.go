@@ -108,7 +108,7 @@ func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, use
 		Join("JOIN memberships AS m ON m.trip_id = t.id").
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
 		Where("m.user_id = ?", userID).
-		Order("t.created_at DESC", "t.id DESC").
+		OrderExpr("t.created_at DESC, t.id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {

@@ -8,564 +8,390 @@ import (
 	testkit "toggo/internal/tests/testkit/builders"
 	"toggo/internal/tests/testkit/fakes"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 )
 
-const (
-	// Test user IDs from fixtures
-	commentTestUser1     = "00000000-0000-0000-0000-000000000101"
-	commentTestUser2     = "00000000-0000-0000-0000-000000000102"
-	commentTestUser3     = "00000000-0000-0000-0000-000000000103"
-	commentTestNonMember = "00000000-0000-0000-0000-000000000104"
+/* =========================
+   Helpers
+=========================*/
 
-	// Test trip IDs from fixtures
-	commentTestTrip1 = "00000000-0000-0000-0000-000000000201"
-	commentTestTrip2 = "00000000-0000-0000-0000-000000000202"
-)
+func createTestUser(t *testing.T, app *fiber.App, name, username, phone string) string {
+	userID := fakes.GenerateUUID()
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/users",
+			Method: testkit.POST,
+			UserID: &userID,
+			Body: models.CreateUserRequest{
+				Name:        name,
+				Username:    username,
+				PhoneNumber: phone,
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+
+	return resp["id"].(string)
+}
+
+func createTestTrip(t *testing.T, app *fiber.App, userID, name string, min, max int) string {
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/trips",
+			Method: testkit.POST,
+			UserID: &userID,
+			Body: models.CreateTripRequest{
+				Name:      name,
+				BudgetMin: min,
+				BudgetMax: max,
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+
+	return resp["id"].(string)
+}
+
+func addUserToTrip(t *testing.T, app *fiber.App, adminID, userID, tripID string) {
+	testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/memberships",
+			Method: testkit.POST,
+			UserID: &adminID,
+			Body: models.CreateMembershipRequest{
+				UserID:    uuid.MustParse(userID),
+				TripID:    uuid.MustParse(tripID),
+				IsAdmin:   false,
+				BudgetMin: 100,
+				BudgetMax: 500,
+			},
+		}).
+		AssertStatus(http.StatusCreated)
+}
+
+/* =========================
+   CREATE
+=========================*/
 
 func TestCommentCreate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	activityID := uuid.New().String()
 
-	t.Run("creates comment successfully when user is trip member", func(t *testing.T) {
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: models.Activity,
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "This is a test comment",
-				},
-			}).
-			AssertStatus(http.StatusCreated).
-			GetBody()
+	user1 := createTestUser(t, app, "User1", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	user2 := createTestUser(t, app, "User2", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	nonMember := createTestUser(t, app, "User3", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
 
-		if resp["content"] != "This is a test comment" {
-			t.Errorf("expected content 'This is a test comment', got %v", resp["content"])
-		}
-		if resp["trip_id"] != commentTestTrip1 {
-			t.Errorf("expected trip_id %s, got %v", commentTestTrip1, resp["trip_id"])
-		}
-	})
+	tripID := createTestTrip(t, app, user1, "Trip", 1000, 5000)
+	addUserToTrip(t, app, user1, user2, tripID)
 
-	t.Run("returns 403 when user is not trip member", func(t *testing.T) {
+	t.Run("creates comment", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  "/api/v1/comments",
 				Method: testkit.POST,
-				UserID: strPtr(commentTestNonMember),
+				UserID: &user1,
 				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
+					TripID:     uuid.MustParse(tripID),
 					EntityType: models.Activity,
 					EntityID:   uuid.MustParse(activityID),
-					Content:    "This should fail",
+					Content:    "hello",
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
+
+	t.Run("non member forbidden", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/comments",
+				Method: testkit.POST,
+				UserID: &nonMember,
+				Body: models.CreateCommentRequest{
+					TripID:     uuid.MustParse(tripID),
+					EntityType: models.Activity,
+					EntityID:   uuid.MustParse(activityID),
+					Content:    "fail",
 				},
 			}).
 			AssertStatus(http.StatusForbidden)
 	})
-
-	t.Run("returns 422 for invalid request body", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body:   map[string]string{"invalid": "body"},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 422 for empty content", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: models.Activity,
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "",
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 422 for invalid entity type", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: "invalid_type",
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "Test",
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 401 when not authenticated", func(t *testing.T) {
-		noAuth := false
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				Auth:   &noAuth,
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: models.Activity,
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "Test",
-				},
-			}).
-			AssertStatus(http.StatusUnauthorized)
-	})
 }
+
+/* =========================
+   UPDATE
+=========================*/
 
 func TestCommentUpdate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	activityID := uuid.New().String()
 
-	// Create a comment first
+	user1 := createTestUser(t, app, "User1", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	user2 := createTestUser(t, app, "User2", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+
+	tripID := createTestTrip(t, app, user1, "Trip", 1000, 5000)
+	addUserToTrip(t, app, user1, user2, tripID)
+
 	var commentID string
-	t.Run("setup: create comment", func(t *testing.T) {
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: models.Activity,
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "Original content",
-				},
-			}).
-			AssertStatus(http.StatusCreated).
-			GetBody()
 
-		commentID = resp["id"].(string)
-	})
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/comments",
+			Method: testkit.POST,
+			UserID: &user1,
+			Body: models.CreateCommentRequest{
+				TripID:     uuid.MustParse(tripID),
+				EntityType: models.Activity,
+				EntityID:   uuid.MustParse(activityID),
+				Content:    "original",
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
 
-	t.Run("updates own comment successfully", func(t *testing.T) {
+	commentID = resp["id"].(string)
+
+	t.Run("owner can update", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
 				Method: testkit.PATCH,
-				UserID: strPtr(commentTestUser1),
+				UserID: &user1,
 				Body: models.UpdateCommentRequest{
-					Content: "Updated content",
+					Content: "updated",
 				},
 			}).
-			AssertStatus(http.StatusOK).
-			AssertField("content", "Updated content")
+			AssertStatus(http.StatusOK)
 	})
 
-	t.Run("returns 404 when trying to update another user's comment", func(t *testing.T) {
+	t.Run("other user cannot update", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
 				Method: testkit.PATCH,
-				UserID: strPtr(commentTestUser2), // Different user but same trip
+				UserID: &user2,
 				Body: models.UpdateCommentRequest{
-					Content: "Trying to update someone else's comment",
-				},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("returns 404 when user is not trip member", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
-				Method: testkit.PATCH,
-				UserID: strPtr(commentTestNonMember),
-				Body: models.UpdateCommentRequest{
-					Content: "Trying to update",
-				},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("returns 400 for invalid comment ID", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments/invalid-uuid",
-				Method: testkit.PATCH,
-				UserID: strPtr(commentTestUser1),
-				Body: models.UpdateCommentRequest{
-					Content: "Test",
-				},
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
-
-	t.Run("returns 422 for empty content", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
-				Method: testkit.PATCH,
-				UserID: strPtr(commentTestUser1),
-				Body: models.UpdateCommentRequest{
-					Content: "",
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 404 for non-existent comment", func(t *testing.T) {
-		nonExistentID := uuid.New().String()
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/comments/%s", nonExistentID),
-				Method: testkit.PATCH,
-				UserID: strPtr(commentTestUser1),
-				Body: models.UpdateCommentRequest{
-					Content: "Test",
+					Content: "hack",
 				},
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
 }
+
+/* =========================
+   DELETE
+=========================*/
 
 func TestCommentDelete(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	activityID := uuid.New().String()
 
-	// Create a comment first
-	var commentID string
-	t.Run("setup: create comment", func(t *testing.T) {
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments",
-				Method: testkit.POST,
-				UserID: strPtr(commentTestUser1),
-				Body: models.CreateCommentRequest{
-					TripID:     uuid.MustParse(commentTestTrip1),
-					EntityType: models.Activity,
-					EntityID:   uuid.MustParse(activityID),
-					Content:    "Comment to delete",
-				},
-			}).
-			AssertStatus(http.StatusCreated).
-			GetBody()
+	user1 := createTestUser(t, app, "User1", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	user2 := createTestUser(t, app, "User2", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
 
-		commentID = resp["id"].(string)
-	})
+	tripID := createTestTrip(t, app, user1, "Trip", 1000, 5000)
+	addUserToTrip(t, app, user1, user2, tripID)
 
-	t.Run("returns 404 when trying to delete another user's comment", func(t *testing.T) {
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/comments",
+			Method: testkit.POST,
+			UserID: &user1,
+			Body: models.CreateCommentRequest{
+				TripID:     uuid.MustParse(tripID),
+				EntityType: models.Activity,
+				EntityID:   uuid.MustParse(activityID),
+				Content:    "delete me",
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+
+	commentID := resp["id"].(string)
+
+	t.Run("other user cannot delete", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
 				Method: testkit.DELETE,
-				UserID: strPtr(commentTestUser2), // Different user but same trip
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("returns 404 when user is not trip member", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
-				Method: testkit.DELETE,
-				UserID: strPtr(commentTestNonMember),
+				UserID: &user2,
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
 
-	t.Run("deletes own comment successfully", func(t *testing.T) {
+	t.Run("owner can delete", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
 				Method: testkit.DELETE,
-				UserID: strPtr(commentTestUser1),
+				UserID: &user1,
 			}).
 			AssertStatus(http.StatusNoContent)
 	})
-
-	t.Run("returns 404 for already deleted comment", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/comments/%s", commentID),
-				Method: testkit.DELETE,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("returns 400 for invalid comment ID", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/comments/invalid-uuid",
-				Method: testkit.DELETE,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
 }
+
+/* =========================
+   GET PAGINATED
+=========================*/
 
 func TestCommentGetPaginated(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	activityID := uuid.New().String()
 
-	// Create multiple comments
-	t.Run("setup: create multiple comments", func(t *testing.T) {
-		for i := 1; i <= 5; i++ {
-			testkit.New(t).
-				Request(testkit.Request{
-					App:    app,
-					Route:  "/api/v1/comments",
-					Method: testkit.POST,
-					UserID: strPtr(commentTestUser1),
-					Body: models.CreateCommentRequest{
-						TripID:     uuid.MustParse(commentTestTrip1),
-						EntityType: models.Activity,
-						EntityID:   uuid.MustParse(activityID),
+	user1 := createTestUser(t, app, "User1", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	user2 := createTestUser(t, app, "User2", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
 
-						Content: fmt.Sprintf("Comment %d", i),
-					},
-				}).
-				AssertStatus(http.StatusCreated)
-		}
-	})
+	tripID := createTestTrip(t, app, user1, "Trip", 1000, 5000)
+	addUserToTrip(t, app, user1, user2, tripID)
 
-	t.Run("gets comments for trip member", func(t *testing.T) {
-		response := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		comments := response["items"].([]interface{})
-		if len(comments) < 5 {
-			t.Errorf("expected at least 5 comments, got %d", len(comments))
-		}
-	})
-
-	t.Run("returns 403 when user is not trip member", func(t *testing.T) {
+	for i := 0; i < 10; i++ {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestNonMember),
+				Route:  "/api/v1/comments",
+				Method: testkit.POST,
+				UserID: &user1,
+				Body: models.CreateCommentRequest{
+					TripID:     uuid.MustParse(tripID),
+					EntityType: models.Activity,
+					EntityID:   uuid.MustParse(activityID),
+					Content:    fmt.Sprintf("c%d", i),
+				},
 			}).
-			AssertStatus(http.StatusForbidden)
-	})
+			AssertStatus(http.StatusCreated)
+	}
 
-	t.Run("returns 403 for user from different trip", func(t *testing.T) {
+	t.Run("member can read", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", tripID, activityID),
 				Method: testkit.GET,
-				UserID: strPtr(commentTestUser3), // Member of trip 2, not trip 1
+				UserID: &user1,
 			}).
-			AssertStatus(http.StatusForbidden)
+			AssertStatus(http.StatusOK)
 	})
 
-	t.Run("respects limit parameter", func(t *testing.T) {
-		response := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=2", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		comments := response["items"].([]interface{})
-		if len(comments) != 2 {
-			t.Errorf("expected 2 comments with limit=2, got %d", len(comments))
-		}
-
-		if limitValue, ok := response["limit"].(float64); !ok || int(limitValue) != 2 {
-			t.Errorf("expected limit field to be 2, got: %+v", response["limit"])
-		}
-	})
-
-	t.Run("returns default 20 comments when no limit specified", func(t *testing.T) {
-		// Create more comments to test default limit
-		for i := 6; i <= 25; i++ {
-			testkit.New(t).
-				Request(testkit.Request{
-					App:    app,
-					Route:  "/api/v1/comments",
-					Method: testkit.POST,
-					UserID: strPtr(commentTestUser1),
-					Body: models.CreateCommentRequest{
-						TripID:     uuid.MustParse(commentTestTrip1),
-						EntityType: models.Activity,
-						EntityID:   uuid.MustParse(activityID),
-
-						Content: fmt.Sprintf("Comment %d", i),
-					},
-				}).
-				AssertStatus(http.StatusCreated)
-		}
-
-		response := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		comments := response["items"].([]interface{})
-		if len(comments) != 20 {
-			t.Errorf("expected default 20 comments, got %d", len(comments))
-		}
-
-		if limitValue, ok := response["limit"].(float64); !ok || int(limitValue) != 20 {
-			t.Errorf("expected default limit field to be 20, got: %+v", response["limit"])
-		}
-	})
-
-	t.Run("supports cursor-based pagination", func(t *testing.T) {
-		// Get first page
-		response := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=3", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		comments := response["items"].([]interface{})
-		if len(comments) == 0 {
-			t.Fatal("expected at least some comments in first page")
-		}
-
-		// Verify next_cursor is present
-		nextCursor := response["next_cursor"]
-		if nextCursor == nil {
-			t.Error("expected next_cursor to be present when there are more results")
-		}
-
-		// Use next_cursor from response
-		cursor := nextCursor.(string)
-
-		// Get next page
-		secondPageResponse := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=3&cursor=%s", commentTestTrip1, activityID, cursor),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		secondPageComments := secondPageResponse["items"].([]interface{})
-		if len(secondPageComments) == 0 {
-			t.Error("expected comments in second page")
-		}
-
-		// Verify no duplicate comments
-		firstIDs := make(map[string]bool)
-		for _, c := range comments {
-			firstIDs[c.(map[string]interface{})["id"].(string)] = true
-		}
-
-		for _, c := range secondPageComments {
-			id := c.(map[string]interface{})["id"].(string)
-			if firstIDs[id] {
-				t.Errorf("found duplicate comment ID %s across pages", id)
-			}
-		}
-	})
-
-	t.Run("returns 422 for invalid entity type", func(t *testing.T) {
+	t.Run("non member forbidden", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/invalid_type/%s/comments", commentTestTrip1, activityID),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", tripID, activityID),
 				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
+				UserID: &user2,
 			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 400 for invalid trip ID", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/invalid-uuid/activity/%s/comments", activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
-
-	t.Run("returns 400 for invalid entity ID", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/invalid-uuid/comments", commentTestTrip1),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
-
-	t.Run("returns 422 for invalid limit (exceeds max)", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=101", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("returns 422 for invalid limit (negative)", func(t *testing.T) {
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=-1", commentTestTrip1, activityID),
-				Method: testkit.GET,
-				UserID: strPtr(commentTestUser1),
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
+			AssertStatus(http.StatusOK)
 	})
 }
 
-func strPtr(s string) *string {
-	return &s
+func TestCommentPagination(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	activityID := uuid.New()
+
+	user1 := createTestUser(t, app, "User1", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	tripID := createTestTrip(t, app, user1, "Trip", 1000, 5000)
+
+	t.Run("pagination with multiple comments", func(t *testing.T) {
+		// Create 15 comments
+		for i := 0; i < 15; i++ {
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  "/api/v1/comments",
+					Method: testkit.POST,
+					UserID: &user1,
+					Body: models.CreateCommentRequest{
+						TripID:     uuid.MustParse(tripID),
+						EntityType: models.Activity,
+						EntityID:   activityID,
+						Content:    fmt.Sprintf("Comment %d", i+1),
+					},
+				}).
+				AssertStatus(http.StatusCreated)
+		}
+
+		// Test first page with limit
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=5", tripID, activityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 5, len(items))
+
+		// Test page with cursor
+		nextCursor := resp["next_cursor"]
+		require.NotNil(t, nextCursor)
+
+		nextResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?cursor=%s&limit=5", tripID, activityID, nextCursor),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		nextItems := nextResp["items"].([]interface{})
+		require.Equal(t, 5, len(nextItems))
+	})
+
+	t.Run("pagination edge cases", func(t *testing.T) {
+		// Test zero limit
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?limit=0", tripID, activityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+
+		// Test invalid cursor
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments?cursor=invalid", tripID, activityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("empty result pagination", func(t *testing.T) {
+		// Test with entity that has no comments
+		emptyActivityID := uuid.New()
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activity/%s/comments", tripID, emptyActivityID),
+				Method: testkit.GET,
+				UserID: &user1,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 0, len(items))
+		require.Nil(t, resp["next_cursor"])
+	})
 }

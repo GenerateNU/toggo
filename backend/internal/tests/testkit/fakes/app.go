@@ -94,19 +94,7 @@ func connectAndMigrateDBOrPanic(ctx context.Context, cfg *config.Configuration) 
 	if err := database.ApplyGooseMigrations(ctx, cfg.Database.Host, cfg.Database.Port, cfg.Database.Username, cfg.Database.Password, cfg.Database.Name); err != nil {
 		panic(fmt.Sprintf("failed to migrate test DB: %v", err))
 	}
-	if err := loadFixtures(ctx, db); err != nil {
-		panic(fmt.Sprintf("failed to load fixtures: %v", err))
-	}
 	return db
-}
-
-func loadFixtures(ctx context.Context, db *bun.DB) error {
-	_, err := db.ExecContext(ctx, fixturesSQL)
-	if err != nil {
-		return fmt.Errorf("failed to execute fixtures SQL: %w", err)
-	}
-
-	return nil
 }
 
 func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bun.DB) {

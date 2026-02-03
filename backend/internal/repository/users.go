@@ -21,7 +21,7 @@ type userRepository struct {
 func (r *userRepository) Create(ctx context.Context, req *models.User) (*models.User, error) {
 	_, err := r.db.NewInsert().
 		Model(req).
-		Returning("id", "name", "username", "phone_number", "timezone").
+		Returning("*").
 		Exec(ctx)
 	if err != nil {
 		return nil, err

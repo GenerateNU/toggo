@@ -13,8 +13,8 @@ type Comment struct {
 	EntityID   uuid.UUID  `bun:"entity_id,type:uuid,notnull" json:"entity_id"`
 	UserID     uuid.UUID  `bun:"user_id,type:uuid,notnull" json:"user_id"`
 	Content    string     `bun:"content,notnull" json:"content"`
-	CreatedAt  time.Time  `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
-	UpdatedAt  time.Time  `bun:"updated_at,notnull,default:current_timestamp" json:"updated_at"`
+	CreatedAt  time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"created_at"`
+	UpdatedAt  time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp" json:"updated_at"`
 }
 
 type CreateCommentRequest struct {

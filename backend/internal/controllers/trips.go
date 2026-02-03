@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -57,18 +58,24 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 
 	var req models.CreateTripRequest
 	if err := c.BodyParser(&req); err != nil {
+		log.Printf("CreateTrip: Failed to parse body: %v", err)
 		return errs.InvalidJSON()
 	}
 
+	log.Printf("CreateTrip: Request data - Name: %s, BudgetMin: %d, BudgetMax: %d, CoverImageID: %v", req.Name, req.BudgetMin, req.BudgetMax, req.CoverImageID)
+
 	if err := validators.Validate(ctrl.validator, req); err != nil {
+		log.Printf("CreateTrip: Validation failed: %v", err)
 		return err
 	}
 
 	trip, err := ctrl.tripService.CreateTrip(c.Context(), userID, req)
 	if err != nil {
+		log.Printf("CreateTrip: Service error: %v", err)
 		return err
 	}
 
+	log.Printf("CreateTrip: Successfully created trip with ID: %s", trip.ID)
 	return c.Status(http.StatusCreated).JSON(trip)
 }
 

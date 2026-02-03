@@ -2,17 +2,20 @@ package fakes
 
 import (
 	"fmt"
-	"time"
+
+	"github.com/google/uuid"
 )
 
 // GenerateRandomPhoneNumber generates a unique phone number for testing
-// Format: +1617{timestamp-based-suffix} to ensure uniqueness
+// Format: +1617{valid-exchange}{valid-subscriber} to ensure uniqueness and validity
 func GenerateRandomPhoneNumber() string {
-	// Use microsecond timestamp to ensure uniqueness
-	timestamp := time.Now().UnixMicro()
+	uniqueID := uuid.New()
 
-	// Use last 7 digits of timestamp for the suffix
-	suffix := timestamp % 10000000
+	// Generate a valid exchange code (200-999, can't start with 0 or 1)
+	exchange := (uint32(uniqueID[0])<<8|uint32(uniqueID[1]))%800 + 200 // 200-999
 
-	return fmt.Sprintf("+1617%07d", suffix)
+	// Generate a valid subscriber number (0000-9999)
+	subscriber := (uint32(uniqueID[2])<<8 | uint32(uniqueID[3])) % 10000 // 0000-9999
+
+	return fmt.Sprintf("+1617%03d%04d", exchange, subscriber)
 }

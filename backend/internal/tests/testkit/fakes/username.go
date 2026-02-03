@@ -2,17 +2,15 @@ package fakes
 
 import (
 	"fmt"
-	"math/rand"
+	"strings"
+
+	"github.com/google/uuid"
 )
 
 func GenerateRandomUsername() string {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	const length = 8
+	uniqueID := uuid.New().String()[:8]
+	uniqueID = fmt.Sprintf("%s", uniqueID)
+	uniqueID = strings.ReplaceAll(uniqueID, "-", "")
 
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-
-	return fmt.Sprintf("user_%s", string(b))
+	return fmt.Sprintf("user_%s", uniqueID)
 }

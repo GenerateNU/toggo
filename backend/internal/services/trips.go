@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -46,6 +47,17 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 
 	if req.BudgetMax < req.BudgetMin {
 		return nil, errors.New("budget maximum must be greater than or equal to minimum")
+	}
+
+	// Validate cover image ID exists if provided
+	if req.CoverImageID != nil {
+		_, err := s.Image.FindByID(ctx, *req.CoverImageID)
+		if err != nil {
+			if errors.Is(err, errs.ErrNotFound) {
+				return nil, errs.BadRequest(errors.New("cover image not found"))
+			}
+			return nil, err
+		}
 	}
 
 	// Create trip
@@ -107,11 +119,13 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAP
 func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
+		log.Printf("GetTripsWithCursor: Failed to parse cursor '%s': %v", cursorToken, err)
 		return nil, err
 	}
 
 	tripsData, nextCursor, err := s.Trip.FindAllWithCursorAndCoverImage(ctx, userID, limit, cursor)
 	if err != nil {
+		log.Printf("GetTripsWithCursor: Database error for userID=%s, limit=%d, cursor=%+v: %v", userID, limit, cursor, err)
 		return nil, err
 	}
 
