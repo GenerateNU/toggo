@@ -51,7 +51,7 @@ export async function createUser(
   return res.data;
 }
 
-export function createUserMutationOptions(
+export function createUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateUserMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -61,7 +61,7 @@ export function createUserMutationOptions(
     CreateUserMutationResponse,
     ResponseErrorConfig<CreateUser400 | CreateUser422 | CreateUser500>,
     { data: CreateUserMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

@@ -52,7 +52,7 @@ export async function demoteFromAdmin(
   return res.data;
 }
 
-export function demoteFromAdminMutationOptions(
+export function demoteFromAdminMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = demoteFromAdminMutationKey();
@@ -65,7 +65,7 @@ export function demoteFromAdminMutationOptions(
       tripID: DemoteFromAdminPathParams["tripID"];
       userID: DemoteFromAdminPathParams["userID"];
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID }) => {

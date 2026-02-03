@@ -57,7 +57,7 @@ export async function updateTrip(
   return res.data;
 }
 
-export function updateTripMutationOptions(
+export function updateTripMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateTripMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -72,7 +72,7 @@ export function updateTripMutationOptions(
       tripID: UpdateTripPathParams["tripID"];
       data?: UpdateTripMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
