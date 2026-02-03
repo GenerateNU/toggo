@@ -141,7 +141,11 @@ func (h *Hub) subscribeToRedis() {
 	ch := pubsub.Channel()
 	for {
 		select {
-		case msg := <-ch:
+		case msg, ok := <-ch:
+			if !ok {
+				log.Println("Hub Redis subscription channel closed")
+				return
+			}
 			if msg == nil {
 				continue
 			}
