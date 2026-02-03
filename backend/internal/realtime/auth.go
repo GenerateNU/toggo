@@ -17,6 +17,9 @@ type AuthMiddleware struct {
 
 // NewAuthMiddleware creates a new authentication middleware with the given JWT secret.
 func NewAuthMiddleware(jwtSecret string) *AuthMiddleware {
+	if jwtSecret == "" {
+		panic("jwtSecret cannot be empty")
+	}
 	return &AuthMiddleware{
 		jwtSecret: jwtSecret,
 	}
