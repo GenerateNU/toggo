@@ -165,8 +165,8 @@ func (h *Hub) subscribeToRedis() {
 
 // BroadcastToTrip sends events to all clients subscribed to a trip.
 func (h *Hub) BroadcastToTrip(tripID string, events []Event) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.mu.Lock()
+	defer h.mu.Unlock()
 
 	message := ServerMessage{
 		Type:      ServerMessageTypeEvents,
