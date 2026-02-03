@@ -2,7 +2,7 @@
 
 WebSocket-based real-time event broadcasting using Redis pub/sub for horizontal scaling.
 
-Note: MVP includes this realtime service gateway in the same application as backend. We recommend splitting it up into it's own microservice in the near future.
+Note: MVP includes this realtime service gateway in the same application as backend. We recommend splitting it up into its own microservice in the near future.
 
 ## Architecture
 
