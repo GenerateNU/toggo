@@ -193,7 +193,9 @@ func (h *WebSocketHub) BroadcastToTrip(tripID string, events []Event) {
 				log.Printf("Failed to send to client %s (channel full)", client.ID)
 				close(client.Send)
 				delete(h.clients, client)
-				h.removeClientFromTrip(client, tripID)
+				for _, subTripID := range client.GetSubscriptions() {
+					h.removeClientFromTrip(client, subTripID)
+				}
 			}
 		}
 		log.Printf("Broadcast %d events to trip %s (%d clients)",
