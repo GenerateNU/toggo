@@ -2,6 +2,7 @@ package realtime
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
@@ -14,12 +15,21 @@ type GoRedisClient struct {
 }
 
 // NewRedisClient creates a new Redis client and verifies connectivity.
-func NewRedisClient(addr string, password string, db int) (*GoRedisClient, error) {
-	client := redis.NewClient(&redis.Options{
+func NewRedisClient(addr string, password string, db int, useTLS bool) (*GoRedisClient, error) {
+	options := &redis.Options{
 		Addr:     addr,
 		Password: password,
 		DB:       db,
-	})
+	}
+
+	// Enable TLS for production environments (managed Redis services)
+	if useTLS {
+		options.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
+	client := redis.NewClient(options)
 
 	ctx := context.Background()
 	if err := client.Ping(ctx).Err(); err != nil {

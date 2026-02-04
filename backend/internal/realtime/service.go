@@ -22,6 +22,7 @@ func NewRealtimeService(cfg *config.Configuration) (*RealtimeService, error) {
 		cfg.Redis.Address,
 		cfg.Redis.Password,
 		cfg.Redis.DB,
+		cfg.Redis.TLS,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create redis client: %w", err)
