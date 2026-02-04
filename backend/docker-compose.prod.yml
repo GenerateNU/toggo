@@ -1,6 +1,19 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:8-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
   api:
     build:
       context: .
@@ -8,8 +21,13 @@ services:
     environment:
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       APP_PORT: 8000
+      REDIS_ADDRESS: ${REDIS_ADDRESS}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - backend_network
 
