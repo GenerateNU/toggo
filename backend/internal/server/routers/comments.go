@@ -9,8 +9,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func CommentRoutes(apiGroup fiber.Router, routeParams types.RouteParams, fileService services.FileServiceInterface) fiber.Router {
-	commentService := services.NewCommentService(routeParams.ServiceParams.Repository, fileService)
+func CommentRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
+	commentService := services.NewCommentService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.FileService)
 	commentController := controllers.NewCommentController(commentService, routeParams.Validator)
 
 	// /api/v1/comments

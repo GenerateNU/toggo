@@ -9,10 +9,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams, fileService services.FileServiceInterface) fiber.Router {
+func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
 	tripService := services.NewTripService(
 		routeParams.ServiceParams.Repository,
-		fileService,
+		routeParams.ServiceParams.FileService,
 		routeParams.ServiceParams.EventPublisher,
 	)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
