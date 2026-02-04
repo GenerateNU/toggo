@@ -8,6 +8,7 @@ type Configuration struct {
 	Auth        AuthConfig
 	AWS         AWSConfig
 	Temporal    TemporalConfig
+	Redis       RedisConfig
 	Environment string
 }
 
@@ -37,12 +38,18 @@ func LoadConfiguration() (*Configuration, error) {
 		return nil, err
 	}
 
+	redisConfig, err := LoadRedisConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Configuration{
 		App:         *appConfig,
 		Database:    *databaseConfig,
 		Auth:        *authConfig,
 		AWS:         *awsConfig,
 		Temporal:    *temporalConfig,
+		Redis:       *redisConfig,
 		Environment: os.Getenv("APP_ENVIRONMENT"),
 	}, nil
 }

@@ -14,6 +14,10 @@ const Layout = () => {
         name="index"
         options={{ headerShown: false, gestureEnabled: false }}
       />
+      <Stack.Screen
+        name="test-realtime"
+        options={{ title: "Realtime Test", headerShown: true }}
+      />
     </Stack>
   );
 };

@@ -2,6 +2,7 @@ package types //nolint:revive
 
 import (
 	"toggo/internal/config"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 
 	"github.com/go-playground/validator/v10"
@@ -13,6 +14,7 @@ type RouteParams struct {
 }
 
 type ServiceParams struct {
-	Repository *repository.Repository
-	Config     *config.Configuration
+	Repository     *repository.Repository
+	Config         *config.Configuration
+	EventPublisher realtime.EventPublisher
 }
