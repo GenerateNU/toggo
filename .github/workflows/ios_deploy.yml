@@ -1,0 +1,16 @@
+name: Deploy iOS
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+    paths:
+      - "frontend/**"
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    uses: GenerateNU/shiperate/.github/workflows/ios-deploy.yml@main
+    with:
+      env: "node"
+    secrets: inherit
