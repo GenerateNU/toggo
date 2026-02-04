@@ -59,8 +59,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -478,6 +478,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
@@ -605,7 +611,7 @@ const docTemplate = `{
                 "tags": [
                     "trips"
                 ],
-                "summary": "Get all trips user is a member of",
+                "summary": "Get all trips",
                 "operationId": "getAllTrips",
                 "parameters": [
                     {
@@ -730,7 +736,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Trip"
+                            "$ref": "#/definitions/models.TripAPIResponse"
                         }
                     },
                     "400": {
@@ -775,6 +781,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -833,6 +845,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -903,6 +921,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -943,11 +973,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Membership"
+                            "$ref": "#/definitions/models.MembershipAPIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -995,6 +1031,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1064,6 +1106,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1125,6 +1173,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -1176,6 +1230,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1260,8 +1320,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1739,6 +1799,9 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0
                 },
+                "cover_image_id": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -2048,6 +2111,35 @@ const docTemplate = `{
                 "budget_min": {
                     "type": "integer"
                 },
+                "cover_image_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TripAPIResponse": {
+            "type": "object",
+            "properties": {
+                "budget_max": {
+                    "type": "integer"
+                },
+                "budget_min": {
+                    "type": "integer"
+                },
+                "cover_image_url": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -2068,7 +2160,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Trip"
+                        "$ref": "#/definitions/models.TripAPIResponse"
                     }
                 },
                 "limit": {
@@ -2117,6 +2209,9 @@ const docTemplate = `{
                 "budget_min": {
                     "type": "integer",
                     "minimum": 0
+                },
+                "cover_image_id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string",
@@ -2198,6 +2293,9 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "device_token": {
                     "type": "string"
                 },
@@ -2217,6 +2315,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "timezone": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 },
                 "username": {

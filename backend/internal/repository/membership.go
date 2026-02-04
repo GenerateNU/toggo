@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -39,6 +40,7 @@ func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUI
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
 		ColumnExpr("u.username").
+		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = m.user_id").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
@@ -46,7 +48,7 @@ func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUI
 		Scan(ctx, membership)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err
@@ -61,6 +63,7 @@ func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUI
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
 		ColumnExpr("u.username").
+		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = m.user_id").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
@@ -84,6 +87,7 @@ func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripI
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
 		ColumnExpr("u.username").
+		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = m.user_id").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
@@ -144,7 +148,7 @@ func (r *membershipRepository) IsAdmin(ctx context.Context, tripID, userID uuid.
 		Where("trip_id = ? AND user_id = ? AND is_admin = true", tripID, userID).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 		return false, err
@@ -157,6 +161,15 @@ func (r *membershipRepository) CountMembers(ctx context.Context, tripID uuid.UUI
 	count, err := r.db.NewSelect().
 		Model((*models.Membership)(nil)).
 		Where("trip_id = ?", tripID).
+		Count(ctx)
+	return count, err
+}
+
+// CountAdmins returns the number of admins in a trip
+func (r *membershipRepository) CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error) {
+	count, err := r.db.NewSelect().
+		Model((*models.Membership)(nil)).
+		Where("trip_id = ? AND is_admin = true", tripID).
 		Count(ctx)
 	return count, err
 }

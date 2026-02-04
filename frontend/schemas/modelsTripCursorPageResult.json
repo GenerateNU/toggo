@@ -8,12 +8,13 @@
         "properties": {
           "budget_max": { "type": "integer" },
           "budget_min": { "type": "integer" },
+          "cover_image_url": { "type": "string" },
           "created_at": { "type": "string" },
           "id": { "type": "string" },
           "name": { "type": "string" },
           "updated_at": { "type": "string" }
         },
-        "x-readme-ref-name": "models.Trip"
+        "x-readme-ref-name": "models.TripAPIResponse"
       }
     },
     "limit": { "type": "integer" },

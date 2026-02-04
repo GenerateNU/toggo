@@ -2,18 +2,12 @@ package services
 
 import (
 	"context"
-	"time"
-	"toggo/internal/config"
 	"toggo/internal/errs"
-	"toggo/internal/interfaces"
 	"toggo/internal/models"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"golang.org/x/sync/errgroup"
 )
 
 type CommentServiceInterface interface {
@@ -26,20 +20,14 @@ type CommentServiceInterface interface {
 var _ CommentServiceInterface = (*CommentService)(nil)
 
 type CommentService struct {
-	repository    *repository.Repository
-	presignClient interfaces.S3PresignClient
-	bucketName    string
-	urlExpiration time.Duration
+	repository  *repository.Repository
+	fileService FileServiceInterface
 }
 
-func NewCommentService(repo *repository.Repository, cfg *config.Configuration) CommentServiceInterface {
-	expiration := 15 * time.Minute
-
+func NewCommentService(repo *repository.Repository, fileService FileServiceInterface) CommentServiceInterface {
 	return &CommentService{
-		repository:    repo,
-		presignClient: cfg.AWS.PresignClient,
-		bucketName:    cfg.AWS.BucketName,
-		urlExpiration: expiration,
+		repository:  repo,
+		fileService: fileService,
 	}
 }
 
@@ -104,10 +92,8 @@ func (s *CommentService) GetPaginatedComments(
 		return nil, err
 	}
 
-	// Determine if there are more results
 	var nextCursor *string
 	if len(comments) > requestLimit {
-		// Remove the extra record and set next cursor
 		comments = comments[:requestLimit]
 		lastComment := comments[len(comments)-1]
 		token, err := pagination.EncodeTimeUUIDCursorFromValues(lastComment.CreatedAt, lastComment.ID)
@@ -117,24 +103,31 @@ func (s *CommentService) GetPaginatedComments(
 		nextCursor = &token
 	}
 
-	apiComments := make([]*models.CommentAPIResponse, len(comments))
+	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, comments, func(item *models.CommentDatabaseResponse) *string {
+		return item.ProfilePictureKey
+	}, models.ImageSizeSmall)
 
-	g, ctx := errgroup.WithContext(ctx)
-	g.SetLimit(10)
-
-	for i, comment := range comments {
-		g.Go(func() error {
-			apiComment, err := s.toAPIResponse(ctx, comment)
-			if err != nil {
-				return err
+	apiComments := make([]*models.CommentAPIResponse, 0, len(comments))
+	for _, comment := range comments {
+		var profilePictureURL *string
+		if comment.ProfilePictureKey != nil && *comment.ProfilePictureKey != "" {
+			if url, exists := fileURLMap[*comment.ProfilePictureKey]; exists {
+				profilePictureURL = &url
 			}
-			apiComments[i] = apiComment
-			return nil
-		})
-	}
+		}
 
-	if err := g.Wait(); err != nil {
-		return nil, err
+		apiComments = append(apiComments, &models.CommentAPIResponse{
+			ID:                comment.ID,
+			TripID:            comment.TripID,
+			EntityType:        comment.EntityType,
+			EntityID:          comment.EntityID,
+			UserID:            comment.UserID,
+			Username:          comment.Username,
+			ProfilePictureURL: profilePictureURL,
+			Content:           comment.Content,
+			CreatedAt:         comment.CreatedAt,
+			UpdatedAt:         comment.UpdatedAt,
+		})
 	}
 
 	return &models.PaginatedCommentsResponse{
@@ -142,40 +135,4 @@ func (s *CommentService) GetPaginatedComments(
 		NextCursor: nextCursor,
 		Limit:      requestLimit,
 	}, nil
-}
-
-func (s *CommentService) toAPIResponse(ctx context.Context, comment *models.CommentDatabaseResponse) (*models.CommentAPIResponse, error) {
-	profilePictureURL, err := s.getProfilePictureURL(ctx, comment.ProfilePictureKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return &models.CommentAPIResponse{
-		ID:                comment.ID,
-		TripID:            comment.TripID,
-		EntityType:        comment.EntityType,
-		EntityID:          comment.EntityID,
-		UserID:            comment.UserID,
-		Username:          comment.Username,
-		ProfilePictureURL: profilePictureURL,
-		Content:           comment.Content,
-		CreatedAt:         comment.CreatedAt,
-		UpdatedAt:         comment.UpdatedAt,
-	}, nil
-}
-
-func (s *CommentService) getProfilePictureURL(ctx context.Context, fileKey *string) (*string, error) {
-	if fileKey == nil || *fileKey == "" || s.presignClient == nil {
-		return nil, nil
-	}
-
-	presignedURL, err := s.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(s.bucketName),
-		Key:    aws.String(*fileKey),
-	}, s3.WithPresignExpires(s.urlExpiration))
-	if err != nil {
-		return nil, err
-	}
-
-	return &presignedURL.URL, nil
 }

@@ -11,7 +11,7 @@ import (
 // TestRoutes registers routes without authentication for testing realtime functionality.
 // These routes should NOT be enabled in production.
 func TestRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	tripService := services.NewTripService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
+	tripService := services.NewTripService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.FileService, routeParams.ServiceParams.EventPublisher)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
 
 	// /api/test/trips - No auth required

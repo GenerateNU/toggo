@@ -15,6 +15,8 @@ type User struct {
 	DeviceToken          *string    `bun:"device_token" json:"device_token"`
 	DeviceTokenUpdatedAt *time.Time `bun:"device_token_updated_at" json:"device_token_updated_at"`
 	Timezone             string     `bun:"timezone" json:"timezone"`
+	CreatedAt            time.Time  `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt            time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 type CreateUserRequest struct {

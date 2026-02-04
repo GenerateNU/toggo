@@ -34,7 +34,7 @@ func NewUserController(userService services.UserServiceInterface, validator *val
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users [post]
-// @ID 			createUser
+// @ID           createUser
 func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	userIDStr := c.Locals("userID").(string)
 	userID, err := validators.ValidateID(userIDStr)
@@ -72,7 +72,7 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [patch]
-// @ID 			updateUser
+// @ID           updateUser
 func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	var req models.UpdateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -82,6 +82,12 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
+	}
+
+	// Check authorization
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok || authUserID != id.String() {
+		return errs.ErrNotFound
 	}
 
 	if err := validators.Validate(u.validator, req); err != nil {
@@ -105,7 +111,7 @@ func (u *UserController) UpdateUser(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/me [get]
-// @ID 		getCurrentUser
+// @ID           getCurrentUser
 func (u *UserController) GetMe(c *fiber.Ctx) error {
 	userIDStr, ok := c.Locals("userID").(string)
 	if !ok || userIDStr == "" {
@@ -135,7 +141,7 @@ func (u *UserController) GetMe(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [get]
-// @ID 			getUser
+// @ID           getUser
 func (u *UserController) GetUser(c *fiber.Ctx) error {
 	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
@@ -159,7 +165,7 @@ func (u *UserController) GetUser(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/users/{userID} [delete]
-// @ID 			deleteUser
+// @ID           deleteUser
 func (u *UserController) DeleteUser(c *fiber.Ctx) error {
 	id, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {

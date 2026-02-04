@@ -30,7 +30,7 @@ export type GetAllTripsSuspenseQueryKey = ReturnType<
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips user is a member of
+ * @summary Get all trips
  * {@link /api/v1/trips}
  */
 export async function getAllTripsSuspense(
@@ -68,7 +68,7 @@ export function getAllTripsSuspenseQueryOptions(
 
 /**
  * @description Retrieves trips with cursor-based pagination. Use limit and cursor query params.
- * @summary Get all trips user is a member of
+ * @summary Get all trips
  * {@link /api/v1/trips}
  */
 export function useGetAllTripsSuspense<

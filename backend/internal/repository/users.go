@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"toggo/internal/errs"
@@ -21,7 +22,7 @@ type userRepository struct {
 func (r *userRepository) Create(ctx context.Context, req *models.User) (*models.User, error) {
 	_, err := r.db.NewInsert().
 		Model(req).
-		Returning("id", "name", "username", "phone_number", "timezone").
+		Returning("*").
 		Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -36,7 +37,7 @@ func (r *userRepository) Find(ctx context.Context, id uuid.UUID) (*models.User, 
 		Where("id = ?", id).
 		Scan(ctx)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err

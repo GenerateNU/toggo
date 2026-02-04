@@ -37,12 +37,19 @@ func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUser
 	username := strings.ToLower(strings.TrimSpace(userBody.Username))
 	name := userBody.Name
 
-	return u.User.Create(ctx, &models.User{
+	user, err := u.User.Create(ctx, &models.User{
 		Name:        name,
 		Username:    username,
 		PhoneNumber: phone,
+		Timezone:    "UTC",
 		ID:          userID,
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, err
 }
 
 func (u *UserService) GetUser(ctx context.Context, id uuid.UUID) (*models.User, error) {

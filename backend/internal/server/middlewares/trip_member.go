@@ -35,9 +35,10 @@ func TripMemberRequired(repo *repository.Repository) fiber.Handler {
 		}
 
 		if !isMember {
-			return errs.Forbidden()
+			return errs.ErrNotFound
 		}
 
+		// User is a member, proceed to the next handler
 		return c.Next()
 	}
 }

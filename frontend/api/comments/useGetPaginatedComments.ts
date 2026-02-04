@@ -11,7 +11,7 @@ import type {
   GetPaginatedCommentsQueryParams,
   GetPaginatedComments400,
   GetPaginatedComments401,
-  GetPaginatedComments403,
+  GetPaginatedComments404,
   GetPaginatedComments422,
   GetPaginatedComments500,
 } from "../../types/types.gen.ts";
@@ -60,7 +60,7 @@ export async function getPaginatedComments(
     ResponseErrorConfig<
       | GetPaginatedComments400
       | GetPaginatedComments401
-      | GetPaginatedComments403
+      | GetPaginatedComments404
       | GetPaginatedComments422
       | GetPaginatedComments500
     >,
@@ -92,7 +92,7 @@ export function getPaginatedCommentsQueryOptions(
     ResponseErrorConfig<
       | GetPaginatedComments400
       | GetPaginatedComments401
-      | GetPaginatedComments403
+      | GetPaginatedComments404
       | GetPaginatedComments422
       | GetPaginatedComments500
     >,
@@ -129,7 +129,7 @@ export function useGetPaginatedComments<
         ResponseErrorConfig<
           | GetPaginatedComments400
           | GetPaginatedComments401
-          | GetPaginatedComments403
+          | GetPaginatedComments404
           | GetPaginatedComments422
           | GetPaginatedComments500
         >,
@@ -165,7 +165,7 @@ export function useGetPaginatedComments<
     ResponseErrorConfig<
       | GetPaginatedComments400
       | GetPaginatedComments401
-      | GetPaginatedComments403
+      | GetPaginatedComments404
       | GetPaginatedComments422
       | GetPaginatedComments500
     >

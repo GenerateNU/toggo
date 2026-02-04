@@ -1,4 +1,4 @@
-package controllers
+package utilities
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func parseEntityTypeParam(c *fiber.Ctx, paramName string, errorField string, allowed ...models.EntityType) (models.EntityType, error) {
+func ParseEntityTypeParam(c *fiber.Ctx, paramName string, errorField string, allowed ...models.EntityType) (models.EntityType, error) {
 	entityType := models.EntityType(c.Params(paramName))
 	for _, allowedType := range allowed {
 		if entityType == allowedType {
@@ -29,7 +29,7 @@ func parseEntityTypeParam(c *fiber.Ctx, paramName string, errorField string, all
 	})
 }
 
-func parseAndValidateQueryParams(c *fiber.Ctx, validator *validator.Validate, params interface{}) error {
+func ParseAndValidateQueryParams(c *fiber.Ctx, validator *validator.Validate, params interface{}) error {
 	if err := c.QueryParser(params); err != nil {
 		return errs.InvalidRequestData(map[string]string{
 			"query": "invalid query parameters",
@@ -44,7 +44,7 @@ type cursorQueryParams interface {
 	GetCursor() *string
 }
 
-func extractLimitAndCursor(params cursorQueryParams) (int, string) {
+func ExtractLimitAndCursor(params cursorQueryParams) (int, string) {
 	const defaultLimit, maxLimit = 20, 100
 
 	limit := defaultLimit

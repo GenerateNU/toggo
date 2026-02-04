@@ -19,6 +19,7 @@ type FileServiceInterface interface {
 	ConfirmUpload(ctx context.Context, req models.ConfirmUploadRequest) (*models.ConfirmUploadResponse, error)
 	GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error)
 	GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)
+	GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error)
 }
 
 var _ FileServiceInterface = (*FileService)(nil)
@@ -249,6 +250,41 @@ func (f *FileService) GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*
 	return &models.GetFileAllSizesResponse{
 		ImageID: imageID,
 		Files:   files,
+	}, nil
+}
+
+// GetFilesByKeys retrieves presigned URLs for multiple file keys at once
+func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error) {
+	if len(req.FileKeys) == 0 {
+		return &models.GetFilesByKeysResponse{Files: []models.FileKeyResponse{}}, nil
+	}
+
+	files := make([]models.FileKeyResponse, 0, len(req.FileKeys))
+
+	for _, fileKey := range req.FileKeys {
+		if fileKey == "" {
+			continue
+		}
+
+		sizedKey := buildSizedKey(fileKey, req.Size)
+
+		presignedURL, err := f.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(f.bucketName),
+			Key:    aws.String(sizedKey),
+		}, s3.WithPresignExpires(f.urlExpiration))
+
+		if err != nil {
+			continue
+		}
+
+		files = append(files, models.FileKeyResponse{
+			FileKey: fileKey,
+			URL:     presignedURL.URL,
+		})
+	}
+
+	return &models.GetFilesByKeysResponse{
+		Files: files,
 	}, nil
 }
 
