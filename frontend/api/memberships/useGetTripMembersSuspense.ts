@@ -10,6 +10,8 @@ import type {
   GetTripMembersPathParams,
   GetTripMembersQueryParams,
   GetTripMembers400,
+  GetTripMembers401,
+  GetTripMembers404,
   GetTripMembers500,
 } from "../../types/types.gen.ts";
 import type {
@@ -47,7 +49,12 @@ export async function getTripMembersSuspense(
 
   const res = await request<
     GetTripMembersQueryResponse,
-    ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>,
+    ResponseErrorConfig<
+      | GetTripMembers400
+      | GetTripMembers401
+      | GetTripMembers404
+      | GetTripMembers500
+    >,
     unknown
   >({
     method: "GET",
@@ -66,7 +73,12 @@ export function getTripMembersSuspenseQueryOptions(
   const queryKey = getTripMembersSuspenseQueryKey(tripID, params);
   return queryOptions<
     GetTripMembersQueryResponse,
-    ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>,
+    ResponseErrorConfig<
+      | GetTripMembers400
+      | GetTripMembers401
+      | GetTripMembers404
+      | GetTripMembers500
+    >,
     GetTripMembersQueryResponse,
     typeof queryKey
   >({
@@ -94,7 +106,12 @@ export function useGetTripMembersSuspense<
     query?: Partial<
       UseSuspenseQueryOptions<
         GetTripMembersQueryResponse,
-        ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>,
+        ResponseErrorConfig<
+          | GetTripMembers400
+          | GetTripMembers401
+          | GetTripMembers404
+          | GetTripMembers500
+        >,
         TData,
         TQueryKey
       >
@@ -116,7 +133,12 @@ export function useGetTripMembersSuspense<
     queryClient,
   ) as UseSuspenseQueryResult<
     TData,
-    ResponseErrorConfig<GetTripMembers400 | GetTripMembers500>
+    ResponseErrorConfig<
+      | GetTripMembers400
+      | GetTripMembers401
+      | GetTripMembers404
+      | GetTripMembers500
+    >
   > & { queryKey: TQueryKey };
 
   query.queryKey = queryKey as TQueryKey;

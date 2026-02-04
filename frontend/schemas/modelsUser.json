@@ -1,6 +1,7 @@
 {
   "type": "object",
   "properties": {
+    "created_at": { "type": "string" },
     "device_token": { "type": "string" },
     "device_token_updated_at": { "type": "string" },
     "id": { "type": "string" },
@@ -8,6 +9,7 @@
     "phone_number": { "type": "string" },
     "profile_picture": { "type": "string" },
     "timezone": { "type": "string" },
+    "updated_at": { "type": "string" },
     "username": { "type": "string" }
   },
   "x-readme-ref-name": "models.User"

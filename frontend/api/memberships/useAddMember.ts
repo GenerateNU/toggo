@@ -9,6 +9,7 @@ import type {
   AddMemberMutationRequest,
   AddMemberMutationResponse,
   AddMember400,
+  AddMember401,
   AddMember422,
   AddMember500,
 } from "../../types/types.gen.ts";
@@ -41,7 +42,9 @@ export async function addMember(
 
   const res = await request<
     AddMemberMutationResponse,
-    ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+    ResponseErrorConfig<
+      AddMember400 | AddMember401 | AddMember422 | AddMember500
+    >,
     AddMemberMutationRequest
   >({
     method: "POST",
@@ -60,7 +63,9 @@ export function addMemberMutationOptions<TContext = unknown>(
   const mutationKey = addMemberMutationKey();
   return mutationOptions<
     AddMemberMutationResponse,
-    ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+    ResponseErrorConfig<
+      AddMember400 | AddMember401 | AddMember422 | AddMember500
+    >,
     { data: AddMemberMutationRequest },
     TContext
   >({
@@ -80,7 +85,9 @@ export function useAddMember<TContext>(
   options: {
     mutation?: UseMutationOptions<
       AddMemberMutationResponse,
-      ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+      ResponseErrorConfig<
+        AddMember400 | AddMember401 | AddMember422 | AddMember500
+      >,
       { data: AddMemberMutationRequest },
       TContext
     > & { client?: QueryClient };
@@ -95,14 +102,18 @@ export function useAddMember<TContext>(
 
   const baseOptions = addMemberMutationOptions(config) as UseMutationOptions<
     AddMemberMutationResponse,
-    ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+    ResponseErrorConfig<
+      AddMember400 | AddMember401 | AddMember422 | AddMember500
+    >,
     { data: AddMemberMutationRequest },
     TContext
   >;
 
   return useMutation<
     AddMemberMutationResponse,
-    ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+    ResponseErrorConfig<
+      AddMember400 | AddMember401 | AddMember422 | AddMember500
+    >,
     { data: AddMemberMutationRequest },
     TContext
   >(
@@ -114,7 +125,9 @@ export function useAddMember<TContext>(
     queryClient,
   ) as UseMutationResult<
     AddMemberMutationResponse,
-    ResponseErrorConfig<AddMember400 | AddMember422 | AddMember500>,
+    ResponseErrorConfig<
+      AddMember400 | AddMember401 | AddMember422 | AddMember500
+    >,
     { data: AddMemberMutationRequest },
     TContext
   >;

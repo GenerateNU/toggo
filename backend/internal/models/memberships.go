@@ -10,8 +10,8 @@ type Membership struct {
 	UserID       uuid.UUID               `bun:"user_id,pk,type:uuid" json:"user_id"`
 	TripID       uuid.UUID               `bun:"trip_id,pk,type:uuid" json:"trip_id"`
 	IsAdmin      bool                    `bun:"is_admin" json:"is_admin"`
-	CreatedAt    time.Time               `bun:"created_at" json:"created_at"`
-	UpdatedAt    time.Time               `bun:"updated_at" json:"updated_at"`
+	CreatedAt    time.Time               `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt    time.Time               `bun:"updated_at,nullzero" json:"updated_at"`
 	BudgetMin    int                     `bun:"budget_min" json:"budget_min"`
 	BudgetMax    int                     `bun:"budget_max" json:"budget_max"`
 	Availability *map[string]interface{} `bun:"availability,type:jsonb" json:"availability,omitempty"`
@@ -50,7 +50,8 @@ type MembershipDatabaseResponse struct {
 	BudgetMax         int                     `json:"budget_max"`
 	Availability      *map[string]interface{} `json:"availability,omitempty"`
 	Username          string                  `json:"username"`
-	ProfilePictureKey *string                 `json:"profile_picture_key"`
+	ProfilePictureID  *uuid.UUID              `json:"profile_picture_id"`
+	ProfilePictureKey *string                 `bun:"profile_picture_key" json:"-"`
 }
 
 type MembershipAPIResponse struct {

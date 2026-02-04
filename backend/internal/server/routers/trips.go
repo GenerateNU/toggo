@@ -2,6 +2,7 @@ package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/services"
 	"toggo/internal/types"
 
@@ -9,7 +10,11 @@ import (
 )
 
 func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	tripService := services.NewTripService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
+	tripService := services.NewTripService(
+		routeParams.ServiceParams.Repository,
+		routeParams.ServiceParams.FileService,
+		routeParams.ServiceParams.EventPublisher,
+	)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
 
 	// /api/v1/trips
@@ -19,6 +24,7 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 
 	// /api/v1/trips/:tripID
 	tripIDGroup := tripGroup.Group("/:tripID")
+	tripIDGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	tripIDGroup.Get("", tripController.GetTrip)
 	tripIDGroup.Patch("", tripController.UpdateTrip)
 	tripIDGroup.Delete("", tripController.DeleteTrip)

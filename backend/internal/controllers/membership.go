@@ -6,6 +6,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
+	"toggo/internal/utilities"
 	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
@@ -32,6 +33,7 @@ func NewMembershipController(membershipService services.MembershipServiceInterfa
 // @Param        request body models.CreateMembershipRequest true "Create membership request"
 // @Success      201 {object} models.Membership
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/memberships [post]
@@ -63,6 +65,8 @@ func (ctrl *MembershipController) AddMember(c *fiber.Ctx) error {
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.MembershipCursorPageResult
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships [get]
 // @ID           getTripMembers
@@ -73,11 +77,11 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 	}
 
 	var params models.CursorPaginationParams
-	if err := parseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
+	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	limit, cursorToken := extractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
 	result, err := ctrl.membershipService.GetTripMembers(c.Context(), tripID, limit, cursorToken)
 	if err != nil {
@@ -96,8 +100,9 @@ func (ctrl *MembershipController) GetTripMembers(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        userID path string true "User ID"
-// @Success      200 {object} models.Membership
+// @Success      200 {object} models.MembershipAPIResponse
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID} [get]
@@ -131,6 +136,7 @@ func (ctrl *MembershipController) GetLatestMembership(c *fiber.Ctx) error {
 // @Param        request body models.UpdateMembershipRequest true "Update membership request"
 // @Success      200 {object} models.Membership
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -171,6 +177,7 @@ func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 // @Param        userID path string true "User ID"
 // @Success      204 "No Content"
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID} [delete]
@@ -200,6 +207,7 @@ func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
 // @Param        userID path string true "User ID"
 // @Success      200 {object} map[string]string
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID}/promote [post]
@@ -213,6 +221,23 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
+	}
+
+	// Check if authenticated user is an admin
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	isAdmin, err := ctrl.membershipService.IsAdmin(c.Context(), tripID, authUserUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
 	}
 
 	if err := ctrl.membershipService.PromoteToAdmin(c.Context(), tripID, userID); err != nil {
@@ -231,6 +256,7 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 // @Param        userID path string true "User ID"
 // @Success      200 {object} map[string]string
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID}/demote [post]
@@ -244,6 +270,23 @@ func (ctrl *MembershipController) DemoteFromAdmin(c *fiber.Ctx) error {
 	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
+	}
+
+	// Check if authenticated user is an admin
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	isAdmin, err := ctrl.membershipService.IsAdmin(c.Context(), tripID, authUserUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
 	}
 
 	if err := ctrl.membershipService.DemoteFromAdmin(c.Context(), tripID, userID); err != nil {

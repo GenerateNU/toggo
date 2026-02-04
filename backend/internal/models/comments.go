@@ -13,8 +13,8 @@ type Comment struct {
 	EntityID   uuid.UUID  `bun:"entity_id,type:uuid,notnull" json:"entity_id"`
 	UserID     uuid.UUID  `bun:"user_id,type:uuid,notnull" json:"user_id"`
 	Content    string     `bun:"content,notnull" json:"content"`
-	CreatedAt  time.Time  `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
-	UpdatedAt  time.Time  `bun:"updated_at,notnull,default:current_timestamp" json:"updated_at"`
+	CreatedAt  time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"created_at"`
+	UpdatedAt  time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp" json:"updated_at"`
 }
 
 type CreateCommentRequest struct {
@@ -35,7 +35,8 @@ type CommentDatabaseResponse struct {
 	EntityID          uuid.UUID  `json:"entity_id"`
 	UserID            uuid.UUID  `json:"user_id"`
 	Username          string     `json:"username"`
-	ProfilePictureKey *string    `json:"profile_picture_key"` // pointer since some users don't have their avatar set
+	ProfilePictureID  *uuid.UUID `json:"profile_picture_id"` // pointer since some users don't have their avatar set
+	ProfilePictureKey *string    `bun:"profile_picture_key" json:"-"`
 	Content           string     `json:"content"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`

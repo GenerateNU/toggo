@@ -191,6 +191,10 @@ export type ModelsCreateTripRequest = {
    */
   budget_min: number;
   /**
+   * @type string | undefined
+   */
+  cover_image_id?: string;
+  /**
    * @minLength 1
    * @type string
    */
@@ -478,6 +482,41 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+};
+
+export type ModelsTripAPIResponse = {
+  /**
+   * @type integer | undefined
+   */
+  budget_max?: number;
+  /**
+   * @type integer | undefined
+   */
+  budget_min?: number;
+  /**
+   * @type string | undefined
+   */
+  cover_image_url?: string;
+  /**
+   * @type string | undefined
+   */
   created_at?: string;
   /**
    * @type string | undefined
@@ -497,7 +536,7 @@ export type ModelsTripCursorPageResult = {
   /**
    * @type array | undefined
    */
-  items?: ModelsTrip[];
+  items?: ModelsTripAPIResponse[];
   /**
    * @type integer | undefined
    */
@@ -544,6 +583,10 @@ export type ModelsUpdateTripRequest = {
    * @type integer | undefined
    */
   budget_min?: number;
+  /**
+   * @type string | undefined
+   */
+  cover_image_id?: string;
   /**
    * @minLength 1
    * @type string | undefined
@@ -620,6 +663,10 @@ export type ModelsUser = {
   /**
    * @type string | undefined
    */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
   device_token?: string;
   /**
    * @type string | undefined
@@ -648,6 +695,10 @@ export type ModelsUser = {
   /**
    * @type string | undefined
    */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
   username?: string;
 };
 
@@ -667,9 +718,9 @@ export type CreateComment400 = ErrsAPIError;
 export type CreateComment401 = ErrsAPIError;
 
 /**
- * @description Forbidden
+ * @description Not Found
  */
-export type CreateComment403 = ErrsAPIError;
+export type CreateComment404 = ErrsAPIError;
 
 /**
  * @description Unprocessable Entity
@@ -694,7 +745,7 @@ export type CreateCommentMutation = {
   Errors:
     | CreateComment400
     | CreateComment401
-    | CreateComment403
+    | CreateComment404
     | CreateComment422
     | CreateComment500;
 };
@@ -981,6 +1032,11 @@ export type AddMember201 = ModelsMembership;
 export type AddMember400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type AddMember401 = ErrsAPIError;
+
+/**
  * @description Unprocessable Entity
  */
 export type AddMember422 = ErrsAPIError;
@@ -1000,7 +1056,7 @@ export type AddMemberMutationResponse = AddMember201;
 export type AddMemberMutation = {
   Response: AddMember201;
   Request: AddMemberMutationRequest;
-  Errors: AddMember400 | AddMember422 | AddMember500;
+  Errors: AddMember400 | AddMember401 | AddMember422 | AddMember500;
 };
 
 /**
@@ -1163,7 +1219,7 @@ export type GetTripPathParams = {
 /**
  * @description OK
  */
-export type GetTrip200 = ModelsTrip;
+export type GetTrip200 = ModelsTripAPIResponse;
 
 /**
  * @description Bad Request
@@ -1207,6 +1263,11 @@ export type DeleteTrip204 = any;
 export type DeleteTrip400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type DeleteTrip401 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type DeleteTrip404 = ErrsAPIError;
@@ -1221,7 +1282,7 @@ export type DeleteTripMutationResponse = DeleteTrip204;
 export type DeleteTripMutation = {
   Response: DeleteTrip204;
   PathParams: DeleteTripPathParams;
-  Errors: DeleteTrip400 | DeleteTrip404 | DeleteTrip500;
+  Errors: DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500;
 };
 
 export type UpdateTripPathParams = {
@@ -1241,6 +1302,11 @@ export type UpdateTrip200 = ModelsTrip;
  * @description Bad Request
  */
 export type UpdateTrip400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateTrip401 = ErrsAPIError;
 
 /**
  * @description Not Found
@@ -1268,7 +1334,12 @@ export type UpdateTripMutation = {
   Response: UpdateTrip200;
   Request: UpdateTripMutationRequest;
   PathParams: UpdateTripPathParams;
-  Errors: UpdateTrip400 | UpdateTrip404 | UpdateTrip422 | UpdateTrip500;
+  Errors:
+    | UpdateTrip400
+    | UpdateTrip401
+    | UpdateTrip404
+    | UpdateTrip422
+    | UpdateTrip500;
 };
 
 export type GetTripMembersPathParams = {
@@ -1303,6 +1374,16 @@ export type GetTripMembers200 = ModelsMembershipCursorPageResult;
 export type GetTripMembers400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type GetTripMembers401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetTripMembers404 = ErrsAPIError;
+
+/**
  * @description Internal Server Error
  */
 export type GetTripMembers500 = ErrsAPIError;
@@ -1313,7 +1394,11 @@ export type GetTripMembersQuery = {
   Response: GetTripMembers200;
   PathParams: GetTripMembersPathParams;
   QueryParams: GetTripMembersQueryParams;
-  Errors: GetTripMembers400 | GetTripMembers500;
+  Errors:
+    | GetTripMembers400
+    | GetTripMembers401
+    | GetTripMembers404
+    | GetTripMembers500;
 };
 
 export type GetMembershipPathParams = {
@@ -1332,12 +1417,17 @@ export type GetMembershipPathParams = {
 /**
  * @description OK
  */
-export type GetMembership200 = ModelsMembership;
+export type GetMembership200 = ModelsMembershipAPIResponse;
 
 /**
  * @description Bad Request
  */
 export type GetMembership400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetMembership401 = ErrsAPIError;
 
 /**
  * @description Not Found
@@ -1354,7 +1444,11 @@ export type GetMembershipQueryResponse = GetMembership200;
 export type GetMembershipQuery = {
   Response: GetMembership200;
   PathParams: GetMembershipPathParams;
-  Errors: GetMembership400 | GetMembership404 | GetMembership500;
+  Errors:
+    | GetMembership400
+    | GetMembership401
+    | GetMembership404
+    | GetMembership500;
 };
 
 export type RemoveMemberPathParams = {
@@ -1381,6 +1475,11 @@ export type RemoveMember204 = any;
 export type RemoveMember400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type RemoveMember401 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type RemoveMember404 = ErrsAPIError;
@@ -1395,7 +1494,7 @@ export type RemoveMemberMutationResponse = RemoveMember204;
 export type RemoveMemberMutation = {
   Response: RemoveMember204;
   PathParams: RemoveMemberPathParams;
-  Errors: RemoveMember400 | RemoveMember404 | RemoveMember500;
+  Errors: RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500;
 };
 
 export type UpdateMembershipPathParams = {
@@ -1420,6 +1519,11 @@ export type UpdateMembership200 = ModelsMembership;
  * @description Bad Request
  */
 export type UpdateMembership400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateMembership401 = ErrsAPIError;
 
 /**
  * @description Not Found
@@ -1449,6 +1553,7 @@ export type UpdateMembershipMutation = {
   PathParams: UpdateMembershipPathParams;
   Errors:
     | UpdateMembership400
+    | UpdateMembership401
     | UpdateMembership404
     | UpdateMembership422
     | UpdateMembership500;
@@ -1480,6 +1585,11 @@ export type DemoteFromAdmin200 = {
 export type DemoteFromAdmin400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type DemoteFromAdmin401 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type DemoteFromAdmin404 = ErrsAPIError;
@@ -1494,7 +1604,11 @@ export type DemoteFromAdminMutationResponse = DemoteFromAdmin200;
 export type DemoteFromAdminMutation = {
   Response: DemoteFromAdmin200;
   PathParams: DemoteFromAdminPathParams;
-  Errors: DemoteFromAdmin400 | DemoteFromAdmin404 | DemoteFromAdmin500;
+  Errors:
+    | DemoteFromAdmin400
+    | DemoteFromAdmin401
+    | DemoteFromAdmin404
+    | DemoteFromAdmin500;
 };
 
 export type PromoteToAdminPathParams = {
@@ -1523,6 +1637,11 @@ export type PromoteToAdmin200 = {
 export type PromoteToAdmin400 = ErrsAPIError;
 
 /**
+ * @description Unauthorized
+ */
+export type PromoteToAdmin401 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type PromoteToAdmin404 = ErrsAPIError;
@@ -1537,7 +1656,11 @@ export type PromoteToAdminMutationResponse = PromoteToAdmin200;
 export type PromoteToAdminMutation = {
   Response: PromoteToAdmin200;
   PathParams: PromoteToAdminPathParams;
-  Errors: PromoteToAdmin400 | PromoteToAdmin404 | PromoteToAdmin500;
+  Errors:
+    | PromoteToAdmin400
+    | PromoteToAdmin401
+    | PromoteToAdmin404
+    | PromoteToAdmin500;
 };
 
 export type GetPaginatedCommentsPathParams = {
@@ -1587,9 +1710,9 @@ export type GetPaginatedComments400 = ErrsAPIError;
 export type GetPaginatedComments401 = ErrsAPIError;
 
 /**
- * @description Forbidden
+ * @description Not Found
  */
-export type GetPaginatedComments403 = ErrsAPIError;
+export type GetPaginatedComments404 = ErrsAPIError;
 
 /**
  * @description Unprocessable Entity
@@ -1610,7 +1733,7 @@ export type GetPaginatedCommentsQuery = {
   Errors:
     | GetPaginatedComments400
     | GetPaginatedComments401
-    | GetPaginatedComments403
+    | GetPaginatedComments404
     | GetPaginatedComments422
     | GetPaginatedComments500;
 };

@@ -2,6 +2,7 @@ package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/services"
 	"toggo/internal/types"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.Config)
+	membershipService := services.NewMembershipService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.FileService)
 	membershipController := controllers.NewMembershipController(membershipService, routeParams.Validator)
 
 	// /api/v1/memberships
@@ -18,6 +19,7 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 
 	// /api/v1/trips/:tripID/memberships
 	tripMembershipGroup := apiGroup.Group("/trips/:tripID/memberships")
+	tripMembershipGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	tripMembershipGroup.Get("", membershipController.GetTripMembers)
 	tripMembershipGroup.Post("/:userID/promote", membershipController.PromoteToAdmin)
 	tripMembershipGroup.Post("/:userID/demote", membershipController.DemoteFromAdmin)

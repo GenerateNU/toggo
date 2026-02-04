@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strings"
 	"testing"
@@ -15,7 +14,7 @@ func TestUserLifecycle(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
-	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+	phoneNumber := fakes.GenerateRandomPhoneNumber()
 	normalizedUsername := strings.ToLower(username)
 
 	var createdUserID string
@@ -177,6 +176,41 @@ func TestUserLifecycle(t *testing.T) {
 			AssertField("timezone", "Asia/Tokyo")
 	})
 
+	t.Run("user cannot update another user's profile", func(t *testing.T) {
+		// Create second user
+		secondUserID := fakes.GenerateUUID()
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/users",
+				Method: testkit.POST,
+				UserID: &secondUserID,
+				Body: models.CreateUserRequest{
+					Name:        "User B",
+					Username:    fakes.GenerateRandomUsername(),
+					PhoneNumber: fakes.GenerateRandomPhoneNumber(),
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		secondUserCreatedID := resp["id"].(string)
+
+		// First user tries to update second user's profile - should fail
+		name := "Hacked Name"
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/users/%s", secondUserCreatedID),
+				Method: testkit.PATCH,
+				UserID: &authUserID,
+				Body: models.UpdateUserRequest{
+					Name: &name,
+				},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
 	t.Run("create user with same username returns 409", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
@@ -261,7 +295,7 @@ func TestDeviceTokenUpdate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()
 	username := fakes.GenerateRandomUsername()
-	phoneNumber := fmt.Sprintf("+161755512%02d", rand.Intn(100))
+	phoneNumber := fakes.GenerateRandomPhoneNumber()
 
 	var userID string
 

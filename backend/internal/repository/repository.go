@@ -51,6 +51,8 @@ type UserRepository interface {
 type TripRepository interface {
 	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
 	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
+	FindWithCoverImage(ctx context.Context, id uuid.UUID) (*models.TripDatabaseResponse, error)
+	FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -65,6 +67,7 @@ type MembershipRepository interface {
 	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
 	Delete(ctx context.Context, userID, tripID uuid.UUID) error
 }

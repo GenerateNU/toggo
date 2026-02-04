@@ -4,17 +4,12 @@ import (
 	"context"
 	"errors"
 	"time"
-	"toggo/internal/config"
 	"toggo/internal/errs"
-	"toggo/internal/interfaces"
 	"toggo/internal/models"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"golang.org/x/sync/errgroup"
 )
 
 type MembershipServiceInterface interface {
@@ -35,48 +30,44 @@ var _ MembershipServiceInterface = (*MembershipService)(nil)
 
 type MembershipService struct {
 	*repository.Repository
-	presignClient interfaces.S3PresignClient
-	bucketName    string
-	urlExpiration time.Duration
+	fileService FileServiceInterface
 }
 
-func NewMembershipService(repo *repository.Repository, cfg *config.Configuration) MembershipServiceInterface {
-	service := &MembershipService{
-		Repository:    repo,
-		urlExpiration: 15 * time.Minute,
+func NewMembershipService(repo *repository.Repository, fileService FileServiceInterface) MembershipServiceInterface {
+	return &MembershipService{
+		Repository:  repo,
+		fileService: fileService,
 	}
-
-	if cfg != nil {
-		service.presignClient = cfg.AWS.PresignClient
-		service.bucketName = cfg.AWS.BucketName
-	}
-
-	return service
 }
 
 func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMembershipRequest) (*models.Membership, error) {
 	// Validate trip exists
 	_, err := s.Trip.Find(ctx, req.TripID)
 	if err != nil {
-		return nil, errors.New("trip not found")
+		return nil, errs.ErrNotFound
 	}
 
 	// Validate business rules
 	if req.BudgetMin < 0 {
-		return nil, errors.New("budget minimum cannot be negative")
+		return nil, errs.BadRequest(errors.New("budget minimum cannot be negative"))
 	}
 
 	if req.BudgetMax < req.BudgetMin {
-		return nil, errors.New("budget maximum must be greater than or equal to minimum")
+		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
-	// Check if already a member
-	isMember, err := s.Membership.IsMember(ctx, req.TripID, req.UserID)
-	if err != nil {
-		return nil, err
-	}
-	if isMember {
-		return nil, errors.New("user is already a member of this trip")
+	existingMembership, err := s.Membership.Find(ctx, req.UserID, req.TripID)
+	if err == nil {
+		return &models.Membership{
+			UserID:       existingMembership.UserID,
+			TripID:       existingMembership.TripID,
+			IsAdmin:      existingMembership.IsAdmin,
+			BudgetMin:    existingMembership.BudgetMin,
+			BudgetMax:    existingMembership.BudgetMax,
+			Availability: existingMembership.Availability,
+			CreatedAt:    existingMembership.CreatedAt,
+			UpdatedAt:    existingMembership.UpdatedAt,
+		}, nil
 	}
 
 	// Create membership
@@ -106,13 +97,9 @@ func (s *MembershipService) GetMembership(ctx context.Context, tripID, userID uu
 }
 
 func (s *MembershipService) GetTripMembers(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.MembershipCursorPageResult, error) {
-	var cursor *models.MembershipCursor
-	if cursorToken != "" {
-		decoded, err := pagination.DecodeTimeUUIDCursor(cursorToken)
-		if err != nil {
-			return nil, err
-		}
-		cursor = decoded
+	cursor, err := pagination.ParseCursor(cursorToken)
+	if err != nil {
+		return nil, err
 	}
 
 	memberships, nextCursor, err := s.Membership.FindByTripIDWithCursor(ctx, tripID, limit, cursor)
@@ -120,42 +107,12 @@ func (s *MembershipService) GetTripMembers(ctx context.Context, tripID uuid.UUID
 		return nil, err
 	}
 
-	apiMemberships := make([]*models.MembershipAPIResponse, len(memberships))
+	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, memberships, func(item *models.MembershipDatabaseResponse) *string {
+		return item.ProfilePictureKey
+	}, models.ImageSizeSmall)
+	apiMemberships := s.convertToAPIMemberships(memberships, fileURLMap)
 
-	g, ctx := errgroup.WithContext(ctx)
-	g.SetLimit(10)
-
-	for i := range memberships {
-		i := i
-		membership := memberships[i]
-		g.Go(func() error {
-			apiMembership, convErr := s.toAPIResponse(ctx, membership)
-			if convErr != nil {
-				return convErr
-			}
-			apiMemberships[i] = apiMembership
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-
-	result := &models.MembershipCursorPageResult{
-		Items: apiMemberships,
-		Limit: limit,
-	}
-
-	if nextCursor != nil {
-		token, err := pagination.EncodeTimeUUIDCursor(*nextCursor)
-		if err != nil {
-			return nil, err
-		}
-		result.NextCursor = &token
-	}
-
-	return result, nil
+	return s.buildMembershipPageResult(apiMemberships, nextCursor, limit)
 }
 
 func (s *MembershipService) GetUserTrips(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error) {
@@ -163,7 +120,6 @@ func (s *MembershipService) GetUserTrips(ctx context.Context, userID uuid.UUID) 
 }
 
 func (s *MembershipService) UpdateMembership(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateMembershipRequest) (*models.Membership, error) {
-	// Load current membership to validate against
 	membership, err := s.Membership.Find(ctx, userID, tripID)
 	if err != nil {
 		return nil, err
@@ -240,6 +196,15 @@ func (s *MembershipService) DemoteFromAdmin(ctx context.Context, tripID, userID 
 		return errors.New("user is not an admin")
 	}
 
+	// Check if this is the last admin
+	admins, err := s.Membership.CountAdmins(ctx, tripID)
+	if err != nil {
+		return err
+	}
+	if admins <= 1 {
+		return errs.BadRequest(errors.New("cannot demote the last admin"))
+	}
+
 	// Update to non-admin using pointer
 	isAdmin := false
 	updateReq := models.UpdateMembershipRequest{
@@ -263,9 +228,12 @@ func (s *MembershipService) GetMemberCount(ctx context.Context, tripID uuid.UUID
 }
 
 func (s *MembershipService) toAPIResponse(ctx context.Context, membership *models.MembershipDatabaseResponse) (*models.MembershipAPIResponse, error) {
-	profilePictureURL, err := s.getProfilePictureURL(ctx, membership.ProfilePictureKey)
-	if err != nil {
-		return nil, err
+	var profilePictureURL *string
+	if membership.ProfilePictureID != nil {
+		fileResp, err := s.fileService.GetFile(ctx, *membership.ProfilePictureID, models.ImageSizeSmall)
+		if err == nil {
+			profilePictureURL = &fileResp.URL
+		}
 	}
 
 	return &models.MembershipAPIResponse{
@@ -282,18 +250,47 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 	}, nil
 }
 
-func (s *MembershipService) getProfilePictureURL(ctx context.Context, fileKey *string) (*string, error) {
-	if fileKey == nil || *fileKey == "" || s.presignClient == nil {
-		return nil, nil
+// Helper methods for cleaner code organization
+
+func (s *MembershipService) convertToAPIMemberships(memberships []*models.MembershipDatabaseResponse, fileURLMap map[string]string) []*models.MembershipAPIResponse {
+	apiMemberships := make([]*models.MembershipAPIResponse, 0, len(memberships))
+	for _, membership := range memberships {
+		var profilePictureURL *string
+		if membership.ProfilePictureKey != nil && *membership.ProfilePictureKey != "" {
+			if url, exists := fileURLMap[*membership.ProfilePictureKey]; exists {
+				profilePictureURL = &url
+			}
+		}
+
+		apiMemberships = append(apiMemberships, &models.MembershipAPIResponse{
+			UserID:            membership.UserID,
+			TripID:            membership.TripID,
+			IsAdmin:           membership.IsAdmin,
+			CreatedAt:         membership.CreatedAt,
+			UpdatedAt:         membership.UpdatedAt,
+			BudgetMin:         membership.BudgetMin,
+			BudgetMax:         membership.BudgetMax,
+			Availability:      membership.Availability,
+			Username:          membership.Username,
+			ProfilePictureURL: profilePictureURL,
+		})
+	}
+	return apiMemberships
+}
+
+func (s *MembershipService) buildMembershipPageResult(apiMemberships []*models.MembershipAPIResponse, nextCursor *models.MembershipCursor, limit int) (*models.MembershipCursorPageResult, error) {
+	result := &models.MembershipCursorPageResult{
+		Items: apiMemberships,
+		Limit: limit,
 	}
 
-	presignedURL, err := s.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(s.bucketName),
-		Key:    aws.String(*fileKey),
-	}, s3.WithPresignExpires(s.urlExpiration))
-	if err != nil {
-		return nil, err
+	if nextCursor != nil {
+		token, err := pagination.EncodeTimeUUIDCursor(*nextCursor)
+		if err != nil {
+			return nil, err
+		}
+		result.NextCursor = &token
 	}
 
-	return &presignedURL.URL, nil
+	return result, nil
 }

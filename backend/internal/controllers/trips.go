@@ -6,6 +6,7 @@ import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
+	"toggo/internal/utilities"
 	"toggo/internal/validators"
 
 	"github.com/go-playground/validator/v10"
@@ -33,6 +34,7 @@ func NewTripController(tripService services.TripServiceInterface, validator *val
 // @Success      201 {object} models.Trip
 // @Failure      401 {object} errs.APIError
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips [post]
@@ -62,7 +64,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 		return err
 	}
 
-	trip, err := ctrl.tripService.CreateTrip(c.Context(), req, userID)
+	trip, err := ctrl.tripService.CreateTrip(c.Context(), userID, req)
 	if err != nil {
 		return err
 	}
@@ -75,7 +77,7 @@ func (ctrl *TripController) CreateTrip(c *fiber.Ctx) error {
 // @Tags         trips
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {object} models.Trip
+// @Success      200 {object} models.TripAPIResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -95,7 +97,7 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(trip)
 }
 
-// @Summary      Get all trips user is a member of
+// @Summary      Get all trips
 // @Description  Retrieves trips with cursor-based pagination. Use limit and cursor query params.
 // @Tags         trips
 // @Produce      json
@@ -124,11 +126,11 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 	}
 
 	var params models.CursorPaginationParams
-	if err := parseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
+	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	limit, cursorToken := extractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
 	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), userID, limit, cursorToken)
 	if err != nil {
@@ -149,6 +151,7 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 // @Param        request body models.UpdateTripRequest true "Update trip request"
 // @Success      200 {object} models.Trip
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
@@ -160,7 +163,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
-	id, err := validators.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -169,7 +172,7 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return err
 	}
 
-	trip, err := ctrl.tripService.UpdateTrip(c.Context(), id, req)
+	trip, err := ctrl.tripService.UpdateTrip(c.Context(), tripID, req)
 	if err != nil {
 		return err
 	}
@@ -183,17 +186,33 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Success      204 "No Content"
 // @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID} [delete]
 // @ID           deleteTrip
 func (ctrl *TripController) DeleteTrip(c *fiber.Ctx) error {
-	id, err := validators.ValidateID(c.Params("tripID"))
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
-	if err := ctrl.tripService.DeleteTrip(c.Context(), id); err != nil {
+	if err := ctrl.tripService.DeleteTrip(c.Context(), userID, tripID); err != nil {
 		return err
 	}
 
