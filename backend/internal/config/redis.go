@@ -10,6 +10,7 @@ type RedisConfig struct {
 	Address  string
 	Password string
 	DB       int
+	TLS      bool
 }
 
 func LoadRedisConfig() (*RedisConfig, error) {
@@ -33,9 +34,12 @@ func LoadRedisConfig() (*RedisConfig, error) {
 		db = parsedDB
 	}
 
+	tlsEnabled := os.Getenv("REDIS_TLS") == "true"
+
 	return &RedisConfig{
 		Address:  address,
 		Password: password,
 		DB:       db,
+		TLS:      tlsEnabled,
 	}, nil
 }
