@@ -74,6 +74,9 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	FileRoutes(apiV0Group, routeParams)
 	// ^^^ is to skip auth for now, comment out later
 
+	// Test routes without auth for realtime testing
+	TestRoutes(apiGroup, routeParams, fileService)
+
 	apiV1Group := apiGroup.Group("/v1", middlewares...)
 	UserRoutes(apiV1Group, routeParams)
 	TripRoutes(apiV1Group, routeParams, fileService)

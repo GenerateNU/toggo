@@ -14,6 +14,7 @@ import (
 	"time"
 	"toggo/internal/config"
 	"toggo/internal/database"
+	"toggo/internal/realtime"
 	"toggo/internal/server"
 )
 
@@ -25,13 +26,21 @@ func main() {
 	db := database.ConnectDB(context.Background(), cfg)
 	defer database.CloseDB(db)
 
+	// Initialize realtime service
+	realtimeService, err := realtime.NewRealtimeService(cfg)
+	if err != nil {
+		log.Fatalf("Failed to initialize realtime service: %v", err)
+	}
+	realtimeService.Start()
+
 	ctx := setupSignalHandler()
-	app := server.CreateApp(cfg, db)
+
+	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler())
 
 	go startServer(app, cfg.App.Port)
 
 	<-ctx.Done()
-	gracefulShutdown(app)
+	gracefulShutdown(app, realtimeService)
 }
 
 func setupSignalHandler() context.Context {
@@ -52,11 +61,15 @@ func startServer(app interface{ Listen(string) error }, port int) {
 	}
 }
 
-func gracefulShutdown(app interface{ ShutdownWithContext(context.Context) error }) {
+func gracefulShutdown(app interface{ ShutdownWithContext(context.Context) error }, realtimeService *realtime.RealtimeService) {
 	log.Println("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	if err := realtimeService.Shutdown(ctx); err != nil {
+		log.Printf("Realtime service shutdown error: %v", err)
+	}
 
 	if err := app.ShutdownWithContext(ctx); err != nil {
 		log.Fatalf("Server shutdown error: %v", err)

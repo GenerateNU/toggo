@@ -65,7 +65,7 @@ export async function updateMembership(
   return res.data;
 }
 
-export function updateMembershipMutationOptions(
+export function updateMembershipMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateMembershipMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -85,7 +85,7 @@ export function updateMembershipMutationOptions(
       userID: UpdateMembershipPathParams["userID"];
       data?: UpdateMembershipMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID, data }) => {

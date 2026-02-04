@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -25,12 +27,14 @@ var _ TripServiceInterface = (*TripService)(nil)
 type TripService struct {
 	*repository.Repository
 	fileService FileServiceInterface
+	publisher   realtime.EventPublisher
 }
 
-func NewTripService(repo *repository.Repository, fileService FileServiceInterface) TripServiceInterface {
+func NewTripService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) TripServiceInterface {
 	return &TripService{
 		Repository:  repo,
 		fileService: fileService,
+		publisher:   publisher,
 	}
 }
 
@@ -100,6 +104,17 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 	if err != nil {
 		return nil, err
 	}
+
+	// Publish trip.created event
+	if s.publisher != nil {
+		event, err := realtime.NewEvent("trip.created", createdTrip.ID.String(), createdTrip)
+		if err != nil {
+			log.Printf("Failed to create trip.created event: %v", err)
+		} else if err := s.publisher.Publish(ctx, event); err != nil {
+			log.Printf("Failed to publish trip.created event: %v", err)
+		}
+	}
+
 	return createdTrip, nil
 }
 
@@ -186,7 +201,22 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, req mode
 		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
-	return s.Trip.Update(ctx, tripID, &req)
+	trip, err := s.Trip.Update(ctx, tripID, &req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Publish trip.updated event
+	if s.publisher != nil {
+		event, err := realtime.NewEvent("trip.updated", tripID.String(), trip)
+		if err != nil {
+			log.Printf("Failed to create trip.updated event: %v", err)
+		} else if err := s.publisher.Publish(ctx, event); err != nil {
+			log.Printf("Failed to publish trip.updated event: %v", err)
+		}
+	}
+
+	return trip, nil
 }
 
 func (s *TripService) DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error {

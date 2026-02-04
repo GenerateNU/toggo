@@ -77,6 +77,9 @@ test-be:
 api-doc:
     cd backend {{ sep }} make api-doc
 
+# Run linters
+lint: lint-be lint-fe
+
 # Run Go linter
 lint-be:
     cd backend {{ sep }} golangci-lint run
@@ -113,10 +116,6 @@ lint-fe:
 format:
     just format-be
     just format-fe
-
-lint: 
-    just lint-be
-    just lint-fe
 
 fmt-lint: 
     just format

@@ -55,7 +55,7 @@ export async function addMember(
   return res.data;
 }
 
-export function addMemberMutationOptions(
+export function addMemberMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<AddMemberMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -67,7 +67,7 @@ export function addMemberMutationOptions(
       AddMember400 | AddMember401 | AddMember422 | AddMember500
     >,
     { data: AddMemberMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

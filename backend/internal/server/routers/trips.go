@@ -13,6 +13,7 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams, fileServic
 	tripService := services.NewTripService(
 		routeParams.ServiceParams.Repository,
 		fileService,
+		routeParams.ServiceParams.EventPublisher,
 	)
 	tripController := controllers.NewTripController(tripService, routeParams.Validator)
 

@@ -57,7 +57,7 @@ export async function confirmUpload(
   return res.data;
 }
 
-export function confirmUploadMutationOptions(
+export function confirmUploadMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -69,7 +69,7 @@ export function confirmUploadMutationOptions(
       ConfirmUpload400 | ConfirmUpload404 | ConfirmUpload422 | ConfirmUpload500
     >,
     { data: ConfirmUploadMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
