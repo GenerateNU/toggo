@@ -54,7 +54,7 @@ export async function createTrip(
   return res.data;
 }
 
-export function createTripMutationOptions(
+export function createTripMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateTripMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -66,7 +66,7 @@ export function createTripMutationOptions(
       CreateTrip400 | CreateTrip401 | CreateTrip422 | CreateTrip500
     >,
     { data: CreateTripMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

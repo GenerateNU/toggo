@@ -57,7 +57,7 @@ export async function updateUser(
   return res.data;
 }
 
-export function updateUserMutationOptions(
+export function updateUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -72,7 +72,7 @@ export function updateUserMutationOptions(
       userID: UpdateUserPathParams["userID"];
       data?: UpdateUserMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ userID, data }) => {
