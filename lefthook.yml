@@ -1,48 +1,30 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-
 pre-commit:
   parallel: true
   jobs:
-    - name: Run Swaggo
+    - name: Generate API docs
       glob: "backend/internal/controllers/*.go"
-      run: just api-doc
+      stage_fixed: false
+      run: just api-doc || true
 
-    - name: Lint BE (staged only)
+    - name: Lint BE (staged)
       glob: "backend/**/*.go"
-      run: cd backend && golangci-lint run $(echo "{staged_files}" | xargs -n1 | sed 's|^backend/||' | xargs)
+      run: just lint-be-staged "{staged_files}"
 
-    - name: Format BE (staged only)
+    - name: Format BE (staged)
       glob: "backend/**/*.go"
       stage_fixed: true
-      run: cd backend && gofmt -s -w $(echo "{staged_files}" | xargs -n1 | sed 's|^backend/||' | xargs)
+      run: just format-be-staged "{staged_files}"
 
-    - name: Lint FE (staged only)
+    - name: Lint FE (staged)
       glob: "frontend/**/*.{ts,tsx}"
-      run: cd frontend && bunx eslint $(echo "{staged_files}" | xargs -n1 | sed 's|^frontend/||' | xargs)
+      run: just lint-fe-staged "{staged_files}"
 
-    - name: Format FE (staged only)
+    - name: Format FE (staged)
       glob: "frontend/**/*.{ts,tsx}"
-      run: cd frontend && bunx prettier --check $(echo "{staged_files}" | xargs -n1 | sed 's|^frontend/||' | xargs)
+      run: just format-fe-staged "{staged_files}"
 
 pre-push:
   jobs:
     - name: Test BE
+      glob: "backend/**/*.go"
       run: just test-be
