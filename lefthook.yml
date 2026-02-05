@@ -1,0 +1,48 @@
+# EXAMPLE USAGE:
+#
+#   Refer for explanation to following link:
+#   https://lefthook.dev/configuration/
+#
+# pre-push:
+#   jobs:
+#     - name: packages audit
+#       tags:
+#         - frontend
+#         - security
+#       run: yarn audit
+#
+#     - name: gems audit
+#       tags:
+#         - backend
+#         - security
+#       run: bundle audit
+#
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Run Swaggo
+      glob: "backend/internal/controllers/*.go"
+      run: just api-doc
+
+    - name: Lint BE (staged only)
+      glob: "backend/**/*.go"
+      run: cd backend && golangci-lint run $(echo "{staged_files}" | xargs -n1 | sed 's|^backend/||' | xargs)
+
+    - name: Format BE (staged only)
+      glob: "backend/**/*.go"
+      stage_fixed: true
+      run: cd backend && gofmt -s -w $(echo "{staged_files}" | xargs -n1 | sed 's|^backend/||' | xargs)
+
+    - name: Lint FE (staged only)
+      glob: "frontend/**/*.{ts,tsx}"
+      run: cd frontend && bunx eslint $(echo "{staged_files}" | xargs -n1 | sed 's|^frontend/||' | xargs)
+
+    - name: Format FE (staged only)
+      glob: "frontend/**/*.{ts,tsx}"
+      run: cd frontend && bunx prettier --check $(echo "{staged_files}" | xargs -n1 | sed 's|^frontend/||' | xargs)
+
+pre-push:
+  jobs:
+    - name: Test BE
+      run: just test-be
