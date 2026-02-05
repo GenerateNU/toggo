@@ -146,3 +146,37 @@ setup:
     @echo "Installing frontend dependencies..."
     cd frontend {{ sep }} bun install
     @echo "Setup complete!"
+
+## == Lefthook Support ==
+lint-be-staged files:
+    {{ if os() == "windows" {
+        "cd backend; $files = \"" + files + "\" -split ' '; $files = $files | % { $_ -replace '^backend/', '' }; golangci-lint run $files"
+      } else {
+        "cd backend && golangci-lint run " + files
+      }
+    }}
+
+format-be-staged files:
+    {{ if os() == "windows" {
+        "cd backend; $files = \"" + files + "\" -split ' '; $files = $files | % { $_ -replace '^backend/', '' }; gofmt -s -w $files"
+      } else {
+        "cd backend && gofmt -s -w " + files
+      }
+    }}
+
+lint-fe-staged files:
+    {{ if os() == "windows" {
+        "cd frontend; $files = \"" + files + "\" -split ' '; $files = $files | % { $_ -replace '^frontend/', '' }; bun lint $files"
+      } else {
+        "cd frontend && bun lint " + files
+      }
+    }}
+
+format-fe-staged files:
+    {{ if os() == "windows" {
+        "cd frontend; $files = \"" + files + "\" -split ' '; $files = $files | % { $_ -replace '^frontend/', '' }; bun format $files"
+      } else {
+        "cd frontend && bun format " + files
+      }
+    }}
+

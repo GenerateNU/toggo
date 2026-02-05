@@ -1,0 +1,30 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Generate API docs
+      glob: "backend/internal/controllers/*.go"
+      stage_fixed: false
+      run: just api-doc || true
+
+    - name: Lint BE (staged)
+      glob: "backend/**/*.go"
+      run: just lint-be-staged "{staged_files}"
+
+    - name: Format BE (staged)
+      glob: "backend/**/*.go"
+      stage_fixed: true
+      run: just format-be-staged "{staged_files}"
+
+    - name: Lint FE (staged)
+      glob: "frontend/**/*.{ts,tsx}"
+      run: just lint-fe-staged "{staged_files}"
+
+    - name: Format FE (staged)
+      glob: "frontend/**/*.{ts,tsx}"
+      run: just format-fe-staged "{staged_files}"
+
+pre-push:
+  jobs:
+    - name: Test BE
+      glob: "backend/**/*.go"
+      run: just test-be

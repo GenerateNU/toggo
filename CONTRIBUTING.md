@@ -38,7 +38,7 @@ chore: upgrade dependencies
 | Doppler | Secrets management | [doppler.com/docs/install-cli](https://docs.doppler.com/docs/install-cli) |
 | Figma | Design tool | [figma.com](https://www.figma.com/downloads/) |
 | Just | CLI tool build with Rust | [Just](https://github.com/casey/just) |
-
+| Lefthook | Pre-commit Tooling | [Lefthook](lefthook.dev)
 > [!TIP]
 > **macOS users:** Use [OrbStack](https://orbstack.dev/) instead of Docker Desktop — it's lighter and faster.
 
