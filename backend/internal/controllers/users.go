@@ -41,7 +41,6 @@ func (u *UserController) CreateUser(c *fiber.Ctx) error {
 	if err != nil {
 		return errs.Unauthorized()
 	}
-
 	var req models.CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.InvalidJSON()
