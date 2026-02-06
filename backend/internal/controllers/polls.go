@@ -1,0 +1,319 @@
+package controllers
+
+import (
+	"net/http"
+	"toggo/internal/errs"
+	"toggo/internal/models"
+	"toggo/internal/services"
+	"toggo/internal/validators"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+)
+
+type PollController struct {
+	pollService services.PollServiceInterface
+	validator   *validator.Validate
+}
+
+func NewPollController(pollService services.PollServiceInterface, validator *validator.Validate) *PollController {
+	return &PollController{
+		pollService: pollService,
+		validator:   validator,
+	}
+}
+
+// @Summary      Create a poll
+// @Description  Creates a new poll with initial options
+// @Tags         polls
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Trip ID"
+// @Param        request body models.CreatePollRequest true "Create poll request"
+// @Success      201 {object} models.PollAPIResponse
+// @Failure      400,401,403,422,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls [post]
+// @ID           createPoll
+func (pc *PollController) CreatePoll(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.CreatePollRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(pc.validator, req); err != nil {
+		return err
+	}
+
+	poll, err := pc.pollService.CreatePoll(c.Context(), tripID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusCreated).JSON(poll)
+}
+
+// @Summary      Get poll results
+// @Description  Retrieves a poll with vote counts and the caller's votes
+// @Tags         polls
+// @Produce      json
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Success      200 {object} models.PollAPIResponse
+// @Failure      400,401,403,404,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId} [get]
+// @ID           getPoll
+func (pc *PollController) GetPoll(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	poll, err := pc.pollService.GetPoll(c.Context(), tripID, pollID, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(poll)
+}
+
+// @Summary      Update a poll
+// @Description  Updates poll metadata (question, deadline)
+// @Tags         polls
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        request body models.UpdatePollRequest true "Update poll request"
+// @Success      200 {object} models.PollAPIResponse
+// @Failure      400,401,403,404,422,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId} [patch]
+// @ID           updatePoll
+func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.UpdatePollRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(pc.validator, req); err != nil {
+		return err
+	}
+
+	poll, err := pc.pollService.UpdatePoll(c.Context(), tripID, pollID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(poll)
+}
+
+// @Summary      Delete a poll
+// @Description  Deletes a poll and all associated options and votes
+// @Tags         polls
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Success      204 "No Content"
+// @Failure      400,401,403,404,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId} [delete]
+// @ID           deletePoll
+func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	if err := pc.pollService.DeletePoll(c.Context(), tripID, pollID, userID); err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
+
+// @Summary      Add a poll option
+// @Description  Adds an option to a poll (only if no votes exist yet)
+// @Tags         polls
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        request body models.CreatePollOptionRequest true "Create option request"
+// @Success      201 {object} models.PollOption
+// @Failure      400,401,403,404,409,422,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId}/options [post]
+// @ID           addPollOption
+func (pc *PollController) AddOption(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.CreatePollOptionRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(pc.validator, req); err != nil {
+		return err
+	}
+
+	option, err := pc.pollService.AddOption(c.Context(), tripID, pollID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusCreated).JSON(option)
+}
+
+// @Summary      Delete a poll option
+// @Description  Removes an option from a poll (only if no votes exist yet)
+// @Tags         polls
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        optionId path string true "Option ID"
+// @Success      204 "No Content"
+// @Failure      400,401,403,404,409,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId}/options/{optionId} [delete]
+// @ID           deletePollOption
+func (pc *PollController) DeleteOption(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	optionID, err := validators.ValidateID(c.Params("optionId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	if err := pc.pollService.DeleteOption(c.Context(), tripID, pollID, optionID, userID); err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
+
+// @Summary      Cast a vote
+// @Description  Casts or replaces the user's vote(s) on a poll
+// @Tags         polls
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        request body models.CastVoteRequest true "Vote request"
+// @Success      200 {array} models.PollVote
+// @Failure      400,401,403,404,422,500 {object} errs.APIError
+// @Router       /api/v1/trips/{id}/vote-polls/{pollId}/vote [post]
+// @ID           castVote
+func (pc *PollController) CastVote(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("id"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.CastVoteRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(pc.validator, req); err != nil {
+		return err
+	}
+
+	votes, err := pc.pollService.CastVote(c.Context(), tripID, pollID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(votes)
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
+	userIDStr := c.Locals("userID")
+	if userIDStr == nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	userID, err := validators.ValidateID(userIDStr.(string))
+	if err != nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	return userID, nil
+}
