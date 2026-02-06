@@ -66,3 +66,43 @@ type UpdatePollRequest struct {
 	Question *string    `json:"question"`
 	Deadline *time.Time `json:"deadline"`
 }
+
+type CreatePollRequest struct {
+    Question string              `json:"question" validate:"required"`
+    PollType PollType            `json:"poll_type" validate:"required,oneof=single multi rank"`
+    Deadline *time.Time          `json:"deadline,omitempty"`
+    Options  []CreatePollOptionRequest `json:"options" validate:"required,min=2,dive"`
+}
+
+type CreatePollOptionRequest struct {
+    OptionType OptionType `json:"option_type" validate:"required,oneof=entity custom"`
+    EntityType *string    `json:"entity_type,omitempty"`
+    EntityID   *uuid.UUID `json:"entity_id,omitempty"`
+    Name       string     `json:"name" validate:"required"`
+}
+
+type CastVoteRequest struct {
+    OptionIDs []uuid.UUID `json:"option_ids" validate:"required,min=1"`
+}
+
+type PollAPIResponse struct {
+    ID          uuid.UUID              `json:"id"`
+    TripID      uuid.UUID              `json:"trip_id"`
+    CreatedBy   uuid.UUID              `json:"created_by"`
+    Question    string                 `json:"question"`
+    PollType    PollType               `json:"poll_type"`
+    CreatedAt   time.Time              `json:"created_at"`
+    Deadline    *time.Time             `json:"deadline,omitempty"`
+    Options     []PollOptionAPIResponse `json:"options"`
+    TotalVoters int                    `json:"total_voters"`
+}
+
+type PollOptionAPIResponse struct {
+    ID         uuid.UUID  `json:"id"`
+    OptionType OptionType `json:"option_type"`
+    EntityType *string    `json:"entity_type,omitempty"`
+    EntityID   *uuid.UUID `json:"entity_id,omitempty"`
+    Name       string     `json:"name"`
+    VoteCount  int        `json:"vote_count"`
+    Voted      bool       `json:"voted"`
+}
