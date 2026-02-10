@@ -2,8 +2,13 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"log"
+	"os"
+	"strings"
+	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/realtime"
@@ -20,6 +25,7 @@ type TripServiceInterface interface {
 	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, tripID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error
+	CreateTripInvite(ctx context.Context, tripID uuid.UUID, createdBy uuid.UUID, req models.CreateTripInviteRequest) (*models.TripInviteAPIResponse, error)
 }
 
 var _ TripServiceInterface = (*TripService)(nil)
@@ -250,5 +256,71 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		BudgetMax:     tripData.BudgetMax,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
+	}, nil
+}
+
+const defaultInviteExpiry = 7 * 24 * time.Hour
+
+// generateInviteCode returns a URL-safe hex string (e.g. 12 chars).
+func generateInviteCode() (string, error) {
+	b := make([]byte, 6)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
+func (s *TripService) CreateTripInvite(ctx context.Context, tripID uuid.UUID, createdBy uuid.UUID, req models.CreateTripInviteRequest) (*models.TripInviteAPIResponse, error) {
+	expiresAt := time.Now().UTC().Add(defaultInviteExpiry)
+	if req.ExpiresAt != nil {
+		expiresAt = *req.ExpiresAt
+		if expiresAt.Before(time.Now().UTC()) {
+			return nil, errs.BadRequest(errors.New("expires_at must be in the future"))
+		}
+	}
+
+	code, err := generateInviteCode()
+	if err != nil {
+		return nil, err
+	}
+
+	invite := &models.TripInvite{
+		ID:        uuid.New(),
+		TripID:    tripID,
+		CreatedBy: createdBy,
+		Code:      code,
+		ExpiresAt: expiresAt,
+		IsRevoked: false,
+	}
+
+	created, err := s.TripInvite.Create(ctx, invite)
+	if err != nil {
+		if errors.Is(err, errs.ErrDuplicate) {
+			code, _ = generateInviteCode()
+			invite.Code = code
+			created, err = s.TripInvite.Create(ctx, invite)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var joinURL *string
+	baseURL := os.Getenv("APP_PUBLIC_URL")
+	if baseURL != "" {
+		trimmed := strings.TrimRight(baseURL, "/")
+		u := trimmed + "/invites/" + created.Code
+		joinURL = &u
+	}
+
+	return &models.TripInviteAPIResponse{
+		ID:        created.ID,
+		TripID:    created.TripID,
+		CreatedBy: created.CreatedBy,
+		Code:      created.Code,
+		ExpiresAt: created.ExpiresAt,
+		IsRevoked: created.IsRevoked,
+		CreatedAt: created.CreatedAt,
+		JoinURL:   joinURL,
 	}, nil
 }

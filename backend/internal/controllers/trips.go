@@ -180,6 +180,57 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(trip)
 }
 
+// @Summary      Create a trip invite
+// @Description  Creates a shareable invite for the trip. Caller must be a trip member.
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        request body models.CreateTripInviteRequest true "Optional expires_at; default 7 days"
+// @Success      201 {object} models.TripInviteAPIResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/invites [post]
+// @ID           createTripInvite
+func (ctrl *TripController) CreateTripInvite(c *fiber.Ctx) error {
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	var req models.CreateTripInviteRequest
+	_ = c.BodyParser(&req) // optional body; empty or {} uses default expiry
+
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	invite, err := ctrl.tripService.CreateTripInvite(c.Context(), tripID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusCreated).JSON(invite)
+}
+
 // @Summary      Delete a trip
 // @Description  Deletes a trip by ID
 // @Tags         trips

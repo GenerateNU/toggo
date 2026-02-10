@@ -25,6 +25,46 @@ func NewMembershipController(membershipService services.MembershipServiceInterfa
 	}
 }
 
+// @Summary      Join trip by invite code
+// @Description  Adds the authenticated user to a trip using an invite code
+// @Tags         memberships
+// @Produce      json
+// @Param        code path string true "Invite code"
+// @Success      201 {object} models.Membership
+// @Failure      400 {object} errs.APIError "Invalid or expired invite code"
+// @Failure      401 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trip-invites/{code}/join [post]
+// @ID           joinTripByInvite
+func (ctrl *MembershipController) JoinTripByInvite(c *fiber.Ctx) error {
+	userIDValue := c.Locals("userID")
+	if userIDValue == nil {
+		return errs.Unauthorized()
+	}
+
+	userIDStr, ok := userIDValue.(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+
+	userID, err := validators.ValidateID(userIDStr)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	code := c.Params("code")
+	if code == "" {
+		return errs.BadRequest(errors.New("invite code is required"))
+	}
+
+	membership, err := ctrl.membershipService.JoinTripByInviteCode(c.Context(), userID, code)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusCreated).JSON(membership)
+}
+
 // @Summary      Add member to trip
 // @Description  Adds a user as a member of a trip
 // @Tags         memberships
