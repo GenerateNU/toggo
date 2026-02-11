@@ -221,7 +221,7 @@ func TestCommentProfilePictureURLFromAPI(t *testing.T) {
 				UserID: &userAuthID,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   activityID,
 					Content:    "Test comment no pic",
 				},
@@ -302,7 +302,7 @@ func TestCommentProfilePictureURLFromAPI(t *testing.T) {
 				UserID: &userAuthID,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   activityID,
 					Content:    "Test comment with profile pic",
 				},

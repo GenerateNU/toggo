@@ -98,7 +98,7 @@ func TestCommentCreate(t *testing.T) {
 				UserID: &user1,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   uuid.MustParse(activityID),
 					Content:    "hello",
 				},
@@ -115,7 +115,7 @@ func TestCommentCreate(t *testing.T) {
 				UserID: &nonMember,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   uuid.MustParse(activityID),
 					Content:    "fail",
 				},
@@ -148,7 +148,7 @@ func TestCommentUpdate(t *testing.T) {
 			UserID: &user1,
 			Body: models.CreateCommentRequest{
 				TripID:     uuid.MustParse(tripID),
-				EntityType: models.Activity,
+				EntityType: models.ActivityEntity,
 				EntityID:   uuid.MustParse(activityID),
 				Content:    "original",
 			},
@@ -226,7 +226,7 @@ func TestCommentDelete(t *testing.T) {
 			UserID: &user1,
 			Body: models.CreateCommentRequest{
 				TripID:     uuid.MustParse(tripID),
-				EntityType: models.Activity,
+				EntityType: models.ActivityEntity,
 				EntityID:   uuid.MustParse(activityID),
 				Content:    "delete me",
 			},
@@ -282,7 +282,7 @@ func TestCommentGetPaginated(t *testing.T) {
 				UserID: &user1,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   uuid.MustParse(activityID),
 					Content:    fmt.Sprintf("c%d", i),
 				},
@@ -331,7 +331,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   activityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},
@@ -425,7 +425,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   defaultActivityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},
@@ -477,7 +477,7 @@ func TestCommentPagination(t *testing.T) {
 				UserID: &user1,
 				Body: models.CreateCommentRequest{
 					TripID:     uuid.MustParse(tripID),
-					EntityType: models.Activity,
+					EntityType: models.ActivityEntity,
 					EntityID:   singleActivityID,
 					Content:    "Single comment",
 				},
@@ -512,7 +512,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   boundaryActivityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},
@@ -562,7 +562,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   lastActivityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},
@@ -598,7 +598,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   dupActivityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},
@@ -660,7 +660,7 @@ func TestCommentPagination(t *testing.T) {
 					UserID: &user1,
 					Body: models.CreateCommentRequest{
 						TripID:     uuid.MustParse(tripID),
-						EntityType: models.Activity,
+						EntityType: models.ActivityEntity,
 						EntityID:   orderActivityID,
 						Content:    fmt.Sprintf("Comment %d", i+1),
 					},

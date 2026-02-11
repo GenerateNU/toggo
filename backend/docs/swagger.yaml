@@ -6,6 +6,87 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.Activity:
+    properties:
+      created_at:
+        type: string
+      dates:
+        items:
+          $ref: '#/definitions/models.DateRange'
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      proposed_by:
+        type: string
+      thumbnail_url:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ActivityAPIResponse:
+    properties:
+      category_names:
+        description: Array of category names
+        items:
+          type: string
+        type: array
+      created_at:
+        type: string
+      dates:
+        items:
+          $ref: '#/definitions/models.DateRange'
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      proposed_by:
+        type: string
+      proposer_picture_url:
+        type: string
+      proposer_username:
+        type: string
+      thumbnail_url:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ActivityCategoriesPageResult:
+    properties:
+      categories:
+        items:
+          type: string
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
+  models.ActivityCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.ActivityAPIResponse'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
   models.Comment:
     properties:
       content:
@@ -68,6 +149,33 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  models.CreateActivityRequest:
+    properties:
+      category_names:
+        description: Changed to array
+        items:
+          type: string
+        type: array
+      dates:
+        items:
+          $ref: '#/definitions/models.DateRange'
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      thumbnail_url:
+        type: string
+      trip_id:
+        type: string
+    required:
+    - name
+    - trip_id
     type: object
   models.CreateCommentRequest:
     properties:
@@ -142,14 +250,23 @@ definitions:
     - phone_number
     - username
     type: object
+  models.DateRange:
+    properties:
+      end:
+        description: ISO 8601 date format (YYYY-MM-DD)
+        type: string
+      start:
+        description: ISO 8601 date format (YYYY-MM-DD)
+        type: string
+    type: object
   models.EntityType:
     enum:
     - activity
     - pitch
     type: string
     x-enum-varnames:
-    - Activity
-    - Pitch
+    - ActivityEntity
+    - PitchEntity
   models.GetFileAllSizesResponse:
     properties:
       files:
@@ -372,6 +489,23 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.UpdateActivityRequest:
+    properties:
+      dates:
+        items:
+          $ref: '#/definitions/models.DateRange'
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      thumbnail_url:
         type: string
     type: object
   models.UpdateCommentRequest:
@@ -1120,6 +1254,439 @@ paths:
       summary: Get comments
       tags:
       - comments
+  /api/v1/trips/{tripID}/activities:
+    get:
+      description: Retrieves paginated activities for a trip
+      operationId: getActivitiesByTripID
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityCursorPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get activities by trip
+      tags:
+      - activities
+    post:
+      consumes:
+      - application/json
+      description: Creates a new activity for a trip
+      operationId: createActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Create activity request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Activity'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}:
+    delete:
+      description: Deletes an activity
+      operationId: deleteActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete activity
+      tags:
+      - activities
+    get:
+      description: Retrieves a specific activity
+      operationId: getActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get activity by ID
+      tags:
+      - activities
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing activity
+      operationId: updateActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Update activity request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateActivityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Activity'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/categories:
+    get:
+      description: Retrieves categories for an activity with pagination
+      operationId: getActivityCategories
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityCategoriesPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get activity categories
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName}:
+    delete:
+      description: Removes a category from an activity
+      operationId: removeCategoryFromActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Category Name
+        in: path
+        name: categoryName
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Remove category from activity
+      tags:
+      - activities
+    patch:
+      consumes:
+      - application/json
+      description: Adds a category to an activity
+      operationId: addCategoryToActivity
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Category Name
+        in: path
+        name: categoryName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add category to activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/categories:
+    get:
+      description: Retrieves all categories for a trip
+      operationId: getCategoriesByTripID
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Object with categories array
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get categories by trip
+      tags:
+      - categories
   /api/v1/trips/{tripID}/memberships:
     get:
       description: Retrieves all members of a trip

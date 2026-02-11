@@ -177,7 +177,7 @@ func (cmt *CommentController) GetPaginatedComments(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	entityType, err := utilities.ParseEntityTypeParam(c, "entityType", "entity_type", models.Activity, models.Pitch)
+	entityType, err := utilities.ParseEntityTypeParam(c, "entityType", "entity_type", models.ActivityEntity, models.PitchEntity)
 	if err != nil {
 		return err
 	}
