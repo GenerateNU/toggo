@@ -59,15 +59,9 @@ func (ctrl *ActivityController) CreateActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
-	
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	activity, err := ctrl.activityService.CreateActivity(c.Context(), req, userID)
@@ -98,14 +92,9 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	activity, err := ctrl.activityService.GetActivity(c.Context(), activityID, userID)
@@ -137,14 +126,9 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	var params models.CursorPaginationParams
@@ -197,14 +181,9 @@ func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	activity, err := ctrl.activityService.UpdateActivity(c.Context(), activityID, userID, req)
@@ -234,14 +213,9 @@ func (ctrl *ActivityController) DeleteActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	if err := ctrl.activityService.DeleteActivity(c.Context(), activityID, userID); err != nil {
@@ -273,14 +247,9 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	var params models.CursorPaginationParams
@@ -333,14 +302,9 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	if err := ctrl.activityService.AddCategoryToActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
@@ -382,14 +346,9 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr, ok := c.Locals("userID").(string)
-	if !ok || userIDStr == "" {
-		return errs.Unauthorized()
-	}
-
-	userID, err := validators.ValidateID(userIDStr)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
-		return errs.Unauthorized()
+		return err
 	}
 
 	if err := ctrl.activityService.RemoveCategoryFromActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
