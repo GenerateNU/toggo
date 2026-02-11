@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/uptrace/bun"
 )
 
 type TripPitch struct {
+	bun.BaseModel `bun:"table:trip_pitches"` // need to specify table name so bun doesn't mess up and use wrong default (looks for trip_pitch insetead)
 	ID         uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
 	TripID     uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
 	UserID     uuid.UUID  `bun:"user_id,type:uuid,notnull" json:"user_id"`
