@@ -131,7 +131,7 @@ func TestActivityLifecycle(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 				Body: models.UpdateActivityRequest{
 					Name:        &newName,
@@ -159,7 +159,7 @@ func TestActivityLifecycle(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 				Body: models.UpdateActivityRequest{
 					Dates: &dates,
@@ -410,7 +410,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/food", trip, activityID),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &member,
 			}).
 			AssertStatus(http.StatusOK)
@@ -438,7 +438,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/lodging", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)
@@ -448,7 +448,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/entertainment", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)
@@ -478,7 +478,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/food", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)
@@ -487,7 +487,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/social", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)
@@ -524,7 +524,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/food", trip, activityID),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &nonMember,
 			}).
 			AssertStatus(http.StatusNotFound)
@@ -549,7 +549,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/food", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)
@@ -559,7 +559,7 @@ func TestActivityCategories(t *testing.T) {
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories/food", trip, newActivity),
-				Method: testkit.PATCH,
+				Method: testkit.PUT,
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusOK)

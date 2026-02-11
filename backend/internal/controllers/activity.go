@@ -309,7 +309,7 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        activityID path string true "Activity ID"
 // @Param        categoryName path string true "Category Name"
-// @Success      200 {object} map[string]string
+// @Success      200 {object} models.AddCategoryResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError

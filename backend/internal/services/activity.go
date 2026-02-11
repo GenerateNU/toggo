@@ -19,7 +19,7 @@ type ActivityServiceInterface interface {
 	GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	UpdateActivity(ctx context.Context, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error)
 	DeleteActivity(ctx context.Context, activityID, userID uuid.UUID) error
-	
+
 	// Category management on activities
 	GetActivityCategories(ctx context.Context, activityID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCategoriesPageResult, error)
 	AddCategoryToActivity(ctx context.Context, activityID, userID uuid.UUID, categoryName string) error
@@ -30,37 +30,20 @@ var _ ActivityServiceInterface = (*ActivityService)(nil)
 
 type ActivityService struct {
 	*repository.Repository
-	fileService     FileServiceInterface
-	categoryService CategoryServiceInterface
+	fileService FileServiceInterface
 }
 
-func NewActivityService(repo *repository.Repository, fileService FileServiceInterface, categoryService CategoryServiceInterface) ActivityServiceInterface {
+func NewActivityService(repo *repository.Repository, fileService FileServiceInterface) ActivityServiceInterface {
 	return &ActivityService{
-		Repository:      repo,
-		fileService:     fileService,
-		categoryService: categoryService,
+		Repository:  repo,
+		fileService: fileService,
 	}
 }
 
 func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateActivityRequest, userID uuid.UUID) (*models.ActivityAPIResponse, error) {
-	// Validate trip exists
-	_, err := s.Trip.Find(ctx, req.TripID)
-	if err != nil {
-		return nil, errs.ErrNotFound
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, req.TripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	// Use transaction to create activity and categories atomically
 	var createdActivity *models.Activity
-	err = s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		// Create activity
 		activity := &models.Activity{
 			TripID:       req.TripID,
@@ -83,34 +66,46 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 		}
 		createdActivity = activity
 
-		// If categories provided, create them and link to activity
+		// If categories provided, deduplicate, create them and link to activity
 		if len(req.CategoryNames) > 0 {
-			// Create categories (idempotent - won't fail on duplicates)
-			for _, categoryName := range req.CategoryNames {
-				category := &models.Category{
-					TripID:    req.TripID,
-					Name:      categoryName,
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
-				}
-				_, err = tx.NewInsert().
-					Model(category).
-					On("CONFLICT (trip_id, name) DO NOTHING").  // Idempotent!
-					Exec(ctx)
-				if err != nil {
-					return err
+			// Deduplicate category names
+			seen := make(map[string]bool, len(req.CategoryNames))
+			uniqueNames := make([]string, 0, len(req.CategoryNames))
+			for _, name := range req.CategoryNames {
+				if !seen[name] {
+					seen[name] = true
+					uniqueNames = append(uniqueNames, name)
 				}
 			}
 
+			// Batch create categories (idempotent - won't fail on duplicates)
+			now := time.Now()
+			categories := make([]models.Category, len(uniqueNames))
+			for i, name := range uniqueNames {
+				categories[i] = models.Category{
+					TripID:    req.TripID,
+					Name:      name,
+					CreatedAt: now,
+					UpdatedAt: now,
+				}
+			}
+			_, err = tx.NewInsert().
+				Model(&categories).
+				On("CONFLICT (trip_id, name) DO NOTHING").
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+
 			// Link categories to activity
-			activityCategories := make([]*models.ActivityCategory, 0, len(req.CategoryNames))
-			for _, categoryName := range req.CategoryNames {
-				activityCategories = append(activityCategories, &models.ActivityCategory{
+			activityCategories := make([]models.ActivityCategory, len(uniqueNames))
+			for i, name := range uniqueNames {
+				activityCategories[i] = models.ActivityCategory{
 					ActivityID:   activity.ID,
 					TripID:       req.TripID,
-					CategoryName: categoryName,
-					CreatedAt:    time.Now(),
-				})
+					CategoryName: name,
+					CreatedAt:    now,
+				}
 			}
 			_, err = tx.NewInsert().Model(&activityCategories).Exec(ctx)
 			if err != nil {
@@ -135,15 +130,6 @@ func (s *ActivityService) GetActivity(ctx context.Context, activityID, userID uu
 		return nil, err
 	}
 
-	// Validate user is member of the trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	// Fetch categories for this activity (fetch all within known max)
 	categories, _, err := s.ActivityCategory.GetCategoriesForActivity(ctx, activityID, models.MaxCategoriesPerActivity, nil)
 	if err != nil {
@@ -156,21 +142,6 @@ func (s *ActivityService) GetActivity(ctx context.Context, activityID, userID uu
 }
 
 func (s *ActivityService) GetActivitiesByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
-	// Validate trip exists
-	_, err := s.Trip.Find(ctx, tripID)
-	if err != nil {
-		return nil, errs.ErrNotFound
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
 		return nil, err
@@ -185,21 +156,6 @@ func (s *ActivityService) GetActivitiesByTripID(ctx context.Context, tripID, use
 }
 
 func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
-	// Validate trip exists
-	_, err := s.Trip.Find(ctx, tripID)
-	if err != nil {
-		return nil, errs.ErrNotFound
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
 		return nil, err
@@ -214,47 +170,24 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 }
 
 func (s *ActivityService) UpdateActivity(ctx context.Context, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error) {
-	// Get existing activity
-	activity, err := s.Activity.Find(ctx, activityID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	return s.Activity.Update(ctx, activityID, &req)
 }
 
 func (s *ActivityService) DeleteActivity(ctx context.Context, activityID, userID uuid.UUID) error {
-	// Get activity to check permissions
+	// Get activity to check proposer permissions
 	activity, err := s.Activity.Find(ctx, activityID)
 	if err != nil {
 		return err
 	}
 
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		return errs.Forbidden()
-	}
-
-	// Check if user is admin or the proposer
+	// Admin check is not covered by middleware - only admins or the proposer can delete
 	isAdmin, err := s.Membership.IsAdmin(ctx, activity.TripID, userID)
 	if err != nil {
 		return err
 	}
 
-	if !isAdmin && activity.ProposedBy != nil && *activity.ProposedBy != userID {
+	isProposer := activity.ProposedBy != nil && *activity.ProposedBy == userID
+	if !isAdmin && !isProposer {
 		return errs.Forbidden()
 	}
 
@@ -263,21 +196,6 @@ func (s *ActivityService) DeleteActivity(ctx context.Context, activityID, userID
 
 // GetActivityCategories retrieves categories for an activity with pagination
 func (s *ActivityService) GetActivityCategories(ctx context.Context, activityID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCategoriesPageResult, error) {
-	// Get activity to check permissions
-	activity, err := s.Activity.Find(ctx, activityID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.Forbidden()
-	}
-
 	// Parse cursor (simple string for category name)
 	var cursor *string
 	if cursorToken != "" {
@@ -303,19 +221,10 @@ func (s *ActivityService) GetActivityCategories(ctx context.Context, activityID,
 
 // AddCategoryToActivity adds a category to an activity
 func (s *ActivityService) AddCategoryToActivity(ctx context.Context, activityID, userID uuid.UUID, categoryName string) error {
-	// Get activity to check permissions
+	// Get activity to resolve tripID for category creation
 	activity, err := s.Activity.Find(ctx, activityID)
 	if err != nil {
 		return err
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		return errs.Forbidden()
 	}
 
 	// Create category with ON CONFLICT DO NOTHING (upsert pattern)
@@ -325,7 +234,7 @@ func (s *ActivityService) AddCategoryToActivity(ctx context.Context, activityID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	
+
 	_, err = s.Repository.GetDB().NewInsert().
 		Model(category).
 		On("CONFLICT (trip_id, name) DO NOTHING").
@@ -340,27 +249,12 @@ func (s *ActivityService) AddCategoryToActivity(ctx context.Context, activityID,
 
 // RemoveCategoryFromActivity removes a category from an activity
 func (s *ActivityService) RemoveCategoryFromActivity(ctx context.Context, activityID, userID uuid.UUID, categoryName string) error {
-	// Get activity to check permissions
-	activity, err := s.Activity.Find(ctx, activityID)
-	if err != nil {
-		return err
-	}
-
-	// Validate user is member of trip
-	isMember, err := s.Membership.IsMember(ctx, activity.TripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		return errs.Forbidden()
-	}
-
 	return s.ActivityCategory.RemoveCategoryFromActivity(ctx, activityID, categoryName)
 }
 
 // Helper methods
 
-// Helper to fetch categories and build paginated response
+// buildActivityListResponse fetches categories and file URLs, then builds the paginated response
 func (s *ActivityService) buildActivityListResponse(ctx context.Context, activities []*models.ActivityDatabaseResponse, nextCursor *models.ActivityCursor, limit int) (*models.ActivityCursorPageResult, error) {
 	// Fetch categories for all activities in batch
 	activityIDs := make([]uuid.UUID, len(activities))
@@ -391,15 +285,7 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
 }
 
-func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.ActivityDatabaseResponse) (*models.ActivityAPIResponse, error) {
-	var proposerPictureURL *string
-	if activity.ProposerPictureID != nil {
-		fileResp, err := s.fileService.GetFile(ctx, *activity.ProposerPictureID, models.ImageSizeSmall)
-		if err == nil {
-			proposerPictureURL = &fileResp.URL
-		}
-	}
-
+func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPictureURL *string) *models.ActivityAPIResponse {
 	return &models.ActivityAPIResponse{
 		ID:                 activity.ID,
 		TripID:             activity.TripID,
@@ -414,7 +300,19 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		ProposerUsername:   activity.ProposerUsername,
 		ProposerPictureURL: proposerPictureURL,
 		CategoryNames:      activity.CategoryNames,
-	}, nil
+	}
+}
+
+func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.ActivityDatabaseResponse) (*models.ActivityAPIResponse, error) {
+	var proposerPictureURL *string
+	if activity.ProposerPictureID != nil {
+		fileResp, err := s.fileService.GetFile(ctx, *activity.ProposerPictureID, models.ImageSizeSmall)
+		if err == nil {
+			proposerPictureURL = &fileResp.URL
+		}
+	}
+
+	return mapToAPIResponse(activity, proposerPictureURL), nil
 }
 
 func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
@@ -426,22 +324,7 @@ func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDa
 				proposerPictureURL = &url
 			}
 		}
-
-		apiActivities = append(apiActivities, &models.ActivityAPIResponse{
-			ID:                 activity.ID,
-			TripID:             activity.TripID,
-			ProposedBy:         activity.ProposedBy,
-			Name:               activity.Name,
-			ThumbnailURL:       activity.ThumbnailURL,
-			MediaURL:           activity.MediaURL,
-			Description:        activity.Description,
-			Dates:              activity.Dates,
-			CreatedAt:          activity.CreatedAt,
-			UpdatedAt:          activity.UpdatedAt,
-			ProposerUsername:   activity.ProposerUsername,
-			ProposerPictureURL: proposerPictureURL,
-			CategoryNames:      activity.CategoryNames,
-		})
+		apiActivities = append(apiActivities, mapToAPIResponse(activity, proposerPictureURL))
 	}
 	return apiActivities
 }

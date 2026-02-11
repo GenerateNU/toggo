@@ -6,6 +6,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// DefaultCategoryNames are created automatically when a new trip is created
+var DefaultCategoryNames = []string{"food", "lodging", "attraction", "transportation", "entertainment"}
+
 // Category represents a category of expenses within a trip, identified by the combination of TripID and Name.
 type Category struct {
 	TripID    uuid.UUID `bun:"trip_id,pk,type:uuid" json:"trip_id"`

@@ -10,14 +10,10 @@ import (
 )
 
 func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	// Create category service first (needed by activity service)
-	categoryService := services.NewCategoryService(routeParams.ServiceParams.Repository)
-	
 	// Create activity service
 	activityService := services.NewActivityService(
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.FileService,
-		categoryService,
 	)
 	activityController := controllers.NewActivityController(activityService, routeParams.Validator)
 
@@ -30,7 +26,7 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	// /api/v1/trips/:tripID/activities/:activityID
 	tripActivityIDGroup := tripActivityGroup.Group("/:activityID")
 	tripActivityIDGroup.Get("", activityController.GetActivity)
-	tripActivityIDGroup.Patch("", activityController.UpdateActivity)
+	tripActivityIDGroup.Put("", activityController.UpdateActivity)
 	tripActivityIDGroup.Delete("", activityController.DeleteActivity)
 
 	// /api/v1/trips/:tripID/activities/:activityID/categories
@@ -38,7 +34,7 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	activityCategoryGroup.Get("", activityController.GetActivityCategories)
 
 	// /api/v1/trips/:tripID/activities/:activityID/categories/:categoryName
-	activityCategoryGroup.Patch("/:categoryName", activityController.AddCategoryToActivity)
+	activityCategoryGroup.Put("/:categoryName", activityController.AddCategoryToActivity)
 	activityCategoryGroup.Delete("/:categoryName", activityController.RemoveCategoryFromActivity)
 
 	return tripActivityGroup

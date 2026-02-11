@@ -102,19 +102,19 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 			return err
 		}
 
-		// Create default categories within the same transaction
-		defaultCategories := []string{"food", "lodging", "attraction", "transportation", "entertainment"}
-		for _, categoryName := range defaultCategories {
-			category := &models.Category{
+		// Create default categories with batch insert (single query instead of 5)
+		categories := make([]models.Category, len(models.DefaultCategoryNames))
+		for i, name := range models.DefaultCategoryNames {
+			categories[i] = models.Category{
 				TripID: trip.ID,
-				Name:   categoryName,
+				Name:   name,
 			}
-			_, err = tx.NewInsert().
-				Model(category).
-				Exec(ctx)
-			if err != nil {
-				return err
-			}
+		}
+		_, err = tx.NewInsert().
+			Model(&categories).
+			Exec(ctx)
+		if err != nil {
+			return err
 		}
 
 		return nil
