@@ -72,7 +72,7 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		BudgetMax:    req.BudgetMax,
 	}
 
-	// Use transaction to ensure trip creation and membership creation are atomic
+	// Use transaction to ensure trip creation, membership, and default categories are atomic
 	var createdTrip *models.Trip
 	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		// Create trip within transaction
@@ -98,7 +98,26 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 			Model(membership).
 			Returning("*").
 			Exec(ctx)
-		return err
+		if err != nil {
+			return err
+		}
+
+		// Create default categories with batch insert (single query instead of 5)
+		categories := make([]models.Category, len(models.DefaultCategoryNames))
+		for i, name := range models.DefaultCategoryNames {
+			categories[i] = models.Category{
+				TripID: trip.ID,
+				Name:   name,
+			}
+		}
+		_, err = tx.NewInsert().
+			Model(&categories).
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 
 	if err != nil {

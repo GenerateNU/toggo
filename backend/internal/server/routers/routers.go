@@ -36,6 +36,8 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	NotificationRoutes(apiV1Group, routeParams)
 	FileRoutes(apiV1Group, routeParams)
 	CommentRoutes(apiV1Group, routeParams)
+	ActivityRoutes(apiV1Group, routeParams)
+	CategoryRoutes(apiV1Group, routeParams)
 
 	// 404 handler for routes not matched
 	setUpNotFoundHandler(app)
