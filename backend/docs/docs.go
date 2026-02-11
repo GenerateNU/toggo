@@ -1090,66 +1090,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "delete": {
-                "description": "Deletes an activity",
-                "tags": [
-                    "activities"
-                ],
-                "summary": "Delete activity",
-                "operationId": "deleteActivity",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Trip ID",
-                        "name": "tripID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Activity ID",
-                        "name": "activityID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "description": "Updates an existing activity",
                 "consumes": [
                     "application/json"
@@ -1220,6 +1161,65 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes an activity",
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Delete activity",
+                "operationId": "deleteActivity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Activity ID",
+                        "name": "activityID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1313,74 +1313,8 @@ const docTemplate = `{
             }
         },
         "/api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName}": {
-            "delete": {
-                "description": "Removes a category from an activity",
-                "tags": [
-                    "activities"
-                ],
-                "summary": "Remove category from activity",
-                "operationId": "removeCategoryFromActivity",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Trip ID",
-                        "name": "tripID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Activity ID",
-                        "name": "activityID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category Name",
-                        "name": "categoryName",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errs.APIError"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Adds a category to an activity",
+            "put": {
+                "description": "Adds a category to an activity (idempotent)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1449,6 +1383,84 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes a category from an activity",
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Remove category from activity",
+                "operationId": "removeCategoryFromActivity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Activity ID",
+                        "name": "activityID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category Name",
+                        "name": "categoryName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1480,10 +1492,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Object with categories array",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.CategoryListResponse"
                         }
                     },
                     "400": {
@@ -2310,7 +2321,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category_names": {
-                    "description": "Array of category names",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2388,6 +2398,37 @@ const docTemplate = `{
                 },
                 "next_cursor": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CategoryAPIResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CategoryListResponse": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CategoryAPIResponse"
+                    }
                 }
             }
         },
@@ -2492,19 +2533,19 @@ const docTemplate = `{
         "models.CreateActivityRequest": {
             "type": "object",
             "required": [
-                "name",
-                "trip_id"
+                "name"
             ],
             "properties": {
                 "category_names": {
-                    "description": "Changed to array",
                     "type": "array",
+                    "maxItems": 10,
                     "items": {
                         "type": "string"
                     }
                 },
                 "dates": {
                     "type": "array",
+                    "maxItems": 20,
                     "items": {
                         "$ref": "#/definitions/models.DateRange"
                     }
@@ -2638,11 +2679,15 @@ const docTemplate = `{
             "properties": {
                 "end": {
                     "description": "ISO 8601 date format (YYYY-MM-DD)",
-                    "type": "string"
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-05"
                 },
                 "start": {
                     "description": "ISO 8601 date format (YYYY-MM-DD)",
-                    "type": "string"
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-01-01"
                 }
             }
         },
@@ -2993,7 +3038,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dates": {
+                    "description": "Max 20 date ranges",
                     "type": "array",
+                    "maxItems": 20,
                     "items": {
                         "$ref": "#/definitions/models.DateRange"
                     }

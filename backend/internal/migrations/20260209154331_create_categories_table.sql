@@ -10,8 +10,7 @@ CREATE TABLE categories (
     FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_categories_trip_id ON categories(trip_id);
-CREATE INDEX idx_categories_name ON categories(name);
+-- No additional indexes needed - PK covers all query patterns
 -- +goose StatementEnd
 
 -- +goose Down

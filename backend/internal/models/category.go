@@ -30,3 +30,8 @@ type CategoryAPIResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// CategoryListResponse for listing categories
+type CategoryListResponse struct {
+	Categories []*CategoryAPIResponse `json:"categories"`
+}

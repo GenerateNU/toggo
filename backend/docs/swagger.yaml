@@ -34,7 +34,6 @@ definitions:
   models.ActivityAPIResponse:
     properties:
       category_names:
-        description: Array of category names
         items:
           type: string
         type: array
@@ -86,6 +85,26 @@ definitions:
         type: integer
       next_cursor:
         type: string
+    type: object
+  models.CategoryAPIResponse:
+    properties:
+      created_at:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.CategoryListResponse:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.CategoryAPIResponse'
+        type: array
     type: object
   models.Comment:
     properties:
@@ -153,13 +172,14 @@ definitions:
   models.CreateActivityRequest:
     properties:
       category_names:
-        description: Changed to array
         items:
           type: string
+        maxItems: 10
         type: array
       dates:
         items:
           $ref: '#/definitions/models.DateRange'
+        maxItems: 20
         type: array
       description:
         type: string
@@ -175,7 +195,6 @@ definitions:
         type: string
     required:
     - name
-    - trip_id
     type: object
   models.CreateCommentRequest:
     properties:
@@ -254,9 +273,13 @@ definitions:
     properties:
       end:
         description: ISO 8601 date format (YYYY-MM-DD)
+        example: "2024-01-05"
+        format: date
         type: string
       start:
         description: ISO 8601 date format (YYYY-MM-DD)
+        example: "2024-01-01"
+        format: date
         type: string
     type: object
   models.EntityType:
@@ -494,8 +517,10 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
+        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
+        maxItems: 20
         type: array
       description:
         type: string
@@ -1438,7 +1463,7 @@ paths:
       summary: Get activity by ID
       tags:
       - activities
-    patch:
+    put:
       consumes:
       - application/json
       description: Updates an existing activity
@@ -1586,6 +1611,10 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "500":
           description: Internal Server Error
           schema:
@@ -1593,10 +1622,10 @@ paths:
       summary: Remove category from activity
       tags:
       - activities
-    patch:
+    put:
       consumes:
       - application/json
-      description: Adds a category to an activity
+      description: Adds a category to an activity (idempotent)
       operationId: addCategoryToActivity
       parameters:
       - description: Trip ID
@@ -1639,6 +1668,10 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
         "500":
           description: Internal Server Error
           schema:
@@ -1660,10 +1693,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Object with categories array
+          description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.CategoryListResponse'
         "400":
           description: Bad Request
           schema:

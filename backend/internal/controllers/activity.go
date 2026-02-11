@@ -59,12 +59,13 @@ func (ctrl *ActivityController) CreateActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
+	
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -97,12 +98,12 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -136,12 +137,12 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -179,7 +180,7 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 // @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/activities/{activityID} [patch]
+// @Router       /api/v1/trips/{tripID}/activities/{activityID} [put]
 // @ID           updateActivity
 func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 	activityID, err := validators.ValidateID(c.Params("activityID"))
@@ -196,12 +197,12 @@ func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -233,12 +234,12 @@ func (ctrl *ActivityController) DeleteActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -272,12 +273,12 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
@@ -301,7 +302,7 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 }
 
 // @Summary      Add category to activity
-// @Description  Adds a category to an activity
+// @Description  Adds a category to an activity (idempotent)
 // @Tags         activities
 // @Accept       json
 // @Produce      json
@@ -313,8 +314,9 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
-// @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName} [patch]
+// @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName} [put]
 // @ID           addCategoryToActivity
 func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 	activityID, err := validators.ValidateID(c.Params("activityID"))
@@ -322,22 +324,26 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	categoryName := c.Params("categoryName")
-	if categoryName == "" {
-		return errs.BadRequest(errors.New("category name is required"))
+	// Use request model for validation
+	req := models.AddCategoryToActivityRequest{
+		CategoryName: c.Params("categoryName"),
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
 
-	if err := ctrl.activityService.AddCategoryToActivity(c.Context(), activityID, userID, categoryName); err != nil {
+	if err := ctrl.activityService.AddCategoryToActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
 		return err
 	}
 
@@ -357,6 +363,7 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName} [delete]
 // @ID           removeCategoryFromActivity
@@ -366,22 +373,26 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	categoryName := c.Params("categoryName")
-	if categoryName == "" {
-		return errs.BadRequest(errors.New("category name is required"))
+	// Use request model for validation
+	req := models.AddCategoryToActivityRequest{
+		CategoryName: c.Params("categoryName"),
 	}
 
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
 		return errs.Unauthorized()
 	}
 
-	userID, err := validators.ValidateID(userIDStr.(string))
+	userID, err := validators.ValidateID(userIDStr)
 	if err != nil {
 		return errs.Unauthorized()
 	}
 
-	if err := ctrl.activityService.RemoveCategoryFromActivity(c.Context(), activityID, userID, categoryName); err != nil {
+	if err := ctrl.activityService.RemoveCategoryFromActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
 		return err
 	}
 

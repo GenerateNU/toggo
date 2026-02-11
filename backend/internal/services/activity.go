@@ -64,7 +64,7 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 		// Create activity
 		activity := &models.Activity{
 			TripID:       req.TripID,
-			ProposedBy:   userID,
+			ProposedBy:   &userID,
 			Name:         req.Name,
 			ThumbnailURL: req.ThumbnailURL,
 			MediaURL:     req.MediaURL,
@@ -85,24 +85,20 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 
 		// If categories provided, create them and link to activity
 		if len(req.CategoryNames) > 0 {
-			// Ensure all categories exist
+			// Create categories (idempotent - won't fail on duplicates)
 			for _, categoryName := range req.CategoryNames {
-				exists, err := s.Category.Exists(ctx, req.TripID, categoryName)
+				category := &models.Category{
+					TripID:    req.TripID,
+					Name:      categoryName,
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+				}
+				_, err = tx.NewInsert().
+					Model(category).
+					On("CONFLICT (trip_id, name) DO NOTHING").  // Idempotent!
+					Exec(ctx)
 				if err != nil {
 					return err
-				}
-				if !exists {
-					// Create category
-					category := &models.Category{
-						TripID:    req.TripID,
-						Name:      categoryName,
-						CreatedAt: time.Now(),
-						UpdatedAt: time.Now(),
-					}
-					_, err = tx.NewInsert().Model(category).Exec(ctx)
-					if err != nil {
-						return err
-					}
 				}
 			}
 
@@ -148,11 +144,12 @@ func (s *ActivityService) GetActivity(ctx context.Context, activityID, userID uu
 		return nil, errs.Forbidden()
 	}
 
-	// Fetch categories for this activity (no pagination - get all)
-	categories, _, err := s.ActivityCategory.GetCategoriesForActivity(ctx, activityID, 100, nil)
+	// Fetch categories for this activity (fetch all within known max)
+	categories, _, err := s.ActivityCategory.GetCategoriesForActivity(ctx, activityID, models.MaxCategoriesPerActivity, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	activity.CategoryNames = categories
 
 	return s.toAPIResponse(ctx, activity)
@@ -184,32 +181,7 @@ func (s *ActivityService) GetActivitiesByTripID(ctx context.Context, tripID, use
 		return nil, err
 	}
 
-	// Fetch categories for all activities in batch
-	activityIDs := make([]uuid.UUID, len(activities))
-	for i, activity := range activities {
-		activityIDs[i] = activity.ID
-	}
-	categoriesMap, err := s.ActivityCategory.GetCategoriesForActivities(ctx, activityIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	// Populate categories
-	for _, activity := range activities {
-		if categories, ok := categoriesMap[activity.ID]; ok {
-			activity.CategoryNames = categories
-		} else {
-			activity.CategoryNames = []string{}
-		}
-	}
-
-	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, activities, func(item *models.ActivityDatabaseResponse) *string {
-		return item.ProposerPictureKey
-	}, models.ImageSizeSmall)
-
-	apiActivities := s.convertToAPIActivities(activities, fileURLMap)
-
-	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
+	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
 }
 
 func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
@@ -238,31 +210,7 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 		return nil, err
 	}
 
-	// Fetch categories for all activities
-	activityIDs := make([]uuid.UUID, len(activities))
-	for i, activity := range activities {
-		activityIDs[i] = activity.ID
-	}
-	categoriesMap, err := s.ActivityCategory.GetCategoriesForActivities(ctx, activityIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, activity := range activities {
-		if categories, ok := categoriesMap[activity.ID]; ok {
-			activity.CategoryNames = categories
-		} else {
-			activity.CategoryNames = []string{}
-		}
-	}
-
-	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, activities, func(item *models.ActivityDatabaseResponse) *string {
-		return item.ProposerPictureKey
-	}, models.ImageSizeSmall)
-
-	apiActivities := s.convertToAPIActivities(activities, fileURLMap)
-
-	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
+	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
 }
 
 func (s *ActivityService) UpdateActivity(ctx context.Context, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error) {
@@ -306,7 +254,7 @@ func (s *ActivityService) DeleteActivity(ctx context.Context, activityID, userID
 		return err
 	}
 
-	if !isAdmin && activity.ProposedBy != userID {
+	if !isAdmin && activity.ProposedBy != nil && *activity.ProposedBy != userID {
 		return errs.Forbidden()
 	}
 
@@ -370,25 +318,23 @@ func (s *ActivityService) AddCategoryToActivity(ctx context.Context, activityID,
 		return errs.Forbidden()
 	}
 
-	// Ensure category exists, create if not
-	exists, err := s.Category.Exists(ctx, activity.TripID, categoryName)
+	// Create category with ON CONFLICT DO NOTHING (upsert pattern)
+	category := &models.Category{
+		TripID:    activity.TripID,
+		Name:      categoryName,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	
+	_, err = s.Repository.GetDB().NewInsert().
+		Model(category).
+		On("CONFLICT (trip_id, name) DO NOTHING").
+		Exec(ctx)
 	if err != nil {
 		return err
 	}
-	if !exists {
-		category := &models.Category{
-			TripID:    activity.TripID,
-			Name:      categoryName,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		_, err = s.Category.Create(ctx, category)
-		if err != nil {
-			return err
-		}
-	}
 
-	// Add category to activity
+	// Add category to activity (already idempotent in repository)
 	return s.ActivityCategory.AddCategoriesToActivity(ctx, activityID, activity.TripID, []string{categoryName})
 }
 
@@ -413,6 +359,37 @@ func (s *ActivityService) RemoveCategoryFromActivity(ctx context.Context, activi
 }
 
 // Helper methods
+
+// Helper to fetch categories and build paginated response
+func (s *ActivityService) buildActivityListResponse(ctx context.Context, activities []*models.ActivityDatabaseResponse, nextCursor *models.ActivityCursor, limit int) (*models.ActivityCursorPageResult, error) {
+	// Fetch categories for all activities in batch
+	activityIDs := make([]uuid.UUID, len(activities))
+	for i, activity := range activities {
+		activityIDs[i] = activity.ID
+	}
+	categoriesMap, err := s.ActivityCategory.GetCategoriesForActivities(ctx, activityIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Populate categories
+	for _, activity := range activities {
+		if categories, ok := categoriesMap[activity.ID]; ok {
+			activity.CategoryNames = categories
+		} else {
+			activity.CategoryNames = []string{}
+		}
+	}
+
+	// Fetch file URLs
+	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, activities, func(item *models.ActivityDatabaseResponse) *string {
+		return item.ProposerPictureKey
+	}, models.ImageSizeSmall)
+
+	apiActivities := s.convertToAPIActivities(activities, fileURLMap)
+
+	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
+}
 
 func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.ActivityDatabaseResponse) (*models.ActivityAPIResponse, error) {
 	var proposerPictureURL *string

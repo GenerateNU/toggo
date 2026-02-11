@@ -119,7 +119,7 @@ type CategoryRepository interface {
 type ActivityCategoryRepository interface {
 	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
 	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
-	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)  // Updated signature
+	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
 	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"toggo/internal/errs"
+	"toggo/internal/models"
 	"toggo/internal/services"
 	"toggo/internal/validators"
 
@@ -27,7 +28,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface, va
 // @Tags         categories
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {object} map[string]interface{} "Object with categories array"
+// @Success      200 {object} models.CategoryListResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
@@ -56,8 +57,8 @@ func (ctrl *CategoryController) GetCategoriesByTripID(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Wrap in object for consistency
-	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"categories": categories,
+	// Return typed response
+	return c.Status(http.StatusOK).JSON(models.CategoryListResponse{
+		Categories: categories,
 	})
 }
