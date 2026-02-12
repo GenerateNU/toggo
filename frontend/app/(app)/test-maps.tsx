@@ -71,7 +71,7 @@ export default function TestMapsScreen() {
     }
   };
 
-  const useTypeaheadResult = (placeId: string) => {
+  const selectTypeaheadResult = (placeId: string) => {
     setDetailsPlaceId(placeId);
     setDetailsInput("");
   };
@@ -200,7 +200,7 @@ export default function TestMapsScreen() {
                         borderRadius: 6,
                         marginBottom: 6,
                       }}
-                      onPress={() => useTypeaheadResult(pred.place_id)}
+                      onPress={() => selectTypeaheadResult(pred.place_id)}
                     >
                       <Text style={{ fontSize: 12, color: "#007AFF" }}>
                         Use "{pred.main_text}" in details below
