@@ -1,4 +1,3 @@
-
 package repository
 
 import (
@@ -15,14 +14,14 @@ import (
 type PollRepository interface {
 	CreatePoll(ctx context.Context, poll *models.Poll, options []models.PollOption) (*models.Poll, error)
 	FindPollByID(ctx context.Context, pollID uuid.UUID) (*models.Poll, error)
-	FindPollsByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Poll, error)
+	FindPollsByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PollCursor) ([]*models.Poll, *models.PollCursor, error)
 	UpdatePoll(ctx context.Context, pollID uuid.UUID, req *models.UpdatePollRequest) (*models.Poll, error)
 	DeletePoll(ctx context.Context, pollID uuid.UUID) error
 	AddOption(ctx context.Context, option *models.PollOption) (*models.PollOption, error)
 	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) error
 	CastVote(ctx context.Context, pollID, userID uuid.UUID, votes []models.PollVote) ([]models.PollVote, error)
-	GetVotesByPollID(ctx context.Context, pollID uuid.UUID) ([]models.PollVote, error)
-	GetUserVotes(ctx context.Context, pollID, userID uuid.UUID) ([]models.PollVote, error)
+	GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error)
+	GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error)
 }
 
 var _ PollRepository = (*pollRepository)(nil)
@@ -81,19 +80,37 @@ func (r *pollRepository) FindPollByID(ctx context.Context, pollID uuid.UUID) (*m
 	return poll, nil
 }
 
-// FindPollsByTripID retrieves all polls for a trip.
-func (r *pollRepository) FindPollsByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Poll, error) {
+// FindPollsByTripIDWithCursor retrieves polls for a trip using cursor-based pagination.
+func (r *pollRepository) FindPollsByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PollCursor) ([]*models.Poll, *models.PollCursor, error) {
+	fetchLimit := limit
+	if fetchLimit < 1 {
+		fetchLimit = 1
+	}
+
 	var polls []*models.Poll
-	err := r.db.NewSelect().
+	query := r.db.NewSelect().
 		Model(&polls).
 		Relation("Options").
 		Where("p.trip_id = ?", tripID).
-		Order("p.created_at DESC").
-		Scan(ctx)
-	if err != nil {
-		return nil, err
+		OrderExpr("p.created_at DESC, p.id DESC").
+		Limit(fetchLimit + 1)
+
+	if cursor != nil {
+		query = query.Where("(p.created_at < ?) OR (p.created_at = ? AND p.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
-	return polls, nil
+
+	if err := query.Scan(ctx); err != nil {
+		return nil, nil, err
+	}
+
+	var nextCursor *models.PollCursor
+	if len(polls) > fetchLimit {
+		lastVisible := polls[fetchLimit-1]
+		nextCursor = &models.PollCursor{CreatedAt: lastVisible.CreatedAt, ID: lastVisible.ID}
+		polls = polls[:fetchLimit]
+	}
+
+	return polls, nextCursor, nil
 }
 
 // UpdatePoll updates mutable poll metadata (question, deadline).
@@ -219,30 +236,106 @@ func (r *pollRepository) CastVote(ctx context.Context, pollID, userID uuid.UUID,
 	return votes, nil
 }
 
-// GetVotesByPollID returns all votes for a poll (for building results).
-func (r *pollRepository) GetVotesByPollID(ctx context.Context, pollID uuid.UUID) ([]models.PollVote, error) {
-	var votes []models.PollVote
+// GetPollVotes returns aggregated vote counts per option and which options the
+// given user voted for.
+func (r *pollRepository) GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error) {
+	summary := &models.PollVoteSummary{
+		OptionVoteCounts: make(map[uuid.UUID]int),
+		UserVotedOptions: make(map[uuid.UUID]bool),
+	}
+
+	// 1. Per-option vote counts
+	var rows []struct {
+		OptionID uuid.UUID `bun:"option_id"`
+		Count    int       `bun:"count"`
+	}
 	err := r.db.NewSelect().
-		Model(&votes).
-		Where("poll_id = ?", pollID).
-		Scan(ctx)
+		TableExpr("poll_votes AS pv").
+		ColumnExpr("pv.option_id").
+		ColumnExpr("COUNT(*) AS count").
+		Where("pv.poll_id = ?", pollID).
+		GroupExpr("pv.option_id").
+		Scan(ctx, &rows)
 	if err != nil {
 		return nil, err
 	}
-	return votes, nil
+
+	for _, row := range rows {
+		summary.OptionVoteCounts[row.OptionID] = row.Count
+	}
+
+	// 2. Which options the current user voted for
+	var userOptionIDs []uuid.UUID
+	err = r.db.NewSelect().
+		TableExpr("poll_votes AS pv").
+		Column("pv.option_id").
+		Where("pv.poll_id = ? AND pv.user_id = ?", pollID, userID).
+		Scan(ctx, &userOptionIDs)
+	if err != nil {
+		return nil, err
+	}
+	for _, oid := range userOptionIDs {
+		summary.UserVotedOptions[oid] = true
+	}
+
+	return summary, nil
 }
 
-// GetUserVotes returns a specific user's votes on a poll.
-func (r *pollRepository) GetUserVotes(ctx context.Context, pollID, userID uuid.UUID) ([]models.PollVote, error) {
-	var votes []models.PollVote
+// GetPollsVotes returns aggregated vote data for multiple polls in batch
+func (r *pollRepository) GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error) {
+	result := make(map[uuid.UUID]*models.PollVoteSummary, len(pollIDs))
+	for _, id := range pollIDs {
+		result[id] = &models.PollVoteSummary{
+			OptionVoteCounts: make(map[uuid.UUID]int),
+			UserVotedOptions: make(map[uuid.UUID]bool),
+		}
+	}
+
+	if len(pollIDs) == 0 {
+		return result, nil
+	}
+
+	// 1. Per-option vote counts across all polls
+	var rows []struct {
+		PollID   uuid.UUID `bun:"poll_id"`
+		OptionID uuid.UUID `bun:"option_id"`
+		Count    int       `bun:"count"`
+	}
 	err := r.db.NewSelect().
-		Model(&votes).
-		Where("poll_id = ? AND user_id = ?", pollID, userID).
-		Scan(ctx)
+		TableExpr("poll_votes AS pv").
+		ColumnExpr("pv.poll_id, pv.option_id, COUNT(*) AS count").
+		Where("pv.poll_id IN (?)", bun.In(pollIDs)).
+		GroupExpr("pv.poll_id, pv.option_id").
+		Scan(ctx, &rows)
 	if err != nil {
 		return nil, err
 	}
-	return votes, nil
+	for _, row := range rows {
+		if s, ok := result[row.PollID]; ok {
+			s.OptionVoteCounts[row.OptionID] = row.Count
+		}
+	}
+
+	// 2. Which options the current user voted for
+	var userVoteRows []struct {
+		PollID   uuid.UUID `bun:"poll_id"`
+		OptionID uuid.UUID `bun:"option_id"`
+	}
+	err = r.db.NewSelect().
+		TableExpr("poll_votes AS pv").
+		Column("pv.poll_id", "pv.option_id").
+		Where("pv.poll_id IN (?) AND pv.user_id = ?", bun.In(pollIDs), userID).
+		Scan(ctx, &userVoteRows)
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range userVoteRows {
+		if s, ok := result[row.PollID]; ok {
+			s.UserVotedOptions[row.OptionID] = true
+		}
+	}
+
+	return result, nil
 }
 
 // ---------------------------------------------------------------------------

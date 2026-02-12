@@ -1,8 +1,8 @@
-
 package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/services"
 	"toggo/internal/types"
 
@@ -10,12 +10,14 @@ import (
 )
 
 func PollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	pollService := services.NewPollService(routeParams.ServiceParams.Repository)
+	pollService := services.NewPollService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
 	pollController := controllers.NewPollController(pollService, routeParams.Validator)
 
 	// /api/v1/trips/:tripID/vote-polls
-	pollGroup := apiGroup.Group("/trips/:id/vote-polls")
+	pollGroup := apiGroup.Group("/trips/:tripID/vote-polls")
+	pollGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	pollGroup.Post("", pollController.CreatePoll)
+	pollGroup.Get("", pollController.GetPollsByTripID)
 
 	// /api/v1/trips/:tripID/vote-polls/:pollId
 	pollIDGroup := pollGroup.Group("/:pollId")

@@ -86,15 +86,14 @@ type CastVoteRequest struct {
 }
 
 type PollAPIResponse struct {
-    ID          uuid.UUID              `json:"id"`
-    TripID      uuid.UUID              `json:"trip_id"`
-    CreatedBy   uuid.UUID              `json:"created_by"`
-    Question    string                 `json:"question"`
-    PollType    PollType               `json:"poll_type"`
-    CreatedAt   time.Time              `json:"created_at"`
-    Deadline    *time.Time             `json:"deadline,omitempty"`
-    Options     []PollOptionAPIResponse `json:"options"`
-    TotalVoters int                    `json:"total_voters"`
+    ID        uuid.UUID              `json:"id"`
+    TripID    uuid.UUID              `json:"trip_id"`
+    CreatedBy uuid.UUID              `json:"created_by"`
+    Question  string                 `json:"question"`
+    PollType  PollType               `json:"poll_type"`
+    CreatedAt time.Time              `json:"created_at"`
+    Deadline  *time.Time             `json:"deadline,omitempty"`
+    Options   []PollOptionAPIResponse `json:"options"`
 }
 
 type PollOptionAPIResponse struct {
@@ -105,4 +104,26 @@ type PollOptionAPIResponse struct {
     Name       string     `json:"name"`
     VoteCount  int        `json:"vote_count"`
     Voted      bool       `json:"voted"`
+}
+
+// PollCursor is the sort key for cursor-based pagination (created_at DESC, id DESC).
+type PollCursor = TimeUUIDCursor
+
+// PollCursorPageResult holds a cursor-paginated list of polls and the next cursor.
+type PollCursorPageResult struct {
+	Items      []*PollAPIResponse `json:"items"`
+	NextCursor *string            `json:"next_cursor,omitempty"`
+	Limit      int                `json:"limit"`
+}
+
+// PollVoteSummary holds pre-aggregated vote data for a single poll so the
+// service layer never needs to iterate over raw vote rows.
+type PollVoteSummary struct {
+	OptionVoteCounts map[uuid.UUID]int  // option_id -> vote count
+	UserVotedOptions map[uuid.UUID]bool // option_id -> true if the querying user voted for it
+}
+
+// IsDeadlinePassed returns true if the poll has a deadline and it has already passed.
+func (p *Poll) IsDeadlinePassed() bool {
+	return p.Deadline != nil && time.Now().UTC().After(*p.Deadline)
 }
