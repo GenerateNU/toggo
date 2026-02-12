@@ -10,7 +10,7 @@ import (
 )
 
 type GoogleMapsConfig struct {
-	APIKey string        `validate:"required"`
+	APIKey string `validate:"required"`
 	Client *maps.Client
 }
 

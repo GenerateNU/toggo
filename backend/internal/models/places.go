@@ -67,33 +67,33 @@ type PlaceDetailsRequest struct {
 type PlaceDetailsResponse struct {
 	PlaceID string `json:"place_id"`
 	Name    string `json:"name"`
-	
+
 	// Address information
-	FormattedAddress string            `json:"formatted_address"`
+	FormattedAddress  string             `json:"formatted_address"`
 	AddressComponents []AddressComponent `json:"address_components,omitempty"`
-	
+
 	// Location coordinates
 	Geometry PlaceGeometry `json:"geometry"`
-	
+
 	// Place types
 	Types []string `json:"types"`
-	
+
 	// Contact information
 	FormattedPhoneNumber     string `json:"formatted_phone_number,omitempty"`
 	InternationalPhoneNumber string `json:"international_phone_number,omitempty"`
 	Website                  string `json:"website,omitempty"`
-	
+
 	// Photos
 	Photos []PlacePhoto `json:"photos,omitempty"`
-	
+
 	// Ratings and reviews
-	Rating       float32 `json:"rating,omitempty"`
-	UserRatingsTotal int    `json:"user_ratings_total,omitempty"`
-	
+	Rating           float32 `json:"rating,omitempty"`
+	UserRatingsTotal int     `json:"user_ratings_total,omitempty"`
+
 	// Business information
 	OpeningHours *OpeningHours `json:"opening_hours,omitempty"`
 	PriceLevel   int           `json:"price_level,omitempty"`
-	
+
 	// Additional information
 	UTCOffset int    `json:"utc_offset,omitempty"`
 	Vicinity  string `json:"vicinity,omitempty"`
@@ -109,8 +109,8 @@ type AddressComponent struct {
 
 // PlaceGeometry contains the location and viewport information
 type PlaceGeometry struct {
-	Location LatLng       `json:"location"`
-	Viewport *Bounds      `json:"viewport,omitempty"`
+	Location LatLng  `json:"location"`
+	Viewport *Bounds `json:"viewport,omitempty"`
 }
 
 // LatLng represents a latitude/longitude pair

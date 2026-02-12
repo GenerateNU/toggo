@@ -1,13 +1,13 @@
 import { getPlaceDetails, searchPlacesTypeahead } from "@/api/places";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function TestMapsScreen() {
