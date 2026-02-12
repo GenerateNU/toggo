@@ -92,6 +92,7 @@ require (
 	github.com/valyala/fasthttp v1.69.0 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+	go.opencensus.io v0.22.3 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.39.0 // indirect
 	go.temporal.io/api v1.61.0 // indirect
@@ -109,5 +110,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
+	googlemaps.github.io/maps v1.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
