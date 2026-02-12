@@ -25,7 +25,7 @@ require (
 	github.com/uptrace/bun v1.2.16
 	github.com/uptrace/bun/dialect/pgdialect v1.2.16
 	go.temporal.io/sdk v1.39.0
-	golang.org/x/sync v0.19.0
+	googlemaps.github.io/maps v1.7.0
 )
 
 require (
@@ -102,6 +102,7 @@ require (
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
 	golang.org/x/mod v0.32.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
@@ -110,6 +111,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	googlemaps.github.io/maps v1.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

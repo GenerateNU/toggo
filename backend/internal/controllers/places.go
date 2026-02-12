@@ -7,7 +7,6 @@ import (
 	"toggo/internal/models"
 	"toggo/internal/services"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -23,7 +22,7 @@ import (
 // @Router /api/v1/search/places/details [post]
 // @Security BearerAuth
 // @ID getPlaceDetails
-func GetPlaceDetailsHandler(placesService services.PlacesServiceInterface, validate *validator.Validate) fiber.Handler {
+func GetPlaceDetailsHandler(placesService services.PlacesServiceInterface) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req models.PlaceDetailsRequest
 
@@ -65,9 +64,14 @@ func TypeaheadPlacesHandler(placesService services.PlacesServiceInterface) fiber
 			return errs.BadRequest(fiber.NewError(fiber.StatusBadRequest, "query parameter 'q' is required"))
 		}
 
+		limit := c.QueryInt("limit", 5)
+		if limit < 1 || limit > 20 {
+			return errs.BadRequest(fiber.NewError(fiber.StatusBadRequest, "query parameter limit should be in 1 <= limit <= 20"))
+		}
+
 		req := models.PlacesSearchRequest{
 			Input:    query,
-			Limit:    c.QueryInt("limit", 5),
+			Limit:    limit,
 			Language: c.Query("language", ""),
 		}
 
@@ -96,10 +100,9 @@ func GoogleMapsHealthHandler(googleMapsConfig *config.GoogleMapsConfig) fiber.Ha
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"status":    "error",
 				"connected": false,
-				"details":   err.Error(),
+				"details":   "Google Maps API connection failed",
 			})
 		}
-
 		return c.JSON(fiber.Map{
 			"status":    "ok",
 			"connected": true,

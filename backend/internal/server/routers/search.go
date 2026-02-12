@@ -21,7 +21,7 @@ func SearchRoutes(router fiber.Router, params types.RouteParams) {
 
 	// GET /api/v1/search/places/
 	placesGroup.Get("/typeahead", controllers.TypeaheadPlacesHandler(placesService))
-	placesGroup.Post("/details", controllers.GetPlaceDetailsHandler(placesService, params.Validator))
+	placesGroup.Post("/details", controllers.GetPlaceDetailsHandler(placesService))
 	placesGroup.Get("/health", controllers.GoogleMapsHealthHandler(&params.ServiceParams.Config.GoogleMaps))
 
 }

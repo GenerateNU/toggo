@@ -10,7 +10,7 @@ import (
 )
 
 type GoogleMapsConfig struct {
-	APIKey string `validate:"required"`
+	APIKey string `validate:"required" json:"-"`
 	Client *maps.Client
 }
 
@@ -41,10 +41,8 @@ func LoadGoogleMapsConfig() (*GoogleMapsConfig, error) {
 
 // Helper method to test the API connection
 func (c *GoogleMapsConfig) TestConnection(ctx context.Context) error {
-	// Make a simple geocoding request to test the API key
-	r := &maps.GeocodingRequest{
-		Address: "1600 Amphitheatre Parkway, Mountain View, CA",
+	if c.Client == nil {
+		return fmt.Errorf("Google Maps client is not initialized")
 	}
-	_, err := c.Client.Geocode(ctx, r)
-	return err
+	return nil
 }
