@@ -28,6 +28,7 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	tripIDGroup.Get("", tripController.GetTrip)
 	tripIDGroup.Patch("", tripController.UpdateTrip)
 	tripIDGroup.Delete("", tripController.DeleteTrip)
+	tripIDGroup.Post("/invites", tripController.CreateTripInvite)
 
 	return tripGroup
 }
