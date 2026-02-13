@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -103,6 +104,20 @@ func deleteOptionRoute(tripID, pollID, optionID string) string {
 
 func voteRoute(tripID, pollID string) string {
 	return fmt.Sprintf("/api/v1/trips/%s/vote-polls/%s/vote", tripID, pollID)
+}
+
+// setPollDeadlineInDB directly sets the deadline column on a poll, bypassing
+// the service-layer "deadline must be in the future" validation.
+// Useful for tests that need a poll whose deadline has already passed.
+func setPollDeadlineInDB(t *testing.T, pollID string, deadline time.Time) {
+	t.Helper()
+	db := fakes.GetSharedDB()
+	_, err := db.NewUpdate().
+		TableExpr("polls").
+		Set("deadline = ?", deadline).
+		Where("id = ?", uuid.MustParse(pollID)).
+		Exec(context.Background())
+	require.NoError(t, err)
 }
 
 func createPoll(t *testing.T, app *fiber.App, userID, tripID string, req models.CreatePollRequest) map[string]any {
@@ -237,6 +252,23 @@ func TestPollCreate(t *testing.T) {
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
 	})
+
+	t.Run("rejects poll with deadline in the past", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		past := time.Now().Add(-1 * time.Hour).UTC()
+		req := defaultPollRequest()
+		req.Deadline = &past
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  pollRoute(tripID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   req,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
 }
 
 /* =========================
@@ -364,6 +396,43 @@ func TestPollUpdate(t *testing.T) {
 				Body:   models.UpdatePollRequest{Question: &q},
 			}).
 			AssertStatus(http.StatusForbidden)
+	})
+
+	t.Run("cannot update after deadline passed", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		// Force a past deadline directly in the DB
+		past := time.Now().Add(-1 * time.Hour).UTC()
+		setPollDeadlineInDB(t, pollID, past)
+		q := "too late"
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Question: &q},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("rejects update with deadline in the past", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		past := time.Now().Add(-1 * time.Hour).UTC()
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Deadline: &past},
+			}).
+			AssertStatus(http.StatusBadRequest)
 	})
 }
 
@@ -509,7 +578,7 @@ func TestPollOptions(t *testing.T) {
 			AssertStatus(http.StatusNoContent)
 	})
 
-	t.Run("cannot delete option after votes exist", func(t *testing.T) {
+	t.Run("can delete option even after votes exist", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
@@ -526,7 +595,7 @@ func TestPollOptions(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK)
 
-		// Try to delete — should fail
+		// Deleting an option should still succeed
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -534,7 +603,7 @@ func TestPollOptions(t *testing.T) {
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusConflict)
+			AssertStatus(http.StatusNoContent)
 	})
 
 	t.Run("non-member cannot add option", func(t *testing.T) {
@@ -558,11 +627,11 @@ func TestPollOptions(t *testing.T) {
 
 	t.Run("cannot add option after deadline passed", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
-		past := time.Now().Add(-1 * time.Hour).UTC()
-		req := defaultPollRequest()
-		req.Deadline = &past
-		poll := createPoll(t, app, owner, tripID, req)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
+		// Force a past deadline directly in the DB
+		past := time.Now().Add(-1 * time.Hour).UTC()
+		setPollDeadlineInDB(t, pollID, past)
 
 		testkit.New(t).
 			Request(testkit.Request{
@@ -832,12 +901,12 @@ func TestPollVoting(t *testing.T) {
 
 	t.Run("cannot vote after deadline", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
-		past := time.Now().Add(-1 * time.Hour).UTC()
-		req := defaultPollRequest()
-		req.Deadline = &past
-		poll := createPoll(t, app, owner, tripID, req)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
 		optIDs := getOptionIDs(poll)
+		// Force a past deadline directly in the DB
+		past := time.Now().Add(-1 * time.Hour).UTC()
+		setPollDeadlineInDB(t, pollID, past)
 
 		testkit.New(t).
 			Request(testkit.Request{

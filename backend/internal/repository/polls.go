@@ -176,29 +176,19 @@ func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOptio
 	return option, nil
 }
 
-// DeleteOption removes an option only if no votes exist on the poll yet.
+// DeleteOption removes an option. Deleting is always allowed, even after votes exist.
 func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) error {
-	return r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		hasVotes, err := r.pollHasVotes(ctx, tx, pollID)
-		if err != nil {
-			return err
-		}
-		if hasVotes {
-			return errs.ErrConflict
-		}
-
-		result, err := tx.NewDelete().
-			Model((*models.PollOption)(nil)).
-			Where("id = ? AND poll_id = ?", optionID, pollID).
-			Exec(ctx)
-		if err != nil {
-			return err
-		}
-		if rows, _ := result.RowsAffected(); rows == 0 {
-			return errs.ErrNotFound
-		}
-		return nil
-	})
+	result, err := r.db.NewDelete().
+		Model((*models.PollOption)(nil)).
+		Where("id = ? AND poll_id = ?", optionID, pollID).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+	if rows, _ := result.RowsAffected(); rows == 0 {
+		return errs.ErrNotFound
+	}
+	return nil
 }
 
 // ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/realtime"
@@ -40,6 +41,11 @@ func NewPollService(repo *repository.Repository, publisher realtime.EventPublish
 
 // CreatePoll creates a new poll with initial options.
 func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.PollAPIResponse, error) {
+	// Reject a deadline that is already in the past
+	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
+		return nil, errs.BadRequest(errors.New("deadline must be in the future"))
+	}
+
 	poll := &models.Poll{
 		ID:        uuid.New(),
 		TripID:    tripID,
@@ -127,6 +133,7 @@ func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.
 }
 
 // UpdatePoll updates poll metadata. Only the poll creator can update.
+// Updates are blocked once the deadline has passed.
 func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
@@ -137,6 +144,16 @@ func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uui
 	}
 	if poll.CreatedBy != userID {
 		return nil, errs.Forbidden()
+	}
+
+	// Cannot update a poll after the deadline has passed
+	if poll.IsDeadlinePassed() {
+		return nil, errs.BadRequest(errors.New("cannot update poll after the deadline has passed"))
+	}
+
+	// Reject setting a new deadline that is already in the past
+	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
+		return nil, errs.BadRequest(errors.New("deadline must be in the future"))
 	}
 
 	updated, err := s.repository.Poll.UpdatePoll(ctx, pollID, &req)
@@ -217,7 +234,7 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 	return s.repository.Poll.AddOption(ctx, option)
 }
 
-// DeleteOption removes an option. Only allowed if no votes exist yet and deadline hasn't passed.
+// DeleteOption removes an option from a poll.
 func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) error {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
@@ -225,11 +242,6 @@ func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID
 	}
 	if poll.TripID != tripID {
 		return errs.ErrNotFound
-	}
-
-	// Cannot delete options after the deadline has passed
-	if poll.IsDeadlinePassed() {
-		return errs.BadRequest(errors.New("cannot delete options after the poll deadline has passed"))
 	}
 
 	return s.repository.Poll.DeleteOption(ctx, pollID, optionID)
