@@ -602,41 +602,138 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/trip-invites/{code}/join": {
+        "/api/v1/search/places/details": {
             "post": {
-                "description": "Adds the authenticated user to a trip using an invite code",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves detailed information about a specific place using Google Maps Places API. Accepts either a place_id (from typeahead results) or input text for direct search. Returns address, coordinates, photos, ratings, opening hours, and more.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "memberships"
+                    "places"
                 ],
-                "summary": "Join trip by invite code",
-                "operationId": "joinTripByInvite",
+                "summary": "Get detailed information about a place",
+                "operationId": "getPlaceDetails",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Invite code",
-                        "name": "code",
-                        "in": "path",
-                        "required": true
+                        "description": "Place details request (provide either place_id or input)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PlaceDetailsRequest"
+                        }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Membership"
+                            "$ref": "#/definitions/models.PlaceDetailsResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid or expired invite code",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/search/places/health": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Checks if Google Maps API is connected and accessible",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "places"
+                ],
+                "summary": "Google Maps health check",
+                "operationId": "googleMapsHealth",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/search/places/typeahead": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Quick typeahead/autocomplete endpoint for real-time place search as users type. Returns a list of place predictions with place IDs that can be used to fetch detailed information.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "places"
+                ],
+                "summary": "Typeahead search for places",
+                "operationId": "typeaheadPlaces",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query (e.g., 'Eiffel Tower', 'Paris')",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of results (default: 5, max: 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Language code (e.g., 'en', 'fr', 'es')",
+                        "name": "language",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PlacesSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -1745,6 +1842,34 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AddressComponent": {
+            "type": "object",
+            "properties": {
+                "long_name": {
+                    "type": "string"
+                },
+                "short_name": {
+                    "type": "string"
+                },
+                "types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.Bounds": {
+            "type": "object",
+            "properties": {
+                "northeast": {
+                    "$ref": "#/definitions/models.LatLng"
+                },
+                "southwest": {
+                    "$ref": "#/definitions/models.LatLng"
+                }
+            }
+        },
         "models.Comment": {
             "type": "object",
             "properties": {
@@ -1956,6 +2081,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.DayTime": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
         "models.EntityType": {
             "type": "string",
             "enum": [
@@ -2010,6 +2146,28 @@ const docTemplate = `{
                 "ImageSizeMedium",
                 "ImageSizeSmall"
             ]
+        },
+        "models.LatLng": {
+            "type": "object",
+            "properties": {
+                "lat": {
+                    "type": "number"
+                },
+                "lng": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.MatchedSubstring": {
+            "type": "object",
+            "properties": {
+                "length": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                }
+            }
         },
         "models.Membership": {
             "type": "object",
@@ -2125,6 +2283,26 @@ const docTemplate = `{
                 }
             }
         },
+        "models.OpeningHours": {
+            "type": "object",
+            "properties": {
+                "open_now": {
+                    "type": "boolean"
+                },
+                "periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Period"
+                    }
+                },
+                "weekday_text": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "models.PaginatedCommentsResponse": {
             "type": "object",
             "properties": {
@@ -2138,6 +2316,204 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Period": {
+            "type": "object",
+            "properties": {
+                "close": {
+                    "$ref": "#/definitions/models.DayTime"
+                },
+                "open": {
+                    "$ref": "#/definitions/models.DayTime"
+                }
+            }
+        },
+        "models.PlaceDetailsRequest": {
+            "type": "object",
+            "properties": {
+                "fields": {
+                    "description": "Fields specifies which fields to return (optional)\nIf not specified, returns all available fields",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "input": {
+                    "description": "Input is the text to search for if PlaceID is not provided\nExample: \"Eiffel Tower\", \"Paris, France\"",
+                    "type": "string"
+                },
+                "language": {
+                    "description": "Language is the language code for the results (optional)",
+                    "type": "string"
+                },
+                "place_id": {
+                    "description": "PlaceID is the unique identifier for the place (from typeahead results)",
+                    "type": "string"
+                }
+            }
+        },
+        "models.PlaceDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "address_components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AddressComponent"
+                    }
+                },
+                "formatted_address": {
+                    "description": "Address information",
+                    "type": "string"
+                },
+                "formatted_phone_number": {
+                    "description": "Contact information",
+                    "type": "string"
+                },
+                "geometry": {
+                    "description": "Location coordinates",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.PlaceGeometry"
+                        }
+                    ]
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "international_phone_number": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "opening_hours": {
+                    "description": "Business information",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.OpeningHours"
+                        }
+                    ]
+                },
+                "photos": {
+                    "description": "Photos",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PlacePhoto"
+                    }
+                },
+                "place_id": {
+                    "type": "string"
+                },
+                "price_level": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "description": "Ratings and reviews",
+                    "type": "number"
+                },
+                "types": {
+                    "description": "Place types",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_ratings_total": {
+                    "type": "integer"
+                },
+                "utc_offset": {
+                    "description": "Additional information",
+                    "type": "integer"
+                },
+                "vicinity": {
+                    "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PlaceGeometry": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "$ref": "#/definitions/models.LatLng"
+                },
+                "viewport": {
+                    "$ref": "#/definitions/models.Bounds"
+                }
+            }
+        },
+        "models.PlacePhoto": {
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "integer"
+                },
+                "html_attributions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "photo_reference": {
+                    "type": "string"
+                },
+                "photo_url": {
+                    "description": "PhotoURL is a generated URL to fetch the photo (optional, generated by backend)",
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PlacePrediction": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description is the human-readable name for this place",
+                    "type": "string"
+                },
+                "main_text": {
+                    "description": "StructuredFormatting contains the main text and secondary text",
+                    "type": "string"
+                },
+                "matched_substrings": {
+                    "description": "MatchedSubstrings indicates which parts of the description match the input",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.MatchedSubstring"
+                    }
+                },
+                "place_id": {
+                    "description": "PlaceID is the unique identifier for this place",
+                    "type": "string"
+                },
+                "secondary_text": {
+                    "type": "string"
+                },
+                "types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.PlacesSearchResponse": {
+            "type": "object",
+            "properties": {
+                "predictions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PlacePrediction"
+                    }
+                },
+                "status": {
                     "type": "string"
                 }
             }

@@ -173,6 +173,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     } catch (e) {
+      console.warn(e);
       return null;
     }
   }

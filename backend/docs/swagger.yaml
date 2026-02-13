@@ -6,6 +6,24 @@ definitions:
       statusCode:
         type: integer
     type: object
+  models.AddressComponent:
+    properties:
+      long_name:
+        type: string
+      short_name:
+        type: string
+      types:
+        items:
+          type: string
+        type: array
+    type: object
+  models.Bounds:
+    properties:
+      northeast:
+        $ref: '#/definitions/models.LatLng'
+      southwest:
+        $ref: '#/definitions/models.LatLng'
+    type: object
   models.Comment:
     properties:
       content:
@@ -147,6 +165,13 @@ definitions:
     - phone_number
     - username
     type: object
+  models.DayTime:
+    properties:
+      day:
+        type: integer
+      time:
+        type: string
+    type: object
   models.EntityType:
     enum:
     - activity
@@ -185,6 +210,20 @@ definitions:
     - ImageSizeLarge
     - ImageSizeMedium
     - ImageSizeSmall
+  models.LatLng:
+    properties:
+      lat:
+        type: number
+      lng:
+        type: number
+    type: object
+  models.MatchedSubstring:
+    properties:
+      length:
+        type: integer
+      offset:
+        type: integer
+    type: object
   models.Membership:
     properties:
       availability:
@@ -260,6 +299,19 @@ definitions:
       success_count:
         type: integer
     type: object
+  models.OpeningHours:
+    properties:
+      open_now:
+        type: boolean
+      periods:
+        items:
+          $ref: '#/definitions/models.Period'
+        type: array
+      weekday_text:
+        items:
+          type: string
+        type: array
+    type: object
   models.PaginatedCommentsResponse:
     properties:
       items:
@@ -269,6 +321,145 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.Period:
+    properties:
+      close:
+        $ref: '#/definitions/models.DayTime'
+      open:
+        $ref: '#/definitions/models.DayTime'
+    type: object
+  models.PlaceDetailsRequest:
+    properties:
+      fields:
+        description: |-
+          Fields specifies which fields to return (optional)
+          If not specified, returns all available fields
+        items:
+          type: string
+        type: array
+      input:
+        description: |-
+          Input is the text to search for if PlaceID is not provided
+          Example: "Eiffel Tower", "Paris, France"
+        type: string
+      language:
+        description: Language is the language code for the results (optional)
+        type: string
+      place_id:
+        description: PlaceID is the unique identifier for the place (from typeahead
+          results)
+        type: string
+    type: object
+  models.PlaceDetailsResponse:
+    properties:
+      address_components:
+        items:
+          $ref: '#/definitions/models.AddressComponent'
+        type: array
+      formatted_address:
+        description: Address information
+        type: string
+      formatted_phone_number:
+        description: Contact information
+        type: string
+      geometry:
+        allOf:
+        - $ref: '#/definitions/models.PlaceGeometry'
+        description: Location coordinates
+      icon:
+        type: string
+      international_phone_number:
+        type: string
+      name:
+        type: string
+      opening_hours:
+        allOf:
+        - $ref: '#/definitions/models.OpeningHours'
+        description: Business information
+      photos:
+        description: Photos
+        items:
+          $ref: '#/definitions/models.PlacePhoto'
+        type: array
+      place_id:
+        type: string
+      price_level:
+        type: integer
+      rating:
+        description: Ratings and reviews
+        type: number
+      types:
+        description: Place types
+        items:
+          type: string
+        type: array
+      user_ratings_total:
+        type: integer
+      utc_offset:
+        description: Additional information
+        type: integer
+      vicinity:
+        type: string
+      website:
+        type: string
+    type: object
+  models.PlaceGeometry:
+    properties:
+      location:
+        $ref: '#/definitions/models.LatLng'
+      viewport:
+        $ref: '#/definitions/models.Bounds'
+    type: object
+  models.PlacePhoto:
+    properties:
+      height:
+        type: integer
+      html_attributions:
+        items:
+          type: string
+        type: array
+      photo_reference:
+        type: string
+      photo_url:
+        description: PhotoURL is a generated URL to fetch the photo (optional, generated
+          by backend)
+        type: string
+      width:
+        type: integer
+    type: object
+  models.PlacePrediction:
+    properties:
+      description:
+        description: Description is the human-readable name for this place
+        type: string
+      main_text:
+        description: StructuredFormatting contains the main text and secondary text
+        type: string
+      matched_substrings:
+        description: MatchedSubstrings indicates which parts of the description match
+          the input
+        items:
+          $ref: '#/definitions/models.MatchedSubstring'
+        type: array
+      place_id:
+        description: PlaceID is the unique identifier for this place
+        type: string
+      secondary_text:
+        type: string
+      types:
+        items:
+          type: string
+        type: array
+    type: object
+  models.PlacesSearchResponse:
+    properties:
+      predictions:
+        items:
+          $ref: '#/definitions/models.PlacePrediction'
+        type: array
+      status:
         type: string
     type: object
   models.S3HealthCheckResponse:
@@ -902,38 +1093,104 @@ paths:
       summary: Send bulk notifications
       tags:
       - notifications
-  /api/v1/trip-invites/{code}/join:
+  /api/v1/search/places/details:
     post:
-      description: Adds the authenticated user to a trip using an invite code
-      operationId: joinTripByInvite
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a specific place using Google
+        Maps Places API. Accepts either a place_id (from typeahead results) or input
+        text for direct search. Returns address, coordinates, photos, ratings, opening
+        hours, and more.
+      operationId: getPlaceDetails
       parameters:
-      - description: Invite code
-        in: path
-        name: code
+      - description: Place details request (provide either place_id or input)
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.PlaceDetailsRequest'
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            $ref: '#/definitions/models.Membership'
+            $ref: '#/definitions/models.PlaceDetailsResponse'
         "400":
-          description: Invalid or expired invite code
-          schema:
-            $ref: '#/definitions/errs.APIError'
-        "401":
-          description: Unauthorized
+          description: Bad Request
           schema:
             $ref: '#/definitions/errs.APIError'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errs.APIError'
-      summary: Join trip by invite code
+      security:
+      - BearerAuth: []
+      summary: Get detailed information about a place
       tags:
-      - memberships
+      - places
+  /api/v1/search/places/health:
+    get:
+      description: Checks if Google Maps API is connected and accessible
+      operationId: googleMapsHealth
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Google Maps health check
+      tags:
+      - places
+  /api/v1/search/places/typeahead:
+    get:
+      description: Quick typeahead/autocomplete endpoint for real-time place search
+        as users type. Returns a list of place predictions with place IDs that can
+        be used to fetch detailed information.
+      operationId: typeaheadPlaces
+      parameters:
+      - description: Search query (e.g., 'Eiffel Tower', 'Paris')
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: 'Maximum number of results (default: 5, max: 20)'
+        in: query
+        name: limit
+        type: integer
+      - description: Language code (e.g., 'en', 'fr', 'es')
+        in: query
+        name: language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PlacesSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      security:
+      - BearerAuth: []
+      summary: Typeahead search for places
+      tags:
+      - places
   /api/v1/trips:
     get:
       description: Retrieves trips with cursor-based pagination. Use limit and cursor
