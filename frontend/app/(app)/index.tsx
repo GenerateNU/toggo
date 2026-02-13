@@ -5,6 +5,7 @@ import { Text } from "@/design-system/base/text";
 import { router } from "expo-router";
 
 export default function Home() {
+  
   const { logout, isPending, currentUser } = useUser();
   const displayName = currentUser?.name || currentUser?.username || "Traveler";
   return (
@@ -31,6 +32,12 @@ export default function Home() {
       <Button onPress={() => router.push("/test-realtime")} variant="primary">
         <Text variant="caption" color="cloudWhite">
           Test WebSocket Realtime
+        </Text>
+      </Button>
+
+      <Button onPress={() => router.push("/test-poll")} variant="primary">
+        <Text variant="caption" color="cloudWhite">
+          Test Poll API
         </Text>
       </Button>
 
