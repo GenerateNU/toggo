@@ -42,7 +42,7 @@ func LoadGoogleMapsConfig() (*GoogleMapsConfig, error) {
 // Helper method to test the API connection
 func (c *GoogleMapsConfig) TestConnection(ctx context.Context) error {
 	if c.Client == nil {
-		return fmt.Errorf("Google Maps client is not initialized")
+		return fmt.Errorf("google Maps client is not initialized")
 	}
 	return nil
 }
