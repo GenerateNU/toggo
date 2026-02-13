@@ -17,10 +17,6 @@ type TripInvite struct {
 	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
 }
 
-func (TripInvite) TableName() string {
-	return "trip_invites"
-}
-
 // CreateTripInviteRequest is the request body for creating a trip invite.
 // If ExpiresAt is nil, a default (e.g. 7 days) is applied in the service.
 type CreateTripInviteRequest struct {

@@ -296,10 +296,13 @@ func (s *TripService) CreateTripInvite(ctx context.Context, tripID uuid.UUID, cr
 	created, err := s.TripInvite.Create(ctx, invite)
 	if err != nil {
 		if errors.Is(err, errs.ErrDuplicate) {
-			code, _ = generateInviteCode()
+			code, err = generateInviteCode()
+			if err != nil {
+				return nil, err
+			}
 			invite.Code = code
 			created, err = s.TripInvite.Create(ctx, invite)
-		}
+		}	
 		if err != nil {
 			return nil, err
 		}
