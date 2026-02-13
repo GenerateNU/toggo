@@ -110,6 +110,29 @@ definitions:
     - trip_id
     - user_id
     type: object
+  models.CreatePitchRequest:
+    properties:
+      content_type:
+        minLength: 1
+        type: string
+      description:
+        type: string
+      title:
+        minLength: 1
+        type: string
+    required:
+    - content_type
+    - title
+    type: object
+  models.CreatePitchResponse:
+    properties:
+      expires_at:
+        type: string
+      pitch:
+        $ref: '#/definitions/models.PitchAPIResponse'
+      upload_url:
+        type: string
+    type: object
   models.CreateTripRequest:
     properties:
       budget_max:
@@ -266,6 +289,38 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.PitchAPIResponse:
+    properties:
+      audio_url:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      duration:
+        type: integer
+      id:
+        type: string
+      title:
+        type: string
+      trip_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.PitchCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.PitchAPIResponse'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
   models.S3HealthCheckResponse:
     properties:
       bucketName:
@@ -392,6 +447,17 @@ definitions:
         type: integer
       is_admin:
         type: boolean
+    type: object
+  models.UpdatePitchRequest:
+    properties:
+      description:
+        type: string
+      duration:
+        minimum: 0
+        type: integer
+      title:
+        minLength: 1
+        type: string
     type: object
   models.UpdateTripRequest:
     properties:
@@ -1375,6 +1441,207 @@ paths:
       summary: Promote member to admin
       tags:
       - memberships
+  /api/v1/trips/{tripID}/pitches:
+    get:
+      description: Returns pitches for the trip with cursor-based pagination
+      operationId: listPitches
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor from previous response next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PitchCursorPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get all pitches for a trip
+      tags:
+      - pitches
+    post:
+      consumes:
+      - application/json
+      description: Creates a new pitch for the trip and returns a presigned URL to
+        upload the audio file
+      operationId: createPitch
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Create pitch request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePitchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CreatePitchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a pitch
+      tags:
+      - pitches
+  /api/v1/trips/{tripID}/pitches/{pitchID}:
+    delete:
+      description: Deletes a pitch by ID
+      operationId: deletePitch
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a pitch
+      tags:
+      - pitches
+    get:
+      description: Returns a single pitch with a presigned URL for the audio file
+      operationId: getPitch
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PitchAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get a pitch by ID
+      tags:
+      - pitches
+    patch:
+      consumes:
+      - application/json
+      description: Updates pitch metadata (title, description, duration)
+      operationId: updatePitch
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      - description: Update pitch request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePitchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PitchAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a pitch
+      tags:
+      - pitches
   /api/v1/users:
     post:
       consumes:
