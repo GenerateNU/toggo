@@ -1021,6 +1021,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/invites": {
+            "post": {
+                "description": "Creates a shareable invite for the trip. Caller must be a trip member.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Create a trip invite",
+                "operationId": "createTripInvite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional expires_at; default 7 days",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateTripInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.TripInviteAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/memberships": {
             "get": {
                 "description": "Retrieves all members of a trip",
@@ -1956,6 +2028,14 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateTripInviteRequest": {
+            "type": "object",
+            "properties": {
+                "expires_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CreateTripRequest": {
             "type": "object",
             "required": [
@@ -2591,6 +2671,35 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TripInviteAPIResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_revoked": {
+                    "type": "boolean"
+                },
+                "join_url": {
+                    "type": "string"
+                },
+                "trip_id": {
                     "type": "string"
                 }
             }

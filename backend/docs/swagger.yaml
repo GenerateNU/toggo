@@ -128,6 +128,11 @@ definitions:
     - trip_id
     - user_id
     type: object
+  models.CreateTripInviteRequest:
+    properties:
+      expires_at:
+        type: string
+    type: object
   models.CreateTripRequest:
     properties:
       budget_max:
@@ -563,6 +568,25 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.TripInviteAPIResponse:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      is_revoked:
+        type: boolean
+      join_url:
+        type: string
+      trip_id:
         type: string
     type: object
   models.UpdateCommentRequest:
@@ -1409,6 +1433,55 @@ paths:
       summary: Get comments
       tags:
       - comments
+  /api/v1/trips/{tripID}/invites:
+    post:
+      consumes:
+      - application/json
+      description: Creates a shareable invite for the trip. Caller must be a trip
+        member.
+      operationId: createTripInvite
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Optional expires_at; default 7 days
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTripInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.TripInviteAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a trip invite
+      tags:
+      - trips
   /api/v1/trips/{tripID}/memberships:
     get:
       description: Retrieves all members of a trip
