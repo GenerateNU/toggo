@@ -300,9 +300,13 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 
 	resp := s.toAPIResponse(poll, summary)
 
-	// Publish poll.vote_added event with full updated poll state so
-	// subscribed clients can update their UI without an extra GET request.
-	s.publishEvent(ctx, "poll.vote_added", tripID.String(), resp)
+	// Publish the appropriate event: vote_removed when clearing all votes,
+	// vote_added otherwise.
+	topic := "poll.vote_added"
+	if len(req.OptionIDs) == 0 {
+		topic = "poll.vote_removed"
+	}
+	s.publishEvent(ctx, topic, tripID.String(), resp)
 
 	return resp, nil
 }

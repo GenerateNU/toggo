@@ -866,6 +866,43 @@ func TestPollVoting(t *testing.T) {
 		}
 	})
 
+	t.Run("can fully remove all votes", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		// Vote for an option first
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Fully remove all votes by sending empty option_ids
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{}},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		// All options should have vote_count=0 and voted=false
+		for _, o := range resp["options"].([]any) {
+			opt := o.(map[string]any)
+			require.Equal(t, float64(0), opt["vote_count"], "vote_count should be 0 after removing all votes")
+			require.Equal(t, false, opt["voted"], "voted should be false after removing all votes")
+		}
+	})
+
 	t.Run("rejects vote for option not in poll", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())

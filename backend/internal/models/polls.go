@@ -82,7 +82,7 @@ type CreatePollOptionRequest struct {
 }
 
 type CastVoteRequest struct {
-    OptionIDs []uuid.UUID `json:"option_ids" validate:"required,min=1"`
+    OptionIDs []uuid.UUID `json:"option_ids" validate:"required"`
 }
 
 type PollAPIResponse struct {
