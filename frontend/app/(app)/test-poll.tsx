@@ -311,12 +311,22 @@ export default function TestPollScreen() {
           }
         />
         <TestButton
-          label="❌ No options (expect 422)"
+          label="✅ No options → defaults to Yes/No (expect 201)"
+          onRun={async () => {
+            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Should we go?",
+              poll_type: "single",
+            });
+            return res;
+          }}
+        />
+        <TestButton
+          label="❌ Only 1 option (expect 400)"
           onRun={() =>
             api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Bad poll",
               poll_type: "single",
-              options: [],
+              options: [{ name: "Lonely option", option_type: "custom" }],
             })
           }
         />
@@ -329,6 +339,34 @@ export default function TestPollScreen() {
               options: [{ name: "", option_type: "custom" }],
             })
           }
+        />
+        <TestButton
+          label="✅ Create poll with exactly 15 options (expect 201)"
+          onRun={async () => {
+            const opts = Array.from({ length: 15 }, (_, i) => ({
+              name: `Option ${i + 1}`,
+              option_type: "custom",
+            }));
+            return api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Max options poll",
+              poll_type: "single",
+              options: opts,
+            });
+          }}
+        />
+        <TestButton
+          label="❌ 16 options (expect 400)"
+          onRun={async () => {
+            const opts = Array.from({ length: 16 }, (_, i) => ({
+              name: `Option ${i + 1}`,
+              option_type: "custom",
+            }));
+            return api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Too many options",
+              poll_type: "single",
+              options: opts,
+            });
+          }}
         />
       </Section>
 
@@ -423,6 +461,26 @@ export default function TestPollScreen() {
         <TestButton
           label="Verify option removed (GET poll)"
           onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+        />
+        <TestButton
+          label="❌ Cannot delete when only 2 options remain (expect 400)"
+          onRun={async () => {
+            // Create a fresh 2-option poll
+            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Min options test",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!res.ok) return res;
+            const opts = (res.data.options || []).map((o: any) => o.id);
+            return api(
+              "DELETE",
+              `/trips/${tripId}/vote-polls/${res.data.id}/options/${opts[0]}`
+            );
+          }}
         />
       </Section>
 
