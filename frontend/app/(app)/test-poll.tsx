@@ -2,15 +2,15 @@ import { getAuthToken } from "@/api/client";
 import Constants from "expo-constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Clipboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Clipboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const getToken = async () => {
@@ -27,7 +27,8 @@ const resolveHost = (): string => {
     constants.manifest?.debuggerHost ??
     constants.manifest2?.extra?.expoClient?.hostUri;
   if (debuggerHost) return debuggerHost.split(":")[0];
-  if (Platform.OS === "web" && typeof window !== "undefined") return window.location.hostname;
+  if (Platform.OS === "web" && typeof window !== "undefined")
+    return window.location.hostname;
   return "localhost";
 };
 
@@ -46,7 +47,7 @@ interface TestResult {
 async function api(
   method: string,
   path: string,
-  body?: any
+  body?: any,
 ): Promise<TestResult> {
   const token = await getToken();
   const start = Date.now();
@@ -144,7 +145,12 @@ const rs = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 4, flexWrap: "wrap" },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    flexWrap: "wrap",
+  },
   badge: {
     color: "#fff",
     fontWeight: "700",
@@ -267,14 +273,8 @@ export default function TestPollScreen() {
         title="0 · Setup"
         description="Ensure user exists and create a trip for all subsequent tests."
       >
-        <TestButton
-          label="Ensure User"
-          onRun={async () => ensureUser()}
-        />
-        <TestButton
-          label="Create Trip"
-          onRun={async () => setupTrip()}
-        />
+        <TestButton label="Ensure User" onRun={async () => ensureUser()} />
+        <TestButton label="Create Trip" onRun={async () => setupTrip()} />
       </Section>
 
       {/* ── 1  CREATE POLL ──────────────────────────────────────────── */}
@@ -384,7 +384,7 @@ export default function TestPollScreen() {
           onRun={() =>
             api(
               "GET",
-              `/trips/${tripId}/vote-polls/00000000-0000-0000-0000-000000000000`
+              `/trips/${tripId}/vote-polls/00000000-0000-0000-0000-000000000000`,
             )
           }
         />
@@ -407,7 +407,7 @@ export default function TestPollScreen() {
           label="Set deadline (future)"
           onRun={() => {
             const future = new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
             ).toISOString();
             return api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
               deadline: future,
@@ -431,7 +431,7 @@ export default function TestPollScreen() {
             const res = await api(
               "POST",
               `/trips/${tripId}/vote-polls/${pollId}/options`,
-              { name: "Burgers", option_type: "custom" }
+              { name: "Burgers", option_type: "custom" },
             );
             if (res.ok && res.data?.id) optionIds.push(res.data.id);
             return res;
@@ -454,7 +454,7 @@ export default function TestPollScreen() {
               };
             return api(
               "DELETE",
-              `/trips/${tripId}/vote-polls/${pollId}/options/${id}`
+              `/trips/${tripId}/vote-polls/${pollId}/options/${id}`,
             );
           }}
         />
@@ -478,7 +478,7 @@ export default function TestPollScreen() {
             const opts = (res.data.options || []).map((o: any) => o.id);
             return api(
               "DELETE",
-              `/trips/${tripId}/vote-polls/${res.data.id}/options/${opts[0]}`
+              `/trips/${tripId}/vote-polls/${res.data.id}/options/${opts[0]}`,
             );
           }}
         />
@@ -570,13 +570,20 @@ export default function TestPollScreen() {
             const p = await api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Single only?",
               poll_type: "single",
-              options: [{ name: "Yes", option_type: "custom" }, { name: "No", option_type: "custom" }],
+              options: [
+                { name: "Yes", option_type: "custom" },
+                { name: "No", option_type: "custom" },
+              ],
             });
             if (!p.ok) return p;
             const opts = (p.data.options || []).map((o: any) => o.id);
-            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: opts, // 2 options on single-vote → should fail
-            });
+            return api(
+              "POST",
+              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+              {
+                option_ids: opts, // 2 options on single-vote → should fail
+              },
+            );
           }}
         />
       </Section>
@@ -595,8 +602,11 @@ export default function TestPollScreen() {
                 await api("POST", `/trips/${tripId}/vote-polls`, {
                   question: `Pagination poll ${i}`,
                   poll_type: "single",
-                  options: [{ name: "A", option_type: "custom" }, { name: "B", option_type: "custom" }],
-                })
+                  options: [
+                    { name: "A", option_type: "custom" },
+                    { name: "B", option_type: "custom" },
+                  ],
+                }),
               );
             }
             const ok = results.every((r) => r.ok);
@@ -624,7 +634,7 @@ export default function TestPollScreen() {
           onRun={async () => {
             const page1 = await api(
               "GET",
-              `/trips/${tripId}/vote-polls?limit=2`
+              `/trips/${tripId}/vote-polls?limit=2`,
             );
             if (!page1.ok || !page1.data?.next_cursor) {
               return {
@@ -636,7 +646,7 @@ export default function TestPollScreen() {
             }
             return api(
               "GET",
-              `/trips/${tripId}/vote-polls?limit=2&cursor=${page1.data.next_cursor}`
+              `/trips/${tripId}/vote-polls?limit=2&cursor=${page1.data.next_cursor}`,
             );
           }}
         />
@@ -645,7 +655,7 @@ export default function TestPollScreen() {
           onRun={() =>
             api(
               "GET",
-              `/trips/${tripId}/vote-polls?limit=2&cursor=not-a-valid-cursor`
+              `/trips/${tripId}/vote-polls?limit=2&cursor=not-a-valid-cursor`,
             )
           }
         />
@@ -670,7 +680,10 @@ export default function TestPollScreen() {
         <TestButton
           label="Delete poll (returns deleted poll)"
           onRun={async () => {
-            const res = await api("DELETE", `/trips/${tripId}/vote-polls/${pollId}`);
+            const res = await api(
+              "DELETE",
+              `/trips/${tripId}/vote-polls/${pollId}`,
+            );
             return res;
           }}
         />
@@ -692,7 +705,10 @@ export default function TestPollScreen() {
               question: "Expired poll",
               name: "Expired poll",
               poll_type: "single",
-              options: [{ name: "Opt", option_type: "custom" }, { name: "Opt2", option_type: "custom" }],
+              options: [
+                { name: "Opt", option_type: "custom" },
+                { name: "Opt2", option_type: "custom" },
+              ],
             });
             if (!create.ok) return create;
             pollId = create.data.id;
@@ -738,9 +754,7 @@ export default function TestPollScreen() {
         />
         <TestButton
           label="❌ Get poll with invalid UUID (expect 400)"
-          onRun={() =>
-            api("GET", `/trips/${tripId}/vote-polls/not-a-uuid`)
-          }
+          onRun={() => api("GET", `/trips/${tripId}/vote-polls/not-a-uuid`)}
         />
         <TestButton
           label="❌ Add option after votes exist (expect 409)"
@@ -759,10 +773,14 @@ export default function TestPollScreen() {
             await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
               option_ids: [opts[0]],
             });
-            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/options`, {
-              name: "Too late",
-              option_type: "custom",
-            });
+            return api(
+              "POST",
+              `/trips/${tripId}/vote-polls/${p.data.id}/options`,
+              {
+                name: "Too late",
+                option_type: "custom",
+              },
+            );
           }}
         />
         <TestButton
@@ -784,7 +802,7 @@ export default function TestPollScreen() {
             });
             return api(
               "DELETE",
-              `/trips/${tripId}/vote-polls/${p.data.id}/options/${opts[2]}`
+              `/trips/${tripId}/vote-polls/${p.data.id}/options/${opts[2]}`,
             );
           }}
         />
@@ -801,9 +819,13 @@ export default function TestPollScreen() {
             });
             if (!p.ok) return p;
             const firstOpt = p.data.options[0].id;
-            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [firstOpt, firstOpt],
-            });
+            return api(
+              "POST",
+              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+              {
+                option_ids: [firstOpt, firstOpt],
+              },
+            );
           }}
         />
         <TestButton
@@ -822,9 +844,13 @@ export default function TestPollScreen() {
             await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
               option_ids: [opt],
             });
-            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [opt],
-            });
+            return api(
+              "POST",
+              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+              {
+                option_ids: [opt],
+              },
+            );
           }}
         />
         <TestButton
@@ -864,8 +890,14 @@ export default function TestPollScreen() {
             await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
               option_ids: [p.data.options[0].id],
             });
-            const del = await api("DELETE", `/trips/${tripId}/vote-polls/${p.data.id}`);
-            const verify = await api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
+            const del = await api(
+              "DELETE",
+              `/trips/${tripId}/vote-polls/${p.data.id}`,
+            );
+            const verify = await api(
+              "GET",
+              `/trips/${tripId}/vote-polls/${p.data.id}`,
+            );
             return {
               status: del.status === 200 && verify.status === 404 ? 200 : 500,
               ok: del.status === 200 && verify.status === 404,
@@ -899,21 +931,27 @@ interface RealtimeEvent {
 
 function E2ESection() {
   const [events, setEvents] = useState<RealtimeEvent[]>([]);
-  const [steps, setSteps] = useState<{ label: string; result: TestResult | null }[]>([]);
+  const [steps, setSteps] = useState<
+    { label: string; result: TestResult | null }[]
+  >([]);
   const [running, setRunning] = useState(false);
-  const [wsStatus, setWsStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
+  const [wsStatus, setWsStatus] = useState<
+    "disconnected" | "connecting" | "connected"
+  >("disconnected");
   const [livePoll, setLivePoll] = useState<any>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const e2eTripId = useRef("");
   const livePollId = useRef("");
 
-  const addEvent = (evt: RealtimeEvent) =>
-    setEvents((prev) => [evt, ...prev]);
+  const addEvent = (evt: RealtimeEvent) => setEvents((prev) => [evt, ...prev]);
 
   // Re-fetch the poll to update the live UI card
   const refreshPoll = async () => {
     if (!livePollId.current || !e2eTripId.current) return;
-    const res = await api("GET", `/trips/${e2eTripId.current}/vote-polls/${livePollId.current}`);
+    const res = await api(
+      "GET",
+      `/trips/${e2eTripId.current}/vote-polls/${livePollId.current}`,
+    );
     if (res.ok) setLivePoll(res.data);
   };
 
@@ -937,7 +975,7 @@ function E2ESection() {
                 refreshPoll();
               } else if (ev.topic === "poll.deleted") {
                 setLivePoll((prev: any) =>
-                  prev ? { ...prev, _deleted: true } : null
+                  prev ? { ...prev, _deleted: true } : null,
                 );
               }
             });
@@ -978,19 +1016,35 @@ function E2ESection() {
     ];
     setSteps(plan.map((label) => ({ label, result: null })));
 
-    const ok = (data: any, dur: number): TestResult => ({ status: 200, ok: true, data, duration: dur });
-    const fail = (msg: string): TestResult => ({ status: 0, ok: false, data: msg, duration: 0 });
+    const ok = (data: any, dur: number): TestResult => ({
+      status: 200,
+      ok: true,
+      data,
+      duration: dur,
+    });
+    const fail = (msg: string): TestResult => ({
+      status: 0,
+      ok: false,
+      data: msg,
+      duration: 0,
+    });
 
     try {
       // 1  ensure user
       const user = await ensureUser();
       updateStep(0, user);
-      if (!user.ok) { setRunning(false); return; }
+      if (!user.ok) {
+        setRunning(false);
+        return;
+      }
 
       // 2  create trip
       const trip = await setupTrip();
       updateStep(1, trip);
-      if (!trip.ok) { setRunning(false); return; }
+      if (!trip.ok) {
+        setRunning(false);
+        return;
+      }
       e2eTripId.current = trip.data.id;
 
       // 3  connect ws
@@ -1006,7 +1060,9 @@ function E2ESection() {
       }
 
       // 4  subscribe
-      ws.send(JSON.stringify({ type: "subscribe", trip_id: e2eTripId.current }));
+      ws.send(
+        JSON.stringify({ type: "subscribe", trip_id: e2eTripId.current }),
+      );
       updateStep(3, ok(`Subscribed to ${e2eTripId.current}`, 0));
       await sleep(500);
 
@@ -1021,44 +1077,69 @@ function E2ESection() {
         ],
       });
       updateStep(4, poll);
-      if (!poll.ok) { setRunning(false); return; }
+      if (!poll.ok) {
+        setRunning(false);
+        return;
+      }
       const ePollId = poll.data.id;
       livePollId.current = ePollId;
       setLivePoll(poll.data);
-      const eOpts = (poll.data.options || []).map((o: any) => ({ id: o.id, name: o.name }));
+      const eOpts = (poll.data.options || []).map((o: any) => ({
+        id: o.id,
+        name: o.name,
+      }));
       await sleep(1000);
 
       // 6  add option Berlin (must happen before any votes)
-      const addOpt = await api("POST", `/trips/${e2eTripId.current}/vote-polls/${ePollId}/options`, {
-        name: "Berlin",
-        option_type: "custom",
-      });
+      const addOpt = await api(
+        "POST",
+        `/trips/${e2eTripId.current}/vote-polls/${ePollId}/options`,
+        {
+          name: "Berlin",
+          option_type: "custom",
+        },
+      );
       updateStep(5, addOpt);
       await sleep(1000);
 
       // 7  vote for Paris + Tokyo (multi-vote)
-      const voteA = await api("POST", `/trips/${e2eTripId.current}/vote-polls/${ePollId}/vote`, {
-        option_ids: [eOpts[0].id, eOpts[1].id],
-      });
+      const voteA = await api(
+        "POST",
+        `/trips/${e2eTripId.current}/vote-polls/${ePollId}/vote`,
+        {
+          option_ids: [eOpts[0].id, eOpts[1].id],
+        },
+      );
       updateStep(6, voteA);
       await sleep(1000);
 
       // 8  change vote to Tokyo + Sydney
-      const voteB = await api("POST", `/trips/${e2eTripId.current}/vote-polls/${ePollId}/vote`, {
-        option_ids: [eOpts[1].id, eOpts[2].id],
-      });
+      const voteB = await api(
+        "POST",
+        `/trips/${e2eTripId.current}/vote-polls/${ePollId}/vote`,
+        {
+          option_ids: [eOpts[1].id, eOpts[2].id],
+        },
+      );
       updateStep(7, voteB);
       await sleep(1000);
 
       // 9  update question
-      const upd = await api("PATCH", `/trips/${e2eTripId.current}/vote-polls/${ePollId}`, {
-        question: "E2E: Where should we travel? (updated!)",
-      });
+      const upd = await api(
+        "PATCH",
+        `/trips/${e2eTripId.current}/vote-polls/${ePollId}`,
+        {
+          question: "E2E: Where should we travel? (updated!)",
+        },
+      );
       updateStep(8, upd);
       await sleep(1000);
 
       // 10  delete poll
-      const del = await api("DELETE", `/trips/${e2eTripId.current}/vote-polls/${ePollId}`);
+      const del = await api(
+        "DELETE",
+        `/trips/${e2eTripId.current}/vote-polls/${ePollId}`,
+      );
       updateStep(9, del);
       await sleep(1000);
 
@@ -1077,7 +1158,11 @@ function E2ESection() {
   };
 
   const wsDot =
-    wsStatus === "connected" ? "#4caf50" : wsStatus === "connecting" ? "#ff9800" : "#999";
+    wsStatus === "connected"
+      ? "#4caf50"
+      : wsStatus === "connecting"
+        ? "#ff9800"
+        : "#999";
 
   return (
     <View style={sec.card}>
@@ -1116,11 +1201,7 @@ function E2ESection() {
           {steps.map((step, i) => (
             <View key={i} style={e2e.stepRow}>
               <Text style={e2e.stepIcon}>
-                {step.result === null
-                  ? "⏳"
-                  : step.result.ok
-                    ? "✅"
-                    : "❌"}
+                {step.result === null ? "⏳" : step.result.ok ? "✅" : "❌"}
               </Text>
               <View style={{ flex: 1 }}>
                 <Text style={e2e.stepLabel}>{step.label}</Text>
@@ -1140,9 +1221,7 @@ function E2ESection() {
 
       {/* Realtime event log */}
       <View style={e2e.eventsWrap}>
-        <Text style={e2e.subhead}>
-          Realtime Events ({events.length})
-        </Text>
+        <Text style={e2e.subhead}>Realtime Events ({events.length})</Text>
         {events.length === 0 && (
           <Text style={e2e.emptyTxt}>No events yet — run the flow above</Text>
         )}
@@ -1160,7 +1239,12 @@ function E2ESection() {
 function LivePollCard({ poll }: { poll: any }) {
   if (poll._deleted) {
     return (
-      <View style={[lp.card, { borderColor: "#f44336", backgroundColor: "#fce4e4" }]}>
+      <View
+        style={[
+          lp.card,
+          { borderColor: "#f44336", backgroundColor: "#fce4e4" },
+        ]}
+      >
         <Text style={lp.deletedTxt}>🗑 Poll deleted</Text>
         <Text style={lp.question}>{poll.question}</Text>
       </View>
@@ -1169,7 +1253,7 @@ function LivePollCard({ poll }: { poll: any }) {
 
   const totalVotes = (poll.options || []).reduce(
     (sum: number, o: any) => sum + (o.vote_count || 0),
-    0
+    0,
   );
 
   return (
@@ -1180,7 +1264,8 @@ function LivePollCard({ poll }: { poll: any }) {
       </View>
       <Text style={lp.question}>{poll.question}</Text>
       <Text style={lp.meta}>
-        {(poll.options || []).length} options · {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+        {(poll.options || []).length} options · {totalVotes} vote
+        {totalVotes !== 1 ? "s" : ""}
       </Text>
       {(poll.options || []).map((opt: any) => {
         const pct = totalVotes > 0 ? (opt.vote_count / totalVotes) * 100 : 0;
@@ -1222,7 +1307,12 @@ const lp = StyleSheet.create({
     padding: 14,
     backgroundColor: "#f0f7ff",
   },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
   badge: {
     fontSize: 11,
     fontWeight: "800",
@@ -1236,12 +1326,26 @@ const lp = StyleSheet.create({
   liveTag: { fontSize: 12, fontWeight: "700", color: "#4caf50" },
   question: { fontSize: 16, fontWeight: "700", color: "#222", marginBottom: 4 },
   meta: { fontSize: 12, color: "#888", marginBottom: 10 },
-  deletedTxt: { fontSize: 15, fontWeight: "700", color: "#f44336", marginBottom: 4 },
+  deletedTxt: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#f44336",
+    marginBottom: 4,
+  },
   optRow: { marginBottom: 8 },
-  optInfo: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
+  optInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 3,
+  },
   optName: { fontSize: 13, fontWeight: "600", color: "#333" },
   optCount: { fontSize: 12, color: "#666" },
-  barBg: { height: 8, backgroundColor: "#e0e0e0", borderRadius: 4, overflow: "hidden" },
+  barBg: {
+    height: 8,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
   barFill: { height: 8, borderRadius: 4 },
 });
 
@@ -1260,7 +1364,13 @@ function ExpandableEventCard({ event }: { event: RealtimeEvent }) {
 
   return (
     <View style={[e2e.eventCard, { borderLeftColor: color }]}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Text style={e2e.eventTopic}>{event.topic}</Text>
         <Text style={e2e.eventTime}>
           {new Date(event.timestamp).toLocaleTimeString()}
@@ -1278,7 +1388,10 @@ function ExpandableEventCard({ event }: { event: RealtimeEvent }) {
         </ScrollView>
       )}
       {isLong && (
-        <TouchableOpacity onPress={() => setExpanded((e) => !e)} style={{ marginTop: 4 }}>
+        <TouchableOpacity
+          onPress={() => setExpanded((e) => !e)}
+          style={{ marginTop: 4 }}
+        >
           <Text style={{ fontSize: 12, color: "#555", fontWeight: "600" }}>
             {expanded ? "▲ Collapse" : "▼ Expand"}
           </Text>
@@ -1299,7 +1412,12 @@ const e2e = StyleSheet.create({
   stepRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 8 },
   stepIcon: { fontSize: 16, marginRight: 8, marginTop: 1 },
   stepLabel: { fontSize: 13, fontWeight: "600", color: "#222" },
-  stepDetail: { fontSize: 11, fontFamily: "monospace", color: "#666", marginTop: 2 },
+  stepDetail: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: "#666",
+    marginTop: 2,
+  },
   eventsWrap: { marginTop: 20 },
   emptyTxt: { fontSize: 12, color: "#aaa", fontStyle: "italic" },
   eventScroll: { maxHeight: 400 },
@@ -1312,7 +1430,12 @@ const e2e = StyleSheet.create({
   },
   eventTopic: { fontSize: 13, fontWeight: "700", color: "#222" },
   eventTime: { fontSize: 11, color: "#999", marginTop: 2 },
-  eventData: { fontSize: 11, fontFamily: "monospace", color: "#444", marginTop: 4 },
+  eventData: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: "#444",
+    marginTop: 4,
+  },
 });
 
 // ─── Realtime Playground ─────────────────────────────────────────────────────
@@ -1321,7 +1444,9 @@ function RealtimePlayground() {
   const [pgTripId, setPgTripId] = useState("");
   const [tripIdInput, setTripIdInput] = useState("");
   const [poll, setPoll] = useState<any>(null);
-  const [wsStatus, setWsStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
+  const [wsStatus, setWsStatus] = useState<
+    "disconnected" | "connecting" | "connected"
+  >("disconnected");
   const [events, setEvents] = useState<RealtimeEvent[]>([]);
   const [voting, setVoting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1330,18 +1455,25 @@ function RealtimePlayground() {
   const activeTripRef = useRef("");
 
   // Keep ref in sync so callbacks always see latest
-  useEffect(() => { activeTripRef.current = pgTripId; }, [pgTripId]);
+  useEffect(() => {
+    activeTripRef.current = pgTripId;
+  }, [pgTripId]);
 
   const addEvent = (evt: RealtimeEvent) =>
     setEvents((prev) => [evt, ...prev].slice(0, 50));
 
   const fetchPoll = useCallback(async () => {
     if (!pgPollId.current || !activeTripRef.current) return;
-    const res = await api("GET", `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}`);
+    const res = await api(
+      "GET",
+      `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}`,
+    );
     if (res.ok) setPoll(res.data);
   }, []);
 
-  const [memberStatus, setMemberStatus] = useState<"unknown" | "joining" | "member" | "error">("unknown");
+  const [memberStatus, setMemberStatus] = useState<
+    "unknown" | "joining" | "member" | "error"
+  >("unknown");
 
   // Auto-join trip as member so poll API calls pass TripMemberRequired middleware
   const joinTrip = useCallback(async (tid: string) => {
@@ -1352,7 +1484,9 @@ function RealtimePlayground() {
       const userRes = await api("GET", "/users/me");
       if (!userRes.ok) {
         setMemberStatus("error");
-        setError("Cannot join trip \u2014 user not found. Run Section 0 first.");
+        setError(
+          "Cannot join trip \u2014 user not found. Run Section 0 first.",
+        );
         return;
       }
       const userId = userRes.data.id;
@@ -1370,7 +1504,9 @@ function RealtimePlayground() {
         setError(null);
       } else {
         setMemberStatus("error");
-        setError(`Join trip failed: ${joinRes.status} ${JSON.stringify(joinRes.data)}`);
+        setError(
+          `Join trip failed: ${joinRes.status} ${JSON.stringify(joinRes.data)}`,
+        );
       }
     } catch (e: any) {
       setMemberStatus("error");
@@ -1448,9 +1584,14 @@ function RealtimePlayground() {
               fetchPoll();
             } else if (ev.topic === "poll.deleted") {
               if (!pgPollId.current || ev.data?.id === pgPollId.current) {
-                setPoll((prev: any) => (prev ? { ...prev, _deleted: true } : null));
+                setPoll((prev: any) =>
+                  prev ? { ...prev, _deleted: true } : null,
+                );
               }
-            } else if (ev.topic.startsWith("poll.") && ev.data?.id === pgPollId.current) {
+            } else if (
+              ev.topic.startsWith("poll.") &&
+              ev.data?.id === pgPollId.current
+            ) {
               // vote_added, vote_removed, updated — re-fetch so voted flags
               // reflect THIS user, not the user who triggered the event
               fetchPoll();
@@ -1482,22 +1623,28 @@ function RealtimePlayground() {
       return;
     }
     setError(null);
-    const res = await api("POST", `/trips/${activeTripRef.current}/vote-polls`, {
-      question: "🌍 Where should we go for our trip?",
-      poll_type: "multi",
-      options: [
-        { name: "🇫🇷 Paris — City of Lights", option_type: "custom" },
-        { name: "🇯🇵 Tokyo — Culture & Food", option_type: "custom" },
-        { name: "🇮🇹 Rome — History & Pasta", option_type: "custom" },
-        { name: "🇲🇽 Mexico City — Street Food & Art", option_type: "custom" },
-      ],
-    });
+    const res = await api(
+      "POST",
+      `/trips/${activeTripRef.current}/vote-polls`,
+      {
+        question: "🌍 Where should we go for our trip?",
+        poll_type: "multi",
+        options: [
+          { name: "🇫🇷 Paris — City of Lights", option_type: "custom" },
+          { name: "🇯🇵 Tokyo — Culture & Food", option_type: "custom" },
+          { name: "🇮🇹 Rome — History & Pasta", option_type: "custom" },
+          { name: "🇲🇽 Mexico City — Street Food & Art", option_type: "custom" },
+        ],
+      },
+    );
     if (res.ok) {
       pgPollId.current = res.data.id;
       setPoll(res.data);
       setEvents([]);
     } else {
-      setError(`Failed to create poll: ${res.status} ${JSON.stringify(res.data)}`);
+      setError(
+        `Failed to create poll: ${res.status} ${JSON.stringify(res.data)}`,
+      );
     }
   }, []);
 
@@ -1507,7 +1654,10 @@ function RealtimePlayground() {
       return;
     }
     setError(null);
-    const res = await api("GET", `/trips/${activeTripRef.current}/vote-polls?limit=1`);
+    const res = await api(
+      "GET",
+      `/trips/${activeTripRef.current}/vote-polls?limit=1`,
+    );
     if (res.ok && res.data?.items?.length > 0) {
       const p = res.data.items[0];
       pgPollId.current = p.id;
@@ -1517,31 +1667,41 @@ function RealtimePlayground() {
     }
   }, []);
 
-  const voteFor = useCallback(async (optionId: string) => {
-    if (!pgPollId.current || !activeTripRef.current) return;
-    setVoting(optionId);
-    try {
-      const currentVoted = (poll?.options || [])
-        .filter((o: any) => o.voted)
-        .map((o: any) => o.id);
-      let newVotes: string[];
-      if (currentVoted.includes(optionId)) {
-        newVotes = currentVoted.filter((id: string) => id !== optionId);
-      } else {
-        newVotes = [...currentVoted, optionId];
+  const voteFor = useCallback(
+    async (optionId: string) => {
+      if (!pgPollId.current || !activeTripRef.current) return;
+      setVoting(optionId);
+      try {
+        const currentVoted = (poll?.options || [])
+          .filter((o: any) => o.voted)
+          .map((o: any) => o.id);
+        let newVotes: string[];
+        if (currentVoted.includes(optionId)) {
+          newVotes = currentVoted.filter((id: string) => id !== optionId);
+        } else {
+          newVotes = [...currentVoted, optionId];
+        }
+        await api(
+          "POST",
+          `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}/vote`,
+          {
+            option_ids: newVotes,
+          },
+        );
+        await fetchPoll();
+      } finally {
+        setVoting(null);
       }
-      await api("POST", `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}/vote`, {
-        option_ids: newVotes,
-      });
-      await fetchPoll();
-    } finally {
-      setVoting(null);
-    }
-  }, [poll, fetchPoll]);
+    },
+    [poll, fetchPoll],
+  );
 
   const deletePoll = useCallback(async () => {
     if (!pgPollId.current || !activeTripRef.current) return;
-    await api("DELETE", `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}`);
+    await api(
+      "DELETE",
+      `/trips/${activeTripRef.current}/vote-polls/${pgPollId.current}`,
+    );
     pgPollId.current = "";
     setPoll(null);
   }, []);
@@ -1553,11 +1713,19 @@ function RealtimePlayground() {
   }, []);
 
   const wsDot =
-    wsStatus === "connected" ? "#4caf50" : wsStatus === "connecting" ? "#ff9800" : "#999";
+    wsStatus === "connected"
+      ? "#4caf50"
+      : wsStatus === "connecting"
+        ? "#ff9800"
+        : "#999";
 
-  const totalVotes = poll && !poll._deleted
-    ? (poll.options || []).reduce((sum: number, o: any) => sum + (o.vote_count || 0), 0)
-    : 0;
+  const totalVotes =
+    poll && !poll._deleted
+      ? (poll.options || []).reduce(
+          (sum: number, o: any) => sum + (o.vote_count || 0),
+          0,
+        )
+      : 0;
 
   return (
     <View style={sec.card}>
@@ -1601,27 +1769,51 @@ function RealtimePlayground() {
       </View>
       {pgTripId ? (
         <View style={{ marginBottom: 12 }}>
-          <Text style={pg.activeTripTxt} selectable>Active trip: {pgTripId}</Text>
+          <Text style={pg.activeTripTxt} selectable>
+            Active trip: {pgTripId}
+          </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View style={[
-              pg.memberBadge,
-              memberStatus === "member" && { backgroundColor: "#e6f9e6", borderColor: "#4caf50" },
-              memberStatus === "joining" && { backgroundColor: "#fff3cd", borderColor: "#ffc107" },
-              memberStatus === "error" && { backgroundColor: "#fce4e4", borderColor: "#f44336" },
-            ]}>
+            <View
+              style={[
+                pg.memberBadge,
+                memberStatus === "member" && {
+                  backgroundColor: "#e6f9e6",
+                  borderColor: "#4caf50",
+                },
+                memberStatus === "joining" && {
+                  backgroundColor: "#fff3cd",
+                  borderColor: "#ffc107",
+                },
+                memberStatus === "error" && {
+                  backgroundColor: "#fce4e4",
+                  borderColor: "#f44336",
+                },
+              ]}
+            >
               <Text style={pg.memberBadgeTxt}>
-                {memberStatus === "member" ? "✅ Member" : memberStatus === "joining" ? "⏳ Joining…" : memberStatus === "error" ? "❌ Not member" : "❓ Unknown"}
+                {memberStatus === "member"
+                  ? "✅ Member"
+                  : memberStatus === "joining"
+                    ? "⏳ Joining…"
+                    : memberStatus === "error"
+                      ? "❌ Not member"
+                      : "❓ Unknown"}
               </Text>
             </View>
             {memberStatus !== "member" && memberStatus !== "joining" && (
-              <TouchableOpacity style={pg.tripBtn} onPress={() => joinTrip(pgTripId)}>
+              <TouchableOpacity
+                style={pg.tripBtn}
+                onPress={() => joinTrip(pgTripId)}
+              >
                 <Text style={pg.tripBtnTxt}>🔑 Join Trip</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
       ) : (
-        <Text style={pg.noTripTxt}>No trip set — use a button above or paste an ID</Text>
+        <Text style={pg.noTripTxt}>
+          No trip set — use a button above or paste an ID
+        </Text>
       )}
 
       {/* Connection controls */}
@@ -1635,7 +1827,10 @@ function RealtimePlayground() {
             <Text style={pg.ctrlBtnTxt}>🔌 Connect</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={[pg.ctrlBtn, { backgroundColor: "#f44336" }]} onPress={disconnect}>
+          <TouchableOpacity
+            style={[pg.ctrlBtn, { backgroundColor: "#f44336" }]}
+            onPress={disconnect}
+          >
             <Text style={pg.ctrlBtnTxt}>✕ Disconnect</Text>
           </TouchableOpacity>
         )}
@@ -1646,15 +1841,24 @@ function RealtimePlayground() {
         <TouchableOpacity style={pg.actionBtn} onPress={createPlaygroundPoll}>
           <Text style={pg.actionBtnTxt}>✚ New Poll</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[pg.actionBtn, { backgroundColor: "#7c4dff" }]} onPress={loadExistingPoll}>
+        <TouchableOpacity
+          style={[pg.actionBtn, { backgroundColor: "#7c4dff" }]}
+          onPress={loadExistingPoll}
+        >
           <Text style={pg.actionBtnTxt}>↻ Load Latest</Text>
         </TouchableOpacity>
         {poll && !poll._deleted && (
-          <TouchableOpacity style={[pg.actionBtn, { backgroundColor: "#f44336" }]} onPress={deletePoll}>
+          <TouchableOpacity
+            style={[pg.actionBtn, { backgroundColor: "#f44336" }]}
+            onPress={deletePoll}
+          >
             <Text style={pg.actionBtnTxt}>🗑 Delete</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={[pg.actionBtn, { backgroundColor: "#009688" }]} onPress={fetchPoll}>
+        <TouchableOpacity
+          style={[pg.actionBtn, { backgroundColor: "#009688" }]}
+          onPress={fetchPoll}
+        >
           <Text style={pg.actionBtnTxt}>⟳ Refresh</Text>
         </TouchableOpacity>
       </View>
@@ -1673,7 +1877,8 @@ function RealtimePlayground() {
           </Text>
 
           {(poll.options || []).map((opt: any) => {
-            const pct = totalVotes > 0 ? (opt.vote_count / totalVotes) * 100 : 0;
+            const pct =
+              totalVotes > 0 ? (opt.vote_count / totalVotes) * 100 : 0;
             const isVoting = voting === opt.id;
             return (
               <TouchableOpacity
@@ -1684,7 +1889,11 @@ function RealtimePlayground() {
                 activeOpacity={0.7}
               >
                 {isVoting ? (
-                  <ActivityIndicator size="small" color="#4a90d9" style={{ marginRight: 10 }} />
+                  <ActivityIndicator
+                    size="small"
+                    color="#4a90d9"
+                    style={{ marginRight: 10 }}
+                  />
                 ) : (
                   <Text style={pg.optCheck}>{opt.voted ? "☑" : "☐"}</Text>
                 )}
@@ -1720,7 +1929,12 @@ function RealtimePlayground() {
       )}
 
       {poll?._deleted && (
-        <View style={[pg.pollCard, { borderColor: "#f44336", backgroundColor: "#fce4e4" }]}>
+        <View
+          style={[
+            pg.pollCard,
+            { borderColor: "#f44336", backgroundColor: "#fce4e4" },
+          ]}
+        >
           <Text style={{ fontSize: 16, fontWeight: "700", color: "#f44336" }}>
             🗑 Poll was deleted
           </Text>
@@ -1820,9 +2034,19 @@ const pg = StyleSheet.create({
     overflow: "hidden",
   },
   liveDot: { fontSize: 12, fontWeight: "700", color: "#4caf50" },
-  pollQuestion: { fontSize: 17, fontWeight: "700", color: "#222", marginBottom: 4 },
+  pollQuestion: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#222",
+    marginBottom: 4,
+  },
   pollMeta: { fontSize: 12, color: "#888", marginBottom: 14 },
-  pollId: { fontSize: 10, color: "#aaa", marginTop: 10, fontFamily: "monospace" },
+  pollId: {
+    fontSize: 10,
+    color: "#aaa",
+    marginTop: 10,
+    fontFamily: "monospace",
+  },
   optionBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -1867,7 +2091,14 @@ const pg = StyleSheet.create({
   },
   emptyTxt: { fontSize: 13, color: "#aaa", textAlign: "center" },
   eventSection: { marginTop: 8 },
-  label: { fontSize: 12, fontWeight: "700", color: "#555", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  label: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#555",
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   inputRow: { flexDirection: "row", marginBottom: 8 },
   input: {
     flex: 1,
@@ -1899,8 +2130,18 @@ const pg = StyleSheet.create({
     borderColor: "#ddd",
   },
   tripBtnTxt: { fontSize: 12, fontWeight: "600", color: "#555" },
-  activeTripTxt: { fontSize: 11, color: "#4a90d9", fontFamily: "monospace", marginBottom: 6 },
-  noTripTxt: { fontSize: 12, color: "#aaa", fontStyle: "italic", marginBottom: 12 },
+  activeTripTxt: {
+    fontSize: 11,
+    color: "#4a90d9",
+    fontFamily: "monospace",
+    marginBottom: 6,
+  },
+  noTripTxt: {
+    fontSize: 12,
+    color: "#aaa",
+    fontStyle: "italic",
+    marginBottom: 12,
+  },
   memberBadge: {
     borderWidth: 1,
     borderColor: "#ccc",

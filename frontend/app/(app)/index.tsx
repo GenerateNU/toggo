@@ -5,7 +5,6 @@ import { Text } from "@/design-system/base/text";
 import { router } from "expo-router";
 
 export default function Home() {
-  
   const { logout, isPending, currentUser } = useUser();
   const displayName = currentUser?.name || currentUser?.username || "Traveler";
   return (
@@ -40,7 +39,7 @@ export default function Home() {
           Test Poll API
         </Text>
       </Button>
-      
+
       <Button onPress={() => router.push("/test-maps")} variant="primary">
         <Text variant="caption" color="cloudWhite">
           Test Google Maps API
