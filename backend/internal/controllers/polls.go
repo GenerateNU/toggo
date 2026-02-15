@@ -344,10 +344,6 @@ func (pc *PollController) CastVote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(poll)
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
 	userIDStr := c.Locals("userID")
 	if userIDStr == nil {

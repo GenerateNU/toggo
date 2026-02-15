@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"time"
+	"toggo/internal/constants"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/realtime"
@@ -39,11 +40,26 @@ func NewPollService(repo *repository.Repository, publisher realtime.EventPublish
 	}
 }
 
-// CreatePoll creates a new poll with initial options.
+// CreatePoll validates options, falls back to default "Yes"/"No" when none are
+// provided, and inserts the poll + options in a single transaction.
 func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.PollAPIResponse, error) {
-	// Reject a deadline that is already in the past
 	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
 		return nil, errs.BadRequest(errors.New("deadline must be in the future"))
+	}
+
+	if len(req.Options) == 0 {
+		req.Options = []models.CreatePollOptionRequest{
+			{OptionType: models.OptionTypeCustom, Name: "Yes"},
+			{OptionType: models.OptionTypeCustom, Name: "No"},
+		}
+	}
+
+	if len(req.Options) < constants.MinPollOptions {
+		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
+	}
+
+	if len(req.Options) > constants.MaxPollOptions {
+		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
 	}
 
 	poll := &models.Poll{
@@ -71,19 +87,16 @@ func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, 
 		return nil, err
 	}
 
-	// New poll — no votes yet, use empty summary.
 	resp := s.toAPIResponse(created, &models.PollVoteSummary{
 		OptionVoteCounts: make(map[uuid.UUID]int),
 		UserVotedOptions: make(map[uuid.UUID]bool),
 	})
 
-	// Publish poll.created event
 	s.publishEvent(ctx, "poll.created", tripID.String(), resp)
 
 	return resp, nil
 }
 
-// GetPoll returns a single poll with vote counts and the caller's votes.
 func (s *PollService) GetPoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
@@ -101,7 +114,6 @@ func (s *PollService) GetPoll(ctx context.Context, tripID, pollID, userID uuid.U
 	return s.toAPIResponse(poll, summary), nil
 }
 
-// GetPollsByTripID returns polls for a trip using cursor-based pagination.
 func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.PollCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
@@ -132,26 +144,24 @@ func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.
 	return s.buildPollPageResult(apiPolls, nextCursor, limit)
 }
 
-// UpdatePoll updates poll metadata. Only the poll creator can update.
-// Updates are blocked once the deadline has passed.
+// UpdatePoll updates poll metadata. Only the poll creator can update, and
+// updates are blocked once the deadline has passed.
 func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error) {
-	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
 	}
-	if poll.TripID != tripID {
+	if meta.TripID != tripID {
 		return nil, errs.ErrNotFound
 	}
-	if poll.CreatedBy != userID {
+	if meta.CreatedBy != userID {
 		return nil, errs.Forbidden()
 	}
 
-	// Cannot update a poll after the deadline has passed
-	if poll.IsDeadlinePassed() {
+	if meta.IsDeadlinePassed() {
 		return nil, errs.BadRequest(errors.New("cannot update poll after the deadline has passed"))
 	}
 
-	// Reject setting a new deadline that is already in the past
 	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
 		return nil, errs.BadRequest(errors.New("deadline must be in the future"))
 	}
@@ -167,8 +177,6 @@ func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uui
 	}
 
 	resp := s.toAPIResponse(updated, summary)
-
-	// Publish poll.updated event
 	s.publishEvent(ctx, "poll.updated", tripID.String(), resp)
 
 	return resp, nil
@@ -176,15 +184,15 @@ func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uui
 
 // DeletePoll removes a poll. Only the poll creator or a trip admin can delete.
 func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) error {
-	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return err
 	}
-	if poll.TripID != tripID {
+	if meta.TripID != tripID {
 		return errs.ErrNotFound
 	}
 
-	if poll.CreatedBy != userID {
+	if meta.CreatedBy != userID {
 		isAdmin, err := s.repository.Membership.IsAdmin(ctx, tripID, userID)
 		if err != nil {
 			return err
@@ -198,7 +206,6 @@ func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uui
 		return err
 	}
 
-	// Publish poll.deleted event
 	s.publishEvent(ctx, "poll.deleted", tripID.String(), map[string]interface{}{
 		"poll_id": pollID,
 		"trip_id": tripID,
@@ -207,19 +214,27 @@ func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uui
 	return nil
 }
 
-// AddOption adds an option to a poll. Only allowed if no votes exist yet.
+// AddOption adds an option to a poll. Blocked after the deadline has passed or
+// after any votes have been cast (enforced at the repository level).
 func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
-	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
 	}
-	if poll.TripID != tripID {
+	if meta.TripID != tripID {
 		return nil, errs.ErrNotFound
 	}
 
-	// Cannot add options after the deadline has passed
-	if poll.IsDeadlinePassed() {
+	if meta.IsDeadlinePassed() {
 		return nil, errs.BadRequest(errors.New("cannot add options after the poll deadline has passed"))
+	}
+
+	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+	if optionCount >= constants.MaxPollOptions {
+		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
 	}
 
 	option := &models.PollOption{
@@ -234,20 +249,30 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 	return s.repository.Poll.AddOption(ctx, option)
 }
 
-// DeleteOption removes an option from a poll.
+// DeleteOption removes an option from a poll. Rejected if it would leave
+// fewer than 2 options.
 func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) error {
-	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return err
 	}
-	if poll.TripID != tripID {
+	if meta.TripID != tripID {
 		return errs.ErrNotFound
+	}
+
+	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
+	if err != nil {
+		return err
+	}
+	if optionCount <= constants.MinPollOptions {
+		return errs.BadRequest(errors.New("a poll must have at least 2 options"))
 	}
 
 	return s.repository.Poll.DeleteOption(ctx, pollID, optionID)
 }
 
-// CastVote casts or replaces a user's vote(s) on a poll.
+// CastVote replaces all of a user's existing votes on a poll with the new
+// selection. Sending an empty OptionIDs slice removes all votes.
 func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
@@ -257,17 +282,14 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 		return nil, errs.ErrNotFound
 	}
 
-	// Cannot vote after the deadline has passed
 	if poll.IsDeadlinePassed() {
 		return nil, errs.BadRequest(errors.New("cannot vote after the poll deadline has passed"))
 	}
 
-	// Validate vote count based on poll type
 	if poll.PollType == models.PollTypeSingle && len(req.OptionIDs) > 1 {
 		return nil, errs.BadRequest(errors.New("single-choice polls allow only one vote"))
 	}
 
-	// Validate that all option IDs belong to this poll
 	optionSet := make(map[uuid.UUID]bool)
 	for _, opt := range poll.Options {
 		optionSet[opt.ID] = true
@@ -292,7 +314,6 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 		return nil, err
 	}
 
-	// Fetch aggregated vote data and return the full poll state.
 	summary, err := s.repository.Poll.GetPollVotes(ctx, pollID, userID)
 	if err != nil {
 		return nil, err
@@ -300,8 +321,7 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 
 	resp := s.toAPIResponse(poll, summary)
 
-	// Publish the appropriate event: vote_removed when clearing all votes,
-	// vote_added otherwise.
+	// Empty OptionIDs means the user is clearing their votes.
 	topic := "poll.vote_added"
 	if len(req.OptionIDs) == 0 {
 		topic = "poll.vote_removed"

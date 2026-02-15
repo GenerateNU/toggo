@@ -7,7 +7,6 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// PollType represents the type of poll
 type PollType string
 
 const (
@@ -16,7 +15,6 @@ const (
 	PollTypeRank   PollType = "rank"
 )
 
-// OptionType represents the type of poll option
 type OptionType string
 
 const (
@@ -53,6 +51,9 @@ type PollOption struct {
 	Poll *Poll `bun:"rel:belongs-to,join:poll_id=id" json:"poll,omitempty"`
 }
 
+// PollVote uses a composite PK (poll_id, option_id, user_id) so a user can
+// only vote once per option. For single-choice polls, exactly one row exists
+// per user; for multi-choice, one row per selected option.
 type PollVote struct {
 	bun.BaseModel `bun:"table:poll_votes,alias:pv"`
 
@@ -71,7 +72,7 @@ type CreatePollRequest struct {
     Question string              `json:"question" validate:"required"`
     PollType PollType            `json:"poll_type" validate:"required,oneof=single multi rank"`
     Deadline *time.Time          `json:"deadline,omitempty"`
-    Options  []CreatePollOptionRequest `json:"options" validate:"required,min=2,dive"`
+    Options  []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
 }
 
 type CreatePollOptionRequest struct {
@@ -109,7 +110,6 @@ type PollOptionAPIResponse struct {
 // PollCursor is the sort key for cursor-based pagination (created_at DESC, id DESC).
 type PollCursor = TimeUUIDCursor
 
-// PollCursorPageResult holds a cursor-paginated list of polls and the next cursor.
 type PollCursorPageResult struct {
 	Items      []*PollAPIResponse `json:"items"`
 	NextCursor *string            `json:"next_cursor,omitempty"`
@@ -123,7 +123,6 @@ type PollVoteSummary struct {
 	UserVotedOptions map[uuid.UUID]bool // option_id -> true if the querying user voted for it
 }
 
-// IsDeadlinePassed returns true if the poll has a deadline and it has already passed.
 func (p *Poll) IsDeadlinePassed() bool {
 	return p.Deadline != nil && time.Now().UTC().After(*p.Deadline)
 }
