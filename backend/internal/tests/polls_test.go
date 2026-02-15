@@ -515,6 +515,23 @@ func TestPollUpdate(t *testing.T) {
 			AssertStatus(http.StatusForbidden)
 	})
 
+	t.Run("admin cannot update another member's poll", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, member, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		q := "admin override"
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Question: &q},
+			}).
+			AssertStatus(http.StatusForbidden)
+			})
+
 	t.Run("cannot update after deadline passed", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
@@ -671,6 +688,25 @@ func TestPollOptions(t *testing.T) {
 			AssertStatus(http.StatusForbidden)
 	})
 
+	t.Run("admin cannot add option to another member's poll", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, member, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  optionRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreatePollOptionRequest{
+					OptionType: models.OptionTypeCustom,
+					Name:       "Admin option",
+				},
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+
 	t.Run("cannot add option after votes exist", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
@@ -735,6 +771,22 @@ func TestPollOptions(t *testing.T) {
 				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
 				Method: testkit.DELETE,
 				UserID: &member,
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+
+	t.Run("admin cannot delete option on another member's poll", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, member, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
+				Method: testkit.DELETE,
+				UserID: &owner,
 			}).
 			AssertStatus(http.StatusForbidden)
 	})
