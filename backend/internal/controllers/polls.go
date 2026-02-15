@@ -262,12 +262,13 @@ func (pc *PollController) AddOption(c *fiber.Ctx) error {
 }
 
 // @Summary      Delete a poll option
-// @Description  Removes an option from a poll (only if no votes exist yet)
+// @Description  Removes an option from a poll and returns the deleted option
 // @Tags         polls
+// @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        optionId path string true "Option ID"
-// @Success      204 "No Content"
+// @Success      200 {object} models.PollOption
 // @Failure      400,401,403,404,409,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId} [delete]
 // @ID           deletePollOption
@@ -292,11 +293,12 @@ func (pc *PollController) DeleteOption(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := pc.pollService.DeleteOption(c.Context(), tripID, pollID, optionID, userID); err != nil {
+	option, err := pc.pollService.DeleteOption(c.Context(), tripID, pollID, optionID, userID)
+	if err != nil {
 		return err
 	}
 
-	return c.SendStatus(http.StatusNoContent)
+	return c.Status(http.StatusOK).JSON(option)
 }
 
 // @Summary      Cast a vote
