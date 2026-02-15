@@ -386,6 +386,101 @@ func TestPollCreate(t *testing.T) {
 			}).
 			AssertStatus(http.StatusBadRequest)
 	})
+
+	t.Run("creates poll with future deadline", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		future := time.Now().Add(72 * time.Hour).UTC()
+		req := defaultPollRequest()
+		req.Deadline = &future
+
+		resp := createPoll(t, app, owner, tripID, req)
+		require.NotNil(t, resp["deadline"])
+	})
+
+	t.Run("rejects poll missing question", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  pollRoute(tripID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: map[string]any{
+					"poll_type": "single",
+					"options": []map[string]any{
+						{"option_type": "custom", "name": "A"},
+						{"option_type": "custom", "name": "B"},
+					},
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("rejects poll missing poll_type", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  pollRoute(tripID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: map[string]any{
+					"question": "Where?",
+					"options": []map[string]any{
+						{"option_type": "custom", "name": "A"},
+						{"option_type": "custom", "name": "B"},
+					},
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("rejects poll option with missing name", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  pollRoute(tripID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: map[string]any{
+					"question":  "Q?",
+					"poll_type": "single",
+					"options": []map[string]any{
+						{"option_type": "custom", "name": "A"},
+						{"option_type": "custom"},
+					},
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("rejects poll on nonexistent trip", func(t *testing.T) {
+		owner, _, _, _ := setupPollTestEnv(t, app)
+		fakeTripID := uuid.NewString()
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  pollRoute(fakeTripID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   defaultPollRequest(),
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("rejects poll with invalid trip UUID", func(t *testing.T) {
+		owner, _, _, _ := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/not-a-uuid/vote-polls",
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   defaultPollRequest(),
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
 }
 
 /* =========================
@@ -448,6 +543,35 @@ func TestPollGet(t *testing.T) {
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 404 for poll from wrong trip", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		otherTrip := createPollTrip(t, app, owner)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(otherTrip, pollID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 400 for invalid poll UUID", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, "not-a-uuid"),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
 	})
 }
 
@@ -530,7 +654,7 @@ func TestPollUpdate(t *testing.T) {
 				Body:   models.UpdatePollRequest{Question: &q},
 			}).
 			AssertStatus(http.StatusForbidden)
-			})
+	})
 
 	t.Run("cannot update after deadline passed", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
@@ -567,6 +691,122 @@ func TestPollUpdate(t *testing.T) {
 				Body:   models.UpdatePollRequest{Deadline: &past},
 			}).
 			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("update preserves options and existing votes", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		newQ := "Updated question"
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Question: &newQ},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, newQ, resp["question"])
+		options := resp["options"].([]any)
+		require.Len(t, options, 2, "options should be preserved after update")
+
+		for _, o := range options {
+			opt := o.(map[string]any)
+			if opt["id"] == optIDs[0] {
+				require.Equal(t, float64(1), opt["vote_count"])
+				require.Equal(t, true, opt["voted"])
+			}
+		}
+	})
+
+	t.Run("update only deadline leaves question unchanged", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		originalQuestion := poll["question"].(string)
+
+		deadline := time.Now().Add(48 * time.Hour).UTC().Truncate(time.Second)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Deadline: &deadline},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, originalQuestion, resp["question"], "question should not change when only deadline is updated")
+	})
+
+	t.Run("update only question leaves deadline unchanged", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		future := time.Now().Add(72 * time.Hour).UTC()
+		req := defaultPollRequest()
+		req.Deadline = &future
+		poll := createPoll(t, app, owner, tripID, req)
+		pollID := poll["id"].(string)
+
+		newQ := "New question"
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Question: &newQ},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.NotNil(t, resp["deadline"], "deadline should not be removed when only question is updated")
+	})
+
+	t.Run("non-member cannot update poll", func(t *testing.T) {
+		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		q := "hacked"
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &nonMember,
+				Body:   models.UpdatePollRequest{Question: &q},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 404 for nonexistent poll", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		q := "ghost"
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, uuid.NewString()),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{Question: &q},
+			}).
+			AssertStatus(http.StatusNotFound)
 	})
 }
 
@@ -636,6 +876,85 @@ func TestPollDelete(t *testing.T) {
 			GetBody()
 
 		require.Equal(t, pollID, resp["id"])
+	})
+
+	t.Run("returns 404 for nonexistent poll", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, uuid.NewString()),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 404 for poll from wrong trip", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		otherTrip := createPollTrip(t, app, owner)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(otherTrip, pollID),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("non-member cannot delete poll", func(t *testing.T) {
+		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.DELETE,
+				UserID: &nonMember,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("delete poll cascades votes", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
 	})
 }
 
@@ -907,6 +1226,96 @@ func TestPollOptions(t *testing.T) {
 				},
 			}).
 			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("returns 404 for nonexistent option", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, uuid.NewString()),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 404 for option from wrong poll", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll1 := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		poll2 := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		poll2ID := poll2["id"].(string)
+		poll1Opts := getOptionIDs(poll1)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, poll2ID, poll1Opts[0]),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("non-member cannot delete option", func(t *testing.T) {
+		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
+				Method: testkit.DELETE,
+				UserID: &nonMember,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("rejects add option with missing name", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  optionRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   map[string]any{"option_type": "custom"},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("delete option rejected after votes even on unvoted option", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, optIDs[2]),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusConflict)
 	})
 }
 
@@ -1203,7 +1612,6 @@ func TestPollVoting(t *testing.T) {
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
 		optIDs := getOptionIDs(poll)
-		// Force a past deadline directly in the DB
 		past := time.Now().Add(-1 * time.Hour).UTC()
 		setPollDeadlineInDB(t, pollID, past)
 
@@ -1216,6 +1624,210 @@ func TestPollVoting(t *testing.T) {
 				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
 			}).
 			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("returns 404 for vote on poll from wrong trip", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		otherTrip := createPollTrip(t, app, owner)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(otherTrip, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("returns 404 for vote on nonexistent poll", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, uuid.NewString()),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.New()}},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("rejects duplicate option IDs in vote", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, multiPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+		sameOpt := uuid.MustParse(optIDs[0])
+
+		// The DB composite PK (poll_id, option_id, user_id) causes a
+		// constraint violation on duplicate inserts → 409 Conflict.
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{sameOpt, sameOpt}},
+			}).
+			AssertStatus(http.StatusConflict)
+	})
+
+	t.Run("re-voting for same option is idempotent", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+		opt := uuid.MustParse(optIDs[0])
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{opt}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{opt}},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		for _, o := range resp["options"].([]any) {
+			opt := o.(map[string]any)
+			if opt["id"] == optIDs[0] {
+				require.Equal(t, float64(1), opt["vote_count"], "re-voting same option should not increase count")
+				require.Equal(t, true, opt["voted"])
+			} else {
+				require.Equal(t, float64(0), opt["vote_count"])
+			}
+		}
+	})
+
+	t.Run("multi-choice vote for all options", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, multiPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		allOpts := make([]uuid.UUID, len(optIDs))
+		for i, id := range optIDs {
+			allOpts[i] = uuid.MustParse(id)
+		}
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body:   models.CastVoteRequest{OptionIDs: allOpts},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		options := resp["options"].([]any)
+		for _, o := range options {
+			opt := o.(map[string]any)
+			require.Equal(t, float64(1), opt["vote_count"])
+			require.Equal(t, true, opt["voted"])
+		}
+	})
+
+	t.Run("multiple users on multi-choice shows independent vote counts", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, multiPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CastVoteRequest{OptionIDs: []uuid.UUID{
+					uuid.MustParse(optIDs[0]),
+					uuid.MustParse(optIDs[1]),
+				}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  voteRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &member,
+				Body: models.CastVoteRequest{OptionIDs: []uuid.UUID{
+					uuid.MustParse(optIDs[1]),
+					uuid.MustParse(optIDs[2]),
+				}},
+			}).
+			AssertStatus(http.StatusOK)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		for _, o := range resp["options"].([]any) {
+			opt := o.(map[string]any)
+			switch opt["id"] {
+			case optIDs[0]:
+				require.Equal(t, float64(1), opt["vote_count"], "only owner voted for opt 0")
+				require.Equal(t, true, opt["voted"], "owner voted for opt 0")
+			case optIDs[1]:
+				require.Equal(t, float64(2), opt["vote_count"], "both voted for opt 1")
+				require.Equal(t, true, opt["voted"], "owner voted for opt 1")
+			case optIDs[2]:
+				require.Equal(t, float64(1), opt["vote_count"], "only member voted for opt 2")
+				require.Equal(t, false, opt["voted"], "owner did NOT vote for opt 2")
+			}
+		}
+
+		respMember := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.GET,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		for _, o := range respMember["options"].([]any) {
+			opt := o.(map[string]any)
+			switch opt["id"] {
+			case optIDs[0]:
+				require.Equal(t, float64(1), opt["vote_count"])
+				require.Equal(t, false, opt["voted"], "member did NOT vote for opt 0")
+			case optIDs[1]:
+				require.Equal(t, float64(2), opt["vote_count"])
+				require.Equal(t, true, opt["voted"], "member voted for opt 1")
+			case optIDs[2]:
+				require.Equal(t, float64(1), opt["vote_count"])
+				require.Equal(t, true, opt["voted"], "member voted for opt 2")
+			}
+		}
 	})
 }
 
@@ -1422,662 +2034,5 @@ func TestPollPagination(t *testing.T) {
 		require.Equal(t, createdIDs[2], items[0].(map[string]any)["id"])
 		require.Equal(t, createdIDs[1], items[1].(map[string]any)["id"])
 		require.Equal(t, createdIDs[0], items[2].(map[string]any)["id"])
-	})
-}
-
-/* =========================
-   EDGE CASES
-=========================*/
-
-func TestPollEdgeCases(t *testing.T) {
-	app := fakes.GetSharedTestApp()
-
-	// ── Create ──────────────────────────────────────────────────────────
-
-	t.Run("create poll with future deadline succeeds", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		future := time.Now().Add(72 * time.Hour).UTC()
-		req := defaultPollRequest()
-		req.Deadline = &future
-
-		resp := createPoll(t, app, owner, tripID, req)
-		require.NotNil(t, resp["deadline"])
-	})
-
-	t.Run("create poll missing question returns 422", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  pollRoute(tripID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: map[string]any{
-					"poll_type": "single",
-					"options": []map[string]any{
-						{"option_type": "custom", "name": "A"},
-						{"option_type": "custom", "name": "B"},
-					},
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("create poll missing poll_type returns 422", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  pollRoute(tripID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: map[string]any{
-					"question": "Where?",
-					"options": []map[string]any{
-						{"option_type": "custom", "name": "A"},
-						{"option_type": "custom", "name": "B"},
-					},
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("create poll with exactly 2 options succeeds", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		resp := createPoll(t, app, owner, tripID, defaultPollRequest())
-		options := resp["options"].([]any)
-		require.Len(t, options, 2)
-	})
-
-	t.Run("create poll option with missing name returns 422", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  pollRoute(tripID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: map[string]any{
-					"question":  "Q?",
-					"poll_type": "single",
-					"options": []map[string]any{
-						{"option_type": "custom", "name": "A"},
-						{"option_type": "custom"},
-					},
-				},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	t.Run("create poll on nonexistent trip returns 404", func(t *testing.T) {
-		owner, _, _, _ := setupPollTestEnv(t, app)
-		fakeTripID := uuid.NewString()
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  pollRoute(fakeTripID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   defaultPollRequest(),
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("create poll with invalid trip UUID returns 400", func(t *testing.T) {
-		owner, _, _, _ := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  "/api/v1/trips/not-a-uuid/vote-polls",
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   defaultPollRequest(),
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
-
-	// ── Get ─────────────────────────────────────────────────────────────
-
-	t.Run("get poll from wrong trip returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-
-		// Create a second trip
-		otherTrip := createPollTrip(t, app, owner)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(otherTrip, pollID),
-				Method: testkit.GET,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("get poll with invalid poll UUID returns 400", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, "not-a-uuid"),
-				Method: testkit.GET,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusBadRequest)
-	})
-
-	// ── Update ──────────────────────────────────────────────────────────
-
-	t.Run("update preserves options and existing votes", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		// Cast a vote first
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Update question
-		newQ := "Updated question"
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.PATCH,
-				UserID: &owner,
-				Body:   models.UpdatePollRequest{Question: &newQ},
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		require.Equal(t, newQ, resp["question"])
-		options := resp["options"].([]any)
-		require.Len(t, options, 2, "options should be preserved after update")
-
-		// Vote should still be reflected
-		for _, o := range options {
-			opt := o.(map[string]any)
-			if opt["id"] == optIDs[0] {
-				require.Equal(t, float64(1), opt["vote_count"])
-				require.Equal(t, true, opt["voted"])
-			}
-		}
-	})
-
-	t.Run("update only deadline leaves question unchanged", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		originalQuestion := poll["question"].(string)
-
-		deadline := time.Now().Add(48 * time.Hour).UTC().Truncate(time.Second)
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.PATCH,
-				UserID: &owner,
-				Body:   models.UpdatePollRequest{Deadline: &deadline},
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		require.Equal(t, originalQuestion, resp["question"], "question should not change when only deadline is updated")
-	})
-
-	t.Run("update only question leaves deadline unchanged", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		future := time.Now().Add(72 * time.Hour).UTC()
-		req := defaultPollRequest()
-		req.Deadline = &future
-		poll := createPoll(t, app, owner, tripID, req)
-		pollID := poll["id"].(string)
-
-		newQ := "New question"
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.PATCH,
-				UserID: &owner,
-				Body:   models.UpdatePollRequest{Question: &newQ},
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		require.NotNil(t, resp["deadline"], "deadline should not be removed when only question is updated")
-	})
-
-	t.Run("non-member cannot update poll", func(t *testing.T) {
-		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		q := "hacked"
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.PATCH,
-				UserID: &nonMember,
-				Body:   models.UpdatePollRequest{Question: &q},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("update nonexistent poll returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		q := "ghost"
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, uuid.NewString()),
-				Method: testkit.PATCH,
-				UserID: &owner,
-				Body:   models.UpdatePollRequest{Question: &q},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	// ── Delete ──────────────────────────────────────────────────────────
-
-	t.Run("delete nonexistent poll returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, uuid.NewString()),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("delete poll from wrong trip returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-
-		otherTrip := createPollTrip(t, app, owner)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(otherTrip, pollID),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("non-member cannot delete poll", func(t *testing.T) {
-		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.DELETE,
-				UserID: &nonMember,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("delete poll cascades votes", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		// Vote
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Delete
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Verify the poll and its votes are gone
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.GET,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	// ── Options ─────────────────────────────────────────────────────────
-
-	t.Run("delete nonexistent option returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
-		pollID := poll["id"].(string)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  deleteOptionRoute(tripID, pollID, uuid.NewString()),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("delete option from wrong poll returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll1 := createPoll(t, app, owner, tripID, threeOptionPollRequest())
-		poll2 := createPoll(t, app, owner, tripID, threeOptionPollRequest())
-		poll2ID := poll2["id"].(string)
-		poll1Opts := getOptionIDs(poll1)
-
-		// Try to delete poll1's option via poll2's route
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  deleteOptionRoute(tripID, poll2ID, poll1Opts[0]),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("non-member cannot delete option", func(t *testing.T) {
-		owner, _, nonMember, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
-				Method: testkit.DELETE,
-				UserID: &nonMember,
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("add option missing name returns 422", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  optionRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   map[string]any{"option_type": "custom"},
-			}).
-			AssertStatus(http.StatusUnprocessableEntity)
-	})
-
-	// ── Voting ──────────────────────────────────────────────────────────
-
-	t.Run("vote on poll from wrong trip returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		otherTrip := createPollTrip(t, app, owner)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(otherTrip, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("vote on nonexistent poll returns 404", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, uuid.NewString()),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.New()}},
-			}).
-			AssertStatus(http.StatusNotFound)
-	})
-
-	t.Run("duplicate option IDs in vote are rejected", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, multiPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-		sameOpt := uuid.MustParse(optIDs[0])
-
-		// Send the same option ID twice in a multi-choice poll.
-		// The DB has a composite PK (poll_id, option_id, user_id), so the
-		// duplicate insert causes a constraint violation → 409 Conflict.
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{sameOpt, sameOpt}},
-			}).
-			AssertStatus(http.StatusConflict)
-	})
-
-	t.Run("re-voting for same option is idempotent", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-		opt := uuid.MustParse(optIDs[0])
-
-		// Vote
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{opt}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Vote again for same option
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{opt}},
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		for _, o := range resp["options"].([]any) {
-			opt := o.(map[string]any)
-			if opt["id"] == optIDs[0] {
-				require.Equal(t, float64(1), opt["vote_count"], "re-voting same option should not increase count")
-				require.Equal(t, true, opt["voted"])
-			} else {
-				require.Equal(t, float64(0), opt["vote_count"])
-			}
-		}
-	})
-
-	t.Run("multi-choice vote for all options", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, multiPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		allOpts := make([]uuid.UUID, len(optIDs))
-		for i, id := range optIDs {
-			allOpts[i] = uuid.MustParse(id)
-		}
-
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: allOpts},
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		options := resp["options"].([]any)
-		for _, o := range options {
-			opt := o.(map[string]any)
-			require.Equal(t, float64(1), opt["vote_count"])
-			require.Equal(t, true, opt["voted"])
-		}
-	})
-
-	t.Run("delete option rejected after votes even on unvoted option", func(t *testing.T) {
-		owner, _, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		// Vote for option 0
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{uuid.MustParse(optIDs[0])}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Try to delete option 2 (unvoted) — should still be rejected because poll has votes
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  deleteOptionRoute(tripID, pollID, optIDs[2]),
-				Method: testkit.DELETE,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusConflict)
-	})
-
-	t.Run("multiple users on multi-choice shows independent vote_counts", func(t *testing.T) {
-		owner, member, _, tripID := setupPollTestEnv(t, app)
-		poll := createPoll(t, app, owner, tripID, multiPollRequest())
-		pollID := poll["id"].(string)
-		optIDs := getOptionIDs(poll)
-
-		// Owner votes for option 0 and 1
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: models.CastVoteRequest{OptionIDs: []uuid.UUID{
-					uuid.MustParse(optIDs[0]),
-					uuid.MustParse(optIDs[1]),
-				}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Member votes for option 1 and 2
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  voteRoute(tripID, pollID),
-				Method: testkit.POST,
-				UserID: &member,
-				Body: models.CastVoteRequest{OptionIDs: []uuid.UUID{
-					uuid.MustParse(optIDs[1]),
-					uuid.MustParse(optIDs[2]),
-				}},
-			}).
-			AssertStatus(http.StatusOK)
-
-		// Get poll as owner — verify counts and per-user voted flags
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.GET,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		for _, o := range resp["options"].([]any) {
-			opt := o.(map[string]any)
-			switch opt["id"] {
-			case optIDs[0]:
-				require.Equal(t, float64(1), opt["vote_count"], "only owner voted for opt 0")
-				require.Equal(t, true, opt["voted"], "owner voted for opt 0")
-			case optIDs[1]:
-				require.Equal(t, float64(2), opt["vote_count"], "both voted for opt 1")
-				require.Equal(t, true, opt["voted"], "owner voted for opt 1")
-			case optIDs[2]:
-				require.Equal(t, float64(1), opt["vote_count"], "only member voted for opt 2")
-				require.Equal(t, false, opt["voted"], "owner did NOT vote for opt 2")
-			}
-		}
-
-		// Get poll as member — same counts, different voted flags
-		respMember := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.GET,
-				UserID: &member,
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		for _, o := range respMember["options"].([]any) {
-			opt := o.(map[string]any)
-			switch opt["id"] {
-			case optIDs[0]:
-				require.Equal(t, float64(1), opt["vote_count"])
-				require.Equal(t, false, opt["voted"], "member did NOT vote for opt 0")
-			case optIDs[1]:
-				require.Equal(t, float64(2), opt["vote_count"])
-				require.Equal(t, true, opt["voted"], "member voted for opt 1")
-			case optIDs[2]:
-				require.Equal(t, float64(1), opt["vote_count"])
-				require.Equal(t, true, opt["voted"], "member voted for opt 2")
-			}
-		}
 	})
 }
