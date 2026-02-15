@@ -1213,10 +1213,17 @@ function RealtimePlayground() {
         if (msg.type === "events" && msg.events) {
           msg.events.forEach((ev: RealtimeEvent) => {
             addEvent(ev);
-            if (ev.topic.startsWith("poll.") && ev.topic !== "poll.deleted") {
-              fetchPoll();
+            if (ev.topic === "poll.created" && ev.data?.id) {
+              // Auto-load newly created poll (even from another device)
+              pgPollId.current = ev.data.id;
+              setPoll(ev.data);
             } else if (ev.topic === "poll.deleted") {
-              setPoll((prev: any) => (prev ? { ...prev, _deleted: true } : null));
+              if (!pgPollId.current || ev.data?.id === pgPollId.current) {
+                setPoll((prev: any) => (prev ? { ...prev, _deleted: true } : null));
+              }
+            } else if (ev.topic.startsWith("poll.") && ev.data?.id === pgPollId.current) {
+              // vote_added, vote_removed, updated — refresh if it's our poll
+              setPoll(ev.data);
             }
           });
         }
@@ -1231,7 +1238,7 @@ function RealtimePlayground() {
       setWsStatus("disconnected");
       wsRef2.current = null;
     };
-  }, [fetchPoll]);
+  }, []);
 
   const disconnect = useCallback(() => {
     wsRef2.current?.close();
