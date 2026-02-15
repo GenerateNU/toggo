@@ -442,7 +442,7 @@ export default function TestPollScreen() {
           onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
         />
         <TestButton
-          label="Remove last option"
+          label="Remove last option (returns deleted option)"
           onRun={async () => {
             const id = optionIds.pop();
             if (!id)
@@ -751,6 +751,7 @@ export default function TestPollScreen() {
               options: [
                 { name: "A", option_type: "custom" },
                 { name: "B", option_type: "custom" },
+                { name: "C", option_type: "custom" },
               ],
             });
             if (!p.ok) return p;
@@ -762,6 +763,29 @@ export default function TestPollScreen() {
               name: "Too late",
               option_type: "custom",
             });
+          }}
+        />
+        <TestButton
+          label="❌ Delete option after votes exist (expect 409)"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Option lock delete test",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+                { name: "C", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            const opts = (p.data.options || []).map((o: any) => o.id);
+            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [opts[0]],
+            });
+            return api(
+              "DELETE",
+              `/trips/${tripId}/vote-polls/${p.data.id}/options/${opts[2]}`
+            );
           }}
         />
         <TestButton
