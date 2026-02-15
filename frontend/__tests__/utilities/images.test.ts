@@ -452,7 +452,7 @@ describe("image-compression", () => {
         setupImageGetSize(1920, 1080);
         setupFetchWithSize(500_000);
 
-        const resolvers: Array<() => void> = [];
+        const resolvers: (() => void)[] = [];
         (ImageManipulator.manipulateAsync as jest.Mock).mockImplementation(
           () =>
             new Promise((resolve) => {

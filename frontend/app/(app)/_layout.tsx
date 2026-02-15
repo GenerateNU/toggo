@@ -22,6 +22,10 @@ const Layout = () => {
         name="test-poll"
         options={{ title: "Poll API Test", headerShown: true }}
       />
+      <Stack.Screen
+        name="test-maps"
+        options={{ title: "Google Maps API Test", headerShown: true }}
+      />
     </Stack>
   );
 };
