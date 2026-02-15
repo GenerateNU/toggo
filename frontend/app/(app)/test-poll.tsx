@@ -311,7 +311,7 @@ export default function TestPollScreen() {
           }
         />
         <TestButton
-          label="✅ No options → defaults to Yes/No (expect 201)"
+          label="✅ No options param provided → defaults to Yes/No (expect 201)"
           onRun={async () => {
             const res = await api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Should we go?",
@@ -331,7 +331,7 @@ export default function TestPollScreen() {
           }
         />
         <TestButton
-          label="❌ Empty option content (expect 422)"
+          label="❌ '' name in option content (expect 422)"
           onRun={() =>
             api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Bad poll",
@@ -705,10 +705,157 @@ export default function TestPollScreen() {
         />
       </Section>
 
-      {/* ── 10  END-TO-END FLOW + REALTIME ──────────────────────────── */}
+      {/* ── 10  EDGE CASES ───────────────────────────────────────────── */}
+      <Section
+        title="10 · Edge Cases"
+        description="Boundary conditions not covered above — invalid IDs, constraint violations, cascading deletes."
+      >
+        <TestButton
+          label="❌ Create poll with invalid poll_type (expect 422)"
+          onRun={() =>
+            api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Bad type",
+              poll_type: "invalid_type",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            })
+          }
+        />
+        <TestButton
+          label="❌ Create poll on invalid trip UUID (expect 400)"
+          onRun={() =>
+            api("POST", `/trips/not-a-uuid/vote-polls`, {
+              question: "Bad trip",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            })
+          }
+        />
+        <TestButton
+          label="❌ Get poll with invalid UUID (expect 400)"
+          onRun={() =>
+            api("GET", `/trips/${tripId}/vote-polls/not-a-uuid`)
+          }
+        />
+        <TestButton
+          label="❌ Add option after votes exist (expect 409)"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Option lock test",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            const opts = (p.data.options || []).map((o: any) => o.id);
+            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [opts[0]],
+            });
+            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/options`, {
+              name: "Too late",
+              option_type: "custom",
+            });
+          }}
+        />
+        <TestButton
+          label="❌ Duplicate option IDs in vote (expect 409)"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Dup vote test",
+              poll_type: "multi",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            const firstOpt = p.data.options[0].id;
+            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [firstOpt, firstOpt],
+            });
+          }}
+        />
+        <TestButton
+          label="✅ Re-vote same option is idempotent (expect 200)"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Idempotent test",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            const opt = p.data.options[0].id;
+            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [opt],
+            });
+            return api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [opt],
+            });
+          }}
+        />
+        <TestButton
+          label="✅ Update preserves existing votes"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Before update",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            const opt = p.data.options[0].id;
+            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [opt],
+            });
+            await api("PATCH", `/trips/${tripId}/vote-polls/${p.data.id}`, {
+              question: "After update",
+            });
+            return api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
+          }}
+        />
+        <TestButton
+          label="✅ Delete poll cascades votes (expect 204 → 404)"
+          onRun={async () => {
+            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+              question: "Cascade test",
+              poll_type: "single",
+              options: [
+                { name: "A", option_type: "custom" },
+                { name: "B", option_type: "custom" },
+              ],
+            });
+            if (!p.ok) return p;
+            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
+              option_ids: [p.data.options[0].id],
+            });
+            const del = await api("DELETE", `/trips/${tripId}/vote-polls/${p.data.id}`);
+            const verify = await api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
+            return {
+              status: del.status === 204 && verify.status === 404 ? 204 : 500,
+              ok: del.status === 204 && verify.status === 404,
+              data: { delete: del.status, get_after: verify.status },
+              duration: del.duration + verify.duration,
+            };
+          }}
+        />
+      </Section>
+
+      {/* ── 11  END-TO-END FLOW + REALTIME ──────────────────────────── */}
       <E2ESection />
 
-      {/* ── 11  REALTIME PLAYGROUND ─────────────────────────────────── */}
+      {/* ── 12  REALTIME PLAYGROUND ─────────────────────────────────── */}
       <RealtimePlayground />
 
       <View style={{ height: 60 }} />
