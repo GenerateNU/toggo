@@ -629,8 +629,8 @@ func TestPollDelete(t *testing.T) {
 func TestPollOptions(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 
-	t.Run("member can add option before any votes", func(t *testing.T) {
-		owner, member, _, tripID := setupPollTestEnv(t, app)
+	t.Run("creator can add option before any votes", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
 
@@ -639,7 +639,7 @@ func TestPollOptions(t *testing.T) {
 				App:    app,
 				Route:  optionRoute(tripID, pollID),
 				Method: testkit.POST,
-				UserID: &member,
+				UserID: &owner,
 				Body: models.CreatePollOptionRequest{
 					OptionType: models.OptionTypeCustom,
 					Name:       "Tacos",
@@ -650,6 +650,25 @@ func TestPollOptions(t *testing.T) {
 
 		require.Equal(t, "Tacos", resp["name"])
 		require.Equal(t, "custom", resp["option_type"])
+	})
+
+	t.Run("non-creator member cannot add option", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  optionRoute(tripID, pollID),
+				Method: testkit.POST,
+				UserID: &member,
+				Body: models.CreatePollOptionRequest{
+					OptionType: models.OptionTypeCustom,
+					Name:       "Tacos",
+				},
+			}).
+			AssertStatus(http.StatusForbidden)
 	})
 
 	t.Run("cannot add option after votes exist", func(t *testing.T) {
@@ -684,7 +703,7 @@ func TestPollOptions(t *testing.T) {
 			AssertStatus(http.StatusConflict)
 	})
 
-	t.Run("member can delete option before any votes", func(t *testing.T) {
+	t.Run("creator can delete option before any votes", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
 		pollID := poll["id"].(string)
@@ -702,6 +721,22 @@ func TestPollOptions(t *testing.T) {
 
 		require.Equal(t, optIDs[0], resp["id"])
 		require.Equal(t, pollID, resp["poll_id"])
+	})
+
+	t.Run("non-creator member cannot delete option", func(t *testing.T) {
+		owner, member, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
+				Method: testkit.DELETE,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusForbidden)
 	})
 
 	t.Run("cannot delete option after votes exist", func(t *testing.T) {

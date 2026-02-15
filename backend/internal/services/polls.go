@@ -217,8 +217,9 @@ func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uui
 	return resp, nil
 }
 
-// AddOption adds an option to a poll. Blocked after the deadline has passed or
-// after any votes have been cast (enforced at the repository level).
+// AddOption adds an option to a poll. Only the poll creator can add options.
+// Blocked after the deadline has passed or after any votes have been cast
+// (enforced at the repository level).
 func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
@@ -226,6 +227,9 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 	}
 	if meta.TripID != tripID {
 		return nil, errs.ErrNotFound
+	}
+	if meta.CreatedBy != userID {
+		return nil, errs.Forbidden()
 	}
 
 	if meta.IsDeadlinePassed() {
@@ -252,8 +256,9 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 	return s.repository.Poll.AddOption(ctx, option)
 }
 
-// DeleteOption removes an option from a poll. Rejected if it would leave
-// fewer than 2 options or if any votes already exist on the poll.
+// DeleteOption removes an option from a poll. Only the poll creator can delete
+// options. Rejected if it would leave fewer than 2 options or if any votes
+// already exist on the poll.
 func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error) {
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
@@ -261,6 +266,9 @@ func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID
 	}
 	if meta.TripID != tripID {
 		return nil, errs.ErrNotFound
+	}
+	if meta.CreatedBy != userID {
+		return nil, errs.Forbidden()
 	}
 
 	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
