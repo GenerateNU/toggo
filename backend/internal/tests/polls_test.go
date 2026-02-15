@@ -639,6 +639,22 @@ func TestPollUpdate(t *testing.T) {
 			AssertStatus(http.StatusForbidden)
 	})
 
+	t.Run("rejects empty update body", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
+		pollID := poll["id"].(string)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   models.UpdatePollRequest{},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
 	t.Run("admin cannot update another member's poll", func(t *testing.T) {
 		owner, member, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, member, tripID, defaultPollRequest())

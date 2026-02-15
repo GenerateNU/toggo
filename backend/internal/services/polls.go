@@ -147,6 +147,10 @@ func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.
 // UpdatePoll updates poll metadata. Only the poll creator can update, and
 // updates are blocked once the deadline has passed.
 func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error) {
+	if req.Question == nil && req.Deadline == nil {
+		return nil, errs.BadRequest(errors.New("at least one field must be provided"))
+	}
+
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
