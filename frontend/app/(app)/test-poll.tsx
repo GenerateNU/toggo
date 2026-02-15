@@ -662,17 +662,17 @@ export default function TestPollScreen() {
             const res = await api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Delete me",
               poll_type: "single",
-              options: [{ name: "X", option_type: "custom" }],
             });
             if (res.ok) pollId = res.data.id;
             return res;
           }}
         />
         <TestButton
-          label="Delete poll (expect 204)"
-          onRun={() =>
-            api("DELETE", `/trips/${tripId}/vote-polls/${pollId}`)
-          }
+          label="Delete poll (returns deleted poll)"
+          onRun={async () => {
+            const res = await api("DELETE", `/trips/${tripId}/vote-polls/${pollId}`);
+            return res;
+          }}
         />
         <TestButton
           label="Verify deleted (expect 404)"
@@ -850,7 +850,7 @@ export default function TestPollScreen() {
           }}
         />
         <TestButton
-          label="✅ Delete poll cascades votes (expect 204 → 404)"
+          label="✅ Delete poll cascades votes (expect 200 → 404)"
           onRun={async () => {
             const p = await api("POST", `/trips/${tripId}/vote-polls`, {
               question: "Cascade test",
@@ -867,9 +867,9 @@ export default function TestPollScreen() {
             const del = await api("DELETE", `/trips/${tripId}/vote-polls/${p.data.id}`);
             const verify = await api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
             return {
-              status: del.status === 204 && verify.status === 404 ? 204 : 500,
-              ok: del.status === 204 && verify.status === 404,
-              data: { delete: del.status, get_after: verify.status },
+              status: del.status === 200 && verify.status === 404 ? 200 : 500,
+              ok: del.status === 200 && verify.status === 404,
+              data: { deleted_poll: del.data, get_after: verify.status },
               duration: del.duration + verify.duration,
             };
           }}

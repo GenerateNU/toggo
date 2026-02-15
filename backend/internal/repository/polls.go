@@ -18,7 +18,7 @@ type PollRepository interface {
 	CountOptions(ctx context.Context, pollID uuid.UUID) (int, error)
 	FindPollsByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PollCursor) ([]*models.Poll, *models.PollCursor, error)
 	UpdatePoll(ctx context.Context, pollID uuid.UUID, req *models.UpdatePollRequest) (*models.Poll, error)
-	DeletePoll(ctx context.Context, pollID uuid.UUID) error
+	DeletePoll(ctx context.Context, pollID uuid.UUID) (*models.Poll, error)
 	AddOption(ctx context.Context, option *models.PollOption) (*models.PollOption, error)
 	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) (*models.PollOption, error)
 	CastVote(ctx context.Context, pollID, userID uuid.UUID, votes []models.PollVote) ([]models.PollVote, error)
@@ -65,6 +65,8 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *models.Poll, opti
 	return poll, nil
 }
 
+// FindPollByID retrieves a poll with its options eagerly loaded — use when
+// building a full PollAPIResponse. See FindPollMetaByID for a lighter query.
 func (r *pollRepository) FindPollByID(ctx context.Context, pollID uuid.UUID) (*models.Poll, error) {
 	poll := &models.Poll{}
 	err := r.db.NewSelect().
@@ -83,6 +85,7 @@ func (r *pollRepository) FindPollByID(ctx context.Context, pollID uuid.UUID) (*m
 
 // FindPollMetaByID retrieves a poll without its options — use when only
 // metadata (trip_id, created_by, deadline, poll_type) is needed.
+// See FindPollByID when options are also required.
 func (r *pollRepository) FindPollMetaByID(ctx context.Context, pollID uuid.UUID) (*models.Poll, error) {
 	poll := &models.Poll{}
 	err := r.db.NewSelect().
@@ -177,18 +180,20 @@ func (r *pollRepository) UpdatePoll(ctx context.Context, pollID uuid.UUID, req *
 }
 
 // DeletePoll removes a poll and cascades to options/votes.
-func (r *pollRepository) DeletePoll(ctx context.Context, pollID uuid.UUID) error {
+func (r *pollRepository) DeletePoll(ctx context.Context, pollID uuid.UUID) (*models.Poll, error) {
+	poll := new(models.Poll)
 	result, err := r.db.NewDelete().
-		Model((*models.Poll)(nil)).
+		Model(poll).
 		Where("id = ?", pollID).
+		Returning("*").
 		Exec(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if rows, _ := result.RowsAffected(); rows == 0 {
-		return errs.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
-	return nil
+	return poll, nil
 }
 
 // ---------------------------------------------------------------------------

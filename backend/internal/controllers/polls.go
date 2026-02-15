@@ -185,11 +185,12 @@ func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
 }
 
 // @Summary      Delete a poll
-// @Description  Deletes a poll and all associated options and votes
+// @Description  Deletes a poll and all associated options and votes, returns the deleted poll
 // @Tags         polls
+// @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
-// @Success      204 "No Content"
+// @Success      200 {object} models.PollAPIResponse
 // @Failure      400,401,403,404,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId} [delete]
 // @ID           deletePoll
@@ -209,11 +210,12 @@ func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := pc.pollService.DeletePoll(c.Context(), tripID, pollID, userID); err != nil {
+	poll, err := pc.pollService.DeletePoll(c.Context(), tripID, pollID, userID)
+	if err != nil {
 		return err
 	}
 
-	return c.SendStatus(http.StatusNoContent)
+	return c.Status(http.StatusOK).JSON(poll)
 }
 
 // @Summary      Add a poll option

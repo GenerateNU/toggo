@@ -564,15 +564,17 @@ func TestPollDelete(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, defaultPollRequest())
 		pollID := poll["id"].(string)
-
-		testkit.New(t).
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  singlePollRoute(tripID, pollID),
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, pollID, resp["id"])
 
 		// Confirm deleted
 		testkit.New(t).
@@ -606,14 +608,17 @@ func TestPollDelete(t *testing.T) {
 		pollID := poll["id"].(string)
 		// owner is admin (trip creator)
 
-		testkit.New(t).
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  singlePollRoute(tripID, pollID),
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, pollID, resp["id"])
 	})
 }
 
@@ -1668,7 +1673,7 @@ func TestPollEdgeCases(t *testing.T) {
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
+			AssertStatus(http.StatusOK)
 
 		// Verify the poll and its votes are gone
 		testkit.New(t).

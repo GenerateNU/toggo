@@ -20,7 +20,7 @@ type PollServiceInterface interface {
 	GetPoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error)
 	GetPollsByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.PollCursorPageResult, error)
 	UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error)
-	DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) error
+	DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error)
 	AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error)
 	DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error)
 	CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error)
@@ -183,35 +183,38 @@ func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uui
 }
 
 // DeletePoll removes a poll. Only the poll creator or a trip admin can delete.
-func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) error {
-	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
+func (s *PollService) DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error) {
+	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if meta.TripID != tripID {
-		return errs.ErrNotFound
+	if poll.TripID != tripID {
+		return nil, errs.ErrNotFound
 	}
 
-	if meta.CreatedBy != userID {
+	if poll.CreatedBy != userID {
 		isAdmin, err := s.repository.Membership.IsAdmin(ctx, tripID, userID)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !isAdmin {
-			return errs.Forbidden()
+			return nil, errs.Forbidden()
 		}
 	}
 
-	if err := s.repository.Poll.DeletePoll(ctx, pollID); err != nil {
-		return err
+	summary, err := s.repository.Poll.GetPollVotes(ctx, pollID, userID)
+	if err != nil {
+		return nil, err
 	}
 
-	s.publishEvent(ctx, "poll.deleted", tripID.String(), map[string]interface{}{
-		"poll_id": pollID,
-		"trip_id": tripID,
-	})
+	if _, err := s.repository.Poll.DeletePoll(ctx, pollID); err != nil {
+		return nil, err
+	}
 
-	return nil
+	resp := s.toAPIResponse(poll, summary)
+	s.publishEvent(ctx, "poll.deleted", tripID.String(), resp)
+
+	return resp, nil
 }
 
 // AddOption adds an option to a poll. Blocked after the deadline has passed or
