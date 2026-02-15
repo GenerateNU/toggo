@@ -8,7 +8,6 @@ CREATE TABLE poll_votes (
 	PRIMARY KEY (poll_id, option_id, user_id)
 );
 
-CREATE INDEX idx_poll_votes_poll_id ON poll_votes (poll_id);
 CREATE INDEX idx_poll_votes_option_id ON poll_votes (option_id);
 CREATE INDEX idx_poll_votes_user_id ON poll_votes (user_id);
 -- +goose StatementEnd
@@ -17,7 +16,6 @@ CREATE INDEX idx_poll_votes_user_id ON poll_votes (user_id);
 -- +goose StatementBegin
 DROP INDEX IF EXISTS idx_poll_votes_user_id;
 DROP INDEX IF EXISTS idx_poll_votes_option_id;
-DROP INDEX IF EXISTS idx_poll_votes_poll_id;
 
 DROP TABLE IF EXISTS poll_votes;
 -- +goose StatementEnd
