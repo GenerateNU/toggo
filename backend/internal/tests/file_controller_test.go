@@ -48,7 +48,8 @@ func TestFileController_CheckS3Health(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 
 		var response models.S3HealthCheckResponse
-		json.NewDecoder(resp.Body).Decode(&response)
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
 		assert.Equal(t, "healthy", response.Status)
 		assert.Equal(t, "test-bucket", response.BucketName)
 	})
@@ -112,7 +113,8 @@ func TestFileController_CreateUploadURLs(t *testing.T) {
 		assert.Equal(t, 201, resp.StatusCode)
 
 		var response models.UploadURLResponse
-		json.NewDecoder(resp.Body).Decode(&response)
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
 		assert.Equal(t, imageID, response.ImageID)
 		assert.Equal(t, "test/image.jpg", response.FileKey)
 		assert.Len(t, response.UploadURLs, 1)
@@ -185,7 +187,8 @@ func TestFileController_ConfirmUpload(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 
 		var response models.ConfirmUploadResponse
-		json.NewDecoder(resp.Body).Decode(&response)
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
 		assert.Equal(t, imageID, response.ImageID)
 		assert.Equal(t, "confirmed", response.Status)
 		assert.Equal(t, 3, response.Confirmed)
@@ -239,7 +242,8 @@ func TestFileController_GetFile(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 
 		var response models.GetFileResponse
-		json.NewDecoder(resp.Body).Decode(&response)
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
 		assert.Equal(t, imageID, response.ImageID)
 		assert.Equal(t, models.ImageSizeSmall, response.Size)
 		assert.Contains(t, response.URL, "s3.example.com")
@@ -298,7 +302,8 @@ func TestFileController_GetFileAllSizes(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 
 		var response models.GetFileAllSizesResponse
-		json.NewDecoder(resp.Body).Decode(&response)
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
 		assert.Equal(t, imageID, response.ImageID)
 		assert.Len(t, response.Files, 3)
 	})

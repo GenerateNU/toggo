@@ -26,7 +26,7 @@ func setupPollTestEnv(t *testing.T, app *fiber.App) (owner, member, nonMember, t
 	nonMember = createPollUser(t, app)
 	tripID = createPollTrip(t, app, owner)
 	addPollMember(t, app, owner, member, tripID)
-	return
+	return owner, member, nonMember, tripID
 }
 
 func createPollUser(t *testing.T, app *fiber.App) string {
@@ -1441,10 +1441,11 @@ func TestPollVoting(t *testing.T) {
 		// Verify only the second option has the vote
 		for _, o := range resp["options"].([]any) {
 			opt := o.(map[string]any)
-			if opt["id"] == optIDs[0] {
+			switch opt["id"] {
+			case optIDs[0]:
 				require.Equal(t, float64(0), opt["vote_count"])
 				require.Equal(t, false, opt["voted"])
-			} else if opt["id"] == optIDs[1] {
+			case optIDs[1]:
 				require.Equal(t, float64(1), opt["vote_count"])
 				require.Equal(t, true, opt["voted"])
 			}

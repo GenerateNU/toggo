@@ -20,7 +20,7 @@ func NewMockFileService(t interface {
 	Cleanup(func())
 }) *MockFileService {
 	m := &MockFileService{}
-	m.Mock.Test(t)
+	m.Test(t)
 	t.Cleanup(func() { m.AssertExpectations(t) })
 	return m
 }
