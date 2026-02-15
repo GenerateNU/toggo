@@ -20,7 +20,7 @@ type PollRepository interface {
 	UpdatePoll(ctx context.Context, pollID uuid.UUID, req *models.UpdatePollRequest) (*models.Poll, error)
 	DeletePoll(ctx context.Context, pollID uuid.UUID) error
 	AddOption(ctx context.Context, option *models.PollOption) (*models.PollOption, error)
-	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) error
+	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) (*models.PollOption, error)
 	CastVote(ctx context.Context, pollID, userID uuid.UUID, votes []models.PollVote) ([]models.PollVote, error)
 	GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error)
 	GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error)
@@ -215,19 +215,35 @@ func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOptio
 	return option, nil
 }
 
-// DeleteOption removes an option. Deleting is always allowed, even after votes exist.
-func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) error {
-	result, err := r.db.NewDelete().
-		Model((*models.PollOption)(nil)).
-		Where("id = ? AND poll_id = ?", optionID, pollID).
-		Exec(ctx)
+// DeleteOption removes an option only if no votes exist on the poll yet.
+func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) (*models.PollOption, error) {
+	option := new(models.PollOption)
+	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+		hasVotes, err := r.pollHasVotes(ctx, tx, pollID)
+		if err != nil {
+			return err
+		}
+		if hasVotes {
+			return errs.ErrConflict
+		}
+
+		result, err := tx.NewDelete().
+			Model(option).
+			Where("id = ? AND poll_id = ?", optionID, pollID).
+			Returning("*").
+			Exec(ctx)
+		if err != nil {
+			return err
+		}
+		if rows, _ := result.RowsAffected(); rows == 0 {
+			return errs.ErrNotFound
+		}
+		return nil
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if rows, _ := result.RowsAffected(); rows == 0 {
-		return errs.ErrNotFound
-	}
-	return nil
+	return option, nil
 }
 
 // ---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ type PollServiceInterface interface {
 	UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error)
 	DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) error
 	AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error)
-	DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) error
+	DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error)
 	CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error)
 }
 
@@ -250,22 +250,22 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 }
 
 // DeleteOption removes an option from a poll. Rejected if it would leave
-// fewer than 2 options.
-func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) error {
+// fewer than 2 options or if any votes already exist on the poll.
+func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error) {
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if meta.TripID != tripID {
-		return errs.ErrNotFound
+		return nil, errs.ErrNotFound
 	}
 
 	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if optionCount <= constants.MinPollOptions {
-		return errs.BadRequest(errors.New("a poll must have at least 2 options"))
+		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
 	}
 
 	return s.repository.Poll.DeleteOption(ctx, pollID, optionID)

@@ -685,17 +685,21 @@ func TestPollOptions(t *testing.T) {
 		pollID := poll["id"].(string)
 		optIDs := getOptionIDs(poll)
 
-		testkit.New(t).
+		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, optIDs[0], resp["id"])
+		require.Equal(t, pollID, resp["poll_id"])
 	})
 
-	t.Run("can delete option even after votes exist", func(t *testing.T) {
+	t.Run("cannot delete option after votes exist", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
 		pollID := poll["id"].(string)
@@ -712,7 +716,7 @@ func TestPollOptions(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK)
 
-		// Deleting an option should still succeed (3→2)
+		// Deleting an option should now be rejected (votes exist)
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -720,7 +724,7 @@ func TestPollOptions(t *testing.T) {
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
+			AssertStatus(http.StatusConflict)
 	})
 
 	t.Run("cannot delete option when only 2 remain", func(t *testing.T) {
@@ -1870,7 +1874,7 @@ func TestPollEdgeCases(t *testing.T) {
 		}
 	})
 
-	t.Run("vote counts survive option deletion", func(t *testing.T) {
+	t.Run("delete option rejected after votes even on unvoted option", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
 		pollID := poll["id"].(string)
@@ -1887,7 +1891,7 @@ func TestPollEdgeCases(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK)
 
-		// Delete option 2 (unvoted option)
+		// Try to delete option 2 (unvoted) — should still be rejected because poll has votes
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -1895,28 +1899,7 @@ func TestPollEdgeCases(t *testing.T) {
 				Method: testkit.DELETE,
 				UserID: &owner,
 			}).
-			AssertStatus(http.StatusNoContent)
-
-		// Fetch poll — option 0 should still have the vote
-		resp := testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  singlePollRoute(tripID, pollID),
-				Method: testkit.GET,
-				UserID: &owner,
-			}).
-			AssertStatus(http.StatusOK).
-			GetBody()
-
-		options := resp["options"].([]any)
-		require.Len(t, options, 2, "should have 2 options after deletion")
-		for _, o := range options {
-			opt := o.(map[string]any)
-			if opt["id"] == optIDs[0] {
-				require.Equal(t, float64(1), opt["vote_count"], "vote on remaining option should persist")
-				require.Equal(t, true, opt["voted"])
-			}
-		}
+			AssertStatus(http.StatusConflict)
 	})
 
 	t.Run("multiple users on multi-choice shows independent vote_counts", func(t *testing.T) {
