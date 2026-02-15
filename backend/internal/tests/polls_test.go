@@ -1682,8 +1682,7 @@ func TestPollVoting(t *testing.T) {
 		optIDs := getOptionIDs(poll)
 		sameOpt := uuid.MustParse(optIDs[0])
 
-		// The DB composite PK (poll_id, option_id, user_id) causes a
-		// constraint violation on duplicate inserts → 409 Conflict.
+		// Duplicate option IDs are caught by service-level validation → 400.
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -1692,7 +1691,7 @@ func TestPollVoting(t *testing.T) {
 				UserID: &owner,
 				Body:   models.CastVoteRequest{OptionIDs: []uuid.UUID{sameOpt, sameOpt}},
 			}).
-			AssertStatus(http.StatusConflict)
+			AssertStatus(http.StatusBadRequest)
 	})
 
 	t.Run("re-voting for same option is idempotent", func(t *testing.T) {

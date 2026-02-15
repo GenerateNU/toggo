@@ -309,10 +309,15 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 	for _, opt := range poll.Options {
 		optionSet[opt.ID] = true
 	}
+	seen := make(map[uuid.UUID]bool, len(req.OptionIDs))
 	for _, optionID := range req.OptionIDs {
 		if !optionSet[optionID] {
 			return nil, errs.BadRequest(errors.New("option does not belong to this poll"))
 		}
+		if seen[optionID] {
+			return nil, errs.BadRequest(errors.New("duplicate option IDs are not allowed"))
+		}
+		seen[optionID] = true
 	}
 
 	votes := make([]models.PollVote, len(req.OptionIDs))
