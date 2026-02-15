@@ -1214,16 +1214,17 @@ function RealtimePlayground() {
           msg.events.forEach((ev: RealtimeEvent) => {
             addEvent(ev);
             if (ev.topic === "poll.created" && ev.data?.id) {
-              // Auto-load newly created poll (even from another device)
+              // Auto-load newly created poll — re-fetch so voted flags are per-user
               pgPollId.current = ev.data.id;
-              setPoll(ev.data);
+              fetchPoll();
             } else if (ev.topic === "poll.deleted") {
               if (!pgPollId.current || ev.data?.id === pgPollId.current) {
                 setPoll((prev: any) => (prev ? { ...prev, _deleted: true } : null));
               }
             } else if (ev.topic.startsWith("poll.") && ev.data?.id === pgPollId.current) {
-              // vote_added, vote_removed, updated — refresh if it's our poll
-              setPoll(ev.data);
+              // vote_added, vote_removed, updated — re-fetch so voted flags
+              // reflect THIS user, not the user who triggered the event
+              fetchPoll();
             }
           });
         }
@@ -1238,7 +1239,7 @@ function RealtimePlayground() {
       setWsStatus("disconnected");
       wsRef2.current = null;
     };
-  }, []);
+  }, [fetchPoll]);
 
   const disconnect = useCallback(() => {
     wsRef2.current?.close();
