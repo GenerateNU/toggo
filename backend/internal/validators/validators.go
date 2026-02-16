@@ -54,6 +54,9 @@ func Validate(validate *validator.Validate, s interface{}, maybeErrs ...MaybeErr
 	return nil
 }
 
+// buildMessage returns a human-readable validation message for the given FieldError.
+// It maps common validator tags (required, email, min, max, oneof, url, uuid, gte, lte, image_size, etc.)
+// to user-facing messages; for slice/array/map kinds, the min/max messages refer to item counts.
 func buildMessage(e validator.FieldError) string {
 	switch e.Tag() {
 	case "required":

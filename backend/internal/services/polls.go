@@ -33,7 +33,7 @@ type PollService struct {
 	publisher  realtime.EventPublisher
 }
 
-// NewPollService creates a poll service with the given repository and event publisher.
+// NewPollService creates a PollServiceInterface wired with the provided repository and realtime event publisher.
 func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
 	return &PollService{
 		repository: repo,

@@ -134,6 +134,8 @@ func InvalidUUID() APIError {
 	return NewAPIError(http.StatusBadRequest, errors.New("invalid UUID format"))
 }
 
+// ErrorHandler maps an incoming error to an APIError, writes that error as a JSON HTTP response with the corresponding status code, and logs the original error with the request method and path.
+// It first attempts to normalize database-related errors via tryWrapDBError before mapping to specific HTTP statuses (e.g., 404, 409, 400, 500) and falls back to a validation or internal server error when appropriate.
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	var apiErr APIError
 

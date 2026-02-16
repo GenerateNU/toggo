@@ -43,7 +43,14 @@ interface TestResult {
   duration: number;
 }
 
-// ─── API helper ──────────────────────────────────────────────────────────────
+/**
+ * Perform an HTTP request against the test API base URL and return a structured result.
+ *
+ * @param method - The HTTP method to use (e.g., "GET", "POST", "PUT", "DELETE")
+ * @param path - The request path appended to the configured BASE URL (should start with `/`)
+ * @param body - Optional JSON-serializable request payload; omitted for requests without a body
+ * @returns An object containing the HTTP `status`, boolean `ok`, parsed `data` (JSON or text), and `duration` in milliseconds
+ */
 async function api(
   method: string,
   path: string,
@@ -75,7 +82,10 @@ let tripId = "";
 let pollId = "";
 let optionIds: string[] = [];
 
-// ─── Ensure user exists ──────────────────────────────────────────────────────
+/**
+ * Ensure a test user exists, creating one with preset attributes if not found.
+ *
+ * @returns A TestResult containing the API response; on success `ok` is `true` and `data` contains the user resource. */
 async function ensureUser(): Promise<TestResult> {
   const check = await api("GET", "/users/me");
   if (check.ok) return check;
@@ -86,7 +96,14 @@ async function ensureUser(): Promise<TestResult> {
   });
 }
 
-// ─── Setup helpers ───────────────────────────────────────────────────────────
+/**
+ * Creates a test trip on the API and stores its id for use by subsequent tests.
+ *
+ * Creates a trip with predefined test attributes and, on success, saves the trip's id
+ * into the module-level `tripId` variable so other test helpers can reference it.
+ *
+ * @returns The API test result object containing the HTTP status, `ok` flag, response `data`, and request `duration`. On success, `data.id` is the created trip's id.
+ */
 async function setupTrip(): Promise<TestResult> {
   const res = await api("POST", "/trips", {
     name: "Poll Test Trip",
@@ -97,7 +114,15 @@ async function setupTrip(): Promise<TestResult> {
   return res;
 }
 
-// ─── Result display component ────────────────────────────────────────────────
+/**
+ * Renders a compact visual representation of a TestResult including status, duration, and payload.
+ *
+ * Displays a colored card summarizing the HTTP status and duration and shows the response payload.
+ * Long payloads are presented in a collapsible view the user can expand or collapse.
+ *
+ * @param result - The test result to display, or `null` to render nothing
+ * @returns The rendered result card element, or `null` when `result` is `null`
+ */
 function ResultBox({ result }: { result: TestResult | null }) {
   const [expanded, setExpanded] = useState(false);
   if (!result) return null;
@@ -168,7 +193,16 @@ const rs = StyleSheet.create({
   body: { fontFamily: "monospace", fontSize: 11, color: "#333" },
 });
 
-// ─── Test button component ───────────────────────────────────────────────────
+/**
+ * Renders a button that runs an asynchronous test function and displays the resulting TestResult.
+ *
+ * The button shows a loading indicator while the test is running, captures any thrown error
+ * and converts it into a failed `TestResult`, and renders the result below the button.
+ *
+ * @param label - Text to display on the button
+ * @param onRun - Async function invoked when the button is pressed; must return a `TestResult`
+ * @returns A React element containing the test button and its result display
+ */
 function TestButton({
   label,
   onRun,
@@ -222,7 +256,14 @@ const tb = StyleSheet.create({
   txt: { color: "#fff", fontWeight: "600", fontSize: 14 },
 });
 
-// ─── Section wrapper ─────────────────────────────────────────────────────────
+/**
+ * Render a styled section card containing a title, a description, and body content.
+ *
+ * @param title - The section's headline text displayed at the top
+ * @param description - A short descriptive line shown under the title
+ * @param children - Content rendered inside the section body area
+ * @returns A React element representing the section card
+ */
 function Section({
   title,
   description,
@@ -258,7 +299,13 @@ const sec = StyleSheet.create({
   body: {},
 });
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+/**
+ * Render the interactive Poll API Test Suite screen with grouped sections for setup, poll CRUD, options, voting, pagination, edge cases, end-to-end flows, and realtime playgrounds.
+ *
+ * The screen presents a scrollable UI of test sections and buttons that execute API calls and display results inline; it is intended for manual testing and debugging of the Poll API.
+ *
+ * @returns The React element for the Poll API Test Suite screen.
+ */
 export default function TestPollScreen() {
   return (
     <ScrollView style={s.root} contentContainerStyle={s.container}>
@@ -929,6 +976,13 @@ interface RealtimeEvent {
   timestamp: string;
 }
 
+/**
+ * Renders an end-to-end test section that runs a multi-vote poll lifecycle and displays live WebSocket-driven updates.
+ *
+ * Provides a "Run Full E2E Flow" control that executes a sequence of API and WebSocket actions (create trip, subscribe, create poll, add option, vote, update, delete, disconnect), tracks step results, shows WebSocket connection status, a live poll preview that auto-refreshes on relevant events, and an event log of realtime messages.
+ *
+ * @returns The E2E test section as a React component tree.
+ */
 function E2ESection() {
   const [events, setEvents] = useState<RealtimeEvent[]>([]);
   const [steps, setSteps] = useState<
@@ -1235,7 +1289,19 @@ function E2ESection() {
   );
 }
 
-// ─── Live poll visualization ─────────────────────────────────────────────────
+/**
+ * Render a live poll card that displays the poll's question, type, options, and vote distribution.
+ *
+ * Renders a deleted state when `poll._deleted` is truthy; otherwise shows a live badge, question,
+ * option count, total votes, and a per-option row with vote count, percentage, and a progress bar.
+ *
+ * @param poll - Poll object. Expected fields:
+ *   - _deleted?: boolean — if true, show deleted UI.
+ *   - question: string — poll question text.
+ *   - poll_type?: string — poll type badge (e.g., "single", "multi").
+ *   - options?: Array<{ id: string; name: string; vote_count?: number; voted?: boolean }> — option list.
+ * @returns The JSX element representing the live poll card.
+ */
 function LivePollCard({ poll }: { poll: any }) {
   if (poll._deleted) {
     return (
@@ -1349,7 +1415,16 @@ const lp = StyleSheet.create({
   barFill: { height: 8, borderRadius: 4 },
 });
 
-// ─── Expandable event card ───────────────────────────────────────────────────
+/**
+ * Renders a card showing a realtime event with an expandable JSON payload.
+ *
+ * The card displays the event's topic and timestamp, color-codes the left border
+ * based on the topic, and shows the event data formatted as JSON. Long payloads
+ * are initially truncated to two lines with a toggle to expand/collapse the full content.
+ *
+ * @param event - Realtime event object containing `topic`, `timestamp`, and `data` to display
+ * @returns A view containing the event header, formatted payload, and an expand/collapse control when the payload is long
+ */
 function ExpandableEventCard({ event }: { event: RealtimeEvent }) {
   const [expanded, setExpanded] = useState(false);
   const raw = JSON.stringify(event.data, null, 2);
@@ -1439,7 +1514,21 @@ const e2e = StyleSheet.create({
 });
 
 // ─── Realtime Playground ─────────────────────────────────────────────────────
-// Interactive poll card with its own trip ID for cross-device testing.
+/**
+ * Interactive realtime playground for cross-device testing of vote polls.
+ *
+ * Renders a UI that lets you set or import a trip ID, join the trip as a member,
+ * connect to the realtime WebSocket, create/load/delete polls, cast votes, and
+ * observe live poll updates and raw realtime events.
+ *
+ * The component manages WebSocket connection state, displays current poll data
+ * (options, vote counts, and per-option voted flags), and provides controls to
+ * refresh the poll or seed a new multi-option poll for testing. Events are
+ * shown in a scrolling feed and the component keeps local state for the active
+ * trip, poll, connection status, join status, and recent events.
+ *
+ * @returns A React element containing the realtime playground UI.
+ */
 function RealtimePlayground() {
   const [pgTripId, setPgTripId] = useState("");
   const [tripIdInput, setTripIdInput] = useState("");

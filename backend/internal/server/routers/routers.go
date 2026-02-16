@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// It registers a GET /healthcheck endpoint, creates and assigns a FileService using AWS configuration and the image repository, mounts unauthenticated v0 and test routes, and mounts the authenticated v1 routes (User, Trip, Membership, Notification, File, Comment, Poll, and Search) under /api/v1 with the provided middleware.
 func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...fiber.Handler) {
 	app.Get("/healthcheck", controllers.HealthcheckHandler(routeParams.ServiceParams.Repository.Health))
 

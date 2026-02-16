@@ -349,7 +349,8 @@ func (pc *PollController) CastVote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(poll)
 }
 
-// getUserID extracts and validates the authenticated user ID from the request context.
+// getUserID retrieves the authenticated user ID from the request context, validates it, and returns the parsed UUID.
+// If the user ID is missing, not a valid UUID string, or an unsupported type, it returns uuid.Nil and an Unauthorized error.
 func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
 	val := c.Locals("userID")
 	if val == nil {

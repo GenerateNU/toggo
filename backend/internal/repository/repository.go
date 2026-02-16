@@ -21,6 +21,7 @@ type Repository struct {
 	db          *bun.DB
 }
 
+// interfaces that use the provided *bun.DB as their backing store.
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
 		User:       &userRepository{db: db},

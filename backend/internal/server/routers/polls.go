@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// /:pollId subroutes for poll management, options, and voting.
 func PollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
 	pollService := services.NewPollService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
 	pollController := controllers.NewPollController(pollService, routeParams.Validator)
