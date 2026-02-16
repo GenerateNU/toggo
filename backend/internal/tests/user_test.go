@@ -221,7 +221,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "Duplicate User",
 					Username:    username,
-					PhoneNumber: "+16175551235",
+					PhoneNumber: fakes.GenerateRandomPhoneNumber(),
 				},
 			}).
 			AssertStatus(http.StatusConflict)
@@ -285,7 +285,7 @@ func TestUserLifecycle(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "Reborn User",
 					Username:    username,
-					PhoneNumber: "+16175551236",
+					PhoneNumber: fakes.GenerateRandomPhoneNumber(),
 				},
 			}).
 			AssertStatus(http.StatusCreated)

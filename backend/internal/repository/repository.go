@@ -10,12 +10,13 @@ import (
 )
 
 type Repository struct {
-	User        UserRepository
-	Health      HealthRepository
-	Image       ImageRepository
-	Comment     CommentRepository
-	Membership  MembershipRepository
-	Trip        TripRepository
+	User       UserRepository
+	Health     HealthRepository
+	Image      ImageRepository
+	Comment    CommentRepository
+	Membership MembershipRepository
+	Trip       TripRepository
+	Poll       PollRepository
 	TripInvite  TripInviteRepository
 	db          *bun.DB
 }
@@ -27,6 +28,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Image:      &imageRepository{db: db},
 		Comment:    &commentRepository{db: db},
 		Trip:       &tripRepository{db: db},
+		Poll:       &pollRepository{db: db},
 		Membership: &membershipRepository{db: db},
 		TripInvite: newTripInviteRepository(db),
 		db:         db,

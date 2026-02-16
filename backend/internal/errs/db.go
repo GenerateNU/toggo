@@ -9,9 +9,12 @@ import (
 )
 
 var (
-	ErrForeignKey     = errors.New("referenced resource not found")
-	ErrCheckViolation = errors.New("invalid value")
-	ErrDatabaseError  = errors.New("database error")
+	ErrForeignKey         = errors.New("referenced resource not found")
+	ErrCheckViolation     = errors.New("invalid value")
+	ErrDatabaseError      = errors.New("database error")
+	ErrConflict           = errors.New("conflict: operation not allowed")
+	ErrMaxOptionsReached  = errors.New("maximum number of options reached")
+	ErrMinOptionsRequired = errors.New("minimum number of options required")
 )
 
 const (
