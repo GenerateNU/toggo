@@ -244,14 +244,6 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 		return nil, errs.BadRequest(errors.New("cannot add options after the poll deadline has passed"))
 	}
 
-	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
-	if err != nil {
-		return nil, err
-	}
-	if optionCount >= constants.MaxPollOptions {
-		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
-	}
-
 	option := &models.PollOption{
 		ID:         uuid.New(),
 		PollID:     pollID,
@@ -261,7 +253,11 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 		Name:       req.Name,
 	}
 
-	return s.repository.Poll.AddOption(ctx, option)
+	result, err := s.repository.Poll.AddOption(ctx, option, constants.MaxPollOptions)
+	if errors.Is(err, errs.ErrMaxOptionsReached) {
+		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
+	}
+	return result, err
 }
 
 // DeleteOption removes an option from a poll. Only the poll creator can delete
@@ -283,15 +279,11 @@ func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID
 		return nil, errs.BadRequest(errors.New("cannot delete options after the poll deadline has passed"))
 	}
 
-	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
-	if err != nil {
-		return nil, err
-	}
-	if optionCount <= constants.MinPollOptions {
+	result, err := s.repository.Poll.DeleteOption(ctx, pollID, optionID, constants.MinPollOptions)
+	if errors.Is(err, errs.ErrMinOptionsRequired) {
 		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
 	}
-
-	return s.repository.Poll.DeleteOption(ctx, pollID, optionID)
+	return result, err
 }
 
 // CastVote replaces all of a user's existing votes on a poll with the new

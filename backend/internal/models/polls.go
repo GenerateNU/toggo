@@ -73,46 +73,47 @@ type UpdatePollRequest struct {
 
 // CreatePollRequest is the payload for creating a new poll with optional initial options.
 type CreatePollRequest struct {
-    Question string              `json:"question" validate:"required"`
-    PollType PollType            `json:"poll_type" validate:"required,oneof=single multi rank"`
-    Deadline *time.Time          `json:"deadline,omitempty"`
-    Options  []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
+	Question string                    `json:"question" validate:"required"`
+	PollType PollType                  `json:"poll_type" validate:"required,oneof=single multi rank"`
+	Deadline *time.Time                `json:"deadline,omitempty"`
+	Options  []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
 }
 
 // CreatePollOptionRequest is the payload for adding an option to an existing poll.
 type CreatePollOptionRequest struct {
-    OptionType OptionType `json:"option_type" validate:"required,oneof=entity custom"`
-    EntityType *string    `json:"entity_type,omitempty"`
-    EntityID   *uuid.UUID `json:"entity_id,omitempty"`
-    Name       string     `json:"name" validate:"required"`
+	OptionType OptionType `json:"option_type" validate:"required,oneof=entity custom"`
+	EntityType *string    `json:"entity_type,omitempty"`
+	EntityID   *uuid.UUID `json:"entity_id,omitempty"`
+	Name       string     `json:"name" validate:"required"`
 }
 
 // CastVoteRequest is the payload for casting or replacing a user's votes on a poll.
+// An empty OptionIDs slice removes all votes.
 type CastVoteRequest struct {
-    OptionIDs []uuid.UUID `json:"option_ids" validate:"required"`
+	OptionIDs []uuid.UUID `json:"option_ids"`
 }
 
 // PollAPIResponse is the external representation of a poll with vote data.
 type PollAPIResponse struct {
-    ID        uuid.UUID              `json:"id"`
-    TripID    uuid.UUID              `json:"trip_id"`
-    CreatedBy uuid.UUID              `json:"created_by"`
-    Question  string                 `json:"question"`
-    PollType  PollType               `json:"poll_type"`
-    CreatedAt time.Time              `json:"created_at"`
-    Deadline  *time.Time             `json:"deadline,omitempty"`
-    Options   []PollOptionAPIResponse `json:"options"`
+	ID        uuid.UUID               `json:"id"`
+	TripID    uuid.UUID               `json:"trip_id"`
+	CreatedBy uuid.UUID               `json:"created_by"`
+	Question  string                  `json:"question"`
+	PollType  PollType                `json:"poll_type"`
+	CreatedAt time.Time               `json:"created_at"`
+	Deadline  *time.Time              `json:"deadline,omitempty"`
+	Options   []PollOptionAPIResponse `json:"options"`
 }
 
 // PollOptionAPIResponse is an option enriched with its vote count and whether the requesting user voted for it.
 type PollOptionAPIResponse struct {
-    ID         uuid.UUID  `json:"id"`
-    OptionType OptionType `json:"option_type"`
-    EntityType *string    `json:"entity_type,omitempty"`
-    EntityID   *uuid.UUID `json:"entity_id,omitempty"`
-    Name       string     `json:"name"`
-    VoteCount  int        `json:"vote_count"`
-    Voted      bool       `json:"voted"`
+	ID         uuid.UUID  `json:"id"`
+	OptionType OptionType `json:"option_type"`
+	EntityType *string    `json:"entity_type,omitempty"`
+	EntityID   *uuid.UUID `json:"entity_id,omitempty"`
+	Name       string     `json:"name"`
+	VoteCount  int        `json:"vote_count"`
+	Voted      bool       `json:"voted"`
 }
 
 // PollCursor is the sort key for cursor-based pagination (created_at DESC, id DESC).

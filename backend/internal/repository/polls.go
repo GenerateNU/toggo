@@ -19,8 +19,8 @@ type PollRepository interface {
 	FindPollsByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PollCursor) ([]*models.Poll, *models.PollCursor, error)
 	UpdatePoll(ctx context.Context, pollID uuid.UUID, req *models.UpdatePollRequest) (*models.Poll, error)
 	DeletePoll(ctx context.Context, pollID uuid.UUID) (*models.Poll, error)
-	AddOption(ctx context.Context, option *models.PollOption) (*models.PollOption, error)
-	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) (*models.PollOption, error)
+	AddOption(ctx context.Context, option *models.PollOption, maxOptions int) (*models.PollOption, error)
+	DeleteOption(ctx context.Context, pollID, optionID uuid.UUID, minOptions int) (*models.PollOption, error)
 	CastVote(ctx context.Context, pollID, userID uuid.UUID, votes []models.PollVote) ([]models.PollVote, error)
 	GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error)
 	GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error)
@@ -44,7 +44,7 @@ func NewPollRepository(db *bun.DB) PollRepository {
 // CreatePoll inserts a poll and its initial options in a single transaction.
 func (r *pollRepository) CreatePoll(ctx context.Context, poll *models.Poll, options []models.PollOption) (*models.Poll, error) {
 	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		if _, err := tx.NewInsert().Model(poll).Returning("*").Exec(ctx); err != nil {
+		if _, err := tx.NewInsert().Model(poll).Returning("*").Exec(ctx, poll); err != nil {
 			return err
 		}
 
@@ -52,7 +52,7 @@ func (r *pollRepository) CreatePoll(ctx context.Context, poll *models.Poll, opti
 			for i := range options {
 				options[i].PollID = poll.ID
 			}
-			if _, err := tx.NewInsert().Model(&options).Returning("*").Exec(ctx); err != nil {
+			if _, err := tx.NewInsert().Model(&options).Returning("*").Exec(ctx, &options); err != nil {
 				return err
 			}
 			poll.Options = options
@@ -162,7 +162,7 @@ func (r *pollRepository) UpdatePoll(ctx context.Context, pollID uuid.UUID, req *
 		q = q.Set("deadline = ?", *req.Deadline)
 	}
 
-	result, err := q.Exec(ctx)
+	result, err := q.Exec(ctx, poll)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (r *pollRepository) DeletePoll(ctx context.Context, pollID uuid.UUID) (*mod
 		Model(poll).
 		Where("id = ?", pollID).
 		Returning("*").
-		Exec(ctx)
+		Exec(ctx, poll)
 	if err != nil {
 		return nil, err
 	}
@@ -204,8 +204,10 @@ func (r *pollRepository) DeletePoll(ctx context.Context, pollID uuid.UUID) (*mod
 // Poll Options
 // ---------------------------------------------------------------------------
 
-// AddOption inserts a new option only if no votes exist on the poll yet.
-func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOption) (*models.PollOption, error) {
+// AddOption inserts a new option only if no votes exist on the poll yet and
+// the option count is below maxOptions. Both checks run inside the same
+// transaction to prevent TOCTOU races.
+func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOption, maxOptions int) (*models.PollOption, error) {
 	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		hasVotes, err := r.pollHasVotes(ctx, tx, option.PollID)
 		if err != nil {
@@ -215,7 +217,18 @@ func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOptio
 			return errs.ErrConflict
 		}
 
-		_, err = tx.NewInsert().Model(option).Returning("*").Exec(ctx)
+		count, err := tx.NewSelect().
+			Model((*models.PollOption)(nil)).
+			Where("poll_id = ?", option.PollID).
+			Count(ctx)
+		if err != nil {
+			return err
+		}
+		if count >= maxOptions {
+			return errs.ErrMaxOptionsReached
+		}
+
+		_, err = tx.NewInsert().Model(option).Returning("*").Exec(ctx, option)
 		return err
 	})
 	if err != nil {
@@ -224,8 +237,10 @@ func (r *pollRepository) AddOption(ctx context.Context, option *models.PollOptio
 	return option, nil
 }
 
-// DeleteOption removes an option only if no votes exist on the poll yet.
-func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid.UUID) (*models.PollOption, error) {
+// DeleteOption removes an option only if no votes exist on the poll yet and
+// at least minOptions would remain. Both checks run inside the same
+// transaction to prevent TOCTOU races.
+func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid.UUID, minOptions int) (*models.PollOption, error) {
 	option := new(models.PollOption)
 	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		hasVotes, err := r.pollHasVotes(ctx, tx, pollID)
@@ -236,11 +251,22 @@ func (r *pollRepository) DeleteOption(ctx context.Context, pollID, optionID uuid
 			return errs.ErrConflict
 		}
 
+		count, err := tx.NewSelect().
+			Model((*models.PollOption)(nil)).
+			Where("poll_id = ?", pollID).
+			Count(ctx)
+		if err != nil {
+			return err
+		}
+		if count <= minOptions {
+			return errs.ErrMinOptionsRequired
+		}
+
 		result, err := tx.NewDelete().
 			Model(option).
 			Where("id = ? AND poll_id = ?", optionID, pollID).
 			Returning("*").
-			Exec(ctx)
+			Exec(ctx, option)
 		if err != nil {
 			return err
 		}
