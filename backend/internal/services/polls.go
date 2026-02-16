@@ -275,6 +275,10 @@ func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID
 		return nil, errs.Forbidden()
 	}
 
+	if meta.IsDeadlinePassed() {
+		return nil, errs.BadRequest(errors.New("cannot delete options after the poll deadline has passed"))
+	}
+
 	optionCount, err := s.repository.Poll.CountOptions(ctx, pollID)
 	if err != nil {
 		return nil, err

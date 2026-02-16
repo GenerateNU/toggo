@@ -1244,6 +1244,24 @@ func TestPollOptions(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
+	t.Run("cannot delete option after deadline passed", func(t *testing.T) {
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
+		pollID := poll["id"].(string)
+		optIDs := getOptionIDs(poll)
+		past := time.Now().Add(-1 * time.Hour).UTC()
+		setPollDeadlineInDB(t, pollID, past)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  deleteOptionRoute(tripID, pollID, optIDs[0]),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
 	t.Run("returns 404 for nonexistent option", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		poll := createPoll(t, app, owner, tripID, threeOptionPollRequest())
