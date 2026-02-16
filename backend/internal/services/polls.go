@@ -33,6 +33,7 @@ type PollService struct {
 	publisher  realtime.EventPublisher
 }
 
+// NewPollService creates a poll service with the given repository and event publisher.
 func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
 	return &PollService{
 		repository: repo,
@@ -97,6 +98,7 @@ func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, 
 	return resp, nil
 }
 
+// GetPoll returns a single poll with vote counts and the requesting user's vote state.
 func (s *PollService) GetPoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
@@ -114,6 +116,8 @@ func (s *PollService) GetPoll(ctx context.Context, tripID, pollID, userID uuid.U
 	return s.toAPIResponse(poll, summary), nil
 }
 
+// GetPollsByTripID returns a cursor-paginated list of polls for a trip, each
+// enriched with vote counts and the requesting user's vote state.
 func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.PollCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
@@ -359,6 +363,7 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 // Helpers
 // ---------------------------------------------------------------------------
 
+// toAPIResponse converts a Poll model and its vote summary into a PollAPIResponse.
 func (s *PollService) toAPIResponse(poll *models.Poll, summary *models.PollVoteSummary) *models.PollAPIResponse {
 	options := make([]models.PollOptionAPIResponse, len(poll.Options))
 	for i, opt := range poll.Options {
@@ -385,6 +390,7 @@ func (s *PollService) toAPIResponse(poll *models.Poll, summary *models.PollVoteS
 	}
 }
 
+// buildPollPageResult wraps a slice of poll responses into a cursor-paginated result.
 func (s *PollService) buildPollPageResult(apiPolls []*models.PollAPIResponse, nextCursor *models.PollCursor, limit int) (*models.PollCursorPageResult, error) {
 	result := &models.PollCursorPageResult{
 		Items: apiPolls,

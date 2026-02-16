@@ -19,6 +19,7 @@ type PollController struct {
 	validator   *validator.Validate
 }
 
+// NewPollController creates a poll controller with the given service and validator.
 func NewPollController(pollService services.PollServiceInterface, validator *validator.Validate) *PollController {
 	return &PollController{
 		pollService: pollService,
@@ -348,6 +349,7 @@ func (pc *PollController) CastVote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(poll)
 }
 
+// getUserID extracts and validates the authenticated user ID from the request context.
 func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
 	val := c.Locals("userID")
 	if val == nil {

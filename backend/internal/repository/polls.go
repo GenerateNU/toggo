@@ -32,6 +32,7 @@ type pollRepository struct {
 	db *bun.DB
 }
 
+// NewPollRepository creates a poll repository backed by the given Bun DB.
 func NewPollRepository(db *bun.DB) PollRepository {
 	return &pollRepository{db: db}
 }
@@ -101,6 +102,7 @@ func (r *pollRepository) FindPollMetaByID(ctx context.Context, pollID uuid.UUID)
 	return poll, nil
 }
 
+// CountOptions returns the number of options on a poll.
 func (r *pollRepository) CountOptions(ctx context.Context, pollID uuid.UUID) (int, error) {
 	count, err := r.db.NewSelect().
 		Model((*models.PollOption)(nil)).
@@ -112,6 +114,8 @@ func (r *pollRepository) CountOptions(ctx context.Context, pollID uuid.UUID) (in
 	return count, nil
 }
 
+// FindPollsByTripIDWithCursor returns up to limit polls for a trip using
+// cursor-based pagination ordered by (created_at DESC, id DESC).
 func (r *pollRepository) FindPollsByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PollCursor) ([]*models.Poll, *models.PollCursor, error) {
 	fetchLimit := limit
 	if fetchLimit < 1 {
@@ -284,6 +288,7 @@ func (r *pollRepository) CastVote(ctx context.Context, pollID, userID uuid.UUID,
 	return votes, nil
 }
 
+// GetPollVotes returns the vote summary for a single poll. Delegates to GetPollsVotes.
 func (r *pollRepository) GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error) {
 	summaries, err := r.GetPollsVotes(ctx, []uuid.UUID{pollID}, userID)
 	if err != nil {
@@ -292,6 +297,8 @@ func (r *pollRepository) GetPollVotes(ctx context.Context, pollID, userID uuid.U
 	return summaries[pollID], nil
 }
 
+// GetPollsVotes returns vote summaries for multiple polls in a single query
+// using BOOL_OR to compute per-option vote counts and the user's voted flags.
 func (r *pollRepository) GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error) {
 	result := make(map[uuid.UUID]*models.PollVoteSummary, len(pollIDs))
 	for _, id := range pollIDs {
@@ -336,6 +343,7 @@ func (r *pollRepository) GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID,
 // Helpers
 // ---------------------------------------------------------------------------
 
+// pollHasVotes checks whether any votes exist on a poll using an EXISTS subquery.
 func (r *pollRepository) pollHasVotes(ctx context.Context, tx bun.Tx, pollID uuid.UUID) (bool, error) {
 	exists, err := tx.NewSelect().
 		Model((*models.PollVote)(nil)).
