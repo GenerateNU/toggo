@@ -349,13 +349,21 @@ func (pc *PollController) CastVote(c *fiber.Ctx) error {
 }
 
 func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
-	userIDStr := c.Locals("userID")
-	if userIDStr == nil {
+	val := c.Locals("userID")
+	if val == nil {
 		return uuid.Nil, errs.Unauthorized()
 	}
-	userID, err := validators.ValidateID(userIDStr.(string))
-	if err != nil {
+
+	switch v := val.(type) {
+	case string:
+		userID, err := validators.ValidateID(v)
+		if err != nil {
+			return uuid.Nil, errs.Unauthorized()
+		}
+		return userID, nil
+	case uuid.UUID:
+		return v, nil
+	default:
 		return uuid.Nil, errs.Unauthorized()
 	}
-	return userID, nil
 }
