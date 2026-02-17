@@ -86,6 +86,12 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.AddCategoryResponse:
+    properties:
+      message:
+        example: Category added successfully
+        type: string
+    type: object
   models.CategoryAPIResponse:
     properties:
       created_at:
@@ -1281,13 +1287,18 @@ paths:
       - comments
   /api/v1/trips/{tripID}/activities:
     get:
-      description: Retrieves paginated activities for a trip
+      description: Retrieves paginated activities for a trip, optionally filtered
+        by category
       operationId: getActivitiesByTripID
       parameters:
       - description: Trip ID
         in: path
         name: tripID
         required: true
+        type: string
+      - description: Filter by category name
+        in: query
+        name: category
         type: string
       - description: Max items per page (default 20, max 100)
         in: query
@@ -1649,9 +1660,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.AddCategoryResponse'
         "400":
           description: Bad Request
           schema:

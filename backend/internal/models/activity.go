@@ -116,3 +116,8 @@ type ActivityAPIResponse struct {
 	ProposerPictureURL *string      `json:"proposer_picture_url,omitempty"`
 	CategoryNames      []string     `json:"category_names"`
 }
+
+// AddCategoryResponse represents the response for adding a category to an activity
+type AddCategoryResponse struct {
+	Message string `json:"message" example:"Category added successfully"`
+}

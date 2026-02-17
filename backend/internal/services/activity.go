@@ -40,6 +40,10 @@ func NewActivityService(repo *repository.Repository, fileService FileServiceInte
 	}
 }
 
+// NOTE: All activity endpoints are protected by TripMemberRequired middleware,
+// which validates trip existence and user membership before reaching the service layer.
+// Membership checks are intentionally omitted here to avoid redundant database queries.
+
 func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateActivityRequest, userID uuid.UUID) (*models.ActivityAPIResponse, error) {
 	// Use transaction to create activity and categories atomically
 	var createdActivity *models.Activity
@@ -170,6 +174,23 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 }
 
 func (s *ActivityService) UpdateActivity(ctx context.Context, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error) {
+	// Get activity to check proposer permissions
+	activity, err := s.Activity.Find(ctx, activityID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Only admins or the proposer can update
+	isAdmin, err := s.Membership.IsAdmin(ctx, activity.TripID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	isProposer := activity.ProposedBy != nil && *activity.ProposedBy == userID
+	if !isAdmin && !isProposer {
+		return nil, errs.Forbidden()
+	}
+
 	return s.Activity.Update(ctx, activityID, &req)
 }
 

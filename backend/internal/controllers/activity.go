@@ -106,10 +106,11 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 }
 
 // @Summary      Get activities by trip
-// @Description  Retrieves paginated activities for a trip
+// @Description  Retrieves paginated activities for a trip, optionally filtered by category
 // @Tags         activities
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
+// @Param        category query string false "Filter by category name"
 // @Param        limit query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.ActivityCursorPageResult
@@ -138,7 +139,15 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	result, err := ctrl.activityService.GetActivitiesByTripID(c.Context(), tripID, userID, limit, cursorToken)
+	// If category query param is provided, filter by category
+	var result *models.ActivityCursorPageResult
+	categoryName := c.Query("category")
+	if categoryName != "" {
+		result, err = ctrl.activityService.GetActivitiesByCategory(c.Context(), tripID, userID, categoryName, limit, cursorToken)
+	} else {
+		result, err = ctrl.activityService.GetActivitiesByTripID(c.Context(), tripID, userID, limit, cursorToken)
+	}
+
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
 			return errs.BadRequest(err)
@@ -293,7 +302,6 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}
@@ -337,7 +345,6 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}

@@ -878,7 +878,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/activities": {
             "get": {
-                "description": "Retrieves paginated activities for a trip",
+                "description": "Retrieves paginated activities for a trip, optionally filtered by category",
                 "produces": [
                     "application/json"
                 ],
@@ -894,6 +894,12 @@ const docTemplate = `{
                         "name": "tripID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category name",
+                        "name": "category",
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -1353,10 +1359,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.AddCategoryResponse"
                         }
                     },
                     "400": {
@@ -2398,6 +2401,15 @@ const docTemplate = `{
                 },
                 "next_cursor": {
                     "type": "string"
+                }
+            }
+        },
+        "models.AddCategoryResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Category added successfully"
                 }
             }
         },
