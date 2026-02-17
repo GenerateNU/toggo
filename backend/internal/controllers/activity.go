@@ -87,6 +87,11 @@ func (ctrl *ActivityController) CreateActivity(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID} [get]
 // @ID           getActivity
 func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -97,7 +102,7 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	activity, err := ctrl.activityService.GetActivity(c.Context(), activityID, userID)
+	activity, err := ctrl.activityService.GetActivity(c.Context(), tripID, activityID, userID)
 	if err != nil {
 		return err
 	}
@@ -176,6 +181,11 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID} [put]
 // @ID           updateActivity
 func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -195,7 +205,7 @@ func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	activity, err := ctrl.activityService.UpdateActivity(c.Context(), activityID, userID, req)
+	activity, err := ctrl.activityService.UpdateActivity(c.Context(), tripID, activityID, userID, req)
 	if err != nil {
 		return err
 	}
@@ -217,6 +227,11 @@ func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID} [delete]
 // @ID           deleteActivity
 func (ctrl *ActivityController) DeleteActivity(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -227,7 +242,7 @@ func (ctrl *ActivityController) DeleteActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := ctrl.activityService.DeleteActivity(c.Context(), activityID, userID); err != nil {
+	if err := ctrl.activityService.DeleteActivity(c.Context(), tripID, activityID, userID); err != nil {
 		return err
 	}
 
@@ -251,6 +266,11 @@ func (ctrl *ActivityController) DeleteActivity(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories [get]
 // @ID           getActivityCategories
 func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -268,7 +288,7 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	result, err := ctrl.activityService.GetActivityCategories(c.Context(), activityID, userID, limit, cursorToken)
+	result, err := ctrl.activityService.GetActivityCategories(c.Context(), tripID, activityID, userID, limit, cursorToken)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
 			return errs.BadRequest(err)
@@ -297,11 +317,17 @@ func (ctrl *ActivityController) GetActivityCategories(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName} [put]
 // @ID           addCategoryToActivity
 func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
+	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}
@@ -315,7 +341,7 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := ctrl.activityService.AddCategoryToActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
+	if err := ctrl.activityService.AddCategoryToActivity(c.Context(), tripID, activityID, userID, req.CategoryName); err != nil {
 		return err
 	}
 
@@ -340,11 +366,17 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/activities/{activityID}/categories/{categoryName} [delete]
 // @ID           removeCategoryFromActivity
 func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
 	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
 
+	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}
@@ -358,7 +390,7 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := ctrl.activityService.RemoveCategoryFromActivity(c.Context(), activityID, userID, req.CategoryName); err != nil {
+	if err := ctrl.activityService.RemoveCategoryFromActivity(c.Context(), tripID, activityID, userID, req.CategoryName); err != nil {
 		return err
 	}
 
