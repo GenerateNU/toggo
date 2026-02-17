@@ -147,6 +147,9 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 	case errors.Is(err, ErrDuplicate):
 		apiErr = NewAPIError(http.StatusConflict, err)
 
+	case errors.Is(err, ErrConflict):
+		apiErr = NewAPIError(http.StatusConflict, err)
+
 	case errors.Is(err, ErrForeignKey):
 		apiErr = NewAPIError(http.StatusBadRequest, err)
 

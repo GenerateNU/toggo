@@ -3,6 +3,7 @@ package validators
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -74,8 +75,14 @@ func buildMessage(e validator.FieldError) string {
 	case "email":
 		return fmt.Sprintf("%s must be a valid email", e.Field())
 	case "min":
+		if e.Kind() == reflect.Slice || e.Kind() == reflect.Array || e.Kind() == reflect.Map {
+			return fmt.Sprintf("%s must have at least %s items", e.Field(), e.Param())
+		}
 		return fmt.Sprintf("%s must be at least %s characters", e.Field(), e.Param())
 	case "max":
+		if e.Kind() == reflect.Slice || e.Kind() == reflect.Array || e.Kind() == reflect.Map {
+			return fmt.Sprintf("%s must have at most %s items", e.Field(), e.Param())
+		}
 		return fmt.Sprintf("%s must be at most %s characters", e.Field(), e.Param())
 	case "oneof":
 		return fmt.Sprintf("%s must be one of: %s", e.Field(), e.Param())
