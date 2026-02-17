@@ -10,16 +10,17 @@ import (
 )
 
 type Repository struct {
-	User             UserRepository
-	Health           HealthRepository
-	Image            ImageRepository
-	Comment          CommentRepository
-	Membership       MembershipRepository
-	Trip             TripRepository
+	User              UserRepository
+	Health            HealthRepository
+	Image             ImageRepository
+	Comment           CommentRepository
+	Membership        MembershipRepository
+	Trip              TripRepository
 	Activity         ActivityRepository
 	Category         CategoryRepository
 	ActivityCategory ActivityCategoryRepository
-	db               *bun.DB
+	TripInvite  TripInviteRepository
+	db                *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -33,6 +34,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Activity:   &activityRepository{db: db},
 		Category:   &categoryRepository{db: db},
 		ActivityCategory: &activityCategoryRepository{db: db},
+		TripInvite: newTripInviteRepository(db),
 		db:         db,
 	}
 }
@@ -62,6 +64,12 @@ type TripRepository interface {
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type TripInviteRepository interface {
+	Create(ctx context.Context, invite *models.TripInvite) (*models.TripInvite, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*models.TripInvite, error)
+	FindByCode(ctx context.Context, code string) (*models.TripInvite, error)
 }
 
 type MembershipRepository interface {

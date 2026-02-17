@@ -13,12 +13,12 @@ import {
 
 interface ServerMessage {
   type: string;
-  events?: Array<{
+  events?: {
     topic: string;
     trip_id: string;
     data: unknown;
     timestamp: string;
-  }>;
+  }[];
   error?: string;
   timestamp: string;
 }

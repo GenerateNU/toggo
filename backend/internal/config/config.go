@@ -9,6 +9,7 @@ type Configuration struct {
 	AWS         AWSConfig
 	Temporal    TemporalConfig
 	Redis       RedisConfig
+	GoogleMaps  GoogleMapsConfig
 	Environment string
 }
 
@@ -43,6 +44,11 @@ func LoadConfiguration() (*Configuration, error) {
 		return nil, err
 	}
 
+	googleMapsConfig, err := LoadGoogleMapsConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Configuration{
 		App:         *appConfig,
 		Database:    *databaseConfig,
@@ -50,6 +56,7 @@ func LoadConfiguration() (*Configuration, error) {
 		AWS:         *awsConfig,
 		Temporal:    *temporalConfig,
 		Redis:       *redisConfig,
+		GoogleMaps:  *googleMapsConfig,
 		Environment: os.Getenv("APP_ENVIRONMENT"),
 	}, nil
 }

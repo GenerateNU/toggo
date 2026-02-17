@@ -26,6 +26,12 @@ func main() {
 	db := database.ConnectDB(context.Background(), cfg)
 	defer database.CloseDB(db)
 
+	log.Println("Testing Google Maps API connection...")
+	if err := cfg.GoogleMaps.TestConnection(context.Background()); err != nil {
+		log.Fatalf("Google Maps API connection failed: %v", err)
+	}
+	log.Println("Google Maps API connected successfully")
+
 	// Initialize realtime service
 	realtimeService, err := realtime.NewRealtimeService(cfg)
 	if err != nil {

@@ -18,6 +18,10 @@ const Layout = () => {
         name="test-realtime"
         options={{ title: "Realtime Test", headerShown: true }}
       />
+      <Stack.Screen
+        name="test-maps"
+        options={{ title: "Google Maps API Test", headerShown: true }}
+      />
     </Stack>
   );
 };
