@@ -10,15 +10,18 @@ import (
 )
 
 type Repository struct {
-	User       UserRepository
-	Health     HealthRepository
-	Image      ImageRepository
-	Comment    CommentRepository
-	Membership MembershipRepository
-	Trip       TripRepository
+	User             UserRepository
+	Health           HealthRepository
+	Image            ImageRepository
+	Comment          CommentRepository
+	Membership       MembershipRepository
+	Trip             TripRepository
+	Activity         ActivityRepository
+	Category         CategoryRepository
+	ActivityCategory ActivityCategoryRepository
 	Poll       PollRepository
 	TripInvite  TripInviteRepository
-	db          *bun.DB
+	db                *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -30,6 +33,9 @@ func NewRepository(db *bun.DB) *Repository {
 		Trip:       &tripRepository{db: db},
 		Poll:       &pollRepository{db: db},
 		Membership: &membershipRepository{db: db},
+		Activity:   &activityRepository{db: db},
+		Category:   &categoryRepository{db: db},
+		ActivityCategory: &activityCategoryRepository{db: db},
 		TripInvite: newTripInviteRepository(db),
 		db:         db,
 	}
@@ -99,4 +105,31 @@ type CommentRepository interface {
 	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
+}
+
+type ActivityRepository interface {
+	Create(ctx context.Context, activity *models.Activity) (*models.Activity, error)
+	Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	FindByCategoryName(ctx context.Context, tripID uuid.UUID, categoryName string, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
+	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
+	Delete(ctx context.Context, activityID uuid.UUID) error
+}
+
+type CategoryRepository interface {
+	Create(ctx context.Context, category *models.Category) (*models.Category, error)
+	Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error)
+	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
+	Delete(ctx context.Context, tripID uuid.UUID, name string) error
+}
+
+type ActivityCategoryRepository interface {
+	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
+	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
+	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
+	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
+	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
 }

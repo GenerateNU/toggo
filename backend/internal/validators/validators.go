@@ -10,6 +10,7 @@ import (
 	"toggo/internal/errs"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -20,6 +21,19 @@ type MaybeError struct {
 
 func ValidateID(id string) (uuid.UUID, error) {
 	return uuid.Parse(id)
+}
+
+// ExtractUserID extracts and validates the userID from Fiber context locals.
+func ExtractUserID(c *fiber.Ctx) (uuid.UUID, error) {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	userID, err := ValidateID(userIDStr)
+	if err != nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	return userID, nil
 }
 
 func ToSnakeCase(str string) string {
