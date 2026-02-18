@@ -16,14 +16,14 @@ import (
 )
 
 type RankPollServiceInterface interface {
-	CreateRankPoll(ctx context.Context, tripID uuid.UUID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, error)
-	UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollRequest) (*models.Poll, error)
-	AddPollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error)
-	DeletePollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, userID uuid.UUID) (*models.PollOption, error)
+	CreateRankPoll(ctx context.Context, tripID uuid.UUID, userID uuid.UUID, req models.CreatePollRequest) (*models.RankPollAPIResponse, error)
+	UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollRequest) (*models.RankPollAPIResponse, error)
+	AddPollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOptionAPIResponse, error)
+	DeletePollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, userID uuid.UUID) (*models.PollOptionAPIResponse, error)
 	SubmitRanking(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.SubmitRankingRequest) error
 	GetRankPollResults(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.RankPollResultsResponse, error)
 	GetPollVoters(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.PollVotersResponse, error)
-	DeleteRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.Poll, error)
+	DeleteRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.RankPollAPIResponse, error)
 }
 
 var _ RankPollServiceInterface = (*RankPollService)(nil)
@@ -40,7 +40,7 @@ func NewRankPollService(repo *repository.Repository, publisher realtime.EventPub
 	}
 }
 
-func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, error) {
+func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, userID uuid.UUID, req models.CreatePollRequest) (*models.RankPollAPIResponse, error) {
 	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
 		return nil, errs.BadRequest(errors.New("deadline must be in the future"))
 	}
@@ -78,12 +78,13 @@ func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, 
 		return nil, err
 	}
 
+	resp := s.toRankPollAPIResponse(created)
 	s.publishEvent(ctx, "poll.created", tripID.String(), created)
 
-	return created, nil
+	return resp, nil
 }
 
-func (s *RankPollService) UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollRequest) (*models.Poll, error) {
+func (s *RankPollService) UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollRequest) (*models.RankPollAPIResponse, error) {
 	poll, err := s.validateRankPollAccess(ctx, tripID, pollID, userID)
 	if err != nil {
 		return nil, err
@@ -110,12 +111,13 @@ func (s *RankPollService) UpdateRankPoll(ctx context.Context, tripID uuid.UUID, 
 		return nil, err
 	}
 
+	resp := s.toRankPollAPIResponse(updated)
 	s.publishEvent(ctx, "poll.updated", tripID.String(), updated)
 
-	return updated, nil
+	return resp, nil
 }
 
-func (s *RankPollService) AddPollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
+func (s *RankPollService) AddPollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOptionAPIResponse, error) {
 	poll, err := s.validateRankPollAccess(ctx, tripID, pollID, userID)
 	if err != nil {
 		return nil, err
@@ -150,10 +152,10 @@ func (s *RankPollService) AddPollOption(ctx context.Context, tripID uuid.UUID, p
 	if errors.Is(err, errs.ErrMaxOptionsReached) {
 		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
 	}
-	return result, err
+	return s.toPollOptionAPIResponse(result), err
 }
 
-func (s *RankPollService) DeletePollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, userID uuid.UUID) (*models.PollOption, error) {
+func (s *RankPollService) DeletePollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, userID uuid.UUID) (*models.PollOptionAPIResponse, error) {
 	poll, err := s.validateRankPollAccess(ctx, tripID, pollID, userID)
 	if err != nil {
 		return nil, err
@@ -179,7 +181,7 @@ func (s *RankPollService) DeletePollOption(ctx context.Context, tripID uuid.UUID
 	if errors.Is(err, errs.ErrMinOptionsRequired) {
 		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
 	}
-	return result, err
+	return s.toPollOptionAPIResponse(result), err
 }
 
 func (s *RankPollService) SubmitRanking(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.SubmitRankingRequest) error {
@@ -284,7 +286,7 @@ func (s *RankPollService) GetPollVoters(ctx context.Context, tripID uuid.UUID, p
 	}, nil
 }
 
-func (s *RankPollService) DeleteRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.Poll, error) {
+func (s *RankPollService) DeleteRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.RankPollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
@@ -313,9 +315,10 @@ func (s *RankPollService) DeleteRankPoll(ctx context.Context, tripID uuid.UUID, 
 		return nil, err
 	}
 
+	resp := s.toRankPollAPIResponse(deleted)
 	s.publishEvent(ctx, "poll.deleted", tripID.String(), deleted)
 
-	return deleted, nil
+	return resp, nil
 }
 
 // helpers :)
@@ -458,5 +461,33 @@ func (s *RankPollService) publishEvent(ctx context.Context, topic, tripID string
 	}
 	if err := s.publisher.Publish(ctx, event); err != nil {
 		log.Printf("Failed to publish %s event: %v", topic, err)
+	}
+}
+
+func (s *RankPollService) toRankPollAPIResponse(poll *models.Poll) *models.RankPollAPIResponse {
+	options := make([]models.PollOptionAPIResponse, len(poll.Options))
+	for i, opt := range poll.Options {
+		options[i] = *s.toPollOptionAPIResponse(&opt)
+	}
+
+	return &models.RankPollAPIResponse{
+		ID:        poll.ID,
+		TripID:    poll.TripID,
+		CreatedBy: poll.CreatedBy,
+		Question:  poll.Question,
+		PollType:  poll.PollType,
+		Deadline:  poll.Deadline,
+		CreatedAt: poll.CreatedAt,
+		Options:   options,
+	}
+}
+
+func (s *RankPollService) toPollOptionAPIResponse(option *models.PollOption) *models.PollOptionAPIResponse {
+	return &models.PollOptionAPIResponse{
+		ID:         option.ID,
+		OptionType: option.OptionType,
+		EntityType: option.EntityType,
+		EntityID:   option.EntityID,
+		Name:       option.Name,
 	}
 }

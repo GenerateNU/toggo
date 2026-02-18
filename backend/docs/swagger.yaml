@@ -110,6 +110,13 @@ definitions:
       southwest:
         $ref: '#/definitions/models.LatLng'
     type: object
+  models.CastVoteRequest:
+    properties:
+      option_ids:
+        items:
+          type: string
+        type: array
+    type: object
   models.CategoryAPIResponse:
     properties:
       created_at:
@@ -260,6 +267,45 @@ definitions:
     - budget_min
     - trip_id
     - user_id
+    type: object
+  models.CreatePollOptionRequest:
+    properties:
+      entity_id:
+        type: string
+      entity_type:
+        type: string
+      name:
+        type: string
+      option_type:
+        allOf:
+        - $ref: '#/definitions/models.OptionType'
+        enum:
+        - entity
+        - custom
+    required:
+    - name
+    - option_type
+    type: object
+  models.CreatePollRequest:
+    properties:
+      deadline:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.CreatePollOptionRequest'
+        type: array
+      poll_type:
+        allOf:
+        - $ref: '#/definitions/models.PollType'
+        enum:
+        - single
+        - multi
+        - rank
+      question:
+        type: string
+    required:
+    - poll_type
+    - question
     type: object
   models.CreateTripInviteRequest:
     properties:
@@ -458,6 +504,33 @@ definitions:
           type: string
         type: array
     type: object
+  models.OptionType:
+    enum:
+    - entity
+    - custom
+    type: string
+    x-enum-varnames:
+    - OptionTypeEntity
+    - OptionTypeCustom
+  models.OptionWithScore:
+    properties:
+      average_rank:
+        type: number
+      borda_score:
+        type: integer
+      entity_id:
+        type: string
+      entity_type:
+        type: string
+      name:
+        type: string
+      option_id:
+        type: string
+      option_type:
+        $ref: '#/definitions/models.OptionType'
+      vote_count:
+        type: integer
+    type: object
   models.PaginatedCommentsResponse:
     properties:
       items:
@@ -608,6 +681,142 @@ definitions:
       status:
         type: string
     type: object
+  models.PollAPIResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      deadline:
+        type: string
+      id:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.PollOptionAPIResponse'
+        type: array
+      poll_type:
+        $ref: '#/definitions/models.PollType'
+      question:
+        type: string
+      trip_id:
+        type: string
+    type: object
+  models.PollCursorPageResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.PollAPIResponse'
+        type: array
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+    type: object
+  models.PollOptionAPIResponse:
+    properties:
+      entity_id:
+        type: string
+      entity_type:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      option_type:
+        $ref: '#/definitions/models.OptionType'
+      vote_count:
+        type: integer
+      voted:
+        type: boolean
+    type: object
+  models.PollType:
+    enum:
+    - single
+    - multi
+    - rank
+    type: string
+    x-enum-varnames:
+    - PollTypeSingle
+    - PollTypeMulti
+    - PollTypeRank
+  models.PollVotersResponse:
+    properties:
+      poll_id:
+        type: string
+      total_members:
+        type: integer
+      total_voters:
+        type: integer
+      voters:
+        items:
+          $ref: '#/definitions/models.VoterInfo'
+        type: array
+    type: object
+  models.RankPollAPIResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      deadline:
+        type: string
+      id:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/models.PollOptionAPIResponse'
+        type: array
+      poll_type:
+        $ref: '#/definitions/models.PollType'
+      question:
+        type: string
+      trip_id:
+        type: string
+    type: object
+  models.RankPollResultsResponse:
+    properties:
+      all_options:
+        items:
+          $ref: '#/definitions/models.OptionWithScore'
+        type: array
+      created_at:
+        type: string
+      created_by:
+        type: string
+      deadline:
+        type: string
+      poll_id:
+        type: string
+      poll_type:
+        $ref: '#/definitions/models.PollType'
+      question:
+        type: string
+      top_3:
+        items:
+          $ref: '#/definitions/models.OptionWithScore'
+        type: array
+      total_members:
+        type: integer
+      total_voters:
+        type: integer
+      user_has_voted:
+        type: boolean
+      user_ranking:
+        items:
+          $ref: '#/definitions/models.UserRankingItem'
+        type: array
+    type: object
+  models.RankingItem:
+    properties:
+      option_id:
+        type: string
+      rank:
+        type: integer
+    required:
+    - option_id
+    - rank
+    type: object
   models.S3HealthCheckResponse:
     properties:
       bucketName:
@@ -670,6 +879,16 @@ definitions:
         $ref: '#/definitions/models.ImageSize'
       url:
         type: string
+    type: object
+  models.SubmitRankingRequest:
+    properties:
+      rankings:
+        items:
+          $ref: '#/definitions/models.RankingItem'
+        minItems: 1
+        type: array
+    required:
+    - rankings
     type: object
   models.Trip:
     properties:
@@ -773,6 +992,13 @@ definitions:
       is_admin:
         type: boolean
     type: object
+  models.UpdatePollRequest:
+    properties:
+      deadline:
+        type: string
+      question:
+        type: string
+    type: object
   models.UpdateTripRequest:
     properties:
       budget_max:
@@ -855,6 +1081,24 @@ definitions:
       timezone:
         type: string
       updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserRankingItem:
+    properties:
+      option_id:
+        type: string
+      option_name:
+        type: string
+      rank_position:
+        type: integer
+    type: object
+  models.VoterInfo:
+    properties:
+      has_voted:
+        type: boolean
+      user_id:
         type: string
       username:
         type: string
@@ -2377,6 +2621,827 @@ paths:
       summary: Promote member to admin
       tags:
       - memberships
+  /api/v1/trips/{tripID}/rank-polls:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new ranking poll with initial options
+      operationId: createRankPoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Create rank poll request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePollRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.RankPollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a rank poll
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}:
+    delete:
+      description: Deletes a rank poll and all associated options and rankings
+      operationId: deleteRankPoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RankPollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a rank poll
+      tags:
+      - polls
+    get:
+      description: Retrieves a rank poll with Borda count scores and user's personal
+        ranking
+      operationId: getRankPollResults
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RankPollResultsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get rank poll results
+      tags:
+      - polls
+    patch:
+      consumes:
+      - application/json
+      description: Updates poll metadata (question, deadline)
+      operationId: updateRankPoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Update rank poll request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePollRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RankPollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a rank poll
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}/options:
+    post:
+      consumes:
+      - application/json
+      description: Adds an option to a rank poll (only if no rankings exist yet)
+      operationId: addRankPollOption
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Create option request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePollOptionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PollOptionAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add a rank poll option
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}/options/{optionId}:
+    delete:
+      description: Removes an option from a rank poll (only if no rankings exist yet)
+      operationId: deleteRankPollOption
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollOptionAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a rank poll option
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}/rank:
+    post:
+      consumes:
+      - application/json
+      description: Submits or replaces the user's full ranking for a poll
+      operationId: submitRanking
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Submit ranking request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubmitRankingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Submit ranking
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}/voters:
+    get:
+      description: Returns who has voted vs who hasn't for a rank poll
+      operationId: getRankPollVoters
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollVotersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get poll voters
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls:
+    get:
+      description: Retrieves all polls for a trip with cursor-based pagination
+      operationId: getPollsByTripID
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollCursorPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get polls for a trip
+      tags:
+      - polls
+    post:
+      consumes:
+      - application/json
+      description: Creates a new poll with initial options
+      operationId: createPoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Create poll request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePollRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create a poll
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}:
+    delete:
+      description: Deletes a poll and all associated options and votes, returns the
+        deleted poll
+      operationId: deletePoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a poll
+      tags:
+      - polls
+    get:
+      description: Retrieves a poll with vote counts and the caller's votes
+      operationId: getPoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get poll results
+      tags:
+      - polls
+    patch:
+      consumes:
+      - application/json
+      description: Updates poll metadata (question, deadline)
+      operationId: updatePoll
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Update poll request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePollRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update a poll
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}/options:
+    post:
+      consumes:
+      - application/json
+      description: Adds an option to a poll (only if no votes exist yet)
+      operationId: addPollOption
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Create option request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePollOptionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PollOptionAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add a poll option
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId}:
+    delete:
+      description: Removes an option from a poll and returns the deleted option
+      operationId: deletePollOption
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollOptionAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete a poll option
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}/vote:
+    post:
+      consumes:
+      - application/json
+      description: Casts or replaces the user's vote(s) on a poll
+      operationId: castVote
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Vote request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CastVoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Cast a vote
+      tags:
+      - polls
   /api/v1/users:
     post:
       consumes:

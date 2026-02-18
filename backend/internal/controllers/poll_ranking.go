@@ -30,7 +30,7 @@ func NewRankPollController(rankPollService services.RankPollServiceInterface, va
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        request body models.CreatePollRequest true "Create rank poll request"
-// @Success      201 {object} models.Poll
+// @Success      201 {object} models.RankPollAPIResponse
 // @Failure      400,401,403,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/rank-polls [post]
 // @ID           createRankPoll
@@ -104,7 +104,7 @@ func (rc *RankPollController) GetRankPollResults(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        request body models.UpdatePollRequest true "Update rank poll request"
-// @Success      200 {object} models.Poll
+// @Success      200 {object} models.RankPollAPIResponse
 // @Failure      400,401,403,404,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/rank-polls/{pollId} [patch]
 // @ID           updateRankPoll
@@ -147,7 +147,7 @@ func (rc *RankPollController) UpdateRankPoll(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
-// @Success      200 {object} models.Poll
+// @Success      200 {object} models.RankPollAPIResponse
 // @Failure      400,401,403,404,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/rank-polls/{pollId} [delete]
 // @ID           deleteRankPoll
@@ -183,7 +183,7 @@ func (rc *RankPollController) DeleteRankPoll(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        request body models.CreatePollOptionRequest true "Create option request"
-// @Success      201 {object} models.PollOption
+// @Success      201 {object} models.PollOptionAPIResponse
 // @Failure      400,401,403,404,409,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/rank-polls/{pollId}/options [post]
 // @ID           addRankPollOption
@@ -227,7 +227,7 @@ func (rc *RankPollController) AddOption(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        optionId path string true "Option ID"
-// @Success      200 {object} models.PollOption
+// @Success      200 {object} models.PollOptionAPIResponse
 // @Failure      400,401,403,404,409,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/rank-polls/{pollId}/options/{optionId} [delete]
 // @ID           deleteRankPollOption
