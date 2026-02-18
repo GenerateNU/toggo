@@ -28,11 +28,11 @@ type PitchServiceInterface interface {
 var _ PitchServiceInterface = (*PitchService)(nil)
 
 type PitchService struct {
-	presignClient interfaces.S3PresignClient
-	pitchRepo     repository.PitchRepository
+	presignClient  interfaces.S3PresignClient
+	pitchRepo      repository.PitchRepository
 	membershipRepo repository.MembershipRepository
-	bucketName    string
-	urlExpiration time.Duration
+	bucketName     string
+	urlExpiration  time.Duration
 }
 
 type PitchServiceConfig struct {
@@ -68,7 +68,10 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 
 	pitchID := uuid.New()
-	ext := extensionFromContentType(req.ContentType)
+	ext, err := extensionFromContentType(req.ContentType)
+	if err != nil {
+		return nil, errs.BadRequest(err)
+	}
 	// Single bucket, folder layout per ticket: trips/:tripId/pitches (e.g. profile_pictures/ elsewhere)
 	audioKey := fmt.Sprintf("trips/%s/pitches/%s.%s", tripID.String(), pitchID.String(), ext)
 
@@ -210,21 +213,22 @@ func pitchToAPIResponse(p *models.TripPitch, audioURL string) models.PitchAPIRes
 	}
 }
 
-// extensionFromContentType returns a file extension for common audio MIME types.
-func extensionFromContentType(contentType string) string {
+// extensionFromContentType returns a file extension for allowed audio MIME types.
+// Unsupported types return a non-nil error including the contentType for diagnosis.
+func extensionFromContentType(contentType string) (string, error) {
 	contentType = strings.TrimSpace(strings.ToLower(contentType))
 	switch {
 	case strings.HasSuffix(contentType, "m4a"), contentType == "audio/mp4":
-		return "m4a"
+		return "m4a", nil
 	case strings.HasSuffix(contentType, "mpeg"), strings.HasSuffix(contentType, "mp3"):
-		return "mp3"
+		return "mp3", nil
 	case strings.HasSuffix(contentType, "wav"):
-		return "wav"
+		return "wav", nil
 	case strings.HasSuffix(contentType, "ogg"):
-		return "ogg"
+		return "ogg", nil
 	case strings.HasSuffix(contentType, "webm"):
-		return "webm"
+		return "webm", nil
 	default:
-		return "m4a"
+		return "", fmt.Errorf("unsupported content type: %s", contentType)
 	}
 }
