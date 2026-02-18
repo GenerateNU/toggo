@@ -841,7 +841,7 @@ func TestRankPollSubmitRanking(t *testing.T) {
 					},
 				},
 			}).
-			AssertStatus(http.StatusBadRequest)
+			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
 	t.Run("rejects ranking with rank > num options", func(t *testing.T) {
@@ -1129,7 +1129,7 @@ func TestRankPollVoters(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 
 	t.Run("returns voter status for all members", func(t *testing.T) {
-		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		owner, member, _, tripID := setupRankPollTestEnv(t, app)
 		poll := createRankPoll(t, app, owner, tripID, defaultRankPollRequest())
 		pollID := poll["id"].(string)
 		optIDs := getRankPollOptionIDs(poll)
@@ -1162,11 +1162,28 @@ func TestRankPollVoters(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
+		// DEBUG: Print what we actually got
+		t.Logf("=== DEBUG INFO ===")
+		t.Logf("Trip ID: %s", tripID)
+		t.Logf("Poll ID: %s", pollID)
+		t.Logf("Owner ID: %s", owner)
+		t.Logf("Member ID: %s", member)
+		t.Logf("Total members from API: %v", resp["total_members"])
+		t.Logf("Total voters from API: %v", resp["total_voters"])
+
+		voters := resp["voters"].([]any)
+		t.Logf("Voters array length: %d", len(voters))
+		for i, v := range voters {
+			voter := v.(map[string]any)
+			t.Logf("  Voter %d: user_id=%s, username=%s, has_voted=%v",
+				i, voter["user_id"], voter["username"], voter["has_voted"])
+		}
+		t.Logf("=================")
+
 		require.Equal(t, pollID, resp["poll_id"])
 		require.Equal(t, float64(2), resp["total_members"])
 		require.Equal(t, float64(1), resp["total_voters"])
 
-		voters := resp["voters"].([]any)
 		require.Len(t, voters, 2)
 
 		// Verify one voted, one didn't
