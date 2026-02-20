@@ -3,12 +3,14 @@ package validators
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"strings"
 
 	"toggo/internal/errs"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -19,6 +21,19 @@ type MaybeError struct {
 
 func ValidateID(id string) (uuid.UUID, error) {
 	return uuid.Parse(id)
+}
+
+// ExtractUserID extracts and validates the userID from Fiber context locals.
+func ExtractUserID(c *fiber.Ctx) (uuid.UUID, error) {
+	userIDStr, ok := c.Locals("userID").(string)
+	if !ok || userIDStr == "" {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	userID, err := ValidateID(userIDStr)
+	if err != nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+	return userID, nil
 }
 
 func ToSnakeCase(str string) string {
@@ -60,8 +75,14 @@ func buildMessage(e validator.FieldError) string {
 	case "email":
 		return fmt.Sprintf("%s must be a valid email", e.Field())
 	case "min":
+		if e.Kind() == reflect.Slice || e.Kind() == reflect.Array || e.Kind() == reflect.Map {
+			return fmt.Sprintf("%s must have at least %s items", e.Field(), e.Param())
+		}
 		return fmt.Sprintf("%s must be at least %s characters", e.Field(), e.Param())
 	case "max":
+		if e.Kind() == reflect.Slice || e.Kind() == reflect.Array || e.Kind() == reflect.Map {
+			return fmt.Sprintf("%s must have at most %s items", e.Field(), e.Param())
+		}
 		return fmt.Sprintf("%s must be at most %s characters", e.Field(), e.Param())
 	case "oneof":
 		return fmt.Sprintf("%s must be one of: %s", e.Field(), e.Param())

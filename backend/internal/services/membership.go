@@ -14,6 +14,7 @@ import (
 
 type MembershipServiceInterface interface {
 	AddMember(ctx context.Context, req models.CreateMembershipRequest) (*models.Membership, error)
+	JoinTripByInviteCode(ctx context.Context, userID uuid.UUID, code string) (*models.Membership, error)
 	GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.MembershipAPIResponse, error)
 	GetTripMembers(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.MembershipCursorPageResult, error)
 	GetUserTrips(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
@@ -82,6 +83,78 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 	}
 
 	return s.Membership.Create(ctx, membership)
+}
+
+// JoinTripByInviteCode adds the authenticated user to a trip using an invite code.
+// - If the code is invalid -> error
+// - If the invite is expired or revoked -> error
+// - If the user is already a member -> returns existing membership (no error)
+func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uuid.UUID, code string) (*models.Membership, error) {
+	invite, err := s.TripInvite.FindByCode(ctx, code)
+	if err != nil {
+		if errors.Is(err, errs.ErrNotFound) {
+			return nil, errs.BadRequest(errors.New("invalid invite code"))
+		}
+		return nil, err
+	}
+
+	now := time.Now().UTC()
+	if invite.IsRevoked || invite.ExpiresAt.Before(now) {
+		return nil, errs.BadRequest(errors.New("invite link has expired"))
+	}
+
+	// If already a member, return existing membership.
+	existingMembership, err := s.Membership.Find(ctx, userID, invite.TripID)
+	if err == nil {
+		return &models.Membership{
+			UserID:       existingMembership.UserID,
+			TripID:       existingMembership.TripID,
+			IsAdmin:      existingMembership.IsAdmin,
+			BudgetMin:    existingMembership.BudgetMin,
+			BudgetMax:    existingMembership.BudgetMax,
+			Availability: existingMembership.Availability,
+			CreatedAt:    existingMembership.CreatedAt,
+			UpdatedAt:    existingMembership.UpdatedAt,
+		}, nil
+	}
+	if !errors.Is(err, errs.ErrNotFound) {
+		return nil, err
+	}
+
+	// Not a member yet; create a basic membership.
+	membership := &models.Membership{
+		UserID:    userID,
+		TripID:    invite.TripID,
+		IsAdmin:   false,
+		BudgetMin: 0,
+		BudgetMax: 0,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	created, err := s.Membership.Create(ctx, membership)
+	if err != nil {
+		// If there was a race and the membership already exists, treat as success.
+		if errors.Is(err, errs.ErrDuplicate) {
+			existingMembership, findErr := s.Membership.Find(ctx, userID, invite.TripID)
+			if findErr != nil {
+				return nil, findErr
+			}
+			return &models.Membership{
+				UserID:       existingMembership.UserID,
+				TripID:       existingMembership.TripID,
+				IsAdmin:      existingMembership.IsAdmin,
+				BudgetMin:    existingMembership.BudgetMin,
+				BudgetMax:    existingMembership.BudgetMax,
+				Availability: existingMembership.Availability,
+				CreatedAt:    existingMembership.CreatedAt,
+				UpdatedAt:    existingMembership.UpdatedAt,
+			}, nil
+		}
+		return nil, err
+	}
+
+	return created, nil
 }
 
 func (s *MembershipService) GetMembership(ctx context.Context, tripID, userID uuid.UUID) (*models.MembershipAPIResponse, error) {

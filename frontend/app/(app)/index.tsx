@@ -34,6 +34,18 @@ export default function Home() {
         </Text>
       </Button>
 
+      <Button onPress={() => router.push("/test-poll")} variant="primary">
+        <Text variant="caption" color="cloudWhite">
+          Test Poll API
+        </Text>
+      </Button>
+
+      <Button onPress={() => router.push("/test-maps")} variant="primary">
+        <Text variant="caption" color="cloudWhite">
+          Test Google Maps API
+        </Text>
+      </Button>
+
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">
           Logout

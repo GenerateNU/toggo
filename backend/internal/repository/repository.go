@@ -10,14 +10,19 @@ import (
 )
 
 type Repository struct {
-	User       UserRepository
-	Health     HealthRepository
-	Image      ImageRepository
-	Comment    CommentRepository
-	Membership MembershipRepository
-	Trip       TripRepository
-	Pitch      PitchRepository
-	db         *bun.DB
+	User             UserRepository
+	Health           HealthRepository
+	Image            ImageRepository
+	Comment          CommentRepository
+	Membership       MembershipRepository
+	Trip             TripRepository
+	Pitch            PitchRepository
+	Activity         ActivityRepository
+	Category         CategoryRepository
+	ActivityCategory ActivityCategoryRepository
+	Poll             PollRepository
+	TripInvite       TripInviteRepository
+	db               *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -27,9 +32,14 @@ func NewRepository(db *bun.DB) *Repository {
 		Image:      &imageRepository{db: db},
 		Comment:    &commentRepository{db: db},
 		Trip:       &tripRepository{db: db},
-		Membership: &membershipRepository{db: db},
-		Pitch:      &pitchRepository{db: db},
-		db:         db,
+		Poll:             &pollRepository{db: db},
+		Membership:       &membershipRepository{db: db},
+		Pitch:            &pitchRepository{db: db},
+		Activity:         &activityRepository{db: db},
+		Category:         &categoryRepository{db: db},
+		ActivityCategory: &activityCategoryRepository{db: db},
+		TripInvite:       newTripInviteRepository(db),
+		db:               db,
 	}
 }
 
@@ -58,6 +68,12 @@ type TripRepository interface {
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type TripInviteRepository interface {
+	Create(ctx context.Context, invite *models.TripInvite) (*models.TripInvite, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*models.TripInvite, error)
+	FindByCode(ctx context.Context, code string) (*models.TripInvite, error)
 }
 
 type MembershipRepository interface {
@@ -100,4 +116,31 @@ type PitchRepository interface {
 	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error)
 	Update(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest) (*models.TripPitch, error)
 	Delete(ctx context.Context, id, tripID uuid.UUID) error
+}
+
+type ActivityRepository interface {
+	Create(ctx context.Context, activity *models.Activity) (*models.Activity, error)
+	Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	FindByCategoryName(ctx context.Context, tripID uuid.UUID, categoryName string, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
+	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
+	Delete(ctx context.Context, activityID uuid.UUID) error
+}
+
+type CategoryRepository interface {
+	Create(ctx context.Context, category *models.Category) (*models.Category, error)
+	Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error)
+	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
+	Delete(ctx context.Context, tripID uuid.UUID, name string) error
+}
+
+type ActivityCategoryRepository interface {
+	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
+	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
+	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
+	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
+	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
 }

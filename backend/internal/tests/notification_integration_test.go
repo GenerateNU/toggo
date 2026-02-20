@@ -27,7 +27,7 @@ func TestNotificationEndpoints(t *testing.T) {
 			Body: models.CreateUserRequest{
 				Name:        "Notification User 1",
 				Username:    username1,
-				PhoneNumber: "+16175559001",
+				PhoneNumber: fakes.GenerateRandomPhoneNumber(),
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -58,7 +58,7 @@ func TestNotificationEndpoints(t *testing.T) {
 			Body: models.CreateUserRequest{
 				Name:        "Notification User 2",
 				Username:    username2,
-				PhoneNumber: "+16175559002",
+				PhoneNumber: fakes.GenerateRandomPhoneNumber(),
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -168,7 +168,7 @@ func TestNotificationEndpoints(t *testing.T) {
 				Body: models.CreateUserRequest{
 					Name:        "User Without Token",
 					Username:    username3,
-					PhoneNumber: "+16175559003",
+					PhoneNumber: fakes.GenerateRandomPhoneNumber(),
 				},
 			}).
 			AssertStatus(http.StatusCreated).

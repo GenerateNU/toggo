@@ -17,6 +17,9 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 	membershipGroup := apiGroup.Group("/memberships")
 	membershipGroup.Post("", membershipController.AddMember)
 
+	// /api/v1/trip-invites/:code/join
+	apiGroup.Post("/trip-invites/:code/join", membershipController.JoinTripByInvite)
+
 	// /api/v1/trips/:tripID/memberships
 	tripMembershipGroup := apiGroup.Group("/trips/:tripID/memberships")
 	tripMembershipGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
