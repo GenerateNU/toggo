@@ -43,7 +43,7 @@ export async function deleteUser(
   return res.data;
 }
 
-export function deleteUserMutationOptions<TContext = unknown>(
+export function deleteUserMutationOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteUserMutationKey();
@@ -51,7 +51,7 @@ export function deleteUserMutationOptions<TContext = unknown>(
     DeleteUserMutationResponse,
     ResponseErrorConfig<DeleteUser400 | DeleteUser404 | DeleteUser500>,
     { userID: DeleteUserPathParams["userID"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ userID }) => {

@@ -56,7 +56,7 @@ export async function createUploadURLs(
   return res.data;
 }
 
-export function createUploadURLsMutationOptions<TContext = unknown>(
+export function createUploadURLsMutationOptions(
   config: Partial<RequestConfig<CreateUploadURLsMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -68,7 +68,7 @@ export function createUploadURLsMutationOptions<TContext = unknown>(
       CreateUploadURLs400 | CreateUploadURLs422 | CreateUploadURLs500
     >,
     { data: CreateUploadURLsMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

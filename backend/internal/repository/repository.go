@@ -16,12 +16,13 @@ type Repository struct {
 	Comment          CommentRepository
 	Membership       MembershipRepository
 	Trip             TripRepository
+	Pitch            PitchRepository
 	Activity         ActivityRepository
 	Category         CategoryRepository
 	ActivityCategory ActivityCategoryRepository
-	Poll       PollRepository
-	TripInvite  TripInviteRepository
-	db                *bun.DB
+	Poll             PollRepository
+	TripInvite       TripInviteRepository
+	db               *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
@@ -30,14 +31,15 @@ func NewRepository(db *bun.DB) *Repository {
 		Health:     &healthRepository{db: db},
 		Image:      &imageRepository{db: db},
 		Comment:    &commentRepository{db: db},
-		Trip:       &tripRepository{db: db},
-		Poll:       &pollRepository{db: db},
-		Membership: &membershipRepository{db: db},
-		Activity:   &activityRepository{db: db},
-		Category:   &categoryRepository{db: db},
+		Trip:             &tripRepository{db: db},
+		Poll:             &pollRepository{db: db},
+		Membership:       &membershipRepository{db: db},
+		Pitch:            &pitchRepository{db: db},
+		Activity:         &activityRepository{db: db},
+		Category:         &categoryRepository{db: db},
 		ActivityCategory: &activityCategoryRepository{db: db},
-		TripInvite: newTripInviteRepository(db),
-		db:         db,
+		TripInvite:       newTripInviteRepository(db),
+		db:               db,
 	}
 }
 
@@ -105,6 +107,15 @@ type CommentRepository interface {
 	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
+}
+
+// PitchRepository handles persistence for trip pitches (audio pitches per trip).
+type PitchRepository interface {
+	Create(ctx context.Context, pitch *models.TripPitch) (*models.TripPitch, error)
+	FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.TripPitch, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error)
+	Update(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest) (*models.TripPitch, error)
+	Delete(ctx context.Context, id, tripID uuid.UUID) error
 }
 
 type ActivityRepository interface {

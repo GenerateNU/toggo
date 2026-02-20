@@ -27,7 +27,7 @@ export const getPaginatedCommentsQueryKey = (
   tripID: GetPaginatedCommentsPathParams["tripID"],
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
-  params: GetPaginatedCommentsQueryParams = {},
+  params?: GetPaginatedCommentsQueryParams,
 ) =>
   [
     {

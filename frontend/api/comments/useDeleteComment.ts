@@ -52,7 +52,7 @@ export async function deleteComment(
   return res.data;
 }
 
-export function deleteCommentMutationOptions<TContext = unknown>(
+export function deleteCommentMutationOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteCommentMutationKey();
@@ -62,7 +62,7 @@ export function deleteCommentMutationOptions<TContext = unknown>(
       DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
     >,
     { commentID: DeleteCommentPathParams["commentID"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ commentID }) => {

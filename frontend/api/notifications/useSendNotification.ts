@@ -56,7 +56,7 @@ export async function sendNotification(
   return res.data;
 }
 
-export function sendNotificationMutationOptions<TContext = unknown>(
+export function sendNotificationMutationOptions(
   config: Partial<RequestConfig<SendNotificationMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -68,7 +68,7 @@ export function sendNotificationMutationOptions<TContext = unknown>(
       SendNotification400 | SendNotification422 | SendNotification500
     >,
     { data: SendNotificationMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {

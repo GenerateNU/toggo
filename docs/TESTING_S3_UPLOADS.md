@@ -10,6 +10,7 @@ This guide covers both manual and automated testing of the S3 image upload funct
 ### 1. Manual Testing with LocalStack
 
 #### Start the Backend Services
+
 ```bash
 cd backend
 
@@ -34,6 +35,7 @@ curl http://localhost:8000/api/v1/files/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -43,6 +45,7 @@ Expected response:
 ```
 
 If you are failing in this stage, here are some possible causes:
+
 - you do not have a toggo-images bucket
 - your localstack is not properly setup
 
@@ -51,6 +54,7 @@ If you need to directly and manually create your own bucket, first try using the
 #### Test Upload Flow
 
 **Step 1: Create Upload URLs**
+
 ```bash
 curl -X POST http://localhost:8000/api/v1/files/upload \
   -H "Content-Type: application/json" \
@@ -62,21 +66,22 @@ curl -X POST http://localhost:8000/api/v1/files/upload \
 ```
 
 Response will include:
+
 ```json
 {
   "imageId": "uuid-here",
   "fileKey": "test/my-image.jpg",
   "uploadUrls": [
-    {"size": "small", "url": "presigned-url-1"},
-    {"size": "medium", "url": "presigned-url-2"},
-    {"size": "large", "url": "presigned-url-3"}
+    { "size": "small", "url": "presigned-url-1" },
+    { "size": "medium", "url": "presigned-url-2" },
+    { "size": "large", "url": "presigned-url-3" }
   ],
   "expiresAt": "2026-01-26T12:00:00Z"
 }
 ```
 
-
 **Step 2: Upload to S3 (using presigned URLs)**
+
 ```bash
 # Upload a test image to each presigned URL
 curl -X PUT "presigned-url-1" \
@@ -85,6 +90,7 @@ curl -X PUT "presigned-url-1" \
 ```
 
 **Step 3: Confirm Upload**
+
 ```bash
 curl -X POST http://localhost:8000/api/v1/files/confirm \
   -H "Content-Type: application/json" \
@@ -94,6 +100,7 @@ curl -X POST http://localhost:8000/api/v1/files/confirm \
 ```
 
 Expected response:
+
 ```json
 {
   "imageId": "uuid-from-step-1",
@@ -103,6 +110,7 @@ Expected response:
 ```
 
 **Step 4: Retrieve Image URLs**
+
 ```bash
 # Get a specific size
 curl http://localhost:8000/api/v1/files/{imageId}/small
@@ -114,6 +122,7 @@ curl http://localhost:8000/api/v1/files/{imageId}
 ### 2. Automated Backend Tests
 
 #### Run Existing Tests
+
 ```bash
 cd backend
 
@@ -156,14 +165,14 @@ import (
 func TestFileController_CreateUploadURLs(t *testing.T) {
 	t.Run("successfully creates upload URLs", func(t *testing.T) {
 		app := fiber.New()
-		
+
 		mockFileService := mocks.NewMockFileService(t)
 		validator := validator.New()
 		controller := controllers.NewFileController(mockFileService, validator)
-		
+
 		// Setup route
 		app.Post("/upload", controller.CreateUploadURLs)
-		
+
 		// Mock service response
 		mockFileService.On("CreateUploadURLs", mock.Anything, mock.AnythingOfType("models.UploadURLRequest")).
 			Return(&models.UploadURLResponse{
@@ -174,7 +183,7 @@ func TestFileController_CreateUploadURLs(t *testing.T) {
 				},
 				ExpiresAt: "2026-01-26T12:00:00Z",
 			}, nil).Once()
-		
+
 		// Create request
 		reqBody := models.UploadURLRequest{
 			FileKey:     "test/image.jpg",
@@ -182,38 +191,38 @@ func TestFileController_CreateUploadURLs(t *testing.T) {
 			ContentType: "image/jpeg",
 		}
 		bodyBytes, _ := json.Marshal(reqBody)
-		
+
 		req := httptest.NewRequest("POST", "/upload", bytes.NewReader(bodyBytes))
 		req.Header.Set("Content-Type", "application/json")
-		
+
 		// Execute request
 		resp, err := app.Test(req)
-		
+
 		// Assert
 		assert.NoError(t, err)
 		assert.Equal(t, 201, resp.StatusCode)
-		
+
 		var response models.UploadURLResponse
 		json.NewDecoder(resp.Body).Decode(&response)
 		assert.Equal(t, "test/image.jpg", response.FileKey)
 		assert.Len(t, response.UploadURLs, 1)
 	})
-	
+
 	t.Run("returns 400 for invalid request", func(t *testing.T) {
 		app := fiber.New()
-		
+
 		mockFileService := mocks.NewMockFileService(t)
 		validator := validator.New()
 		controller := controllers.NewFileController(mockFileService, validator)
-		
+
 		app.Post("/upload", controller.CreateUploadURLs)
-		
+
 		// Invalid request (missing required fields)
 		req := httptest.NewRequest("POST", "/upload", bytes.NewReader([]byte("{}")))
 		req.Header.Set("Content-Type", "application/json")
-		
+
 		resp, err := app.Test(req)
-		
+
 		assert.NoError(t, err)
 		assert.Equal(t, 422, resp.StatusCode)
 	})
@@ -223,6 +232,7 @@ func TestFileController_CreateUploadURLs(t *testing.T) {
 ## Frontend Testing
 
 #### Using Expo Go
+
 ```bash
 cd frontend
 
@@ -242,12 +252,14 @@ npm run android
 ### 1. Frontend Unit Tests
 
 #### Setup Testing (if not already configured)
+
 ```bash
 cd frontend
 bun install
 ```
 
 #### Run Frontend Tests
+
 ```bash
 cd frontend
 bunx jest
@@ -268,12 +280,14 @@ You may need to redirect your localstack to your IP in your doppler. In your bac
 We need to do this in order to allow our simulator to connect to the localstack.
 
 1. **Start backend with LocalStack:**
-You can use dev, dev-personal, or dev-win as situation befits. Refer to the backend section above. I highly recommend running in dev-personal where you most likely updated the correct S3_BUCKET_ENDPOINT.
+   You can use dev, dev-personal, or dev-win as situation befits. Refer to the backend section above. I highly recommend running in dev-personal where you most likely updated the correct S3_BUCKET_ENDPOINT.
+
    ```bash
    cd backend && make dev-personal
    ```
 
 2. **Start frontend:**
+
    ```bash
    cd frontend && npm start
    ```
@@ -298,6 +312,7 @@ Create a collection with these requests:
 ### Backend Issues
 
 **LocalStack not connecting:**
+
 ```bash
 # Check LocalStack is running
 docker ps | grep localstack
@@ -310,6 +325,7 @@ aws --endpoint-url=http://localhost:4566 s3 mb s3://toggo-images
 ```
 
 **Database issues:**
+
 ```bash
 # Check migrations
 make migrate-status
@@ -321,12 +337,14 @@ make migrate-up
 ### Frontend Issues
 
 **Network errors:**
+
 - Ensure backend is running on correct port
 - Check API base URL in `frontend/api/client.ts`
 - For iOS simulator: use `http://localhost:8000`
 - For Android emulator: use `http://10.0.2.2:8000`
 
 **Image compression issues:**
+
 - Check device permissions
 - Verify expo-image-manipulator is installed
 - Test with smaller images first
@@ -348,7 +366,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.21'
+          go-version: "1.21"
       - name: Run tests
         run: |
           cd backend
@@ -360,7 +378,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: "18"
       - name: Install dependencies
         run: cd frontend && npm ci
       - name: Run tests

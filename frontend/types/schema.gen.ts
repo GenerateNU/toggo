@@ -13,6 +13,9 @@ import type {
   ModelsConfirmUploadResponse,
   ModelsCreateCommentRequest,
   ModelsCreateMembershipRequest,
+  ModelsCreatePitchRequest,
+  ModelsPitchAPIResponse,
+  ModelsCreatePitchResponse,
   ModelsCreateTripRequest,
   ModelsCreateUserRequest,
   ModelsGetFileResponse,
@@ -23,6 +26,7 @@ import type {
   ModelsNotificationError,
   ModelsNotificationResponse,
   ModelsPaginatedCommentsResponse,
+  ModelsPitchCursorPageResult,
   ModelsS3HealthCheckResponse,
   ModelsSendBulkNotificationRequest,
   ModelsSendNotificationRequest,
@@ -32,6 +36,7 @@ import type {
   ModelsTripCursorPageResult,
   ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
+  ModelsUpdatePitchRequest,
   ModelsUpdateTripRequest,
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
@@ -188,6 +193,41 @@ import type {
   PromoteToAdmin404,
   PromoteToAdmin500,
   PromoteToAdminMutationResponse,
+  ListPitchesPathParams,
+  ListPitchesQueryParams,
+  ListPitches200,
+  ListPitches400,
+  ListPitches404,
+  ListPitches500,
+  ListPitchesQueryResponse,
+  CreatePitchPathParams,
+  CreatePitch201,
+  CreatePitch400,
+  CreatePitch403,
+  CreatePitch422,
+  CreatePitch500,
+  CreatePitchMutationRequest,
+  CreatePitchMutationResponse,
+  GetPitchPathParams,
+  GetPitch200,
+  GetPitch400,
+  GetPitch404,
+  GetPitch500,
+  GetPitchQueryResponse,
+  DeletePitchPathParams,
+  DeletePitch204,
+  DeletePitch400,
+  DeletePitch404,
+  DeletePitch500,
+  DeletePitchMutationResponse,
+  UpdatePitchPathParams,
+  UpdatePitch200,
+  UpdatePitch400,
+  UpdatePitch404,
+  UpdatePitch422,
+  UpdatePitch500,
+  UpdatePitchMutationRequest,
+  UpdatePitchMutationResponse,
   GetPaginatedCommentsPathParams,
   GetPaginatedCommentsQueryParams,
   GetPaginatedComments200,
@@ -312,6 +352,32 @@ export const modelsCreateMembershipRequestSchema = z.object({
   user_id: z.string(),
 }) as unknown as z.ZodType<ModelsCreateMembershipRequest>;
 
+export const modelsCreatePitchRequestSchema = z.object({
+  content_type: z.string().min(1),
+  description: z.optional(z.string()),
+  title: z.string().min(1),
+}) as unknown as z.ZodType<ModelsCreatePitchRequest>;
+
+export const modelsPitchAPIResponseSchema = z.object({
+  audio_url: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  description: z.optional(z.string()),
+  duration: z.optional(z.int()),
+  id: z.optional(z.string()),
+  title: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPitchAPIResponse>;
+
+export const modelsCreatePitchResponseSchema = z.object({
+  expires_at: z.optional(z.string()),
+  get pitch() {
+    return modelsPitchAPIResponseSchema.optional();
+  },
+  upload_url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCreatePitchResponse>;
+
 export const modelsCreateTripRequestSchema = z.object({
   budget_max: z.int().min(0),
   budget_min: z.int().min(0),
@@ -395,6 +461,14 @@ export const modelsPaginatedCommentsResponseSchema = z.object({
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPaginatedCommentsResponse>;
 
+export const modelsPitchCursorPageResultSchema = z.object({
+  get items() {
+    return z.array(modelsPitchAPIResponseSchema).optional();
+  },
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPitchCursorPageResult>;
+
 export const modelsS3HealthCheckResponseSchema = z.object({
   bucketName: z.optional(z.string()),
   error: z.optional(
@@ -466,6 +540,12 @@ export const modelsUpdateMembershipRequestSchema = z.object({
   budget_min: z.optional(z.int().min(0)),
   is_admin: z.optional(z.boolean()),
 }) as unknown as z.ZodType<ModelsUpdateMembershipRequest>;
+
+export const modelsUpdatePitchRequestSchema = z.object({
+  description: z.optional(z.string()),
+  duration: z.optional(z.int().min(0)),
+  title: z.optional(z.string().min(1)),
+}) as unknown as z.ZodType<ModelsUpdatePitchRequest>;
 
 export const modelsUpdateTripRequestSchema = z.object({
   budget_max: z.optional(z.int().min(0)),
@@ -1484,6 +1564,230 @@ export const promoteToAdmin500Schema = z.lazy(
 export const promoteToAdminMutationResponseSchema = z.lazy(
   () => promoteToAdmin200Schema,
 ) as unknown as z.ZodType<PromoteToAdminMutationResponse>;
+
+export const listPitchesPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<ListPitchesPathParams>;
+
+export const listPitchesQueryParamsSchema = z
+  .object({
+    limit: z.optional(
+      z.coerce
+        .number()
+        .int()
+        .describe("Max items per page (default 20, max 100)"),
+    ),
+    cursor: z.optional(
+      z.string().describe("Opaque cursor from previous response next_cursor"),
+    ),
+  })
+  .optional() as unknown as z.ZodType<ListPitchesQueryParams>;
+
+/**
+ * @description OK
+ */
+export const listPitches200Schema = z.lazy(
+  () => modelsPitchCursorPageResultSchema,
+) as unknown as z.ZodType<ListPitches200>;
+
+/**
+ * @description Bad Request
+ */
+export const listPitches400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ListPitches400>;
+
+/**
+ * @description Not Found
+ */
+export const listPitches404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ListPitches404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const listPitches500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ListPitches500>;
+
+export const listPitchesQueryResponseSchema = z.lazy(
+  () => listPitches200Schema,
+) as unknown as z.ZodType<ListPitchesQueryResponse>;
+
+export const createPitchPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<CreatePitchPathParams>;
+
+/**
+ * @description Created
+ */
+export const createPitch201Schema = z.lazy(
+  () => modelsCreatePitchResponseSchema,
+) as unknown as z.ZodType<CreatePitch201>;
+
+/**
+ * @description Bad Request
+ */
+export const createPitch400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreatePitch400>;
+
+/**
+ * @description Forbidden
+ */
+export const createPitch403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreatePitch403>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const createPitch422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreatePitch422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const createPitch500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreatePitch500>;
+
+/**
+ * @description Create pitch request
+ */
+export const createPitchMutationRequestSchema = z.lazy(
+  () => modelsCreatePitchRequestSchema,
+) as unknown as z.ZodType<CreatePitchMutationRequest>;
+
+export const createPitchMutationResponseSchema = z.lazy(
+  () => createPitch201Schema,
+) as unknown as z.ZodType<CreatePitchMutationResponse>;
+
+export const getPitchPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pitchID: z.string().describe("Pitch ID"),
+}) as unknown as z.ZodType<GetPitchPathParams>;
+
+/**
+ * @description OK
+ */
+export const getPitch200Schema = z.lazy(
+  () => modelsPitchAPIResponseSchema,
+) as unknown as z.ZodType<GetPitch200>;
+
+/**
+ * @description Bad Request
+ */
+export const getPitch400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPitch400>;
+
+/**
+ * @description Not Found
+ */
+export const getPitch404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPitch404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getPitch500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetPitch500>;
+
+export const getPitchQueryResponseSchema = z.lazy(
+  () => getPitch200Schema,
+) as unknown as z.ZodType<GetPitchQueryResponse>;
+
+export const deletePitchPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pitchID: z.string().describe("Pitch ID"),
+}) as unknown as z.ZodType<DeletePitchPathParams>;
+
+/**
+ * @description No Content
+ */
+export const deletePitch204Schema =
+  z.any() as unknown as z.ZodType<DeletePitch204>;
+
+/**
+ * @description Bad Request
+ */
+export const deletePitch400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeletePitch400>;
+
+/**
+ * @description Not Found
+ */
+export const deletePitch404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeletePitch404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deletePitch500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeletePitch500>;
+
+export const deletePitchMutationResponseSchema = z.lazy(
+  () => deletePitch204Schema,
+) as unknown as z.ZodType<DeletePitchMutationResponse>;
+
+export const updatePitchPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pitchID: z.string().describe("Pitch ID"),
+}) as unknown as z.ZodType<UpdatePitchPathParams>;
+
+/**
+ * @description OK
+ */
+export const updatePitch200Schema = z.lazy(
+  () => modelsPitchAPIResponseSchema,
+) as unknown as z.ZodType<UpdatePitch200>;
+
+/**
+ * @description Bad Request
+ */
+export const updatePitch400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdatePitch400>;
+
+/**
+ * @description Not Found
+ */
+export const updatePitch404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdatePitch404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const updatePitch422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdatePitch422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const updatePitch500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdatePitch500>;
+
+/**
+ * @description Update pitch request
+ */
+export const updatePitchMutationRequestSchema = z.lazy(
+  () => modelsUpdatePitchRequestSchema,
+) as unknown as z.ZodType<UpdatePitchMutationRequest>;
+
+export const updatePitchMutationResponseSchema = z.lazy(
+  () => updatePitch200Schema,
+) as unknown as z.ZodType<UpdatePitchMutationResponse>;
 
 export const getPaginatedCommentsPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

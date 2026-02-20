@@ -64,7 +64,7 @@ export async function updateComment(
   return res.data;
 }
 
-export function updateCommentMutationOptions<TContext = unknown>(
+export function updateCommentMutationOptions(
   config: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
     client?: typeof fetch;
   } = {},
@@ -83,7 +83,7 @@ export function updateCommentMutationOptions<TContext = unknown>(
       commentID: UpdateCommentPathParams["commentID"];
       data: UpdateCommentMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ commentID, data }) => {

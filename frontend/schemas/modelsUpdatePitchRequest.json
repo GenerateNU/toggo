@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "description": { "type": "string" },
+    "duration": { "type": "integer", "minimum": 0 },
+    "title": { "type": "string", "minLength": 1 }
+  },
+  "x-readme-ref-name": "models.UpdatePitchRequest"
+}

@@ -24,7 +24,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getTripMembersSuspenseQueryKey = (
   tripID: GetTripMembersPathParams["tripID"],
-  params: GetTripMembersQueryParams = {},
+  params?: GetTripMembersQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/memberships", params: { tripID: tripID } },

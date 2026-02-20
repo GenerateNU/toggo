@@ -53,7 +53,7 @@ export async function removeMember(
   return res.data;
 }
 
-export function removeMemberMutationOptions<TContext = unknown>(
+export function removeMemberMutationOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = removeMemberMutationKey();
@@ -66,7 +66,7 @@ export function removeMemberMutationOptions<TContext = unknown>(
       tripID: RemoveMemberPathParams["tripID"];
       userID: RemoveMemberPathParams["userID"];
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID }) => {

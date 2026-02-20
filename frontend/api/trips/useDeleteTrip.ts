@@ -46,7 +46,7 @@ export async function deleteTrip(
   return res.data;
 }
 
-export function deleteTripMutationOptions<TContext = unknown>(
+export function deleteTripMutationOptions(
   config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteTripMutationKey();
@@ -56,7 +56,7 @@ export function deleteTripMutationOptions<TContext = unknown>(
       DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
     >,
     { tripID: DeleteTripPathParams["tripID"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID }) => {

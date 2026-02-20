@@ -20,7 +20,7 @@ import type {
 } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getAllTripsQueryKey = (params: GetAllTripsQueryParams = {}) =>
+export const getAllTripsQueryKey = (params?: GetAllTripsQueryParams) =>
   [{ url: "/api/v1/trips" }, ...(params ? [params] : [])] as const;
 
 export type GetAllTripsQueryKey = ReturnType<typeof getAllTripsQueryKey>;

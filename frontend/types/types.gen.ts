@@ -179,6 +179,77 @@ export type ModelsCreateMembershipRequest = {
   user_id: string;
 };
 
+export type ModelsCreatePitchRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  content_type: string;
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @minLength 1
+   * @type string
+   */
+  title: string;
+};
+
+export type ModelsPitchAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  audio_url?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type integer | undefined
+   */
+  duration?: number;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  title?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+};
+
+export type ModelsCreatePitchResponse = {
+  /**
+   * @type string | undefined
+   */
+  expires_at?: string;
+  /**
+   * @type object | undefined
+   */
+  pitch?: ModelsPitchAPIResponse;
+  /**
+   * @type string | undefined
+   */
+  upload_url?: string;
+};
+
 export type ModelsCreateTripRequest = {
   /**
    * @minLength 0
@@ -389,6 +460,21 @@ export type ModelsPaginatedCommentsResponse = {
   next_cursor?: string;
 };
 
+export type ModelsPitchCursorPageResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsPitchAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+};
+
 export type ModelsS3HealthCheckResponse = {
   /**
    * @type string | undefined
@@ -570,6 +656,23 @@ export type ModelsUpdateMembershipRequest = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+};
+
+export type ModelsUpdatePitchRequest = {
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @minLength 0
+   * @type integer | undefined
+   */
+  duration?: number;
+  /**
+   * @minLength 1
+   * @type string | undefined
+   */
+  title?: string;
 };
 
 export type ModelsUpdateTripRequest = {
@@ -1661,6 +1764,237 @@ export type PromoteToAdminMutation = {
     | PromoteToAdmin401
     | PromoteToAdmin404
     | PromoteToAdmin500;
+};
+
+export type ListPitchesPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+export type ListPitchesQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor from previous response next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type ListPitches200 = ModelsPitchCursorPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type ListPitches400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ListPitches404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ListPitches500 = ErrsAPIError;
+
+export type ListPitchesQueryResponse = ListPitches200;
+
+export type ListPitchesQuery = {
+  Response: ListPitches200;
+  PathParams: ListPitchesPathParams;
+  QueryParams: ListPitchesQueryParams;
+  Errors: ListPitches400 | ListPitches404 | ListPitches500;
+};
+
+export type CreatePitchPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreatePitch201 = ModelsCreatePitchResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreatePitch400 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreatePitch403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreatePitch422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreatePitch500 = ErrsAPIError;
+
+/**
+ * @description Create pitch request
+ */
+export type CreatePitchMutationRequest = ModelsCreatePitchRequest;
+
+export type CreatePitchMutationResponse = CreatePitch201;
+
+export type CreatePitchMutation = {
+  Response: CreatePitch201;
+  Request: CreatePitchMutationRequest;
+  PathParams: CreatePitchPathParams;
+  Errors: CreatePitch400 | CreatePitch403 | CreatePitch422 | CreatePitch500;
+};
+
+export type GetPitchPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Pitch ID
+   * @type string
+   */
+  pitchID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetPitch200 = ModelsPitchAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetPitch400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetPitch404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPitch500 = ErrsAPIError;
+
+export type GetPitchQueryResponse = GetPitch200;
+
+export type GetPitchQuery = {
+  Response: GetPitch200;
+  PathParams: GetPitchPathParams;
+  Errors: GetPitch400 | GetPitch404 | GetPitch500;
+};
+
+export type DeletePitchPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Pitch ID
+   * @type string
+   */
+  pitchID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeletePitch204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeletePitch400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeletePitch404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeletePitch500 = ErrsAPIError;
+
+export type DeletePitchMutationResponse = DeletePitch204;
+
+export type DeletePitchMutation = {
+  Response: DeletePitch204;
+  PathParams: DeletePitchPathParams;
+  Errors: DeletePitch400 | DeletePitch404 | DeletePitch500;
+};
+
+export type UpdatePitchPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Pitch ID
+   * @type string
+   */
+  pitchID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdatePitch200 = ModelsPitchAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type UpdatePitch400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdatePitch404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdatePitch422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdatePitch500 = ErrsAPIError;
+
+/**
+ * @description Update pitch request
+ */
+export type UpdatePitchMutationRequest = ModelsUpdatePitchRequest;
+
+export type UpdatePitchMutationResponse = UpdatePitch200;
+
+export type UpdatePitchMutation = {
+  Response: UpdatePitch200;
+  Request: UpdatePitchMutationRequest;
+  PathParams: UpdatePitchPathParams;
+  Errors: UpdatePitch400 | UpdatePitch404 | UpdatePitch422 | UpdatePitch500;
 };
 
 export type GetPaginatedCommentsPathParams = {
