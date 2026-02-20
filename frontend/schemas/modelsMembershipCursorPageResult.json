@@ -1,1 +1,27 @@
-{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"availability":{"type":"object","additionalProperties":true},"budget_max":{"type":"integer"},"budget_min":{"type":"integer"},"created_at":{"type":"string"},"is_admin":{"type":"boolean"},"profile_picture_url":{"type":"string"},"trip_id":{"type":"string"},"updated_at":{"type":"string"},"user_id":{"type":"string"},"username":{"type":"string"}},"x-readme-ref-name":"models.MembershipAPIResponse"}},"limit":{"type":"integer"},"next_cursor":{"type":"string"}},"x-readme-ref-name":"models.MembershipCursorPageResult"}
+{
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "availability": { "type": "object", "additionalProperties": true },
+          "budget_max": { "type": "integer" },
+          "budget_min": { "type": "integer" },
+          "created_at": { "type": "string" },
+          "is_admin": { "type": "boolean" },
+          "profile_picture_url": { "type": "string" },
+          "trip_id": { "type": "string" },
+          "updated_at": { "type": "string" },
+          "user_id": { "type": "string" },
+          "username": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.MembershipAPIResponse"
+      }
+    },
+    "limit": { "type": "integer" },
+    "next_cursor": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.MembershipCursorPageResult"
+}

@@ -1,1 +1,10 @@
-{"type":"object","properties":{"budget_max":{"type":"integer","minimum":0},"budget_min":{"type":"integer","minimum":0},"cover_image_id":{"type":"string"},"name":{"type":"string","minLength":1}},"x-readme-ref-name":"models.UpdateTripRequest"}
+{
+  "type": "object",
+  "properties": {
+    "budget_max": { "type": "integer", "minimum": 0 },
+    "budget_min": { "type": "integer", "minimum": 0 },
+    "cover_image_id": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 }
+  },
+  "x-readme-ref-name": "models.UpdateTripRequest"
+}

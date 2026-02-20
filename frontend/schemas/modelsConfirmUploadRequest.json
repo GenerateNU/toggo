@@ -1,1 +1,23 @@
-{"type":"object","required":["imageId"],"properties":{"imageId":{"type":"string"},"size":{"description":"Optional: if nil, confirm all sizes","allOf":[{"type":"string","enum":["large","medium","small"],"x-enum-varnames":["ImageSizeLarge","ImageSizeMedium","ImageSizeSmall"],"x-readme-ref-name":"models.ImageSize"}]}},"x-readme-ref-name":"models.ConfirmUploadRequest"}
+{
+  "type": "object",
+  "required": ["imageId"],
+  "properties": {
+    "imageId": { "type": "string" },
+    "size": {
+      "description": "Optional: if nil, confirm all sizes",
+      "allOf": [
+        {
+          "type": "string",
+          "enum": ["large", "medium", "small"],
+          "x-enum-varnames": [
+            "ImageSizeLarge",
+            "ImageSizeMedium",
+            "ImageSizeSmall"
+          ],
+          "x-readme-ref-name": "models.ImageSize"
+        }
+      ]
+    }
+  },
+  "x-readme-ref-name": "models.ConfirmUploadRequest"
+}
