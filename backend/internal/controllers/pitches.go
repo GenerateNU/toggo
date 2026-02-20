@@ -34,7 +34,7 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 // @Param        request body models.CreatePitchRequest true "Create pitch request"
 // @Success      201 {object} models.CreatePitchResponse
 // @Failure      400 {object} errs.APIError
-// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/pitches [post]

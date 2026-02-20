@@ -1358,8 +1358,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/errs.APIError"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
