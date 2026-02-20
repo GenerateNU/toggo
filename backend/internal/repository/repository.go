@@ -31,7 +31,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Health:     &healthRepository{db: db},
 		Image:      &imageRepository{db: db},
 		Comment:    &commentRepository{db: db},
-		Trip:       &tripRepository{db: db},
+		Trip:             &tripRepository{db: db},
 		Poll:             &pollRepository{db: db},
 		Membership:       &membershipRepository{db: db},
 		Pitch:            &pitchRepository{db: db},
