@@ -47,10 +47,10 @@ export default function Home() {
       </Button>
 
       <Button onPress={() => router.push("/test-rank-poll")} variant="primary">
-  <Text variant="caption" color="cloudWhite">
-    Test Rank Poll API
-  </Text>
-</Button>
+        <Text variant="caption" color="cloudWhite">
+          Test Rank Poll API
+        </Text>
+      </Button>
 
       <Button onPress={logout} disabled={isPending} variant="secondary">
         <Text variant="caption" color="cloudWhite">

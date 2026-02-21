@@ -2,12 +2,12 @@ import { getAuthToken } from "@/api/client";
 import Constants from "expo-constants";
 import React, { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const getToken = async () => {
@@ -250,7 +250,8 @@ export default function TestRankPollScreen() {
     <ScrollView style={s.root} contentContainerStyle={s.container}>
       <Text style={s.heading}>Rank Poll API Test Suite</Text>
       <Text style={s.subheading}>
-        Test ranking polls with Borda count scoring. Each button tests a specific endpoint.
+        Test ranking polls with Borda count scoring. Each button tests a
+        specific endpoint.
       </Text>
 
       {/* ── 0  SETUP ────────────────────────────────────────────────── */}
