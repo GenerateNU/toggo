@@ -140,7 +140,7 @@ func (r *pollRankingRepository) GetAggregatedResults(ctx context.Context, pollID
 		Join("LEFT JOIN poll_rankings AS pr ON pr.option_id = po.id").
 		Where("po.poll_id = ?", pollID).
 		Group("po.id", "po.name", "po.option_type", "po.entity_type", "po.entity_id", "po.poll_id").
-		Order("borda_score DESC").
+		Order("borda_score DESC", "po.id ASC").
 		Scan(ctx, &rows)
 	if err != nil {
 		return nil, err

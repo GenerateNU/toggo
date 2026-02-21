@@ -152,7 +152,10 @@ func (s *RankPollService) AddPollOption(ctx context.Context, tripID uuid.UUID, p
 	if errors.Is(err, errs.ErrMaxOptionsReached) {
 		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
 	}
-	return s.toPollOptionAPIResponse(result), err
+	if err != nil {
+		return nil, err
+	}
+	return s.toPollOptionAPIResponse(result), nil
 }
 
 func (s *RankPollService) DeletePollOption(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, userID uuid.UUID) (*models.PollOptionAPIResponse, error) {
@@ -181,7 +184,10 @@ func (s *RankPollService) DeletePollOption(ctx context.Context, tripID uuid.UUID
 	if errors.Is(err, errs.ErrMinOptionsRequired) {
 		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
 	}
-	return s.toPollOptionAPIResponse(result), err
+	if err != nil {
+		return nil, err
+	}
+	return s.toPollOptionAPIResponse(result), nil
 }
 
 func (s *RankPollService) SubmitRanking(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.SubmitRankingRequest) error {

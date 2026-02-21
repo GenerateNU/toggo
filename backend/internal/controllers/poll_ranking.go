@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -52,6 +53,10 @@ func (rc *RankPollController) CreateRankPoll(c *fiber.Ctx) error {
 
 	if err := validators.Validate(rc.validator, req); err != nil {
 		return err
+	}
+
+	if req.PollType != models.PollTypeRank {
+		return errs.BadRequest(errors.New("poll_type must be 'rank'"))
 	}
 
 	poll, err := rc.rankPollService.CreateRankPoll(c.Context(), tripID, userID, req)

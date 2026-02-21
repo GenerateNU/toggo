@@ -209,13 +209,4 @@ type VoterInfo struct {
 	HasVoted bool      `json:"has_voted"`
 }
 
-type RankPollAPIResponse struct {
-	ID        uuid.UUID               `json:"id"`
-	TripID    uuid.UUID               `json:"trip_id"`
-	CreatedBy uuid.UUID               `json:"created_by"`
-	Question  string                  `json:"question"`
-	PollType  PollType                `json:"poll_type"`
-	Deadline  *time.Time              `json:"deadline,omitempty"`
-	CreatedAt time.Time               `json:"created_at"`
-	Options   []PollOptionAPIResponse `json:"options"`
-}
+type RankPollAPIResponse = PollAPIResponse
