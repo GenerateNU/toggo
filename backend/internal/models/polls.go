@@ -24,7 +24,7 @@ const (
 
 // Poll represents a voting poll attached to a trip.
 type Poll struct {
-	bun.BaseModel `bun:"table:polls,alias:p"`
+	bun.BaseModel `bun:"table:polls,alias:p" swaggerignore:"true"`
 
 	ID        uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
 	TripID    uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
@@ -40,7 +40,7 @@ type Poll struct {
 
 // PollOption represents a single selectable option within a poll.
 type PollOption struct {
-	bun.BaseModel `bun:"table:poll_options,alias:po"`
+	bun.BaseModel `bun:"table:poll_options,alias:po" swaggerignore:"true"`
 
 	ID         uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
 	PollID     uuid.UUID  `bun:"poll_id,type:uuid,notnull" json:"poll_id"`
@@ -57,7 +57,7 @@ type PollOption struct {
 // only vote once per option. For single-choice polls, exactly one row exists
 // per user; for multi-choice, one row per selected option.
 type PollVote struct {
-	bun.BaseModel `bun:"table:poll_votes,alias:pv"`
+	bun.BaseModel `bun:"table:poll_votes,alias:pv" swaggerignore:"true"`
 
 	PollID    uuid.UUID `bun:"poll_id,pk,type:uuid,notnull" json:"poll_id"`
 	OptionID  uuid.UUID `bun:"option_id,pk,type:uuid,notnull" json:"option_id"`
