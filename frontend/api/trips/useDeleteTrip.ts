@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DeleteTripMutationResponse,
   DeleteTripPathParams,
@@ -32,7 +32,7 @@ export type DeleteTripMutationKey = ReturnType<typeof deleteTripMutationKey>;
  */
 export async function deleteTrip(
   tripID: DeleteTripPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -47,7 +47,7 @@ export async function deleteTrip(
 }
 
 export function deleteTripMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = deleteTripMutationKey();
   return mutationOptions<
@@ -80,7 +80,7 @@ export function useDeleteTrip<TContext>(
       { tripID: DeleteTripPathParams["tripID"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

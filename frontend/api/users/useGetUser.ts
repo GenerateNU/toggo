@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetUserQueryResponse,
   GetUserPathParams,
@@ -32,7 +32,7 @@ export type GetUserQueryKey = ReturnType<typeof getUserQueryKey>;
  */
 export async function getUser(
   userID: GetUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -46,7 +46,7 @@ export async function getUser(
 
 export function getUserQueryOptions(
   userID: GetUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getUserQueryKey(userID);
   return queryOptions<
@@ -85,7 +85,7 @@ export function useGetUser<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

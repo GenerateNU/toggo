@@ -1,0 +1,76 @@
+{
+  "type": "object",
+  "properties": {
+    "all_options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "average_rank": { "type": "number" },
+          "borda_score": { "type": "integer" },
+          "entity_id": { "type": "string" },
+          "entity_type": { "type": "string" },
+          "name": { "type": "string" },
+          "option_id": { "type": "string" },
+          "option_type": {
+            "type": "string",
+            "enum": ["entity", "custom"],
+            "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+            "x-readme-ref-name": "models.OptionType"
+          },
+          "vote_count": { "type": "integer" }
+        },
+        "x-readme-ref-name": "models.OptionWithScore"
+      }
+    },
+    "created_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "deadline": { "type": "string" },
+    "poll_id": { "type": "string" },
+    "poll_type": {
+      "type": "string",
+      "enum": ["single", "multi", "rank"],
+      "x-enum-varnames": ["PollTypeSingle", "PollTypeMulti", "PollTypeRank"],
+      "x-readme-ref-name": "models.PollType"
+    },
+    "question": { "type": "string" },
+    "top_3": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "average_rank": { "type": "number" },
+          "borda_score": { "type": "integer" },
+          "entity_id": { "type": "string" },
+          "entity_type": { "type": "string" },
+          "name": { "type": "string" },
+          "option_id": { "type": "string" },
+          "option_type": {
+            "type": "string",
+            "enum": ["entity", "custom"],
+            "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+            "x-readme-ref-name": "models.OptionType"
+          },
+          "vote_count": { "type": "integer" }
+        },
+        "x-readme-ref-name": "models.OptionWithScore"
+      }
+    },
+    "total_members": { "type": "integer" },
+    "total_voters": { "type": "integer" },
+    "user_has_voted": { "type": "boolean" },
+    "user_ranking": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "option_id": { "type": "string" },
+          "option_name": { "type": "string" },
+          "rank_position": { "type": "integer" }
+        },
+        "x-readme-ref-name": "models.UserRankingItem"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.RankPollResultsResponse"
+}

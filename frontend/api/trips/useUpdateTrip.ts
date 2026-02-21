@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateTripMutationRequest,
   UpdateTripMutationResponse,
@@ -36,7 +36,7 @@ export async function updateTrip(
   tripID: UpdateTripPathParams["tripID"],
   data?: UpdateTripMutationRequest,
   config: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,7 +64,7 @@ export async function updateTrip(
 
 export function updateTripMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updateTripMutationKey();
@@ -113,7 +113,7 @@ export function useUpdateTrip<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

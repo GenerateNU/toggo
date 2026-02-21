@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "required": ["name", "option_type"],
+  "properties": {
+    "entity_id": { "type": "string" },
+    "entity_type": { "type": "string" },
+    "name": { "type": "string" },
+    "option_type": {
+      "enum": ["entity", "custom"],
+      "allOf": [
+        {
+          "type": "string",
+          "enum": ["entity", "custom"],
+          "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+          "x-readme-ref-name": "models.OptionType"
+        }
+      ]
+    }
+  },
+  "x-readme-ref-name": "models.CreatePollOptionRequest"
+}

@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   HealthcheckQueryResponse,
   Healthcheck500,
@@ -30,7 +30,7 @@ export type HealthcheckSuspenseQueryKey = ReturnType<
  * {@link /healthcheck}
  */
 export async function healthcheckSuspense(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -43,7 +43,7 @@ export async function healthcheckSuspense(
 }
 
 export function healthcheckSuspenseQueryOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = healthcheckSuspenseQueryKey();
   return queryOptions<
@@ -78,7 +78,7 @@ export function useHealthcheckSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

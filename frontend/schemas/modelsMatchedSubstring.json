@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "length": { "type": "integer" },
+    "offset": { "type": "integer" }
+  },
+  "x-readme-ref-name": "models.MatchedSubstring"
+}

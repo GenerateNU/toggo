@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "open_now": { "type": "boolean" },
+    "periods": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "close": {
+            "type": "object",
+            "properties": {
+              "day": { "type": "integer" },
+              "time": { "type": "string" }
+            },
+            "x-readme-ref-name": "models.DayTime"
+          },
+          "open": {
+            "type": "object",
+            "properties": {
+              "day": { "type": "integer" },
+              "time": { "type": "string" }
+            },
+            "x-readme-ref-name": "models.DayTime"
+          }
+        },
+        "x-readme-ref-name": "models.Period"
+      }
+    },
+    "weekday_text": { "type": "array", "items": { "type": "string" } }
+  },
+  "x-readme-ref-name": "models.OpeningHours"
+}

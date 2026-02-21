@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DemoteFromAdminMutationResponse,
   DemoteFromAdminPathParams,
@@ -35,7 +35,7 @@ export type DemoteFromAdminMutationKey = ReturnType<
 export async function demoteFromAdmin(
   tripID: DemoteFromAdminPathParams["tripID"],
   userID: DemoteFromAdminPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -57,7 +57,7 @@ export async function demoteFromAdmin(
 }
 
 export function demoteFromAdminMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = demoteFromAdminMutationKey();
   return mutationOptions<
@@ -102,7 +102,7 @@ export function useDemoteFromAdmin<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

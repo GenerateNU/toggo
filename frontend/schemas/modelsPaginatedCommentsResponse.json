@@ -12,7 +12,7 @@
           "entity_type": {
             "type": "string",
             "enum": ["activity", "pitch"],
-            "x-enum-varnames": ["Activity", "Pitch"],
+            "x-enum-varnames": ["ActivityEntity", "PitchEntity"],
             "x-readme-ref-name": "models.EntityType"
           },
           "id": { "type": "string" },

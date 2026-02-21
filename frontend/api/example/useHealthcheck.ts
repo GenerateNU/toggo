@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   HealthcheckQueryResponse,
   Healthcheck500,
@@ -27,7 +27,7 @@ export type HealthcheckQueryKey = ReturnType<typeof healthcheckQueryKey>;
  * {@link /healthcheck}
  */
 export async function healthcheck(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -40,7 +40,7 @@ export async function healthcheck(
 }
 
 export function healthcheckQueryOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = healthcheckQueryKey();
   return queryOptions<
@@ -77,7 +77,7 @@ export function useHealthcheck<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

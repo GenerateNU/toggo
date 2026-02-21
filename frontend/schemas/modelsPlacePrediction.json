@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "description": {
+      "description": "Description is the human-readable name for this place",
+      "type": "string"
+    },
+    "main_text": {
+      "description": "StructuredFormatting contains the main text and secondary text",
+      "type": "string"
+    },
+    "matched_substrings": {
+      "description": "MatchedSubstrings indicates which parts of the description match the input",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "length": { "type": "integer" },
+          "offset": { "type": "integer" }
+        },
+        "x-readme-ref-name": "models.MatchedSubstring"
+      }
+    },
+    "place_id": {
+      "description": "PlaceID is the unique identifier for this place",
+      "type": "string"
+    },
+    "secondary_text": { "type": "string" },
+    "types": { "type": "array", "items": { "type": "string" } }
+  },
+  "x-readme-ref-name": "models.PlacePrediction"
+}

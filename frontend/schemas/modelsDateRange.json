@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "end": {
+      "description": "ISO 8601 date format (YYYY-MM-DD)",
+      "type": "string",
+      "format": "date",
+      "example": "2024-01-05"
+    },
+    "start": {
+      "description": "ISO 8601 date format (YYYY-MM-DD)",
+      "type": "string",
+      "format": "date",
+      "example": "2024-01-01"
+    }
+  },
+  "x-readme-ref-name": "models.DateRange"
+}

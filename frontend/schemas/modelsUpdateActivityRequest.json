@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "dates": {
+      "description": "Max 20 date ranges",
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "properties": {
+          "end": {
+            "description": "ISO 8601 date format (YYYY-MM-DD)",
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-05"
+          },
+          "start": {
+            "description": "ISO 8601 date format (YYYY-MM-DD)",
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-01"
+          }
+        },
+        "x-readme-ref-name": "models.DateRange"
+      }
+    },
+    "description": { "type": "string" },
+    "media_url": { "type": "string" },
+    "name": { "type": "string", "maxLength": 255, "minLength": 1 },
+    "thumbnail_url": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.UpdateActivityRequest"
+}

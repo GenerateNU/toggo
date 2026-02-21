@@ -11,9 +11,231 @@ export type ErrsAPIError = {
   statusCode?: number;
 };
 
+export type ModelsDateRange = {
+  /**
+   * @description ISO 8601 date format (YYYY-MM-DD)
+   * @type string | undefined, date
+   */
+  end?: string;
+  /**
+   * @description ISO 8601 date format (YYYY-MM-DD)
+   * @type string | undefined, date
+   */
+  start?: string;
+};
+
+export type ModelsActivity = {
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type array | undefined
+   */
+  dates?: ModelsDateRange[];
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  media_url?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  proposed_by?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+};
+
+export type ModelsActivityAPIResponse = {
+  /**
+   * @type array | undefined
+   */
+  category_names?: string[];
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type array | undefined
+   */
+  dates?: ModelsDateRange[];
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  media_url?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  proposed_by?: string;
+  /**
+   * @type string | undefined
+   */
+  proposer_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  proposer_username?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+};
+
+export type ModelsActivityCategoriesPageResult = {
+  /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+};
+
+export type ModelsActivityCursorPageResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsActivityAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+};
+
+export type ModelsAddCategoryResponse = {
+  /**
+   * @type string | undefined
+   */
+  message?: string;
+};
+
+export type ModelsAddressComponent = {
+  /**
+   * @type string | undefined
+   */
+  long_name?: string;
+  /**
+   * @type string | undefined
+   */
+  short_name?: string;
+  /**
+   * @type array | undefined
+   */
+  types?: string[];
+};
+
+export type ModelsLatLng = {
+  /**
+   * @type number | undefined
+   */
+  lat?: number;
+  /**
+   * @type number | undefined
+   */
+  lng?: number;
+};
+
+export type ModelsBounds = {
+  /**
+   * @type object | undefined
+   */
+  northeast?: ModelsLatLng;
+  /**
+   * @type object | undefined
+   */
+  southwest?: ModelsLatLng;
+};
+
+export type ModelsCastVoteRequest = {
+  /**
+   * @type array | undefined
+   */
+  option_ids?: string[];
+};
+
+export type ModelsCategoryAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  icon?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+};
+
+export type ModelsCategoryListResponse = {
+  /**
+   * @type array | undefined
+   */
+  categories?: ModelsCategoryAPIResponse[];
+};
+
 export const modelsEntityType = {
-  Activity: "activity",
-  Pitch: "pitch",
+  ActivityEntity: "activity",
+  PitchEntity: "pitch",
 } as const;
 
 export type ModelsEntityTypeEnumKey =
@@ -137,6 +359,39 @@ export type ModelsConfirmUploadResponse = {
   status?: string;
 };
 
+export type ModelsCreateActivityRequest = {
+  /**
+   * @type array | undefined
+   */
+  category_names?: string[];
+  /**
+   * @type array | undefined
+   */
+  dates?: ModelsDateRange[];
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  media_url?: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   * @type string
+   */
+  name: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+};
+
 export type ModelsCreateCommentRequest = {
   /**
    * @minLength 1
@@ -179,6 +434,66 @@ export type ModelsCreateMembershipRequest = {
   user_id: string;
 };
 
+export const modelsOptionType = {
+  OptionTypeEntity: "entity",
+  OptionTypeCustom: "custom",
+} as const;
+
+export type ModelsOptionTypeEnumKey =
+  (typeof modelsOptionType)[keyof typeof modelsOptionType];
+
+export type ModelsOptionType = ModelsOptionTypeEnumKey;
+
+export type ModelsCreatePollOptionRequest = {
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: string;
+  /**
+   * @type string
+   */
+  name: string;
+  option_type: ModelsOptionType;
+};
+
+export const modelsPollType = {
+  PollTypeSingle: "single",
+  PollTypeMulti: "multi",
+  PollTypeRank: "rank",
+} as const;
+
+export type ModelsPollTypeEnumKey =
+  (typeof modelsPollType)[keyof typeof modelsPollType];
+
+export type ModelsPollType = ModelsPollTypeEnumKey;
+
+export type ModelsCreatePollRequest = {
+  /**
+   * @type string | undefined
+   */
+  deadline?: string;
+  /**
+   * @type array | undefined
+   */
+  options?: ModelsCreatePollOptionRequest[];
+  poll_type: ModelsPollType;
+  /**
+   * @type string
+   */
+  question: string;
+};
+
+export type ModelsCreateTripInviteRequest = {
+  /**
+   * @type string | undefined
+   */
+  expires_at?: string;
+};
+
 export type ModelsCreateTripRequest = {
   /**
    * @minLength 0
@@ -217,6 +532,17 @@ export type ModelsCreateUserRequest = {
   username: string;
 };
 
+export type ModelsDayTime = {
+  /**
+   * @type integer | undefined
+   */
+  day?: number;
+  /**
+   * @type string | undefined
+   */
+  time?: string;
+};
+
 export type ModelsGetFileResponse = {
   /**
    * @type string | undefined
@@ -245,6 +571,17 @@ export type ModelsGetFileAllSizesResponse = {
    * @type string | undefined
    */
   imageId?: string;
+};
+
+export type ModelsMatchedSubstring = {
+  /**
+   * @type integer | undefined
+   */
+  length?: number;
+  /**
+   * @type integer | undefined
+   */
+  offset?: number;
 };
 
 export type ModelsMembership = {
@@ -374,6 +711,67 @@ export type ModelsNotificationResponse = {
   success_count?: number;
 };
 
+export type ModelsPeriod = {
+  /**
+   * @type object | undefined
+   */
+  close?: ModelsDayTime;
+  /**
+   * @type object | undefined
+   */
+  open?: ModelsDayTime;
+};
+
+export type ModelsOpeningHours = {
+  /**
+   * @type boolean | undefined
+   */
+  open_now?: boolean;
+  /**
+   * @type array | undefined
+   */
+  periods?: ModelsPeriod[];
+  /**
+   * @type array | undefined
+   */
+  weekday_text?: string[];
+};
+
+export type ModelsOptionWithScore = {
+  /**
+   * @type number | undefined
+   */
+  average_rank?: number;
+  /**
+   * @type integer | undefined
+   */
+  borda_score?: number;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  option_type?: ModelsOptionType;
+  /**
+   * @type integer | undefined
+   */
+  vote_count?: number;
+};
+
 export type ModelsPaginatedCommentsResponse = {
   /**
    * @type array | undefined
@@ -387,6 +785,410 @@ export type ModelsPaginatedCommentsResponse = {
    * @type string | undefined
    */
   next_cursor?: string;
+};
+
+export type ModelsPlaceDetailsRequest = {
+  /**
+   * @description Fields specifies which fields to return (optional)\nIf not specified, returns all available fields
+   * @type array | undefined
+   */
+  fields?: string[];
+  /**
+   * @description Input is the text to search for if PlaceID is not provided\nExample: \"Eiffel Tower\", \"Paris, France\"
+   * @type string | undefined
+   */
+  input?: string;
+  /**
+   * @description Language is the language code for the results (optional)
+   * @type string | undefined
+   */
+  language?: string;
+  /**
+   * @description PlaceID is the unique identifier for the place (from typeahead results)
+   * @type string | undefined
+   */
+  place_id?: string;
+};
+
+export type ModelsPlaceGeometry = {
+  /**
+   * @type object | undefined
+   */
+  location?: ModelsLatLng;
+  /**
+   * @type object | undefined
+   */
+  viewport?: ModelsBounds;
+};
+
+export type ModelsPlacePhoto = {
+  /**
+   * @type integer | undefined
+   */
+  height?: number;
+  /**
+   * @type array | undefined
+   */
+  html_attributions?: string[];
+  /**
+   * @type string | undefined
+   */
+  photo_reference?: string;
+  /**
+   * @description PhotoURL is a generated URL to fetch the photo (optional, generated by backend)
+   * @type string | undefined
+   */
+  photo_url?: string;
+  /**
+   * @type integer | undefined
+   */
+  width?: number;
+};
+
+export type ModelsPlaceDetailsResponse = {
+  /**
+   * @type array | undefined
+   */
+  address_components?: ModelsAddressComponent[];
+  /**
+   * @description Address information
+   * @type string | undefined
+   */
+  formatted_address?: string;
+  /**
+   * @description Contact information
+   * @type string | undefined
+   */
+  formatted_phone_number?: string;
+  /**
+   * @description Location coordinates
+   */
+  geometry?: ModelsPlaceGeometry;
+  /**
+   * @type string | undefined
+   */
+  icon?: string;
+  /**
+   * @type string | undefined
+   */
+  international_phone_number?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @description Business information
+   */
+  opening_hours?: ModelsOpeningHours;
+  /**
+   * @description Photos
+   * @type array | undefined
+   */
+  photos?: ModelsPlacePhoto[];
+  /**
+   * @type string | undefined
+   */
+  place_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  price_level?: number;
+  /**
+   * @description Ratings and reviews
+   * @type number | undefined
+   */
+  rating?: number;
+  /**
+   * @description Place types
+   * @type array | undefined
+   */
+  types?: string[];
+  /**
+   * @type integer | undefined
+   */
+  user_ratings_total?: number;
+  /**
+   * @description Additional information
+   * @type integer | undefined
+   */
+  utc_offset?: number;
+  /**
+   * @type string | undefined
+   */
+  vicinity?: string;
+  /**
+   * @type string | undefined
+   */
+  website?: string;
+};
+
+export type ModelsPlacePrediction = {
+  /**
+   * @description Description is the human-readable name for this place
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @description StructuredFormatting contains the main text and secondary text
+   * @type string | undefined
+   */
+  main_text?: string;
+  /**
+   * @description MatchedSubstrings indicates which parts of the description match the input
+   * @type array | undefined
+   */
+  matched_substrings?: ModelsMatchedSubstring[];
+  /**
+   * @description PlaceID is the unique identifier for this place
+   * @type string | undefined
+   */
+  place_id?: string;
+  /**
+   * @type string | undefined
+   */
+  secondary_text?: string;
+  /**
+   * @type array | undefined
+   */
+  types?: string[];
+};
+
+export type ModelsPlacesSearchResponse = {
+  /**
+   * @type array | undefined
+   */
+  predictions?: ModelsPlacePrediction[];
+  /**
+   * @type string | undefined
+   */
+  status?: string;
+};
+
+export type ModelsPollOptionAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  entity_type?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  option_type?: ModelsOptionType;
+  /**
+   * @type integer | undefined
+   */
+  vote_count?: number;
+  /**
+   * @type boolean | undefined
+   */
+  voted?: boolean;
+};
+
+export type ModelsPollAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  created_by?: string;
+  /**
+   * @type string | undefined
+   */
+  deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type array | undefined
+   */
+  options?: ModelsPollOptionAPIResponse[];
+  /**
+   * @type string | undefined
+   */
+  poll_type?: ModelsPollType;
+  /**
+   * @type string | undefined
+   */
+  question?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+};
+
+export type ModelsPollCursorPageResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsPollAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+};
+
+export type ModelsVoterInfo = {
+  /**
+   * @type boolean | undefined
+   */
+  has_voted?: boolean;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsPollVotersResponse = {
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  total_members?: number;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type array | undefined
+   */
+  voters?: ModelsVoterInfo[];
+};
+
+export type ModelsRankPollAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  created_by?: string;
+  /**
+   * @type string | undefined
+   */
+  deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type array | undefined
+   */
+  options?: ModelsPollOptionAPIResponse[];
+  /**
+   * @type string | undefined
+   */
+  poll_type?: ModelsPollType;
+  /**
+   * @type string | undefined
+   */
+  question?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+};
+
+export type ModelsUserRankingItem = {
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  option_name?: string;
+  /**
+   * @type integer | undefined
+   */
+  rank_position?: number;
+};
+
+export type ModelsRankPollResultsResponse = {
+  /**
+   * @type array | undefined
+   */
+  all_options?: ModelsOptionWithScore[];
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  created_by?: string;
+  /**
+   * @type string | undefined
+   */
+  deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_type?: ModelsPollType;
+  /**
+   * @type string | undefined
+   */
+  question?: string;
+  /**
+   * @type array | undefined
+   */
+  top_3?: ModelsOptionWithScore[];
+  /**
+   * @type integer | undefined
+   */
+  total_members?: number;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type boolean | undefined
+   */
+  user_has_voted?: boolean;
+  /**
+   * @type array | undefined
+   */
+  user_ranking?: ModelsUserRankingItem[];
+};
+
+export type ModelsRankingItem = {
+  /**
+   * @type string
+   */
+  option_id: string;
+  /**
+   * @type integer
+   */
+  rank: number;
 };
 
 export type ModelsS3HealthCheckResponse = {
@@ -470,6 +1272,13 @@ export type ModelsSizedUploadURL = {
   url?: string;
 };
 
+export type ModelsSubmitRankingRequest = {
+  /**
+   * @type array
+   */
+  rankings: ModelsRankingItem[];
+};
+
 export type ModelsTrip = {
   /**
    * @type integer | undefined
@@ -547,6 +1356,67 @@ export type ModelsTripCursorPageResult = {
   next_cursor?: string;
 };
 
+export type ModelsTripInviteAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  code?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  created_by?: string;
+  /**
+   * @type string | undefined
+   */
+  expires_at?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_revoked?: boolean;
+  /**
+   * @type string | undefined
+   */
+  join_url?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+};
+
+export type ModelsUpdateActivityRequest = {
+  /**
+   * @description Max 20 date ranges
+   * @type array | undefined
+   */
+  dates?: ModelsDateRange[];
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  media_url?: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+};
+
 export type ModelsUpdateCommentRequest = {
   /**
    * @minLength 1
@@ -570,6 +1440,17 @@ export type ModelsUpdateMembershipRequest = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+};
+
+export type ModelsUpdatePollRequest = {
+  /**
+   * @type string | undefined
+   */
+  deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  question?: string;
 };
 
 export type ModelsUpdateTripRequest = {
@@ -1129,6 +2010,132 @@ export type SendBulkNotificationMutation = {
     | SendBulkNotification500;
 };
 
+/**
+ * @description OK
+ */
+export type GetPlaceDetails200 = ModelsPlaceDetailsResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetPlaceDetails400 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPlaceDetails500 = ErrsAPIError;
+
+/**
+ * @description Place details request (provide either place_id or input)
+ */
+export type GetPlaceDetailsMutationRequest = ModelsPlaceDetailsRequest;
+
+export type GetPlaceDetailsMutationResponse = GetPlaceDetails200;
+
+export type GetPlaceDetailsMutation = {
+  Response: GetPlaceDetails200;
+  Request: GetPlaceDetailsMutationRequest;
+  Errors: GetPlaceDetails400 | GetPlaceDetails500;
+};
+
+/**
+ * @description OK
+ */
+export type GoogleMapsHealth200 = {
+  [key: string]: any;
+};
+
+/**
+ * @description Internal Server Error
+ */
+export type GoogleMapsHealth500 = {
+  [key: string]: any;
+};
+
+export type GoogleMapsHealthQueryResponse = GoogleMapsHealth200;
+
+export type GoogleMapsHealthQuery = {
+  Response: GoogleMapsHealth200;
+  Errors: GoogleMapsHealth500;
+};
+
+export type TypeaheadPlacesQueryParams = {
+  /**
+   * @description Search query (e.g., \'Eiffel Tower\', \'Paris\')
+   * @type string
+   */
+  q: string;
+  /**
+   * @description Maximum number of results (default: 5, max: 20)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Language code (e.g., \'en\', \'fr\', \'es\')
+   * @type string | undefined
+   */
+  language?: string;
+};
+
+/**
+ * @description OK
+ */
+export type TypeaheadPlaces200 = ModelsPlacesSearchResponse;
+
+/**
+ * @description Bad Request
+ */
+export type TypeaheadPlaces400 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type TypeaheadPlaces500 = ErrsAPIError;
+
+export type TypeaheadPlacesQueryResponse = TypeaheadPlaces200;
+
+export type TypeaheadPlacesQuery = {
+  Response: TypeaheadPlaces200;
+  QueryParams: TypeaheadPlacesQueryParams;
+  Errors: TypeaheadPlaces400 | TypeaheadPlaces500;
+};
+
+export type JoinTripByInvitePathParams = {
+  /**
+   * @description Invite code
+   * @type string
+   */
+  code: string;
+};
+
+/**
+ * @description Created
+ */
+export type JoinTripByInvite201 = ModelsMembership;
+
+/**
+ * @description Invalid or expired invite code
+ */
+export type JoinTripByInvite400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type JoinTripByInvite401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type JoinTripByInvite500 = ErrsAPIError;
+
+export type JoinTripByInviteMutationResponse = JoinTripByInvite201;
+
+export type JoinTripByInviteMutation = {
+  Response: JoinTripByInvite201;
+  PathParams: JoinTripByInvitePathParams;
+  Errors: JoinTripByInvite400 | JoinTripByInvite401 | JoinTripByInvite500;
+};
+
 export type GetAllTripsQueryParams = {
   /**
    * @description Max items per page (default 20, max 100)
@@ -1340,6 +2347,632 @@ export type UpdateTripMutation = {
     | UpdateTrip404
     | UpdateTrip422
     | UpdateTrip500;
+};
+
+export type GetActivitiesByTripIDPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+export type GetActivitiesByTripIDQueryParams = {
+  /**
+   * @description Filter by category name
+   * @type string | undefined
+   */
+  category?: string;
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetActivitiesByTripID200 = ModelsActivityCursorPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type GetActivitiesByTripID400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetActivitiesByTripID401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetActivitiesByTripID403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetActivitiesByTripID404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetActivitiesByTripID500 = ErrsAPIError;
+
+export type GetActivitiesByTripIDQueryResponse = GetActivitiesByTripID200;
+
+export type GetActivitiesByTripIDQuery = {
+  Response: GetActivitiesByTripID200;
+  PathParams: GetActivitiesByTripIDPathParams;
+  QueryParams: GetActivitiesByTripIDQueryParams;
+  Errors:
+    | GetActivitiesByTripID400
+    | GetActivitiesByTripID401
+    | GetActivitiesByTripID403
+    | GetActivitiesByTripID404
+    | GetActivitiesByTripID500;
+};
+
+export type CreateActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateActivity201 = ModelsActivity;
+
+/**
+ * @description Bad Request
+ */
+export type CreateActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreateActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type CreateActivity404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateActivity422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateActivity500 = ErrsAPIError;
+
+/**
+ * @description Create activity request
+ */
+export type CreateActivityMutationRequest = ModelsCreateActivityRequest;
+
+export type CreateActivityMutationResponse = CreateActivity201;
+
+export type CreateActivityMutation = {
+  Response: CreateActivity201;
+  Request: CreateActivityMutationRequest;
+  PathParams: CreateActivityPathParams;
+  Errors:
+    | CreateActivity400
+    | CreateActivity401
+    | CreateActivity403
+    | CreateActivity404
+    | CreateActivity422
+    | CreateActivity500;
+};
+
+export type GetActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetActivity200 = ModelsActivityAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetActivity404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetActivity500 = ErrsAPIError;
+
+export type GetActivityQueryResponse = GetActivity200;
+
+export type GetActivityQuery = {
+  Response: GetActivity200;
+  PathParams: GetActivityPathParams;
+  Errors:
+    | GetActivity400
+    | GetActivity401
+    | GetActivity403
+    | GetActivity404
+    | GetActivity500;
+};
+
+export type UpdateActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateActivity200 = ModelsActivity;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type UpdateActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateActivity404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateActivity422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateActivity500 = ErrsAPIError;
+
+/**
+ * @description Update activity request
+ */
+export type UpdateActivityMutationRequest = ModelsUpdateActivityRequest;
+
+export type UpdateActivityMutationResponse = UpdateActivity200;
+
+export type UpdateActivityMutation = {
+  Response: UpdateActivity200;
+  Request: UpdateActivityMutationRequest;
+  PathParams: UpdateActivityPathParams;
+  Errors:
+    | UpdateActivity400
+    | UpdateActivity401
+    | UpdateActivity403
+    | UpdateActivity404
+    | UpdateActivity422
+    | UpdateActivity500;
+};
+
+export type DeleteActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteActivity204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeleteActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteActivity404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteActivity500 = ErrsAPIError;
+
+export type DeleteActivityMutationResponse = DeleteActivity204;
+
+export type DeleteActivityMutation = {
+  Response: DeleteActivity204;
+  PathParams: DeleteActivityPathParams;
+  Errors:
+    | DeleteActivity400
+    | DeleteActivity401
+    | DeleteActivity403
+    | DeleteActivity404
+    | DeleteActivity500;
+};
+
+export type GetActivityCategoriesPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+export type GetActivityCategoriesQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetActivityCategories200 = ModelsActivityCategoriesPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type GetActivityCategories400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetActivityCategories401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetActivityCategories403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetActivityCategories404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetActivityCategories500 = ErrsAPIError;
+
+export type GetActivityCategoriesQueryResponse = GetActivityCategories200;
+
+export type GetActivityCategoriesQuery = {
+  Response: GetActivityCategories200;
+  PathParams: GetActivityCategoriesPathParams;
+  QueryParams: GetActivityCategoriesQueryParams;
+  Errors:
+    | GetActivityCategories400
+    | GetActivityCategories401
+    | GetActivityCategories403
+    | GetActivityCategories404
+    | GetActivityCategories500;
+};
+
+export type AddCategoryToActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+  /**
+   * @description Category Name
+   * @type string
+   */
+  categoryName: string;
+};
+
+/**
+ * @description OK
+ */
+export type AddCategoryToActivity200 = ModelsAddCategoryResponse;
+
+/**
+ * @description Bad Request
+ */
+export type AddCategoryToActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type AddCategoryToActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type AddCategoryToActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type AddCategoryToActivity404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type AddCategoryToActivity422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type AddCategoryToActivity500 = ErrsAPIError;
+
+export type AddCategoryToActivityMutationResponse = AddCategoryToActivity200;
+
+export type AddCategoryToActivityMutation = {
+  Response: AddCategoryToActivity200;
+  PathParams: AddCategoryToActivityPathParams;
+  Errors:
+    | AddCategoryToActivity400
+    | AddCategoryToActivity401
+    | AddCategoryToActivity403
+    | AddCategoryToActivity404
+    | AddCategoryToActivity422
+    | AddCategoryToActivity500;
+};
+
+export type RemoveCategoryFromActivityPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+  /**
+   * @description Category Name
+   * @type string
+   */
+  categoryName: string;
+};
+
+/**
+ * @description No Content
+ */
+export type RemoveCategoryFromActivity204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type RemoveCategoryFromActivity400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type RemoveCategoryFromActivity401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type RemoveCategoryFromActivity403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type RemoveCategoryFromActivity404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type RemoveCategoryFromActivity422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type RemoveCategoryFromActivity500 = ErrsAPIError;
+
+export type RemoveCategoryFromActivityMutationResponse =
+  RemoveCategoryFromActivity204;
+
+export type RemoveCategoryFromActivityMutation = {
+  Response: RemoveCategoryFromActivity204;
+  PathParams: RemoveCategoryFromActivityPathParams;
+  Errors:
+    | RemoveCategoryFromActivity400
+    | RemoveCategoryFromActivity401
+    | RemoveCategoryFromActivity403
+    | RemoveCategoryFromActivity404
+    | RemoveCategoryFromActivity422
+    | RemoveCategoryFromActivity500;
+};
+
+export type GetCategoriesByTripIDPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetCategoriesByTripID200 = ModelsCategoryListResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetCategoriesByTripID400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetCategoriesByTripID401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetCategoriesByTripID403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetCategoriesByTripID404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetCategoriesByTripID500 = ErrsAPIError;
+
+export type GetCategoriesByTripIDQueryResponse = GetCategoriesByTripID200;
+
+export type GetCategoriesByTripIDQuery = {
+  Response: GetCategoriesByTripID200;
+  PathParams: GetCategoriesByTripIDPathParams;
+  Errors:
+    | GetCategoriesByTripID400
+    | GetCategoriesByTripID401
+    | GetCategoriesByTripID403
+    | GetCategoriesByTripID404
+    | GetCategoriesByTripID500;
+};
+
+export type CreateTripInvitePathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateTripInvite201 = ModelsTripInviteAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreateTripInvite400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateTripInvite401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type CreateTripInvite404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateTripInvite422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateTripInvite500 = ErrsAPIError;
+
+/**
+ * @description Optional expires_at; default 7 days
+ */
+export type CreateTripInviteMutationRequest = ModelsCreateTripInviteRequest;
+
+export type CreateTripInviteMutationResponse = CreateTripInvite201;
+
+export type CreateTripInviteMutation = {
+  Response: CreateTripInvite201;
+  Request: CreateTripInviteMutationRequest;
+  PathParams: CreateTripInvitePathParams;
+  Errors:
+    | CreateTripInvite400
+    | CreateTripInvite401
+    | CreateTripInvite404
+    | CreateTripInvite422
+    | CreateTripInvite500;
 };
 
 export type GetTripMembersPathParams = {
@@ -1661,6 +3294,1010 @@ export type PromoteToAdminMutation = {
     | PromoteToAdmin401
     | PromoteToAdmin404
     | PromoteToAdmin500;
+};
+
+export type CreateRankPollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateRankPoll201 = ModelsRankPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreateRankPoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateRankPoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreateRankPoll403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateRankPoll422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateRankPoll500 = ErrsAPIError;
+
+/**
+ * @description Create rank poll request
+ */
+export type CreateRankPollMutationRequest = ModelsCreatePollRequest;
+
+export type CreateRankPollMutationResponse = CreateRankPoll201;
+
+export type CreateRankPollMutation = {
+  Response: CreateRankPoll201;
+  Request: CreateRankPollMutationRequest;
+  PathParams: CreateRankPollPathParams;
+  Errors:
+    | CreateRankPoll400
+    | CreateRankPoll401
+    | CreateRankPoll403
+    | CreateRankPoll422
+    | CreateRankPoll500;
+};
+
+export type GetRankPollResultsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetRankPollResults200 = ModelsRankPollResultsResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetRankPollResults400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetRankPollResults401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetRankPollResults403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetRankPollResults404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetRankPollResults500 = ErrsAPIError;
+
+export type GetRankPollResultsQueryResponse = GetRankPollResults200;
+
+export type GetRankPollResultsQuery = {
+  Response: GetRankPollResults200;
+  PathParams: GetRankPollResultsPathParams;
+  Errors:
+    | GetRankPollResults400
+    | GetRankPollResults401
+    | GetRankPollResults403
+    | GetRankPollResults404
+    | GetRankPollResults500;
+};
+
+export type DeleteRankPollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type DeleteRankPoll200 = ModelsRankPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteRankPoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteRankPoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeleteRankPoll403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteRankPoll404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteRankPoll500 = ErrsAPIError;
+
+export type DeleteRankPollMutationResponse = DeleteRankPoll200;
+
+export type DeleteRankPollMutation = {
+  Response: DeleteRankPoll200;
+  PathParams: DeleteRankPollPathParams;
+  Errors:
+    | DeleteRankPoll400
+    | DeleteRankPoll401
+    | DeleteRankPoll403
+    | DeleteRankPoll404
+    | DeleteRankPoll500;
+};
+
+export type UpdateRankPollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateRankPoll200 = ModelsRankPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateRankPoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateRankPoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type UpdateRankPoll403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateRankPoll404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateRankPoll422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateRankPoll500 = ErrsAPIError;
+
+/**
+ * @description Update rank poll request
+ */
+export type UpdateRankPollMutationRequest = ModelsUpdatePollRequest;
+
+export type UpdateRankPollMutationResponse = UpdateRankPoll200;
+
+export type UpdateRankPollMutation = {
+  Response: UpdateRankPoll200;
+  Request: UpdateRankPollMutationRequest;
+  PathParams: UpdateRankPollPathParams;
+  Errors:
+    | UpdateRankPoll400
+    | UpdateRankPoll401
+    | UpdateRankPoll403
+    | UpdateRankPoll404
+    | UpdateRankPoll422
+    | UpdateRankPoll500;
+};
+
+export type AddRankPollOptionPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description Created
+ */
+export type AddRankPollOption201 = ModelsPollOptionAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type AddRankPollOption400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type AddRankPollOption401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type AddRankPollOption403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type AddRankPollOption404 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type AddRankPollOption409 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type AddRankPollOption422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type AddRankPollOption500 = ErrsAPIError;
+
+/**
+ * @description Create option request
+ */
+export type AddRankPollOptionMutationRequest = ModelsCreatePollOptionRequest;
+
+export type AddRankPollOptionMutationResponse = AddRankPollOption201;
+
+export type AddRankPollOptionMutation = {
+  Response: AddRankPollOption201;
+  Request: AddRankPollOptionMutationRequest;
+  PathParams: AddRankPollOptionPathParams;
+  Errors:
+    | AddRankPollOption400
+    | AddRankPollOption401
+    | AddRankPollOption403
+    | AddRankPollOption404
+    | AddRankPollOption409
+    | AddRankPollOption422
+    | AddRankPollOption500;
+};
+
+export type DeleteRankPollOptionPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+};
+
+/**
+ * @description OK
+ */
+export type DeleteRankPollOption200 = ModelsPollOptionAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteRankPollOption400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteRankPollOption401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeleteRankPollOption403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteRankPollOption404 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type DeleteRankPollOption409 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteRankPollOption500 = ErrsAPIError;
+
+export type DeleteRankPollOptionMutationResponse = DeleteRankPollOption200;
+
+export type DeleteRankPollOptionMutation = {
+  Response: DeleteRankPollOption200;
+  PathParams: DeleteRankPollOptionPathParams;
+  Errors:
+    | DeleteRankPollOption400
+    | DeleteRankPollOption401
+    | DeleteRankPollOption403
+    | DeleteRankPollOption404
+    | DeleteRankPollOption409
+    | DeleteRankPollOption500;
+};
+
+export type SubmitRankingPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type SubmitRanking200 = {
+  [key: string]: any;
+};
+
+/**
+ * @description Bad Request
+ */
+export type SubmitRanking400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type SubmitRanking401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type SubmitRanking403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type SubmitRanking404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SubmitRanking422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SubmitRanking500 = ErrsAPIError;
+
+/**
+ * @description Submit ranking request
+ */
+export type SubmitRankingMutationRequest = ModelsSubmitRankingRequest;
+
+export type SubmitRankingMutationResponse = SubmitRanking200;
+
+export type SubmitRankingMutation = {
+  Response: SubmitRanking200;
+  Request: SubmitRankingMutationRequest;
+  PathParams: SubmitRankingPathParams;
+  Errors:
+    | SubmitRanking400
+    | SubmitRanking401
+    | SubmitRanking403
+    | SubmitRanking404
+    | SubmitRanking422
+    | SubmitRanking500;
+};
+
+export type GetRankPollVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetRankPollVoters200 = ModelsPollVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetRankPollVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetRankPollVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetRankPollVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetRankPollVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetRankPollVoters500 = ErrsAPIError;
+
+export type GetRankPollVotersQueryResponse = GetRankPollVoters200;
+
+export type GetRankPollVotersQuery = {
+  Response: GetRankPollVoters200;
+  PathParams: GetRankPollVotersPathParams;
+  Errors:
+    | GetRankPollVoters400
+    | GetRankPollVoters401
+    | GetRankPollVoters403
+    | GetRankPollVoters404
+    | GetRankPollVoters500;
+};
+
+export type GetPollsByTripIDPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+export type GetPollsByTripIDQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetPollsByTripID200 = ModelsPollCursorPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type GetPollsByTripID400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetPollsByTripID401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetPollsByTripID403 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPollsByTripID500 = ErrsAPIError;
+
+export type GetPollsByTripIDQueryResponse = GetPollsByTripID200;
+
+export type GetPollsByTripIDQuery = {
+  Response: GetPollsByTripID200;
+  PathParams: GetPollsByTripIDPathParams;
+  QueryParams: GetPollsByTripIDQueryParams;
+  Errors:
+    | GetPollsByTripID400
+    | GetPollsByTripID401
+    | GetPollsByTripID403
+    | GetPollsByTripID500;
+};
+
+export type CreatePollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreatePoll201 = ModelsPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreatePoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreatePoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreatePoll403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreatePoll422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreatePoll500 = ErrsAPIError;
+
+/**
+ * @description Create poll request
+ */
+export type CreatePollMutationRequest = ModelsCreatePollRequest;
+
+export type CreatePollMutationResponse = CreatePoll201;
+
+export type CreatePollMutation = {
+  Response: CreatePoll201;
+  Request: CreatePollMutationRequest;
+  PathParams: CreatePollPathParams;
+  Errors:
+    | CreatePoll400
+    | CreatePoll401
+    | CreatePoll403
+    | CreatePoll422
+    | CreatePoll500;
+};
+
+export type GetPollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetPoll200 = ModelsPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetPoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetPoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetPoll403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetPoll404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetPoll500 = ErrsAPIError;
+
+export type GetPollQueryResponse = GetPoll200;
+
+export type GetPollQuery = {
+  Response: GetPoll200;
+  PathParams: GetPollPathParams;
+  Errors: GetPoll400 | GetPoll401 | GetPoll403 | GetPoll404 | GetPoll500;
+};
+
+export type DeletePollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type DeletePoll200 = ModelsPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type DeletePoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeletePoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeletePoll403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeletePoll404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeletePoll500 = ErrsAPIError;
+
+export type DeletePollMutationResponse = DeletePoll200;
+
+export type DeletePollMutation = {
+  Response: DeletePoll200;
+  PathParams: DeletePollPathParams;
+  Errors:
+    | DeletePoll400
+    | DeletePoll401
+    | DeletePoll403
+    | DeletePoll404
+    | DeletePoll500;
+};
+
+export type UpdatePollPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdatePoll200 = ModelsPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type UpdatePoll400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdatePoll401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type UpdatePoll403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdatePoll404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdatePoll422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdatePoll500 = ErrsAPIError;
+
+/**
+ * @description Update poll request
+ */
+export type UpdatePollMutationRequest = ModelsUpdatePollRequest;
+
+export type UpdatePollMutationResponse = UpdatePoll200;
+
+export type UpdatePollMutation = {
+  Response: UpdatePoll200;
+  Request: UpdatePollMutationRequest;
+  PathParams: UpdatePollPathParams;
+  Errors:
+    | UpdatePoll400
+    | UpdatePoll401
+    | UpdatePoll403
+    | UpdatePoll404
+    | UpdatePoll422
+    | UpdatePoll500;
+};
+
+export type AddPollOptionPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description Created
+ */
+export type AddPollOption201 = ModelsPollOptionAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type AddPollOption400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type AddPollOption401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type AddPollOption403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type AddPollOption404 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type AddPollOption409 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type AddPollOption422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type AddPollOption500 = ErrsAPIError;
+
+/**
+ * @description Create option request
+ */
+export type AddPollOptionMutationRequest = ModelsCreatePollOptionRequest;
+
+export type AddPollOptionMutationResponse = AddPollOption201;
+
+export type AddPollOptionMutation = {
+  Response: AddPollOption201;
+  Request: AddPollOptionMutationRequest;
+  PathParams: AddPollOptionPathParams;
+  Errors:
+    | AddPollOption400
+    | AddPollOption401
+    | AddPollOption403
+    | AddPollOption404
+    | AddPollOption409
+    | AddPollOption422
+    | AddPollOption500;
+};
+
+export type DeletePollOptionPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+};
+
+/**
+ * @description OK
+ */
+export type DeletePollOption200 = ModelsPollOptionAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type DeletePollOption400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeletePollOption401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeletePollOption403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeletePollOption404 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type DeletePollOption409 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeletePollOption500 = ErrsAPIError;
+
+export type DeletePollOptionMutationResponse = DeletePollOption200;
+
+export type DeletePollOptionMutation = {
+  Response: DeletePollOption200;
+  PathParams: DeletePollOptionPathParams;
+  Errors:
+    | DeletePollOption400
+    | DeletePollOption401
+    | DeletePollOption403
+    | DeletePollOption404
+    | DeletePollOption409
+    | DeletePollOption500;
+};
+
+export type CastVotePathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type CastVote200 = ModelsPollAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CastVote400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CastVote401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CastVote403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type CastVote404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CastVote422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CastVote500 = ErrsAPIError;
+
+/**
+ * @description Vote request
+ */
+export type CastVoteMutationRequest = ModelsCastVoteRequest;
+
+export type CastVoteMutationResponse = CastVote200;
+
+export type CastVoteMutation = {
+  Response: CastVote200;
+  Request: CastVoteMutationRequest;
+  PathParams: CastVotePathParams;
+  Errors:
+    | CastVote400
+    | CastVote401
+    | CastVote403
+    | CastVote404
+    | CastVote422
+    | CastVote500;
 };
 
 export type GetPaginatedCommentsPathParams = {

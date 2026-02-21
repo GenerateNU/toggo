@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   RemoveMemberMutationResponse,
   RemoveMemberPathParams,
@@ -35,7 +35,7 @@ export type RemoveMemberMutationKey = ReturnType<
 export async function removeMember(
   tripID: RemoveMemberPathParams["tripID"],
   userID: RemoveMemberPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -54,7 +54,7 @@ export async function removeMember(
 }
 
 export function removeMemberMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = removeMemberMutationKey();
   return mutationOptions<
@@ -93,7 +93,7 @@ export function useRemoveMember<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

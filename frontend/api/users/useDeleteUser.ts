@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DeleteUserMutationResponse,
   DeleteUserPathParams,
@@ -31,7 +31,7 @@ export type DeleteUserMutationKey = ReturnType<typeof deleteUserMutationKey>;
  */
 export async function deleteUser(
   userID: DeleteUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -44,7 +44,7 @@ export async function deleteUser(
 }
 
 export function deleteUserMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = deleteUserMutationKey();
   return mutationOptions<
@@ -73,7 +73,7 @@ export function useDeleteUser<TContext>(
       { userID: DeleteUserPathParams["userID"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

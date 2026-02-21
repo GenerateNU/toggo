@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } },
+  "x-readme-ref-name": "models.LatLng"
+}

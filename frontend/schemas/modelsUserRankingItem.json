@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "option_id": { "type": "string" },
+    "option_name": { "type": "string" },
+    "rank_position": { "type": "integer" }
+  },
+  "x-readme-ref-name": "models.UserRankingItem"
+}

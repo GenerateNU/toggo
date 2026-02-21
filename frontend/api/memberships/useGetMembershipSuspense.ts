@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetMembershipQueryResponse,
   GetMembershipPathParams,
@@ -44,7 +44,7 @@ export type GetMembershipSuspenseQueryKey = ReturnType<
 export async function getMembershipSuspense(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -65,7 +65,7 @@ export async function getMembershipSuspense(
 export function getMembershipSuspenseQueryOptions(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getMembershipSuspenseQueryKey(tripID, userID);
   return queryOptions<
@@ -110,7 +110,7 @@ export function useGetMembershipSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

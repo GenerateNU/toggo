@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": ["option_id", "rank"],
+  "properties": {
+    "option_id": { "type": "string" },
+    "rank": { "type": "integer" }
+  },
+  "x-readme-ref-name": "models.RankingItem"
+}

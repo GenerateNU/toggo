@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "x-readme-ref-name": "models.LatLng"
+    },
+    "viewport": {
+      "type": "object",
+      "properties": {
+        "northeast": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          },
+          "x-readme-ref-name": "models.LatLng"
+        },
+        "southwest": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          },
+          "x-readme-ref-name": "models.LatLng"
+        }
+      },
+      "x-readme-ref-name": "models.Bounds"
+    }
+  },
+  "x-readme-ref-name": "models.PlaceGeometry"
+}

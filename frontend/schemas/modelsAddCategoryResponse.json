@@ -1,0 +1,7 @@
+{
+  "type": "object",
+  "properties": {
+    "message": { "type": "string", "example": "Category added successfully" }
+  },
+  "x-readme-ref-name": "models.AddCategoryResponse"
+}
