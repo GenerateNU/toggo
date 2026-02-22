@@ -19,6 +19,9 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 		Region:        routeParams.ServiceParams.Config.AWS.Region,
 	})
 
+	// Public invite page (no auth required)
+	InvitePageRoutes(app, routeParams)
+
 	apiGroup := app.Group("/api")
 
 	// uncomment this until login/jwt is set up properly

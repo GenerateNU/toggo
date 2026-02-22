@@ -330,7 +330,7 @@ func (s *TripService) CreateTripInvite(ctx context.Context, tripID uuid.UUID, cr
 	baseURL := os.Getenv("APP_PUBLIC_URL")
 	if baseURL != "" {
 		trimmed := strings.TrimRight(baseURL, "/")
-		u := trimmed + "/invites/" + created.Code
+		u := trimmed + "/join?code=" + created.Code
 		joinURL = &u
 	}
 
