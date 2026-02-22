@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>{{ .PageTitle }}</title>
   <meta name="description" content="{{ .MetaDescription }}" />
   <meta property="og:title" content="{{ .PageTitle }}" />
@@ -23,19 +23,20 @@
     }
   </script>
 </head>
-<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-hidden">
+<body class="min-h-[100dvh] min-h-screen font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-hidden">
 
-  <!-- Page content -->
-  <main class="relative flex flex-col items-center justify-center min-h-screen px-6">
+  <!-- Page content: flex layout so it shrinks when keyboard opens instead of zooming -->
+  <main class="relative flex flex-col min-h-[100dvh] min-h-screen">
 
-    <!-- Logo centered -->
-    <div class="mb-auto"></div>
-    <img src="/static/toggo_logo.svg" alt="toggo" class="w-40 z-50 fixed mb-12" />
+    <!-- Logo area: can shrink (min-h-0) when viewport shrinks -->
+    <div class="flex-1 min-h-0 flex items-center justify-center px-6 pt-6">
+      <img src="/static/toggo_logo.svg" alt="toggo" class="w-40 max-w-[40%] z-50 shrink-0" />
+    </div>
 
     <img src="/static/flight_path.svg" alt="flight path" class="absolute inset-0 w-full h-full pointer-events-none" />
 
-    <!-- Bottom section: input + button -->
-    <div class="w-full max-w-[360px] mb-16 space-y-3">
+    <!-- Bottom section: full width on mobile, pinned to bottom, can shrink -->
+    <div class="w-full mt-auto min-h-0 shrink-0 px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom,0))] sm:pb-16 sm:max-w-[360px] sm:mx-auto sm:px-0 space-y-3">
       <form action="/join" method="get" class="space-y-3">
         <label for="code" class="sr-only">Invite code</label>
         <input
@@ -45,9 +46,9 @@
           placeholder="Enter invite code"
           autocomplete="off"
           required
-          class="block w-full rounded-2xl border border-zinc-200 bg-white/80 backdrop-blur-sm px-5 py-4 text-center text-zinc-900 placeholder-zinc-400 text-sm outline-none transition focus:border-toggo focus:ring-2 focus:ring-toggo/20"
+          class="block w-full rounded-2xl border border-zinc-200 bg-white/80 backdrop-blur-sm px-5 py-4 text-center text-zinc-900 placeholder-zinc-400 text-base outline-none transition focus:border-toggo focus:ring-2 focus:ring-toggo/20"
         />
-        <button type="submit" class="block w-full rounded-2xl bg-toggo px-5 py-4 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 transition hover:bg-orange-500 active:scale-[0.98]">
+        <button type="submit" class="block w-full rounded-2xl bg-toggo px-5 py-4 text-center text-base font-semibold text-white shadow-lg shadow-orange-200/50 transition hover:bg-orange-500 active:scale-[0.98]">
           Join Trip
         </button>
       </form>

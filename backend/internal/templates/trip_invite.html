@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
   <title>{{ .PageTitle }}</title>
   <meta name="description" content="{{ .MetaDescription }}" />
   <meta property="og:title" content="{{ .PageTitle }}" />
@@ -14,16 +17,14 @@
   <meta name="twitter:title" content="{{ .PageTitle }}" />
   <meta name="twitter:description" content="{{ .MetaDescription }}" />
   {{ if .MetaImage }}<meta name="twitter:image" content="{{ .MetaImage }}" />{{ end }}
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          colors: { toggo: '#FF7E00' }
-        }
-      }
+      theme: { extend: { colors: { toggo: "#FF7E00" } } }
     }
   </script>
+
   <style>
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUpCenter {
@@ -36,23 +37,46 @@
     }
     .fade-in { animation: fadeIn 300ms ease-out both; }
 
-    /* Mobile: bottom sheet */
+    /* Mobile: bottom sheet full width */
     .modal-wrapper {
       animation: slideUpBottom 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+      width: 100%;
     }
     .modal-container {
       position: fixed; inset: 0; z-index: 50;
       display: flex;
       align-items: flex-end;
-      justify-content: center;
+      justify-content: stretch;
       padding: 0;
+      max-width: 100vw;
     }
+
+    /* KEY FIX: no fixed heights; just cap to viewport and allow scrolling */
     .modal-card {
       width: 100%;
       max-width: 100%;
       border-radius: 1.5rem 1.5rem 0 0;
-      max-height: 92vh;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+
+      /* cap to viewport (dynamic, not "fixed height") */
+      max-height: calc(100dvh - env(safe-area-inset-top, 0) - 0.75rem);
+      overflow: hidden; /* keep rounded corners clean; inner scrolls */
+    }
+
+    /* Inner scroll area */
+    .modal-card .modal-card-inner {
+      flex: 1;
+      min-height: 0;           /* allows scrolling child in flex */
+      overflow-y: auto;        /* scroll when content exceeds */
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: max(1rem, env(safe-area-inset-bottom, 0));
+    }
+
+    .modal-card .modal-card-actions {
+      margin-top: auto;
+      padding-top: 1rem;
     }
 
     /* Desktop: centered modal */
@@ -67,13 +91,19 @@
       .modal-card {
         max-width: 400px;
         border-radius: 1rem;
-        max-height: none;
-        overflow-y: visible;
+
+        /* still cap to viewport on desktop too */
+        max-height: calc(100dvh - 2rem);
+      }
+      .modal-card .modal-card-inner {
+        padding-bottom: 0;
       }
     }
   </style>
 </head>
-<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-hidden">
+
+<!-- remove overflow-hidden so fixed overlay/sheet doesn't get clipped -->
+<body class="min-h-[100dvh] font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-x-hidden">
 
   <!-- Flight path decorations (background) -->
   <svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -87,53 +117,38 @@
     </g>
   </svg>
 
-  <!-- Logo (fixed at top, visible behind overlay) -->
+  <!-- Logo -->
   <div class="fixed top-0 left-0 right-0 z-30 flex items-center justify-center pt-6">
     <img src="/static/toggo_logo.svg" alt="toggo" class="w-40 opacity-40" />
   </div>
 
-  <!-- Modal overlay -->
+  <!-- Overlay -->
   <div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm fade-in"></div>
 
-  <!-- Modal card -->
+  <!-- Modal -->
   <div class="modal-container">
     <div class="modal-wrapper">
-      <article class="modal-card overflow-hidden bg-white shadow-2xl">
+      <article class="modal-card bg-white shadow-2xl">
         {{ if .Data.ErrorMessage }}
-        <div class="p-6">
+        <div class="modal-card-inner p-6">
           <h2 class="text-lg font-bold text-zinc-900 mb-2">Invite unavailable</h2>
           <p class="text-sm leading-relaxed text-zinc-500 mb-5">{{ .Data.ErrorMessage }}</p>
-          <a href="/join" class="block w-full rounded-xl bg-toggo px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
-            Enter a different code
-          </a>
+          <div class="modal-card-actions">
+            <a href="/join" class="block w-full rounded-xl bg-toggo px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
+              Enter a different code
+            </a>
+          </div>
         </div>
         {{ else }}
-        <div class="p-6">
+        <div class="modal-card-inner p-6">
           <h2 class="text-xl font-bold text-zinc-900 mb-4">{{ .Data.TripName }}</h2>
 
           <!-- Members -->
-          <div class="flex items-center gap-2.5 mb-4">
-            <div class="flex shrink-0">
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-toggo text-[0.6875rem] font-semibold text-white">{{ printf "%.1s" .Data.FirstMemberName }}</span>
-              {{ if gt .Data.OtherMemberCount 0 }}
-              <span class="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-white bg-orange-100 text-[0.6875rem] font-semibold text-toggo -ml-2">+{{ .Data.OtherMemberCount }}</span>
-              {{ end }}
-            </div>
+          <div class="flex items-center gap-2 mb-4">
+            <svg class="w-5 h-5 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span class="text-[0.8125rem] text-zinc-500">
-              {{ .Data.FirstMemberName }}{{ if gt .Data.OtherMemberCount 0 }} and {{ .Data.OtherMemberCount }} other{{ if gt .Data.OtherMemberCount 1 }}s{{ end }}{{ end }}
+              {{ .Data.MemberCount }} member{{ if gt .Data.MemberCount 1 }}s{{ end }}
             </span>
-          </div>
-
-          <!-- Meta -->
-          <div class="mb-4 space-y-1.5">
-            <div class="flex items-center gap-2 text-[0.8125rem] text-zinc-600">
-              <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>{{ .Data.LocationName }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-[0.8125rem] text-zinc-600">
-              <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span>{{ .Data.DateRange }}</span>
-            </div>
           </div>
 
           <!-- Cover image -->
@@ -145,18 +160,28 @@
             {{ end }}
           </div>
 
-          <p class="text-sm leading-relaxed text-zinc-500 mb-5">You've been invited to join <span class="font-medium text-zinc-700">{{ .Data.TripName }}</span>.</p>
+          <div class="flex items-center gap-3 mb-5">
+            {{ if .Data.InviterProfilePictureURL }}
+            <img src="{{ .Data.InviterProfilePictureURL }}" alt="{{ .Data.InviterName }}" class="w-10 h-10 rounded-full object-cover shrink-0" />
+            {{ else if .Data.InviterName }}
+            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-toggo text-sm font-semibold text-white shrink-0">{{ printf "%.1s" .Data.InviterName }}</span>
+            {{ end }}
+            <p class="text-sm leading-relaxed text-zinc-500">
+              {{ if .Data.InviterName }}<span class="font-medium text-zinc-700">{{ .Data.InviterName }}</span> wants you along for {{ else }}You've been invited to join {{ end }}<span class="font-medium text-zinc-700">{{ .Data.TripName }}</span>.
+            </p>
+          </div>
 
-          <!-- Buttons -->
-          <a href="{{ .Data.DeepLink }}" class="block w-full rounded-xl bg-toggo px-4 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
-            Open in Toggo
-          </a>
-          <a href="#" class="block w-full rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-center text-sm font-semibold text-zinc-700 hover:bg-zinc-50 active:scale-[0.98] transition mt-2.5">
-            Download Toggo
-          </a>
-          <a href="/join" class="block text-center text-xs text-zinc-400 hover:text-zinc-500 hover:underline mt-4">
-            Enter a different code
-          </a>
+          <div class="modal-card-actions">
+            <a href="{{ .Data.DeepLink }}" class="block w-full rounded-xl bg-toggo px-4 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
+              Open in Toggo
+            </a>
+            <a href="#" class="block w-full rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-center text-sm font-semibold text-zinc-700 hover:bg-zinc-50 active:scale-[0.98] transition mt-2.5">
+              Download Toggo
+            </a>
+            <a href="/join" class="block text-center text-xs text-zinc-400 hover:text-zinc-500 hover:underline mt-4">
+              Enter a different code
+            </a>
+          </div>
         </div>
         {{ end }}
       </article>
