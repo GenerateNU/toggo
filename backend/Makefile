@@ -11,6 +11,11 @@ build:
 clean:
 	rm -f $(BINARY_NAME)
 
+run-prod:
+	$(MAKE) build
+	@echo "Running backend with prod config (Ctrl+C to stop)..."
+	doppler run --project backend --config prod -- ./$(BINARY_NAME)
+
 dev:
 	@echo "Starting Docker containers..."
 	DOPPLER_TOKEN=$$(doppler configs tokens create --project backend --config dev --name dev-token-$$(date +%Y%m%d%H%M%S) --plain --max-age 1m) \
@@ -161,4 +166,4 @@ localstack-down:
 	@echo "Removing LocalStack container..."
 	docker rm localstack-main 2>/dev/null || true
 
-.PHONY: format tidy mocks build clean lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win
+.PHONY: format tidy mocks build clean run-prod lint format install-lint dev dev-win db-up db-up-win db-down db-connect db-connect-win migrate-create migrate-up migrate-up-win migrate-down migrate-down-win api-doc test test-win

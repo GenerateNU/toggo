@@ -1,14 +1,37 @@
 import {
-  useGetImage,
-  useGetImageAllSizes,
-  useUploadImage,
-  useUploadProfilePicture,
+  useConfirmUpload,
+  useCreateUploadURLs,
+  useGetFile,
+  useGetFileAllSizes,
 } from "@/api/files";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button, Image, ScrollView, Text, View } from "react-native";
 
 const S3_ENDPOINT = "http://0.0.0.0:4566"; // Update to your IP
+
+const DEFAULT_CONTENT_TYPE = "image/jpeg";
+
+async function uploadBlobToPresignedUrls(
+  uri: string,
+  uploadUrls: { size?: string; url?: string }[],
+  contentType: string,
+): Promise<void> {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  for (const u of uploadUrls) {
+    if (!u.url) continue;
+    const putRes = await fetch(u.url, {
+      method: "PUT",
+      body: blob,
+      headers: { "Content-Type": contentType },
+    });
+    if (!putRes.ok) {
+      throw new Error(`PUT failed for size ${u.size}: ${putRes.status}`);
+    }
+  }
+}
 
 export default function TestUploadScreen() {
   const [profileImageId, setProfileImageId] = useState<string | null>(null);
@@ -18,20 +41,19 @@ export default function TestUploadScreen() {
   const [s3Files, setS3Files] = useState<string[]>([]);
   const [s3FilesError, setS3FilesError] = useState<string>("");
 
-  // Upload hooks
-  const uploadProfilePictureMutation = useUploadProfilePicture();
-  const uploadGalleryImageMutation = useUploadImage();
+  const createUploadURLsMutation = useCreateUploadURLs();
+  const confirmUploadMutation = useConfirmUpload();
 
-  // Get image hooks
-  const { data: profileImages, isLoading: profileLoading } = useGetImage(
-    [profileImageId],
+  const { data: profileFile, isLoading: profileLoading } = useGetFile(
+    profileImageId ?? "",
     "small",
+    { query: { enabled: !!profileImageId } },
   );
-  const profileImageData = profileImages[0];
 
-  const { data: galleryImagesAllSizes, isLoading: galleryLoading } =
-    useGetImageAllSizes([galleryImageId]);
-  const galleryImageAllSizes = galleryImagesAllSizes[0];
+  const { data: galleryAllSizes, isLoading: galleryLoading } =
+    useGetFileAllSizes(galleryImageId ?? "", {
+      query: { enabled: !!galleryImageId },
+    });
 
   const checkLocalStackHealth = async () => {
     setHealthStatus("Checking...");
@@ -101,7 +123,6 @@ export default function TestUploadScreen() {
 
       if (response.ok) {
         const text = await response.text();
-        // Parse XML response for file keys
         const keyMatches = text.match(/<Key>([^<]+)<\/Key>/g);
         const files = keyMatches
           ? keyMatches.map((m) => m.replace(/<\/?Key>/g, ""))
@@ -115,7 +136,7 @@ export default function TestUploadScreen() {
     }
   };
 
-  const pickImage = async (): Promise<string | null> => {
+  const pickImage = useCallback(async (): Promise<string | null> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Permission denied");
@@ -133,45 +154,98 @@ export default function TestUploadScreen() {
       return result.assets[0].uri;
     }
     return null;
-  };
+  }, []);
 
-  const handleUploadProfilePicture = async () => {
+  const handleUploadProfilePicture = useCallback(async () => {
     const uri = await pickImage();
     if (!uri) return;
 
-    uploadProfilePictureMutation.mutate(
-      { uri },
+    const fileKey = `profile-${Date.now()}`;
+    createUploadURLsMutation.mutate(
       {
-        onSuccess: (data) => {
-          console.log("Profile picture upload success:", data);
-          setProfileImageId(data.imageId);
-        },
-        onError: (error) => {
-          console.error("Profile picture upload error:", error);
-          alert("Upload failed: " + JSON.stringify(error));
+        data: {
+          contentType: DEFAULT_CONTENT_TYPE,
+          fileKey,
+          sizes: ["small"],
         },
       },
+      {
+        onSuccess: async (res) => {
+          try {
+            if (!res.imageId || !res.uploadUrls?.length) {
+              alert("No upload URLs returned");
+              return;
+            }
+            await uploadBlobToPresignedUrls(
+              uri,
+              res.uploadUrls,
+              DEFAULT_CONTENT_TYPE,
+            );
+            confirmUploadMutation.mutate(
+              { data: { imageId: res.imageId } },
+              {
+                onSuccess: () => setProfileImageId(res.imageId ?? null),
+                onError: (err) =>
+                  alert("Confirm failed: " + (err?.message ?? String(err))),
+              },
+            );
+          } catch (e) {
+            alert("Upload to S3 failed: " + (e instanceof Error ? e.message : e));
+          }
+        },
+        onError: (err) =>
+          alert("Create URLs failed: " + (err?.message ?? String(err))),
+      },
     );
-  };
+  }, [pickImage, createUploadURLsMutation, confirmUploadMutation]);
 
-  const handleUploadGalleryImage = async () => {
+  const handleUploadGalleryImage = useCallback(async () => {
     const uri = await pickImage();
     if (!uri) return;
 
-    uploadGalleryImageMutation.mutate(
-      { uri, sizes: ["large", "medium", "small"] },
+    const fileKey = `gallery-${Date.now()}`;
+    createUploadURLsMutation.mutate(
       {
-        onSuccess: (data) => {
-          console.log("Gallery image upload success:", data);
-          setGalleryImageId(data.imageId);
-        },
-        onError: (error) => {
-          console.error("Gallery image upload error:", error);
-          alert("Upload failed: " + JSON.stringify(error));
+        data: {
+          contentType: DEFAULT_CONTENT_TYPE,
+          fileKey,
+          sizes: ["large", "medium", "small"],
         },
       },
+      {
+        onSuccess: async (res) => {
+          try {
+            if (!res.imageId || !res.uploadUrls?.length) {
+              alert("No upload URLs returned");
+              return;
+            }
+            await uploadBlobToPresignedUrls(
+              uri,
+              res.uploadUrls,
+              DEFAULT_CONTENT_TYPE,
+            );
+            confirmUploadMutation.mutate(
+              { data: { imageId: res.imageId } },
+              {
+                onSuccess: () => setGalleryImageId(res.imageId ?? null),
+                onError: (err) =>
+                  alert("Confirm failed: " + (err?.message ?? String(err))),
+              },
+            );
+          } catch (e) {
+            alert("Upload to S3 failed: " + (e instanceof Error ? e.message : e));
+          }
+        },
+        onError: (err) =>
+          alert("Create URLs failed: " + (err?.message ?? String(err))),
+      },
     );
-  };
+  }, [pickImage, createUploadURLsMutation, confirmUploadMutation]);
+
+  const isUploading =
+    createUploadURLsMutation.isPending || confirmUploadMutation.isPending;
+  const uploadError =
+    createUploadURLsMutation.error ?? confirmUploadMutation.error;
 
   return (
     <ScrollView style={{ padding: 20 }}>
@@ -227,41 +301,33 @@ export default function TestUploadScreen() {
       </View>
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        Profile Picture Upload (useUploadProfilePicture)
+        Profile Picture (useCreateUploadURLs + useConfirmUpload)
       </Text>
 
       <View style={{ gap: 8, marginBottom: 24 }}>
         <Button
           title="Upload Profile Picture (small only)"
           onPress={handleUploadProfilePicture}
+          disabled={isUploading}
         />
 
-        {uploadProfilePictureMutation.isPending && (
-          <Text>Uploading profile picture...</Text>
-        )}
+        {isUploading && <Text>Uploading...</Text>}
 
-        {uploadProfilePictureMutation.isError && (
+        {uploadError && (
           <Text style={{ color: "red" }}>
-            Error: {uploadProfilePictureMutation.error?.message}
+            Error: {uploadError?.message ?? String(uploadError)}
           </Text>
-        )}
-
-        {uploadProfilePictureMutation.isSuccess && (
-          <View>
-            <Text style={{ color: "green" }}>✅ Profile picture uploaded!</Text>
-            <Text>Image ID: {uploadProfilePictureMutation.data.imageId}</Text>
-          </View>
         )}
 
         {profileLoading && <Text>Loading profile image...</Text>}
 
-        {profileImageData && (
+        {profileFile?.url && (
           <View style={{ marginTop: 8 }}>
             <Text style={{ fontWeight: "bold" }}>
-              Retrieved via useGetImage (small):
+              Retrieved via useGetFile (small):
             </Text>
             <Image
-              source={{ uri: profileImageData.url }}
+              source={{ uri: profileFile.url }}
               style={{
                 width: 150,
                 height: 150,
@@ -274,63 +340,49 @@ export default function TestUploadScreen() {
       </View>
 
       <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 16 }}>
-        Gallery Image Upload (useUploadImage)
+        Gallery Image (useCreateUploadURLs + useConfirmUpload)
       </Text>
 
       <View style={{ gap: 8, marginBottom: 24 }}>
         <Button
           title="Upload Gallery Image (all sizes)"
           onPress={handleUploadGalleryImage}
+          disabled={isUploading}
         />
-
-        {uploadGalleryImageMutation.isPending && (
-          <Text>Uploading gallery image...</Text>
-        )}
-
-        {uploadGalleryImageMutation.isError && (
-          <Text style={{ color: "red" }}>
-            Error: {uploadGalleryImageMutation.error?.message}
-          </Text>
-        )}
-
-        {uploadGalleryImageMutation.isSuccess && (
-          <View>
-            <Text style={{ color: "green" }}>✅ Gallery image uploaded!</Text>
-            <Text>Image ID: {uploadGalleryImageMutation.data.imageId}</Text>
-          </View>
-        )}
 
         {galleryLoading && <Text>Loading gallery image...</Text>}
 
-        {galleryImageAllSizes?.files && (
+        {galleryAllSizes?.files && galleryAllSizes.files.length > 0 && (
           <View style={{ marginTop: 8 }}>
             <Text style={{ fontWeight: "bold" }}>
-              Retrieved via useGetImageAllSizes:
+              Retrieved via useGetFileAllSizes:
             </Text>
             <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-              {galleryImageAllSizes.files.map((sizeData) => (
-                <View key={sizeData.size} style={{ alignItems: "center" }}>
+              {galleryAllSizes.files.map((sizeData) => (
+                <View key={sizeData.size ?? ""} style={{ alignItems: "center" }}>
                   <Text style={{ fontSize: 10, marginBottom: 4 }}>
                     {sizeData.size}
                   </Text>
-                  <Image
-                    source={{ uri: sizeData.url }}
-                    style={{
-                      width:
-                        sizeData.size === "large"
-                          ? 100
-                          : sizeData.size === "medium"
-                            ? 75
-                            : 50,
-                      height:
-                        sizeData.size === "large"
-                          ? 100
-                          : sizeData.size === "medium"
-                            ? 75
-                            : 50,
-                      borderRadius: 4,
-                    }}
-                  />
+                  {sizeData.url ? (
+                    <Image
+                      source={{ uri: sizeData.url }}
+                      style={{
+                        width:
+                          sizeData.size === "large"
+                            ? 100
+                            : sizeData.size === "medium"
+                              ? 75
+                              : 50,
+                        height:
+                          sizeData.size === "large"
+                            ? 100
+                            : sizeData.size === "medium"
+                              ? 75
+                              : 50,
+                        borderRadius: 4,
+                      }}
+                    />
+                  ) : null}
                 </View>
               ))}
             </View>
