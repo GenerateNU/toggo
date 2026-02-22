@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"strings"
 	"time"
@@ -68,14 +69,26 @@ func (s *InvitePageService) GetTripInvitePageData(ctx context.Context, code stri
 
 	data.TripName = tripData.Name
 
-	// Look up the inviter's name
+	// Look up the inviter's name and profile picture
 	inviter, err := s.User.Find(ctx, invite.CreatedBy)
 	if err == nil {
 		data.InviterName = inviter.Name
+		if inviter.ProfilePicture != nil {
+			fileResp, err := s.fileService.GetFile(ctx, *inviter.ProfilePicture, models.ImageSizeSmall)
+			if err == nil {
+				data.InviterProfilePictureURL = &fileResp.URL
+			}
+		}
 	}
 
 	// Build deep link
-	data.DeepLink = fmt.Sprintf("toggo://invite/%s", code)
+	// Expo Go local dev: exp://localhost:8081/--/invite/CODE
+	// Production:        toggo://invite/CODE
+	deepLinkBase := os.Getenv("DEEPLINK_BASE_URL")
+	if deepLinkBase == "" {
+		deepLinkBase = "exp://localhost:8081/--"
+	}
+	data.DeepLink = template.URL(fmt.Sprintf("%s/invite/%s", strings.TrimRight(deepLinkBase, "/"), code))
 
 	// Build canonical URL
 	baseURL := os.Getenv("APP_PUBLIC_URL")
@@ -103,11 +116,6 @@ func (s *InvitePageService) GetTripInvitePageData(ctx context.Context, code stri
 		data.FirstMemberName = members[0].Username
 		data.OtherMemberCount = len(members) - 1
 	}
-
-	// Location and date range are not stored on the Trip model currently,
-	// so we show placeholder text.
-	data.LocationName = "Destination TBD"
-	data.DateRange = "Dates TBD"
 
 	return data, nil
 }
