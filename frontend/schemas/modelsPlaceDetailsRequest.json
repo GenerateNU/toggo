@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "fields": {
+      "description": "Fields specifies which fields to return (optional)\nIf not specified, returns all available fields",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "input": {
+      "description": "Input is the text to search for if PlaceID is not provided\nExample: \"Eiffel Tower\", \"Paris, France\"",
+      "type": "string"
+    },
+    "language": {
+      "description": "Language is the language code for the results (optional)",
+      "type": "string"
+    },
+    "place_id": {
+      "description": "PlaceID is the unique identifier for the place (from typeahead results)",
+      "type": "string"
+    }
+  },
+  "x-readme-ref-name": "models.PlaceDetailsRequest"
+}

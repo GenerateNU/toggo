@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "enum": ["entity", "custom"],
+  "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+  "x-readme-ref-name": "models.OptionType"
+}

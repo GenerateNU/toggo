@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "poll_id": { "type": "string" },
+    "total_members": { "type": "integer" },
+    "total_voters": { "type": "integer" },
+    "voters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "has_voted": { "type": "boolean" },
+          "user_id": { "type": "string" },
+          "username": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.VoterInfo"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.PollVotersResponse"
+}

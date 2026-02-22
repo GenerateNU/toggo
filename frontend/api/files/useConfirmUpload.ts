@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   ConfirmUploadMutationRequest,
   ConfirmUploadMutationResponse,
@@ -35,7 +35,7 @@ export type ConfirmUploadMutationKey = ReturnType<
 export async function confirmUpload(
   data: ConfirmUploadMutationRequest,
   config: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -59,7 +59,7 @@ export async function confirmUpload(
 
 export function confirmUploadMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = confirmUploadMutationKey();
@@ -97,7 +97,7 @@ export function useConfirmUpload<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

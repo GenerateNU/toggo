@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "deadline": { "type": "string" },
+    "question": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.UpdatePollRequest"
+}

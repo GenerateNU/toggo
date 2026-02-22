@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "created_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "deadline": { "type": "string" },
+    "id": { "type": "string" },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity_id": { "type": "string" },
+          "entity_type": { "type": "string" },
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "option_type": {
+            "type": "string",
+            "enum": ["entity", "custom"],
+            "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+            "x-readme-ref-name": "models.OptionType"
+          },
+          "vote_count": { "type": "integer" },
+          "voted": { "type": "boolean" }
+        },
+        "x-readme-ref-name": "models.PollOptionAPIResponse"
+      }
+    },
+    "poll_type": {
+      "type": "string",
+      "enum": ["single", "multi", "rank"],
+      "x-enum-varnames": ["PollTypeSingle", "PollTypeMulti", "PollTypeRank"],
+      "x-readme-ref-name": "models.PollType"
+    },
+    "question": { "type": "string" },
+    "trip_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.PollAPIResponse"
+}

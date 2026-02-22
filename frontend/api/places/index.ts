@@ -1,27 +1,25 @@
-import request from "@/api/client";
-
-// Typeahead search for places
-export const searchPlacesTypeahead = async (query: string, limit = 5) => {
-  const params = new URLSearchParams({
-    q: query,
-    limit: limit.toString(),
-  });
-
-  return request<any>({
-    method: "GET",
-    url: `/api/v1/search/places/typeahead?${params.toString()}`,
-  });
-};
-
-// Get place details by place_id or input text
-export const getPlaceDetails = async (params: {
-  place_id?: string;
-  input?: string;
-  language?: string;
-}) => {
-  return request<any>({
-    method: "POST",
-    url: "/api/v1/search/places/details",
-    data: params,
-  });
-};
+export type { GetPlaceDetailsMutationKey } from "./useGetPlaceDetails.ts";
+export type { GoogleMapsHealthQueryKey } from "./useGoogleMapsHealth.ts";
+export type { GoogleMapsHealthSuspenseQueryKey } from "./useGoogleMapsHealthSuspense.ts";
+export type { TypeaheadPlacesQueryKey } from "./useTypeaheadPlaces.ts";
+export type { TypeaheadPlacesSuspenseQueryKey } from "./useTypeaheadPlacesSuspense.ts";
+export { getPlaceDetailsMutationKey } from "./useGetPlaceDetails.ts";
+export { getPlaceDetails } from "./useGetPlaceDetails.ts";
+export { getPlaceDetailsMutationOptions } from "./useGetPlaceDetails.ts";
+export { useGetPlaceDetails } from "./useGetPlaceDetails.ts";
+export { googleMapsHealthQueryKey } from "./useGoogleMapsHealth.ts";
+export { googleMapsHealth } from "./useGoogleMapsHealth.ts";
+export { googleMapsHealthQueryOptions } from "./useGoogleMapsHealth.ts";
+export { useGoogleMapsHealth } from "./useGoogleMapsHealth.ts";
+export { googleMapsHealthSuspenseQueryKey } from "./useGoogleMapsHealthSuspense.ts";
+export { googleMapsHealthSuspense } from "./useGoogleMapsHealthSuspense.ts";
+export { googleMapsHealthSuspenseQueryOptions } from "./useGoogleMapsHealthSuspense.ts";
+export { useGoogleMapsHealthSuspense } from "./useGoogleMapsHealthSuspense.ts";
+export { typeaheadPlacesQueryKey } from "./useTypeaheadPlaces.ts";
+export { typeaheadPlaces } from "./useTypeaheadPlaces.ts";
+export { typeaheadPlacesQueryOptions } from "./useTypeaheadPlaces.ts";
+export { useTypeaheadPlaces } from "./useTypeaheadPlaces.ts";
+export { typeaheadPlacesSuspenseQueryKey } from "./useTypeaheadPlacesSuspense.ts";
+export { typeaheadPlacesSuspense } from "./useTypeaheadPlacesSuspense.ts";
+export { typeaheadPlacesSuspenseQueryOptions } from "./useTypeaheadPlacesSuspense.ts";
+export { useTypeaheadPlacesSuspense } from "./useTypeaheadPlacesSuspense.ts";

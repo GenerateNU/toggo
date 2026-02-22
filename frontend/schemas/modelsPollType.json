@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "enum": ["single", "multi", "rank"],
+  "x-enum-varnames": ["PollTypeSingle", "PollTypeMulti", "PollTypeRank"],
+  "x-readme-ref-name": "models.PollType"
+}

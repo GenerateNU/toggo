@@ -137,3 +137,76 @@ type PollVoteSummary struct {
 func (p *Poll) IsDeadlinePassed() bool {
 	return p.Deadline != nil && time.Now().UTC().After(*p.Deadline)
 }
+
+// PollRanking represents a user's rank assignment for a specific option.
+type PollRanking struct {
+	bun.BaseModel `bun:"table:poll_rankings,alias:pr"`
+
+	PollID       uuid.UUID `bun:"poll_id,pk,type:uuid,notnull" json:"poll_id"`
+	UserID       uuid.UUID `bun:"user_id,pk,type:uuid,notnull" json:"user_id"`
+	OptionID     uuid.UUID `bun:"option_id,pk,type:uuid,notnull" json:"option_id"`
+	RankPosition int       `bun:"rank_position,notnull" json:"rank_position"`
+}
+
+// SubmitRankingRequest is the payload for submitting a complete ranking.
+type SubmitRankingRequest struct {
+	Rankings []RankingItem `validate:"required,min=1,dive" json:"rankings"`
+}
+
+// RankingItem represents a single option's rank in a user's submission.
+type RankingItem struct {
+	OptionID uuid.UUID `validate:"required" json:"option_id"`
+	Rank     int       `validate:"required,gt=0" json:"rank"`
+}
+
+// RankPollResultsResponse represents the aggregated results of a rank poll.
+type RankPollResultsResponse struct {
+	PollID       uuid.UUID         `json:"poll_id"`
+	Question     string            `json:"question"`
+	PollType     PollType          `json:"poll_type"`
+	Deadline     *time.Time        `json:"deadline,omitempty"`
+	CreatedBy    uuid.UUID         `json:"created_by"`
+	CreatedAt    time.Time         `json:"created_at"`
+	TotalVoters  int               `json:"total_voters"`
+	TotalMembers int               `json:"total_members"`
+	Top3         []OptionWithScore `json:"top_3"`
+	AllOptions   []OptionWithScore `json:"all_options"`
+	UserRanking  []UserRankingItem `json:"user_ranking,omitempty"`
+	UserHasVoted bool              `json:"user_has_voted"`
+}
+
+// OptionWithScore contains an option with its Borda count score and ranking statistics.
+type OptionWithScore struct {
+	OptionID    uuid.UUID  `json:"option_id"`
+	Name        string     `json:"name"`
+	OptionType  OptionType `json:"option_type"`
+	EntityType  *string    `json:"entity_type,omitempty"`
+	EntityID    *uuid.UUID `json:"entity_id,omitempty"`
+	BordaScore  int        `json:"borda_score"`
+	AverageRank float64    `json:"average_rank"`
+	VoteCount   int        `json:"vote_count"`
+}
+
+// UserRankingItem represents a single option in the user's personal ranking.
+type UserRankingItem struct {
+	OptionID     uuid.UUID `json:"option_id"`
+	OptionName   string    `json:"option_name"`
+	RankPosition int       `json:"rank_position"`
+}
+
+// PollVotersResponse shows who has voted vs who hasn't for a rank poll.
+type PollVotersResponse struct {
+	PollID       uuid.UUID   `json:"poll_id"`
+	TotalMembers int         `json:"total_members"`
+	TotalVoters  int         `json:"total_voters"`
+	Voters       []VoterInfo `json:"voters"`
+}
+
+// VoterInfo contains a trip member's voting status for a rank poll.
+type VoterInfo struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+	HasVoted bool      `json:"has_voted"`
+}
+
+type RankPollAPIResponse = PollAPIResponse

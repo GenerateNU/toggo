@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "average_rank": { "type": "number" },
+    "borda_score": { "type": "integer" },
+    "entity_id": { "type": "string" },
+    "entity_type": { "type": "string" },
+    "name": { "type": "string" },
+    "option_id": { "type": "string" },
+    "option_type": {
+      "type": "string",
+      "enum": ["entity", "custom"],
+      "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
+      "x-readme-ref-name": "models.OptionType"
+    },
+    "vote_count": { "type": "integer" }
+  },
+  "x-readme-ref-name": "models.OptionWithScore"
+}

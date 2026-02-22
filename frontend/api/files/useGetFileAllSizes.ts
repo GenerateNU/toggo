@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetFileAllSizesQueryResponse,
   GetFileAllSizesPathParams,
@@ -35,7 +35,7 @@ export type GetFileAllSizesQueryKey = ReturnType<
  */
 export async function getFileAllSizes(
   imageId: GetFileAllSizesPathParams["imageId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -51,7 +51,7 @@ export async function getFileAllSizes(
 
 export function getFileAllSizesQueryOptions(
   imageId: GetFileAllSizesPathParams["imageId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getFileAllSizesQueryKey(imageId);
   return queryOptions<
@@ -94,7 +94,7 @@ export function useGetFileAllSizes<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "properties": {
+    "category_names": { "type": "array", "items": { "type": "string" } },
+    "created_at": { "type": "string" },
+    "dates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "end": {
+            "description": "ISO 8601 date format (YYYY-MM-DD)",
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-05"
+          },
+          "start": {
+            "description": "ISO 8601 date format (YYYY-MM-DD)",
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-01"
+          }
+        },
+        "x-readme-ref-name": "models.DateRange"
+      }
+    },
+    "description": { "type": "string" },
+    "id": { "type": "string" },
+    "media_url": { "type": "string" },
+    "name": { "type": "string" },
+    "proposed_by": { "type": "string" },
+    "proposer_picture_url": { "type": "string" },
+    "proposer_username": { "type": "string" },
+    "thumbnail_url": { "type": "string" },
+    "trip_id": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.ActivityAPIResponse"
+}

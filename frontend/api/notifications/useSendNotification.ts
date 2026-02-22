@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   SendNotificationMutationRequest,
   SendNotificationMutationResponse,
@@ -34,7 +34,7 @@ export type SendNotificationMutationKey = ReturnType<
 export async function sendNotification(
   data: SendNotificationMutationRequest,
   config: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -58,7 +58,7 @@ export async function sendNotification(
 
 export function sendNotificationMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = sendNotificationMutationKey();
@@ -93,7 +93,7 @@ export function useSendNotification<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

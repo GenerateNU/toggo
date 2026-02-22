@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "properties": { "expires_at": { "type": "string" } },
+  "x-readme-ref-name": "models.CreateTripInviteRequest"
+}

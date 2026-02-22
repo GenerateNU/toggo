@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetCurrentUserQueryResponse,
   GetCurrentUser401,
@@ -32,7 +32,7 @@ export type GetCurrentUserSuspenseQueryKey = ReturnType<
  * {@link /api/v1/users/me}
  */
 export async function getCurrentUserSuspense(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -47,7 +47,7 @@ export async function getCurrentUserSuspense(
 }
 
 export function getCurrentUserSuspenseQueryOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getCurrentUserSuspenseQueryKey();
   return queryOptions<
@@ -86,7 +86,7 @@ export function useGetCurrentUserSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "code": { "type": "string" },
+    "created_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "expires_at": { "type": "string" },
+    "id": { "type": "string" },
+    "is_revoked": { "type": "boolean" },
+    "join_url": { "type": "string" },
+    "trip_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.TripInviteAPIResponse"
+}

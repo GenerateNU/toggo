@@ -227,7 +227,7 @@ func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        request body models.CreatePollOptionRequest true "Create option request"
-// @Success      201 {object} models.PollOption
+// @Success      201 {object} models.PollOptionAPIResponse
 // @Failure      400,401,403,404,409,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options [post]
 // @ID           addPollOption
@@ -271,7 +271,7 @@ func (pc *PollController) AddOption(c *fiber.Ctx) error {
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
 // @Param        optionId path string true "Option ID"
-// @Success      200 {object} models.PollOption
+// @Success      200 {object} models.PollOptionAPIResponse
 // @Failure      400,401,403,404,409,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId} [delete]
 // @ID           deletePollOption

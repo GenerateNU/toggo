@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "long_name": { "type": "string" },
+    "short_name": { "type": "string" },
+    "types": { "type": "array", "items": { "type": "string" } }
+  },
+  "x-readme-ref-name": "models.AddressComponent"
+}

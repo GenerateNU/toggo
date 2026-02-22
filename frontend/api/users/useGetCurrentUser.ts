@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetCurrentUserQueryResponse,
   GetCurrentUser401,
@@ -30,7 +30,7 @@ export type GetCurrentUserQueryKey = ReturnType<typeof getCurrentUserQueryKey>;
  * {@link /api/v1/users/me}
  */
 export async function getCurrentUser(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -45,7 +45,7 @@ export async function getCurrentUser(
 }
 
 export function getCurrentUserQueryOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getCurrentUserQueryKey();
   return queryOptions<
@@ -86,7 +86,7 @@ export function useGetCurrentUser<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "categories": { "type": "array", "items": { "type": "string" } },
+    "limit": { "type": "integer" },
+    "next_cursor": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.ActivityCategoriesPageResult"
+}

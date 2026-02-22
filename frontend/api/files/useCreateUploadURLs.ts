@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateUploadURLsMutationRequest,
   CreateUploadURLsMutationResponse,
@@ -34,7 +34,7 @@ export type CreateUploadURLsMutationKey = ReturnType<
 export async function createUploadURLs(
   data: CreateUploadURLsMutationRequest,
   config: Partial<RequestConfig<CreateUploadURLsMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -58,7 +58,7 @@ export async function createUploadURLs(
 
 export function createUploadURLsMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateUploadURLsMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = createUploadURLsMutationKey();
@@ -93,7 +93,7 @@ export function useCreateUploadURLs<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateUploadURLsMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

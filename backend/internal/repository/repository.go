@@ -19,25 +19,27 @@ type Repository struct {
 	Activity         ActivityRepository
 	Category         CategoryRepository
 	ActivityCategory ActivityCategoryRepository
-	Poll       PollRepository
-	TripInvite  TripInviteRepository
-	db                *bun.DB
+	Poll             PollRepository
+	PollRanking      PollRankingRepository
+	TripInvite       TripInviteRepository
+	db               *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:       &userRepository{db: db},
-		Health:     &healthRepository{db: db},
-		Image:      &imageRepository{db: db},
-		Comment:    &commentRepository{db: db},
-		Trip:       &tripRepository{db: db},
-		Poll:       &pollRepository{db: db},
-		Membership: &membershipRepository{db: db},
-		Activity:   &activityRepository{db: db},
-		Category:   &categoryRepository{db: db},
+		User:             &userRepository{db: db},
+		Health:           &healthRepository{db: db},
+		Image:            &imageRepository{db: db},
+		Comment:          &commentRepository{db: db},
+		Trip:             &tripRepository{db: db},
+		Poll:             &pollRepository{db: db},
+		PollRanking:      &pollRankingRepository{db: db},
+		Membership:       &membershipRepository{db: db},
+		Activity:         &activityRepository{db: db},
+		Category:         &categoryRepository{db: db},
 		ActivityCategory: &activityCategoryRepository{db: db},
-		TripInvite: newTripInviteRepository(db),
-		db:         db,
+		TripInvite:       newTripInviteRepository(db),
+		db:               db,
 	}
 }
 

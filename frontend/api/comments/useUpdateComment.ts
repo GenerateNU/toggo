@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateCommentMutationRequest,
   UpdateCommentMutationResponse,
@@ -38,7 +38,7 @@ export async function updateComment(
   commentID: UpdateCommentPathParams["commentID"],
   data: UpdateCommentMutationRequest,
   config: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -66,7 +66,7 @@ export async function updateComment(
 
 export function updateCommentMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updateCommentMutationKey();
@@ -115,7 +115,7 @@ export function useUpdateComment<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
