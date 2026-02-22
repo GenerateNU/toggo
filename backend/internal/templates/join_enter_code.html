@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ .PageTitle }}</title>
+  <meta name="description" content="{{ .MetaDescription }}" />
+  <meta property="og:title" content="{{ .PageTitle }}" />
+  <meta property="og:description" content="{{ .MetaDescription }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ .CanonicalURL }}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ .PageTitle }}" />
+  <meta name="twitter:description" content="{{ .MetaDescription }}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { toggo: '#FF7E00' }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-hidden">
+
+  <!-- Page content -->
+  <main class="relative flex flex-col items-center justify-center min-h-screen px-6">
+
+    <!-- Logo centered -->
+    <div class="mb-auto"></div>
+    <img src="/static/toggo_logo.svg" alt="toggo" class="w-40 z-50 fixed mb-12" />
+
+    <img src="/static/flight_path.svg" alt="flight path" class="absolute inset-0 w-full h-full pointer-events-none" />
+
+    <!-- Bottom section: input + button -->
+    <div class="w-full max-w-[360px] mb-16 space-y-3">
+      <form action="/join" method="get" class="space-y-3">
+        <label for="code" class="sr-only">Invite code</label>
+        <input
+          type="text"
+          id="code"
+          name="code"
+          placeholder="Enter invite code"
+          autocomplete="off"
+          required
+          class="block w-full rounded-2xl border border-zinc-200 bg-white/80 backdrop-blur-sm px-5 py-4 text-center text-zinc-900 placeholder-zinc-400 text-sm outline-none transition focus:border-toggo focus:ring-2 focus:ring-toggo/20"
+        />
+        <button type="submit" class="block w-full rounded-2xl bg-toggo px-5 py-4 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 transition hover:bg-orange-500 active:scale-[0.98]">
+          Join Trip
+        </button>
+      </form>
+      <p class="text-center text-xs text-zinc-400 pt-1">Have a code? Enter it above to see the trip.</p>
+    </div>
+  </main>
+</body>
+</html>
