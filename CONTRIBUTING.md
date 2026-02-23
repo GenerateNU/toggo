@@ -55,6 +55,7 @@ chore: upgrade dependencies
 | Swag CLI | Generate API doc | `go install github.com/swaggo/swag/cmd/swag@latest` |
 | LocalStack | Run AWS services locally | [install cli](https://docs.localstack.cloud/aws/getting-started/installation/) |
 | Temporal | Run workflow orchestration | [install cli](https://docs.temporal.io/cli/setup-cli) |
+| mockery | Generate interface mocks for tests | See [Mocking](#mocking-mockery) section below |
 
 
 **Useful Go resources:**
@@ -209,6 +210,52 @@ just localstack-up
 # remove local AWS environment
 just localstack-down
 ```
+
+---
+
+## Mocking (mockery)
+
+We use [mockery v3](https://vektra.github.io/mockery/v3.6/installation/) to auto-generate test mocks from Go interfaces.
+
+### Installation
+
+```bash
+# macOS (Homebrew)
+brew install mockery
+
+# Go install (any OS)
+go install go install github.com/vektra/mockery/v3@v3.6.4
+```
+
+For other installation methods see the [official docs](https://vektra.github.io/mockery/v3.6/installation/).
+
+### Configuration
+
+Mock generation is configured in `backend/.mockery.yml`. Each interface you want mocked must be listed there under its package path. For example:
+
+```yaml
+packages:
+  toggo/internal/services:
+    interfaces:
+      FileServiceInterface:
+      SearchServiceInterface:
+  toggo/internal/repository:
+    interfaces:
+      ImageRepository:
+      SearchRepository:
+```
+
+### Generating mocks
+
+```bash
+cd backend
+mockery
+```
+
+Mocks are written to `backend/internal/tests/mocks/` and committed to the repository.
+
+> [!IMPORTANT]
+> Never edit generated mock files by hand. Add the interface to `.mockery.yml` and re-run `mockery` instead.
 
 ---
 

@@ -22,6 +22,7 @@ type Repository struct {
 	Poll             PollRepository
 	PollRanking      PollRankingRepository
 	TripInvite       TripInviteRepository
+	Search           SearchRepository
 	db               *bun.DB
 }
 
@@ -39,6 +40,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Category:         &categoryRepository{db: db},
 		ActivityCategory: &activityCategoryRepository{db: db},
 		TripInvite:       newTripInviteRepository(db),
+		Search:           &searchRepository{db: db},
 		db:               db,
 	}
 }
@@ -134,4 +136,10 @@ type ActivityCategoryRepository interface {
 	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
 	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
+}
+
+type SearchRepository interface {
+	SearchTrips(ctx context.Context, userID uuid.UUID, query string, limit, offset int) ([]*models.TripDatabaseResponse, int, error)
+	SearchActivities(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.ActivityDatabaseResponse, int, error)
+	SearchTripMembers(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.MembershipDatabaseResponse, int, error)
 }
