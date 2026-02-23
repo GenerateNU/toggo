@@ -316,6 +316,37 @@ func TestPitchUpdate(t *testing.T) {
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
+
+	t.Run("non-member gets 404", func(t *testing.T) {
+		pitchID, _ := createPitch(t, app, userID, tripID, "AuthPitch", "audio/mpeg")
+		otherUser := createTestUser(t, app, "Other", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+		title := "Hacked"
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &otherUser,
+				Body:   models.UpdatePitchRequest{Title: &title},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("non-creator member gets 403", func(t *testing.T) {
+		pitchID, _ := createPitch(t, app, userID, tripID, "AuthPitch2", "audio/mpeg")
+		memberID := createTestUser(t, app, "Member", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+		addMember(t, app, userID, memberID, tripID)
+		title := "Hacked"
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &memberID,
+				Body:   models.UpdatePitchRequest{Title: &title},
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
 }
 
 func strPtr(s string) *string { return &s }
