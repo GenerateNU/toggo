@@ -25,12 +25,12 @@ type CreateTripInviteRequest struct {
 
 // TripInviteAPIResponse is the API response for a trip invite.
 type TripInviteAPIResponse struct {
-	ID        uuid.UUID  `json:"id"`
-	TripID    uuid.UUID  `json:"trip_id"`
-	CreatedBy uuid.UUID  `json:"created_by"`
-	Code      string     `json:"code"`
-	ExpiresAt time.Time  `json:"expires_at"`
-	IsRevoked bool       `json:"is_revoked"`
-	CreatedAt time.Time  `json:"created_at"`
-	JoinURL   *string    `json:"join_url,omitempty"`
+	ID        uuid.UUID `json:"id"`
+	TripID    uuid.UUID `json:"trip_id"`
+	CreatedBy uuid.UUID `json:"created_by"`
+	Code      string    `json:"code"`
+	ExpiresAt time.Time `json:"expires_at"`
+	IsRevoked bool      `json:"is_revoked"`
+	CreatedAt time.Time `json:"created_at"`
+	JoinURL   *string   `json:"join_url,omitempty"`
 }
