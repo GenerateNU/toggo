@@ -3234,10 +3234,16 @@ const docTemplate = `{
         "models.CreatePitchRequest": {
             "type": "object",
             "required": [
+                "content_length",
                 "content_type",
                 "title"
             ],
             "properties": {
+                "content_length": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Size in bytes of the audio file to upload (max 50 MiB)"
+                },
                 "content_type": {
                     "type": "string",
                     "minLength": 1

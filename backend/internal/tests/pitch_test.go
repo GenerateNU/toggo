@@ -5,6 +5,7 @@ import (
 	"testing"
 	"toggo/internal/config"
 	"toggo/internal/models"
+	"toggo/internal/services"
 	testkit "toggo/internal/tests/testkit/builders"
 	"toggo/internal/tests/testkit/fakes"
 
@@ -40,9 +41,10 @@ func createPitch(t *testing.T, app *fiber.App, userID, tripID string, title, con
 			Method: testkit.POST,
 			UserID: &userID,
 			Body: models.CreatePitchRequest{
-				Title:       title,
-				Description: "",
-				ContentType: contentType,
+				Title:          title,
+				Description:    "",
+				ContentType:    contentType,
+				ContentLength:  1024,
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -74,9 +76,10 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:       "My pitch",
-					Description: "Optional desc",
-					ContentType: "audio/mpeg",
+					Title:          "My pitch",
+					Description:    "Optional desc",
+					ContentType:    "audio/mpeg",
+					ContentLength:  1024,
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -102,8 +105,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:       "Pitch",
-					ContentType: "audio/mpeg",
+					Title:          "Pitch",
+					ContentType:    "audio/mpeg",
+					ContentLength:  1024,
 				},
 			}).
 			AssertStatus(http.StatusBadRequest)
@@ -117,8 +121,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:       "",
-					ContentType: "audio/mpeg",
+					Title:          "",
+					ContentType:    "audio/mpeg",
+					ContentLength:  1024,
 				},
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
@@ -133,11 +138,29 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &otherUser,
 				Body: models.CreatePitchRequest{
-					Title:       "Pitch",
-					ContentType: "audio/mpeg",
+					Title:          "Pitch",
+					ContentType:    "audio/mpeg",
+					ContentLength:  1024,
 				},
 			}).
 			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("content_length exceeds max returns 400", func(t *testing.T) {
+		requireS3(t)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:          "Pitch",
+					ContentType:    "audio/mpeg",
+					ContentLength:  services.MaxPitchAudioSize + 1,
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
 	})
 }
 

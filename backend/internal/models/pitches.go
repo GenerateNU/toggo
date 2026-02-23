@@ -21,9 +21,10 @@ type TripPitch struct {
 }
 
 type CreatePitchRequest struct {
-	Title       string `validate:"required,min=1" json:"title"`
-	Description string `validate:"omitempty" json:"description"`
-	ContentType string `validate:"required,min=1" json:"content_type"`
+	Title          string `validate:"required,min=1" json:"title"`
+	Description    string `validate:"omitempty" json:"description"`
+	ContentType    string `validate:"required,min=1" json:"content_type"`
+	ContentLength  int64  `validate:"required,gte=1" json:"content_length"`
 }
 
 type UpdatePitchRequest struct {

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -15,6 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 )
+
+// MaxPitchAudioSize is the maximum allowed size in bytes for pitch audio uploads (50 MiB).
+const MaxPitchAudioSize = 50 * 1024 * 1024
 
 // PitchServiceInterface defines business logic for trip pitches (create, get, list, update, delete).
 type PitchServiceInterface interface {
@@ -88,10 +92,18 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 		return nil, fmt.Errorf("create pitch: %w", err)
 	}
 
+	if req.ContentLength <= 0 {
+		return nil, errs.BadRequest(errors.New("content_length must be positive"))
+	}
+	if req.ContentLength > MaxPitchAudioSize {
+		return nil, errs.BadRequest(fmt.Errorf("content_length exceeds maximum allowed size (%d bytes)", MaxPitchAudioSize))
+	}
+
 	presigned, err := s.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(s.bucketName),
-		Key:         aws.String(audioKey),
-		ContentType: aws.String(req.ContentType),
+		Bucket:        aws.String(s.bucketName),
+		Key:           aws.String(audioKey),
+		ContentType:   aws.String(req.ContentType),
+		ContentLength: aws.Int64(req.ContentLength),
 	}, s3.WithPresignExpires(s.urlExpiration))
 	if err != nil {
 		return nil, fmt.Errorf("presign upload URL: %w", err)

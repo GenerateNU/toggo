@@ -263,6 +263,10 @@ definitions:
     type: object
   models.CreatePitchRequest:
     properties:
+      content_length:
+        minimum: 1
+        type: integer
+        description: Size in bytes of the audio file to upload (max 50 MiB)
       content_type:
         minLength: 1
         type: string
@@ -272,6 +276,7 @@ definitions:
         minLength: 1
         type: string
     required:
+    - content_length
     - content_type
     - title
     type: object
