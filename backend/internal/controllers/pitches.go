@@ -40,16 +40,9 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 // @Router       /api/v1/trips/{tripID}/pitches [post]
 // @ID           createPitch
 func (ctrl *PitchController) CreatePitch(c *fiber.Ctx) error {
-	userIDValue := c.Locals("userID")
-	if userIDValue == nil {
-		return errs.Unauthorized()
-	}
-	userIDStr, ok := userIDValue.(string)
-	if !ok {
-		return errs.Unauthorized()
-	}
-	userID, err := validators.ValidateID(userIDStr)
-	if err != nil {
+	userIDStr, ok := c.Locals("userID").(string)
+	userID, validateErr := validators.ValidateID(userIDStr)
+	if !ok || validateErr != nil {
 		return errs.Unauthorized()
 	}
 
