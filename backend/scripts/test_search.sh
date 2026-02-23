@@ -75,10 +75,12 @@ create_user() {
     local phone="$3"
     
     # Generate a unique user ID for this user
-    local user_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
+    local user_id
+    user_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
     
     # Generate a JWT token for this specific user
-    local user_jwt=$(generate_jwt_for_user "$user_id")
+    local user_jwt
+    user_jwt=$(generate_jwt_for_user "$user_id")
     
     if [ -z "$user_jwt" ]; then
         echo "Error: Failed to generate JWT token for $name"

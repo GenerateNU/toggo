@@ -113,7 +113,7 @@ func (r *searchRepository) SearchActivities(
 	}
 
 	var rows []*models.ActivityDatabaseResponse
-	err = base.
+	err = base.Clone().
 		ColumnExpr("a.*").
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
@@ -157,7 +157,7 @@ func (r *searchRepository) SearchTripMembers(
 	}
 
 	var rows []*models.MembershipDatabaseResponse
-	err = base.
+	err = base.Clone().
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
 		ColumnExpr("u.username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
