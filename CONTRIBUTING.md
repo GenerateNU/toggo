@@ -224,7 +224,7 @@ We use [mockery v3](https://vektra.github.io/mockery/v3.6/installation/) to auto
 brew install mockery
 
 # Go install (any OS)
-go install go install github.com/vektra/mockery/v3@v3.6.4
+go install github.com/vektra/mockery/v3@v3.6.4
 ```
 
 For other installation methods see the [official docs](https://vektra.github.io/mockery/v3.6/installation/).

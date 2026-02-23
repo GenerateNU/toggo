@@ -18,6 +18,7 @@ API_BASE_URL="${API_BASE_URL:-http://localhost:8000/api/v1}"
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 log() {
@@ -62,7 +63,8 @@ fi
 # Helper function to generate JWT token for a given user ID
 generate_jwt_for_user() {
     local user_id="$1"
-    local token=$(cd "$BACKEND_DIR" && doppler run --project backend --config dev -- go run -C internal/tests/testkit/fakes cmd/generate_jwt.go "$user_id")
+    local token
+    token=$(cd "$BACKEND_DIR" && doppler run --project backend --config dev -- go run -C internal/tests/testkit/fakes cmd/generate_jwt.go "$user_id")
     echo "$token"
 }
 
@@ -139,6 +141,8 @@ clear_database() {
     echo "Running TRUNCATE command..."
     
     # Truncate all tables (in correct order to handle foreign key constraints)
+    # Temporarily disable errexit to allow fallback on failure
+    set +e
     docker exec database psql -U "$DB_USER" -d "$DB_NAME" -c "
         TRUNCATE TABLE 
             poll_votes,
@@ -156,16 +160,21 @@ clear_database() {
             categories
         RESTART IDENTITY CASCADE;
     "
+    rc=$?
+    set -e
     
-    if [ $? -eq 0 ]; then
+    if [ $rc -eq 0 ]; then
         echo -e "${GREEN}✓ Database cleared successfully!${NC}"
     else
         echo -e "${RED}✗ Failed to clear database${NC}"
         echo "Trying alternative method..."
         # Alternative: delete from each table
+        set +e
         docker exec database psql -U "$DB_USER" -d "$DB_NAME" -c "DELETE FROM poll_votes; DELETE FROM poll_rankings; DELETE FROM poll_options; DELETE FROM polls; DELETE FROM comments; DELETE FROM images; DELETE FROM activity_categories; DELETE FROM activities; DELETE FROM trip_invites; DELETE FROM memberships; DELETE FROM trips; DELETE FROM users; DELETE FROM categories;"
+        rc=$?
+        set -e
         
-        if [ $? -eq 0 ]; then
+        if [ $rc -eq 0 ]; then
             echo -e "${GREEN}✓ Database cleared using DELETE${NC}"
         else
             echo -e "${RED}✗ Failed to clear database with both methods${NC}"
@@ -904,13 +913,13 @@ deseed_database() {
     
     log "Stopping database container..."
     cd "$BACKEND_DIR"
-    docker-compose stop postgres
+    docker compose stop postgres
     
     log "Removing database volume..."
     docker volume rm backend_pgdata 2>/dev/null || true
     
     log "Starting fresh database..."
-    docker-compose up -d postgres
+    docker compose up -d postgres
     
     log "Waiting for database to be ready..."
     until docker exec database pg_isready -U dev_user -d dev_db > /dev/null 2>&1; do 

@@ -20,14 +20,15 @@ func NewSearchRepository(db *bun.DB) SearchRepository {
 	return &searchRepository{db: db}
 }
 
+var tsquerySanitizer = regexp.MustCompile(`[^a-zA-Z0-9\s]+`)
+
 // formatPrefixQuery converts a user query into a tsquery format that supports prefix matching.
 // It sanitizes the input, splits it into words, adds the :* wildcard to each word for prefix matching,
 // and joins them with & (AND operator).
 func formatPrefixQuery(query string) string {
 	// Remove special characters that could break tsquery syntax
-	// Keep only alphanumeric, spaces, and hyphens
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s-]+`)
-	cleaned := re.ReplaceAllString(query, " ")
+	// Keep only alphanumeric and spaces (hyphens are treated as separators)
+	cleaned := tsquerySanitizer.ReplaceAllString(query, " ")
 
 	words := strings.Fields(cleaned)
 	if len(words) == 0 {
@@ -59,8 +60,6 @@ func (r *searchRepository) SearchTrips(
 	base := r.db.NewSelect().
 		TableExpr("trips AS t").
 		Join("JOIN memberships AS m ON m.trip_id = t.id").
-		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?",
-			models.ImageSizeMedium, models.UploadStatusConfirmed).
 		Where("m.user_id = ?", userID).
 		Where("to_tsvector('english', t.name) @@ to_tsquery('english', ?)", tsQuery)
 
@@ -70,7 +69,9 @@ func (r *searchRepository) SearchTrips(
 	}
 
 	var rows []*models.TripDatabaseResponse
-	err = base.
+	err = base.Clone().
+		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?",
+			models.ImageSizeMedium, models.UploadStatusConfirmed).
 		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
@@ -100,7 +101,7 @@ func (r *searchRepository) SearchActivities(
 
 	base := r.db.NewSelect().
 		TableExpr("activities AS a").
-		Join("JOIN users AS u ON u.id = a.proposed_by").
+		Join("LEFT JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?",
 			models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Where("a.trip_id = ?", tripID).
