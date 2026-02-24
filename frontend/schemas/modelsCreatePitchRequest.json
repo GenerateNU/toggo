@@ -1,1 +1,11 @@
-{"type":"object","required":["content_length","content_type","title"],"properties":{"content_length":{"type":"integer","minimum":1},"content_type":{"type":"string","minLength":1},"description":{"type":"string"},"title":{"type":"string","minLength":1}},"x-readme-ref-name":"models.CreatePitchRequest"}
+{
+  "type": "object",
+  "required": ["content_length", "content_type", "title"],
+  "properties": {
+    "content_length": { "type": "integer", "minimum": 1 },
+    "content_type": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 }
+  },
+  "x-readme-ref-name": "models.CreatePitchRequest"
+}
