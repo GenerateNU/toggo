@@ -1,0 +1,1 @@
+{"type":"object","properties":{"option_ids":{"type":"array","items":{"type":"string"}}},"x-readme-ref-name":"models.CastVoteRequest"}

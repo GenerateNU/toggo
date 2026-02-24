@@ -1,4 +1,5 @@
 export type { CreateTripMutationKey } from "./useCreateTrip.ts";
+export type { CreateTripInviteMutationKey } from "./useCreateTripInvite.ts";
 export type { DeleteTripMutationKey } from "./useDeleteTrip.ts";
 export type { GetAllTripsQueryKey } from "./useGetAllTrips.ts";
 export type { GetAllTripsSuspenseQueryKey } from "./useGetAllTripsSuspense.ts";
@@ -9,6 +10,10 @@ export { createTripMutationKey } from "./useCreateTrip.ts";
 export { createTrip } from "./useCreateTrip.ts";
 export { createTripMutationOptions } from "./useCreateTrip.ts";
 export { useCreateTrip } from "./useCreateTrip.ts";
+export { createTripInviteMutationKey } from "./useCreateTripInvite.ts";
+export { createTripInvite } from "./useCreateTripInvite.ts";
+export { createTripInviteMutationOptions } from "./useCreateTripInvite.ts";
+export { useCreateTripInvite } from "./useCreateTripInvite.ts";
 export { deleteTripMutationKey } from "./useDeleteTrip.ts";
 export { deleteTrip } from "./useDeleteTrip.ts";
 export { deleteTripMutationOptions } from "./useDeleteTrip.ts";

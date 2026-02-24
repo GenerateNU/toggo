@@ -21,18 +21,20 @@ type Repository struct {
 	Category         CategoryRepository
 	ActivityCategory ActivityCategoryRepository
 	Poll             PollRepository
+	PollRanking      PollRankingRepository
 	TripInvite       TripInviteRepository
 	db               *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:       &userRepository{db: db},
-		Health:     &healthRepository{db: db},
-		Image:      &imageRepository{db: db},
-		Comment:    &commentRepository{db: db},
+		User:             &userRepository{db: db},
+		Health:           &healthRepository{db: db},
+		Image:            &imageRepository{db: db},
+		Comment:          &commentRepository{db: db},
 		Trip:             &tripRepository{db: db},
 		Poll:             &pollRepository{db: db},
+		PollRanking:      &pollRankingRepository{db: db},
 		Membership:       &membershipRepository{db: db},
 		Pitch:            &pitchRepository{db: db},
 		Activity:         &activityRepository{db: db},

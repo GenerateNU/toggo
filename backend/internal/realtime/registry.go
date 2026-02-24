@@ -32,6 +32,7 @@ func (r *TopicRegistry) registerDefaultTopics() {
 		"poll.deleted",
 		"poll.vote_added",
 		"poll.vote_removed",
+		"poll.ranking_submitted",
 		"trip.created",
 		"trip.updated",
 		"trip.deleted",

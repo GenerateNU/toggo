@@ -1,13 +1,1 @@
-{
-  "type": "object",
-  "properties": {
-    "bucketName": { "type": "string" },
-    "error": {
-      "description": "Error contains the underlying error message when status is \"unhealthy\"",
-      "type": "string"
-    },
-    "region": { "type": "string" },
-    "status": { "type": "string" }
-  },
-  "x-readme-ref-name": "models.S3HealthCheckResponse"
-}
+{"type":"object","properties":{"bucketName":{"type":"string"},"error":{"description":"Error contains the underlying error message when status is \"unhealthy\"","type":"string"},"region":{"type":"string"},"status":{"type":"string"}},"x-readme-ref-name":"models.S3HealthCheckResponse"}

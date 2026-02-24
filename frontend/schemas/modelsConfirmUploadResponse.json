@@ -1,9 +1,1 @@
-{
-  "type": "object",
-  "properties": {
-    "confirmed": { "type": "integer" },
-    "imageId": { "type": "string" },
-    "status": { "type": "string" }
-  },
-  "x-readme-ref-name": "models.ConfirmUploadResponse"
-}
+{"type":"object","properties":{"confirmed":{"type":"integer"},"imageId":{"type":"string"},"status":{"type":"string"}},"x-readme-ref-name":"models.ConfirmUploadResponse"}
