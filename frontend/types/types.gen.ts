@@ -181,6 +181,12 @@ export type ModelsCreateMembershipRequest = {
 
 export type ModelsCreatePitchRequest = {
   /**
+   * Size in bytes of the audio file to upload (max 50 MiB)
+   * @minimum 1
+   * @type integer
+   */
+  content_length: number;
+  /**
    * @minLength 1
    * @type string
    */

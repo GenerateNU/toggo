@@ -353,6 +353,7 @@ export const modelsCreateMembershipRequestSchema = z.object({
 }) as unknown as z.ZodType<ModelsCreateMembershipRequest>;
 
 export const modelsCreatePitchRequestSchema = z.object({
+  content_length: z.number().int().min(1),
   content_type: z.string().min(1),
   description: z.optional(z.string()),
   title: z.string().min(1),
