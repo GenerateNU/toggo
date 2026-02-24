@@ -20,6 +20,9 @@ packages:
   toggo/internal/services:
     interfaces:
       FileServiceInterface:
+      SearchServiceInterface:
   toggo/internal/repository:
     interfaces:
       ImageRepository:
+      SearchRepository:
+      ActivityCategoryRepository:

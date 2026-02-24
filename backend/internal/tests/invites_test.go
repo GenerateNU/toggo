@@ -178,4 +178,3 @@ func TestTripInvitesJoinWorkflow(t *testing.T) {
 			AssertStatus(http.StatusUnauthorized)
 	})
 }
-

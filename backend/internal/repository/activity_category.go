@@ -81,7 +81,7 @@ func (r *activityCategoryRepository) GetCategoriesForActivity(ctx context.Contex
 	for i, ac := range activityCategories {
 		categoryNames[i] = ac.CategoryName
 	}
-	
+
 	return categoryNames, nextCursor, nil
 }
 
