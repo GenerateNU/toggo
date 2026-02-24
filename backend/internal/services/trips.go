@@ -277,6 +277,7 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil
 }
+
 const defaultInviteExpiry = 7 * 24 * time.Hour
 
 // generateInviteCode returns a URL-safe hex string (e.g. 12 chars).
@@ -320,7 +321,7 @@ func (s *TripService) CreateTripInvite(ctx context.Context, tripID uuid.UUID, cr
 			}
 			invite.Code = code
 			created, err = s.TripInvite.Create(ctx, invite)
-		}	
+		}
 		if err != nil {
 			return nil, err
 		}

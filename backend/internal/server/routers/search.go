@@ -2,6 +2,7 @@ package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/services"
 	"toggo/internal/types"
 
@@ -17,11 +18,19 @@ func SearchRoutes(router fiber.Router, params types.RouteParams) {
 		params.ServiceParams.Config.GoogleMaps.APIKey,
 	)
 
+	placesCtrl := controllers.NewPlacesController(placesService, &params.ServiceParams.Config.GoogleMaps)
 	placesGroup := searchGroup.Group("/places")
 
-	// GET /api/v1/search/places/
-	placesGroup.Get("/typeahead", controllers.TypeaheadPlacesHandler(placesService))
-	placesGroup.Post("/details", controllers.GetPlaceDetailsHandler(placesService))
-	placesGroup.Get("/health", controllers.GoogleMapsHealthHandler(&params.ServiceParams.Config.GoogleMaps))
+	placesGroup.Get("/typeahead", placesCtrl.TypeaheadPlaces)
+	placesGroup.Post("/details", placesCtrl.GetPlaceDetails)
+	placesGroup.Get("/health", placesCtrl.GoogleMapsHealth)
 
+	searchService := services.NewSearchService(params.ServiceParams.Repository, params.ServiceParams.FileService)
+	searchCtrl := controllers.NewSearchController(searchService, params.Validator)
+
+	searchGroup.Get("/trips", searchCtrl.SearchTrips)
+
+	tripSearch := searchGroup.Group("/trips/:tripID", middlewares.TripMemberRequired(params.ServiceParams.Repository))
+	tripSearch.Get("/activities", searchCtrl.SearchActivities)
+	tripSearch.Get("/members", searchCtrl.SearchTripMembers)
 }
