@@ -14,5 +14,6 @@ type TripInvitePageData struct {
 	FirstMemberName          string
 	OtherMemberCount         int
 	MemberCount              int
+	MemberProfilePictureURLs []string
 	ErrorMessage             string
 }

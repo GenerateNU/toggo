@@ -60,7 +60,11 @@ func ServeStatic() fiber.Handler {
 	}
 }
 
-var inviteTemplate = htmltemplate.Must(htmltemplate.ParseFS(inviteTemplateFS, "trip_invite.html"))
+var templateFuncs = htmltemplate.FuncMap{
+	"subtract": func(a, b int) int { return a - b },
+}
+
+var inviteTemplate = htmltemplate.Must(htmltemplate.New("trip_invite.html").Funcs(templateFuncs).ParseFS(inviteTemplateFS, "trip_invite.html"))
 var joinEnterCodeTemplate = htmltemplate.Must(htmltemplate.ParseFS(inviteTemplateFS, "join_enter_code.html"))
 
 type TripInviteView struct {

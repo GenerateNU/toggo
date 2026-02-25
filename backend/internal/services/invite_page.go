@@ -117,5 +117,19 @@ func (s *InvitePageService) GetTripInvitePageData(ctx context.Context, code stri
 		data.OtherMemberCount = len(members) - 1
 	}
 
+	// Fetch profile picture URLs for the first 3 members (for stacked avatars)
+	limit := 3
+	if len(members) < limit {
+		limit = len(members)
+	}
+	for _, m := range members[:limit] {
+		if m.ProfilePictureID != nil {
+			fileResp, err := s.fileService.GetFile(ctx, *m.ProfilePictureID, models.ImageSizeSmall)
+			if err == nil {
+				data.MemberProfilePictureURLs = append(data.MemberProfilePictureURLs, fileResp.URL)
+			}
+		}
+	}
+
 	return data, nil
 }

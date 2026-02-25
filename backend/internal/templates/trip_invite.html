@@ -26,166 +26,275 @@
   </script>
 
   <style>
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUpCenter {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideUpBottom {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    .fade-in { animation: fadeIn 300ms ease-out both; }
-
-    /* Mobile: bottom sheet full width */
-    .modal-wrapper {
-      animation: slideUpBottom 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
-      width: 100%;
-    }
-    .modal-container {
-      position: fixed; inset: 0; z-index: 50;
-      display: flex;
-      align-items: flex-end;
-      justify-content: stretch;
+    body {
+      margin: 0;
       padding: 0;
-      max-width: 100vw;
-    }
-
-    /* KEY FIX: no fixed heights; just cap to viewport and allow scrolling */
-    .modal-card {
-      width: 100%;
-      max-width: 100%;
-      border-radius: 1.5rem 1.5rem 0 0;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
+      background: linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #fff5eb 60%, #ffe8d0 80%, #ffd4a8 100%);
+    }
+    .cover-section {
+      position: relative;
+      width: 100%;
+      height: 220px;
       flex-shrink: 0;
-
-      /* cap to viewport (dynamic, not "fixed height") */
-      max-height: calc(100dvh - env(safe-area-inset-top, 0) - 0.75rem);
-      overflow: hidden; /* keep rounded corners clean; inner scrolls */
+      overflow: hidden;
     }
-
-    /* Inner scroll area */
-    .modal-card .modal-card-inner {
+    .cover-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cover-section .no-cover {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+    }
+    .logo-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-overlay img {
+      width: 120px;
+      height: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.95;
+    }
+    .card-section {
+      position: relative;
+      margin-top: -24px;
+      background: white;
+      border-radius: 1.25rem 1.25rem 0 0;
+      padding: 24px 20px 20px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    .invite-badge {
+      background: #f5f5f5;
+      border-radius: 16px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .invite-badge .emoji {
+      font-size: 48px;
+      line-height: 1;
+    }
+    .invite-badge .text {
+      font-size: 15px;
+      font-weight: 600;
+      font-style: italic;
+      color: #333;
+    }
+    .body-section {
       flex: 1;
-      min-height: 0;           /* allows scrolling child in flex */
-      overflow-y: auto;        /* scroll when content exceeds */
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: max(1rem, env(safe-area-inset-bottom, 0));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 20px max(24px, env(safe-area-inset-bottom, 24px));
     }
-
-    .modal-card .modal-card-actions {
-      margin-top: auto;
-      padding-top: 1rem;
+    .invite-text {
+      font-size: 17px;
+      color: #333;
+      text-align: center;
+      line-height: 1.5;
     }
+    .invite-text strong {
+      font-weight: 700;
+      color: #111;
+    }
+    .actions {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 14px;
+      background: #FF7E00;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .btn-primary:hover { background: #e67200; }
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 14px;
+      background: white;
+      color: #333;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border: 1px solid #e5e5e5;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .btn-secondary:hover { background: #f9f9f9; }
 
-    /* Desktop: centered modal */
+    /* Tablet: constrain width */
     @media (min-width: 640px) {
-      .modal-wrapper {
-        animation: slideUpCenter 500ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
-      }
-      .modal-container {
+      body {
         align-items: center;
-        padding: 1rem;
       }
-      .modal-card {
-        max-width: 400px;
-        border-radius: 1rem;
-
-        /* still cap to viewport on desktop too */
-        max-height: calc(100dvh - 2rem);
+      .page-wrapper {
+        max-width: 430px;
+        width: 100%;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 40px rgba(0,0,0,0.08);
       }
-      .modal-card .modal-card-inner {
-        padding-bottom: 0;
+    }
+    /* Laptop+: wider card */
+    @media (min-width: 1024px) {
+      .page-wrapper {
+        max-width: 520px;
       }
     }
   </style>
 </head>
 
-<!-- remove overflow-hidden so fixed overlay/sheet doesn't get clipped -->
-<body class="min-h-[100dvh] font-sans antialiased bg-gradient-to-b from-white via-slate-50 to-blue-50/40 overflow-x-hidden">
+<body class="font-sans antialiased">
+  <div class="page-wrapper" style="display:flex;flex-direction:column;min-height:100dvh;width:100%;">
 
-  <!-- Flight path decorations (background) -->
-  <svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-    <path d="M -40,220 Q 200,100 520,180" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="10 8" />
-    <g transform="translate(500,182) rotate(-15)">
-      <polygon points="0,-6 14,0 0,6 3,0" fill="#c4c8cf" />
-    </g>
-    <path d="M -20,580 Q 260,480 540,560" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-dasharray="10 8" />
-    <g transform="translate(10,578) rotate(20)">
-      <polygon points="0,-6 14,0 0,6 3,0" fill="#c4c8cf" />
-    </g>
-  </svg>
-
-  <!-- Logo -->
-  <div class="fixed top-0 left-0 right-0 z-30 flex items-center justify-center pt-6">
-    <img src="/static/toggo_logo.svg" alt="toggo" class="w-40 opacity-40" />
-  </div>
-
-  <!-- Overlay -->
-  <div class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm fade-in"></div>
-
-  <!-- Modal -->
-  <div class="modal-container">
-    <div class="modal-wrapper">
-      <article class="modal-card bg-white shadow-2xl">
-        {{ if .Data.ErrorMessage }}
-        <div class="modal-card-inner p-6">
-          <h2 class="text-lg font-bold text-zinc-900 mb-2">Invite unavailable</h2>
-          <p class="text-sm leading-relaxed text-zinc-500 mb-5">{{ .Data.ErrorMessage }}</p>
-          <div class="modal-card-actions">
-            <a href="/join" class="block w-full rounded-xl bg-toggo px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
-              Enter a different code
-            </a>
-          </div>
-        </div>
-        {{ else }}
-        <div class="modal-card-inner p-6">
-          <h2 class="text-xl font-bold text-zinc-900 mb-4">{{ .Data.TripName }}</h2>
-
-          <!-- Members -->
-          <div class="flex items-center gap-2 mb-4">
-            <svg class="w-5 h-5 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span class="text-[0.8125rem] text-zinc-500">
-              {{ .Data.MemberCount }} member{{ if gt .Data.MemberCount 1 }}s{{ end }}
-            </span>
-          </div>
-
-          <!-- Cover image -->
-          <div class="h-40 overflow-hidden rounded-xl bg-zinc-100 mb-4">
-            {{ if .Data.CoverImageURL }}
-            <img src="{{ .Data.CoverImageURL }}" alt="Trip cover" class="h-full w-full object-cover" />
-            {{ else }}
-            <div class="flex h-full w-full items-center justify-center text-sm text-zinc-400">No cover image</div>
-            {{ end }}
-          </div>
-
-          <div class="flex items-center gap-3 mb-5">
-            {{ if .Data.InviterProfilePictureURL }}
-            <img src="{{ .Data.InviterProfilePictureURL }}" alt="{{ .Data.InviterName }}" class="w-10 h-10 rounded-full object-cover shrink-0" />
-            {{ else if .Data.InviterName }}
-            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-toggo text-sm font-semibold text-white shrink-0">{{ printf "%.1s" .Data.InviterName }}</span>
-            {{ end }}
-            <p class="text-sm leading-relaxed text-zinc-500">
-              {{ if .Data.InviterName }}<span class="font-medium text-zinc-700">{{ .Data.InviterName }}</span> wants you along for {{ else }}You've been invited to join {{ end }}<span class="font-medium text-zinc-700">{{ .Data.TripName }}</span>.
-            </p>
-          </div>
-
-          <div class="modal-card-actions">
-            <a href="{{ .Data.DeepLink }}" class="block w-full rounded-xl bg-toggo px-4 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-orange-200/50 hover:bg-orange-500 active:scale-[0.98] transition">
-              Open in Toggo
-            </a>
-            <a href="#" class="block w-full rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-center text-sm font-semibold text-zinc-700 hover:bg-zinc-50 active:scale-[0.98] transition mt-2.5">
-              Download Toggo
-            </a>
-            <a href="/join" class="block text-center text-xs text-zinc-400 hover:text-zinc-500 hover:underline mt-4">
-              Enter a different code
-            </a>
-          </div>
-        </div>
-        {{ end }}
-      </article>
+    {{ if .Data.ErrorMessage }}
+    <!-- Error state -->
+    <div class="cover-section">
+      <div class="no-cover"></div>
+      <div class="logo-overlay">
+        <img src="/static/toggo_logo.svg" alt="toggo" />
+      </div>
     </div>
+    <div class="card-section">
+      <h2 style="font-size:20px;font-weight:700;color:#111;margin:0 0 8px;">Invite unavailable</h2>
+      <p style="font-size:14px;color:#888;line-height:1.5;margin:0;">{{ .Data.ErrorMessage }}</p>
+    </div>
+    <div class="body-section">
+      <div></div>
+      <div class="actions">
+        <a href="/join" class="btn-primary">Enter a different code</a>
+      </div>
+    </div>
+
+    {{ else }}
+    <!-- Cover image backdrop -->
+    <div class="cover-section">
+      {{ if .Data.CoverImageURL }}
+      <img src="{{ .Data.CoverImageURL }}" alt="Trip cover" />
+      {{ else }}
+      <div class="no-cover"></div>
+      {{ end }}
+      <div class="logo-overlay">
+        <img src="/static/toggo_logo.svg" alt="toggo" />
+      </div>
+    </div>
+
+    <!-- White card overlapping cover -->
+    <div class="card-section">
+      <h2 style="font-size:22px;font-weight:700;color:#111;margin:0 0 6px;">{{ .Data.TripName }}</h2>
+
+      <!-- Members row (stacked avatars) -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;">
+          {{ range $i, $url := .Data.MemberProfilePictureURLs }}
+          <img src="{{ $url }}" alt="Member" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;{{ if $i }}margin-left:-10px;{{ end }}" />
+          {{ end }}
+          {{ if gt .Data.MemberCount 3 }}
+          <div style="width:32px;height:32px;border-radius:50%;background:#e5e5e5;border:2px solid white;margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#666;">+{{ subtract .Data.MemberCount 3 }}</div>
+          {{ end }}
+        </div>
+        <span style="font-size:14px;color:#999;">
+          <span style="font-weight:600;color:#555;">{{ .Data.InviterName }}</span> and {{ .Data.OtherMemberCount }} other{{ if gt .Data.OtherMemberCount 1 }}s{{ end }}
+        </span>
+      </div>
+
+      <!-- Invite badge (randomized on load) -->
+      <div class="invite-badge">
+        <span class="emoji" id="invite-emoji">🎯</span>
+        <span class="text" id="invite-text">your invite just landed</span>
+      </div>
+      <script>
+        (function() {
+          var messages = [
+            { emoji: "🎯", text: "your invite just landed" },
+            { emoji: "🌍", text: "the world's waiting. so is your group." },
+            { emoji: "🧳", text: "your bag isn't going to pack itself" },
+            { emoji: "✈️", text: "you've been cleared for takeoff" },
+            { emoji: "📬", text: "special delivery" },
+            { emoji: "🎒", text: "pack your bags" },
+            { emoji: "🗺️", text: "adventure awaits" },
+            { emoji: "🎫", text: "you're on the list" },
+            { emoji: "🚀", text: "ready for takeoff" },
+            { emoji: "🤙", text: "you've been summoned" }
+          ];
+          var pick = messages[Math.floor(Math.random() * messages.length)];
+          document.getElementById("invite-emoji").textContent = pick.emoji;
+          document.getElementById("invite-text").textContent = pick.text;
+        })();
+      </script>
+    </div>
+
+    <!-- Body with gradient background -->
+    <div class="body-section">
+      <div class="invite-text" style="margin-bottom:24px;">
+        <p style="margin:0;">
+          <span style="font-size: 1.2em;">
+            You've been invited to join <br/>
+            <strong style="font-size:1.3em; font-weight: 700;">{{ .Data.TripName }}</strong>
+          </span>
+        </p>
+      </div>
+
+      <div class="actions">
+        <button id="open-btn" class="btn-primary" onclick="openApp()">Open in Toggo</button>
+      </div>
+      <script>
+        function openApp() {
+          var deepLink = "{{ .Data.DeepLink }}";
+          var appStoreURL = "https://apps.apple.com";
+          var didNavigate = false;
+
+          // Listen for visibility change (app opened successfully)
+          document.addEventListener("visibilitychange", function() {
+            if (document.hidden) didNavigate = true;
+          });
+
+          // Try to open the deep link
+          window.location.href = deepLink;
+
+          // If still here after 1.5s, app isn't installed — go to App Store
+          setTimeout(function() {
+            if (!didNavigate) {
+              window.location.href = appStoreURL;
+            }
+          }, 1500);
+        }
+      </script>
+    </div>
+    {{ end }}
+
   </div>
 </body>
 </html>
