@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateRankPollMutationRequest,
   CreateRankPollMutationResponse,
@@ -38,7 +38,7 @@ export async function createRankPoll(
   tripID: CreateRankPollPathParams["tripID"],
   data: CreateRankPollMutationRequest,
   config: Partial<RequestConfig<CreateRankPollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,9 +64,9 @@ export async function createRankPoll(
   return res.data;
 }
 
-export function createRankPollMutationOptions<TContext = unknown>(
+export function createRankPollMutationOptions(
   config: Partial<RequestConfig<CreateRankPollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createRankPollMutationKey();
@@ -83,7 +83,7 @@ export function createRankPollMutationOptions<TContext = unknown>(
       tripID: CreateRankPollPathParams["tripID"];
       data: CreateRankPollMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -115,7 +115,7 @@ export function useCreateRankPoll<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateRankPollMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

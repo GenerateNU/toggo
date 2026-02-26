@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   TypeaheadPlacesQueryResponse,
   TypeaheadPlacesQueryParams,
@@ -36,7 +36,7 @@ export type TypeaheadPlacesQueryKey = ReturnType<
  */
 export async function typeaheadPlaces(
   params: TypeaheadPlacesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -55,7 +55,7 @@ export async function typeaheadPlaces(
 
 export function typeaheadPlacesQueryOptions(
   params: TypeaheadPlacesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = typeaheadPlacesQueryKey(params);
   return queryOptions<
@@ -94,7 +94,7 @@ export function useTypeaheadPlaces<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

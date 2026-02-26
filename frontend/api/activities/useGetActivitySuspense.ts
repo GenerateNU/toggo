@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetActivityQueryResponse,
   GetActivityPathParams,
@@ -45,7 +45,7 @@ export type GetActivitySuspenseQueryKey = ReturnType<
 export async function getActivitySuspense(
   tripID: GetActivityPathParams["tripID"],
   activityID: GetActivityPathParams["activityID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -70,7 +70,7 @@ export async function getActivitySuspense(
 export function getActivitySuspenseQueryOptions(
   tripID: GetActivityPathParams["tripID"],
   activityID: GetActivityPathParams["activityID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getActivitySuspenseQueryKey(tripID, activityID);
   return queryOptions<
@@ -120,7 +120,7 @@ export function useGetActivitySuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

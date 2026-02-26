@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetMembershipQueryResponse,
   GetMembershipPathParams,
@@ -42,7 +42,7 @@ export type GetMembershipQueryKey = ReturnType<typeof getMembershipQueryKey>;
 export async function getMembership(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -63,7 +63,7 @@ export async function getMembership(
 export function getMembershipQueryOptions(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getMembershipQueryKey(tripID, userID);
   return queryOptions<
@@ -110,7 +110,7 @@ export function useGetMembership<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

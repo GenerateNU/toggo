@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CastVoteMutationRequest,
   CastVoteMutationResponse,
@@ -38,7 +38,7 @@ export async function castVote(
   pollId: CastVotePathParams["pollId"],
   data?: CastVoteMutationRequest,
   config: Partial<RequestConfig<CastVoteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -65,9 +65,9 @@ export async function castVote(
   return res.data;
 }
 
-export function castVoteMutationOptions<TContext = unknown>(
+export function castVoteMutationOptions(
   config: Partial<RequestConfig<CastVoteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = castVoteMutationKey();
@@ -86,7 +86,7 @@ export function castVoteMutationOptions<TContext = unknown>(
       pollId: CastVotePathParams["pollId"];
       data?: CastVoteMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -120,7 +120,7 @@ export function useCastVote<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CastVoteMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

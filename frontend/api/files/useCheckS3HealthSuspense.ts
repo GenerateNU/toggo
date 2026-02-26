@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CheckS3HealthQueryResponse,
   CheckS3Health503,
@@ -30,7 +30,7 @@ export type CheckS3HealthSuspenseQueryKey = ReturnType<
  * {@link /api/v1/files/health}
  */
 export async function checkS3HealthSuspense(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -43,7 +43,7 @@ export async function checkS3HealthSuspense(
 }
 
 export function checkS3HealthSuspenseQueryOptions(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = checkS3HealthSuspenseQueryKey();
   return queryOptions<
@@ -78,7 +78,7 @@ export function useCheckS3HealthSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

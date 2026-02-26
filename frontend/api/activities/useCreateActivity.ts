@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateActivityMutationRequest,
   CreateActivityMutationResponse,
@@ -39,7 +39,7 @@ export async function createActivity(
   tripID: CreateActivityPathParams["tripID"],
   data: CreateActivityMutationRequest,
   config: Partial<RequestConfig<CreateActivityMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -66,9 +66,9 @@ export async function createActivity(
   return res.data;
 }
 
-export function createActivityMutationOptions<TContext = unknown>(
+export function createActivityMutationOptions(
   config: Partial<RequestConfig<CreateActivityMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createActivityMutationKey();
@@ -86,7 +86,7 @@ export function createActivityMutationOptions<TContext = unknown>(
       tripID: CreateActivityPathParams["tripID"];
       data: CreateActivityMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -119,7 +119,7 @@ export function useCreateActivity<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateActivityMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

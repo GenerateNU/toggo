@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateRankPollMutationRequest,
   UpdateRankPollMutationResponse,
@@ -40,7 +40,7 @@ export async function updateRankPoll(
   pollId: UpdateRankPollPathParams["pollId"],
   data?: UpdateRankPollMutationRequest,
   config: Partial<RequestConfig<UpdateRankPollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -67,9 +67,9 @@ export async function updateRankPoll(
   return res.data;
 }
 
-export function updateRankPollMutationOptions<TContext = unknown>(
+export function updateRankPollMutationOptions(
   config: Partial<RequestConfig<UpdateRankPollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = updateRankPollMutationKey();
@@ -88,7 +88,7 @@ export function updateRankPollMutationOptions<TContext = unknown>(
       pollId: UpdateRankPollPathParams["pollId"];
       data?: UpdateRankPollMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -122,7 +122,7 @@ export function useUpdateRankPoll<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateRankPollMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

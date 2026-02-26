@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetCategoriesByTripIDQueryResponse,
   GetCategoriesByTripIDPathParams,
@@ -40,7 +40,7 @@ export type GetCategoriesByTripIDSuspenseQueryKey = ReturnType<
  */
 export async function getCategoriesByTripIDSuspense(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -64,7 +64,7 @@ export async function getCategoriesByTripIDSuspense(
 
 export function getCategoriesByTripIDSuspenseQueryOptions(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getCategoriesByTripIDSuspenseQueryKey(tripID);
   return queryOptions<
@@ -113,7 +113,7 @@ export function useGetCategoriesByTripIDSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

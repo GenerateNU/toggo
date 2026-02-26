@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPaginatedCommentsQueryResponse,
   GetPaginatedCommentsPathParams,
@@ -27,7 +27,7 @@ export const getPaginatedCommentsSuspenseQueryKey = (
   tripID: GetPaginatedCommentsPathParams["tripID"],
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
-  params: GetPaginatedCommentsQueryParams = {},
+  params?: GetPaginatedCommentsQueryParams,
 ) =>
   [
     {
@@ -51,7 +51,7 @@ export async function getPaginatedCommentsSuspense(
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
   params?: GetPaginatedCommentsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -79,7 +79,7 @@ export function getPaginatedCommentsSuspenseQueryOptions(
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
   params?: GetPaginatedCommentsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getPaginatedCommentsSuspenseQueryKey(
     tripID,
@@ -142,7 +142,7 @@ export function useGetPaginatedCommentsSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

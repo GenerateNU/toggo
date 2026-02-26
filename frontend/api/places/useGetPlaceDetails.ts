@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPlaceDetailsMutationRequest,
   GetPlaceDetailsMutationResponse,
@@ -33,7 +33,7 @@ export type GetPlaceDetailsMutationKey = ReturnType<
 export async function getPlaceDetails(
   data?: GetPlaceDetailsMutationRequest,
   config: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -53,9 +53,9 @@ export async function getPlaceDetails(
   return res.data;
 }
 
-export function getPlaceDetailsMutationOptions<TContext = unknown>(
+export function getPlaceDetailsMutationOptions(
   config: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = getPlaceDetailsMutationKey();
@@ -63,7 +63,7 @@ export function getPlaceDetailsMutationOptions<TContext = unknown>(
     GetPlaceDetailsMutationResponse,
     ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
     { data?: GetPlaceDetailsMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -86,7 +86,7 @@ export function useGetPlaceDetails<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

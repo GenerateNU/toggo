@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetTripMembersQueryResponse,
   GetTripMembersPathParams,
@@ -24,7 +24,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getTripMembersSuspenseQueryKey = (
   tripID: GetTripMembersPathParams["tripID"],
-  params: GetTripMembersQueryParams = {},
+  params?: GetTripMembersQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/memberships", params: { tripID: tripID } },
@@ -43,7 +43,7 @@ export type GetTripMembersSuspenseQueryKey = ReturnType<
 export async function getTripMembersSuspense(
   tripID: GetTripMembersPathParams["tripID"],
   params?: GetTripMembersQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -68,7 +68,7 @@ export async function getTripMembersSuspense(
 export function getTripMembersSuspenseQueryOptions(
   tripID: GetTripMembersPathParams["tripID"],
   params?: GetTripMembersQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getTripMembersSuspenseQueryKey(tripID, params);
   return queryOptions<
@@ -116,7 +116,7 @@ export function useGetTripMembersSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

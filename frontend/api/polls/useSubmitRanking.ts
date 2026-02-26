@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   SubmitRankingMutationRequest,
   SubmitRankingMutationResponse,
@@ -40,7 +40,7 @@ export async function submitRanking(
   pollId: SubmitRankingPathParams["pollId"],
   data: SubmitRankingMutationRequest,
   config: Partial<RequestConfig<SubmitRankingMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -67,9 +67,9 @@ export async function submitRanking(
   return res.data;
 }
 
-export function submitRankingMutationOptions<TContext = unknown>(
+export function submitRankingMutationOptions(
   config: Partial<RequestConfig<SubmitRankingMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = submitRankingMutationKey();
@@ -88,7 +88,7 @@ export function submitRankingMutationOptions<TContext = unknown>(
       pollId: SubmitRankingPathParams["pollId"];
       data: SubmitRankingMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -122,7 +122,7 @@ export function useSubmitRanking<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<SubmitRankingMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

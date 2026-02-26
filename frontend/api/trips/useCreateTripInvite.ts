@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateTripInviteMutationRequest,
   CreateTripInviteMutationResponse,
@@ -38,7 +38,7 @@ export async function createTripInvite(
   tripID: CreateTripInvitePathParams["tripID"],
   data?: CreateTripInviteMutationRequest,
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,9 +64,9 @@ export async function createTripInvite(
   return res.data;
 }
 
-export function createTripInviteMutationOptions<TContext = unknown>(
+export function createTripInviteMutationOptions(
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createTripInviteMutationKey();
@@ -83,7 +83,7 @@ export function createTripInviteMutationOptions<TContext = unknown>(
       tripID: CreateTripInvitePathParams["tripID"];
       data?: CreateTripInviteMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -115,7 +115,7 @@ export function useCreateTripInvite<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

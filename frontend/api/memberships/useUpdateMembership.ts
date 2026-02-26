@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateMembershipMutationRequest,
   UpdateMembershipMutationResponse,
@@ -39,7 +39,7 @@ export async function updateMembership(
   userID: UpdateMembershipPathParams["userID"],
   data?: UpdateMembershipMutationRequest,
   config: Partial<RequestConfig<UpdateMembershipMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -65,9 +65,9 @@ export async function updateMembership(
   return res.data;
 }
 
-export function updateMembershipMutationOptions<TContext = unknown>(
+export function updateMembershipMutationOptions(
   config: Partial<RequestConfig<UpdateMembershipMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = updateMembershipMutationKey();
@@ -85,7 +85,7 @@ export function updateMembershipMutationOptions<TContext = unknown>(
       userID: UpdateMembershipPathParams["userID"];
       data?: UpdateMembershipMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID, data }) => {
@@ -118,7 +118,7 @@ export function useUpdateMembership<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateMembershipMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

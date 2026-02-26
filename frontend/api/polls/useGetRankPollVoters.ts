@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetRankPollVotersQueryResponse,
   GetRankPollVotersPathParams,
@@ -45,7 +45,7 @@ export type GetRankPollVotersQueryKey = ReturnType<
 export async function getRankPollVoters(
   tripID: GetRankPollVotersPathParams["tripID"],
   pollId: GetRankPollVotersPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -70,7 +70,7 @@ export async function getRankPollVoters(
 export function getRankPollVotersQueryOptions(
   tripID: GetRankPollVotersPathParams["tripID"],
   pollId: GetRankPollVotersPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getRankPollVotersQueryKey(tripID, pollId);
   return queryOptions<
@@ -122,7 +122,7 @@ export function useGetRankPollVoters<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

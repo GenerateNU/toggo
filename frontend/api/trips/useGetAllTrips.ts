@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetAllTripsQueryResponse,
   GetAllTripsQueryParams,
@@ -20,7 +20,7 @@ import type {
 } from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-export const getAllTripsQueryKey = (params: GetAllTripsQueryParams = {}) =>
+export const getAllTripsQueryKey = (params?: GetAllTripsQueryParams) =>
   [{ url: "/api/v1/trips" }, ...(params ? [params] : [])] as const;
 
 export type GetAllTripsQueryKey = ReturnType<typeof getAllTripsQueryKey>;
@@ -32,7 +32,7 @@ export type GetAllTripsQueryKey = ReturnType<typeof getAllTripsQueryKey>;
  */
 export async function getAllTrips(
   params?: GetAllTripsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -46,7 +46,7 @@ export async function getAllTrips(
 
 export function getAllTripsQueryOptions(
   params?: GetAllTripsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getAllTripsQueryKey(params);
   return queryOptions<
@@ -84,7 +84,7 @@ export function useGetAllTrips<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

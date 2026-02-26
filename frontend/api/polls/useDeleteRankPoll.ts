@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DeleteRankPollMutationResponse,
   DeleteRankPollPathParams,
@@ -36,7 +36,7 @@ export type DeleteRankPollMutationKey = ReturnType<
 export async function deleteRankPoll(
   tripID: DeleteRankPollPathParams["tripID"],
   pollId: DeleteRankPollPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -58,8 +58,8 @@ export async function deleteRankPoll(
   return res.data;
 }
 
-export function deleteRankPollMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function deleteRankPollMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteRankPollMutationKey();
   return mutationOptions<
@@ -75,7 +75,7 @@ export function deleteRankPollMutationOptions<TContext = unknown>(
       tripID: DeleteRankPollPathParams["tripID"];
       pollId: DeleteRankPollPathParams["pollId"];
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId }) => {
@@ -106,7 +106,7 @@ export function useDeleteRankPoll<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

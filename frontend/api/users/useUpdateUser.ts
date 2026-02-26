@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
@@ -35,7 +35,7 @@ export async function updateUser(
   userID: UpdateUserPathParams["userID"],
   data?: UpdateUserMutationRequest,
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,9 +57,9 @@ export async function updateUser(
   return res.data;
 }
 
-export function updateUserMutationOptions<TContext = unknown>(
+export function updateUserMutationOptions(
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = updateUserMutationKey();
@@ -72,7 +72,7 @@ export function updateUserMutationOptions<TContext = unknown>(
       userID: UpdateUserPathParams["userID"];
       data?: UpdateUserMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ userID, data }) => {
@@ -100,7 +100,7 @@ export function useUpdateUser<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {
