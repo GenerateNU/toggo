@@ -1,12 +1,10 @@
-import { Box } from "@/design-system/base/box";
-import { Text } from "@/design-system/base/text";
-import { OTPVerificationForm } from "./components/verify-form";
+import { Box, Text } from "@/design-system";
+import OTPVerificationForm from "./components/verify-form";
 
 export default function VerifyPage() {
   return (
-    <Box flex={1} justifyContent="center" padding="l">
-      <Text variant="h1">Enter Verification Code</Text>
-
+    <Box backgroundColor="white" flex={1} justifyContent="center" padding="lg">
+      <Text variant="lgHeading">Enter Verification Code</Text>
       <OTPVerificationForm />
     </Box>
   );

@@ -1,13 +1,11 @@
 import { useUser } from "@/contexts/user";
-import { Box } from "@/design-system/base/box";
-import { Button } from "@/design-system/base/button";
-import { Text } from "@/design-system/base/text";
+import { Box, Button, Text } from "@/design-system";
 import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, TextInput } from "react-native";
+import { TextInput } from "react-native";
 import { z } from "zod";
 
 const SIGNUP_SCHEMA = z.object({
@@ -19,7 +17,7 @@ const SIGNUP_SCHEMA = z.object({
 
 type SignupFormData = z.infer<typeof SIGNUP_SCHEMA>;
 
-export function SignupForm() {
+export default function SignupForm() {
   const { sendOTP } = useUser();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +34,6 @@ export function SignupForm() {
     setIsLoading(true);
 
     try {
-      // Normalize phone number
       const normalized = normalizePhone(data.phone);
       if (!normalized) {
         setError("Invalid phone number format");
@@ -44,10 +41,8 @@ export function SignupForm() {
         return;
       }
 
-      // Send OTP using normalized digits format
       await sendOTP(normalized.digits);
 
-      // Navigate to OTP verification with E.164 format
       router.push({
         pathname: "/(auth)/verify",
         params: { phone: normalized.e164 },
@@ -59,10 +54,10 @@ export function SignupForm() {
   };
 
   return (
-    <Box gap="m">
+    <Box gap="md">
       {error && (
-        <Box backgroundColor="sunsetOrange" padding="s" borderRadius="s">
-          <Text variant="caption" color="cloudWhite">
+        <Box backgroundColor="error" padding="sm" borderRadius="sm">
+          <Text variant="smParagraph" color="white">
             {error}
           </Text>
         </Box>
@@ -73,17 +68,15 @@ export function SignupForm() {
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
+            <Text variant="smLabel" color="textSecondary">
               Phone Number
             </Text>
             <Box
               borderWidth={1}
-              borderColor={
-                formState.errors.phone ? "sunsetOrange" : "mountainGray"
-              }
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
+              borderColor={formState.errors.phone ? "error" : "borderPrimary"}
+              borderRadius="sm"
+              padding="sm"
+              backgroundColor="white"
             >
               <TextInput
                 placeholder="+1 555 555 5555"
@@ -95,7 +88,7 @@ export function SignupForm() {
               />
             </Box>
             {formState.errors.phone && (
-              <Text variant="caption" color="sunsetOrange">
+              <Text variant="xsParagraph" color="error">
                 {formState.errors.phone.message}
               </Text>
             )}
@@ -104,17 +97,14 @@ export function SignupForm() {
       />
 
       <Button
-        onPress={handleSubmit(onSubmit)}
+        layout="textOnly"
+        label="Create Account"
+        variant="Primary"
+        loading={isLoading}
+        loadingLabel="Sending..."
         disabled={!formState.isValid || isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="cloudWhite" />
-        ) : (
-          <Text variant="caption" color="cloudWhite">
-            Create Account
-          </Text>
-        )}
-      </Button>
+        onPress={handleSubmit(onSubmit)}
+      />
     </Box>
   );
 }

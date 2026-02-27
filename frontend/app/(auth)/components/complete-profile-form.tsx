@@ -1,15 +1,13 @@
 import { useCreateUser } from "@/api/users/useCreateUser";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
-import { Box } from "@/design-system/base/box";
-import { Button } from "@/design-system/base/button";
-import { Text } from "@/design-system/base/text";
+import { Box, Button, Text } from "@/design-system";
 import { getDeviceTimeZone } from "@/utilities/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, TextInput } from "react-native";
+import { TextInput } from "react-native";
 import { z } from "zod";
 
 const PROFILE_SCHEMA = z.object({
@@ -29,7 +27,7 @@ const PROFILE_SCHEMA = z.object({
 
 type ProfileFormData = z.infer<typeof PROFILE_SCHEMA>;
 
-export function CompleteProfileForm() {
+export default function CompleteProfileForm() {
   const { refreshCurrentUser } = useUser();
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
@@ -69,14 +67,10 @@ export function CompleteProfileForm() {
         },
       });
 
-      // Best-effort: set timezone from device if available
       const timezone = getDeviceTimeZone();
       if (timezone && created?.id) {
         try {
-          await updateUser({
-            userID: created.id,
-            data: { timezone },
-          });
+          await updateUser({ userID: created.id, data: { timezone } });
         } catch (err) {
           console.warn("Failed to update timezone", err);
         }
@@ -91,10 +85,10 @@ export function CompleteProfileForm() {
   };
 
   return (
-    <Box gap="m">
+    <Box gap="md">
       {error && (
-        <Box backgroundColor="sunsetOrange" padding="s" borderRadius="s">
-          <Text variant="caption" color="cloudWhite">
+        <Box backgroundColor="error" padding="sm" borderRadius="sm">
+          <Text variant="smParagraph" color="white">
             {error}
           </Text>
         </Box>
@@ -105,17 +99,15 @@ export function CompleteProfileForm() {
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
+            <Text variant="smLabel" color="textSecondary">
               Full Name
             </Text>
             <Box
               borderWidth={1}
-              borderColor={
-                formState.errors.name ? "sunsetOrange" : "mountainGray"
-              }
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
+              borderColor={formState.errors.name ? "error" : "borderPrimary"}
+              borderRadius="sm"
+              padding="sm"
+              backgroundColor="white"
             >
               <TextInput
                 placeholder="John Doe"
@@ -126,7 +118,7 @@ export function CompleteProfileForm() {
               />
             </Box>
             {formState.errors.name && (
-              <Text variant="caption" color="sunsetOrange">
+              <Text variant="xsParagraph" color="error">
                 {formState.errors.name.message}
               </Text>
             )}
@@ -139,17 +131,17 @@ export function CompleteProfileForm() {
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="caption" color="forestGreen">
+            <Text variant="smLabel" color="textSecondary">
               Username
             </Text>
             <Box
               borderWidth={1}
               borderColor={
-                formState.errors.username ? "sunsetOrange" : "mountainGray"
+                formState.errors.username ? "error" : "borderPrimary"
               }
-              borderRadius="s"
-              padding="s"
-              backgroundColor="cloudWhite"
+              borderRadius="sm"
+              padding="sm"
+              backgroundColor="white"
             >
               <TextInput
                 placeholder="john_doe"
@@ -162,7 +154,7 @@ export function CompleteProfileForm() {
               />
             </Box>
             {formState.errors.username && (
-              <Text variant="caption" color="sunsetOrange">
+              <Text variant="xsParagraph" color="error">
                 {formState.errors.username.message}
               </Text>
             )}
@@ -171,17 +163,14 @@ export function CompleteProfileForm() {
       />
 
       <Button
-        onPress={handleSubmit(onSubmit)}
+        layout="textOnly"
+        label="Create Account"
+        variant="Primary"
+        loading={isSubmitting}
+        loadingLabel="Creating account..."
         disabled={!formState.isValid || isSubmitting}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator color="cloudWhite" />
-        ) : (
-          <Text variant="caption" color="cloudWhite">
-            Create Account
-          </Text>
-        )}
-      </Button>
+        onPress={handleSubmit(onSubmit)}
+      />
     </Box>
   );
 }
