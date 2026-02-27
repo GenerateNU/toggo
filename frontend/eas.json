@@ -12,13 +12,7 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "ios": {
-        "image": "latest",
-        "cache": {
-          "clear": true
-        }
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
