@@ -1,4 +1,7 @@
-import { getPlaceDetails, searchPlacesTypeahead } from "@/api/places";
+import {
+  getPlaceDetailsCustom,
+  searchPlacesTypeahead,
+} from "@/api/places/custom";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -61,7 +64,7 @@ export default function TestMapsScreen() {
         params.input = detailsInput.trim();
       }
 
-      const response = await getPlaceDetails(params);
+      const response = await getPlaceDetailsCustom(params);
       setDetailsResult(response.data);
     } catch (error: any) {
       setDetailsError(error.message || "Failed to get place details");

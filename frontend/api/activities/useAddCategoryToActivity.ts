@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   AddCategoryToActivityMutationResponse,
   AddCategoryToActivityPathParams,
@@ -42,7 +42,7 @@ export async function addCategoryToActivity(
   tripID: AddCategoryToActivityPathParams["tripID"],
   activityID: AddCategoryToActivityPathParams["activityID"],
   categoryName: AddCategoryToActivityPathParams["categoryName"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -65,8 +65,8 @@ export async function addCategoryToActivity(
   return res.data;
 }
 
-export function addCategoryToActivityMutationOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+export function addCategoryToActivityMutationOptions<TContext = unknown>(
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = addCategoryToActivityMutationKey();
   return mutationOptions<
@@ -84,7 +84,7 @@ export function addCategoryToActivityMutationOptions(
       activityID: AddCategoryToActivityPathParams["activityID"];
       categoryName: AddCategoryToActivityPathParams["categoryName"];
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, activityID, categoryName }) => {
@@ -117,7 +117,7 @@ export function useAddCategoryToActivity<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

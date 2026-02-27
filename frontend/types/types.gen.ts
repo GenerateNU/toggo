@@ -1302,6 +1302,94 @@ export type ModelsS3HealthCheckResponse = {
   status?: string;
 };
 
+export type ModelsSearchActivitiesResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsActivityAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type integer | undefined
+   */
+  offset?: number;
+  /**
+   * @type integer | undefined
+   */
+  total?: number;
+};
+
+export type ModelsSearchMembersResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsMembershipAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type integer | undefined
+   */
+  offset?: number;
+  /**
+   * @type integer | undefined
+   */
+  total?: number;
+};
+
+export type ModelsTripAPIResponse = {
+  /**
+   * @type integer | undefined
+   */
+  budget_max?: number;
+  /**
+   * @type integer | undefined
+   */
+  budget_min?: number;
+  /**
+   * @type string | undefined
+   */
+  cover_image_url?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+};
+
+export type ModelsSearchTripsResult = {
+  /**
+   * @type array | undefined
+   */
+  items?: ModelsTripAPIResponse[];
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type integer | undefined
+   */
+  offset?: number;
+  /**
+   * @type integer | undefined
+   */
+  total?: number;
+};
+
 export type ModelsSendBulkNotificationRequest = {
   /**
    * @minLength 1
@@ -1383,37 +1471,6 @@ export type ModelsTrip = {
    * @type string | undefined
    */
   cover_image_id?: string;
-  /**
-   * @type string | undefined
-   */
-  created_at?: string;
-  /**
-   * @type string | undefined
-   */
-  id?: string;
-  /**
-   * @type string | undefined
-   */
-  name?: string;
-  /**
-   * @type string | undefined
-   */
-  updated_at?: string;
-};
-
-export type ModelsTripAPIResponse = {
-  /**
-   * @type integer | undefined
-   */
-  budget_max?: number;
-  /**
-   * @type integer | undefined
-   */
-  budget_min?: number;
-  /**
-   * @type string | undefined
-   */
-  cover_image_url?: string;
   /**
    * @type string | undefined
    */
@@ -2206,6 +2263,197 @@ export type TypeaheadPlacesQuery = {
   Response: TypeaheadPlaces200;
   QueryParams: TypeaheadPlacesQueryParams;
   Errors: TypeaheadPlaces400 | TypeaheadPlaces500;
+};
+
+export type SearchTripsQueryParams = {
+  /**
+   * @description Search query (1-255 chars)
+   * @type string
+   */
+  q: string;
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Pagination offset (default 0)
+   * @type integer | undefined
+   */
+  offset?: number;
+};
+
+/**
+ * @description OK
+ */
+export type SearchTrips200 = ModelsSearchTripsResult;
+
+/**
+ * @description Bad Request
+ */
+export type SearchTrips400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type SearchTrips401 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SearchTrips422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SearchTrips500 = ErrsAPIError;
+
+export type SearchTripsQueryResponse = SearchTrips200;
+
+export type SearchTripsQuery = {
+  Response: SearchTrips200;
+  QueryParams: SearchTripsQueryParams;
+  Errors: SearchTrips400 | SearchTrips401 | SearchTrips422 | SearchTrips500;
+};
+
+export type SearchActivitiesPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+export type SearchActivitiesQueryParams = {
+  /**
+   * @description Search query (1-255 chars)
+   * @type string
+   */
+  q: string;
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Pagination offset (default 0)
+   * @type integer | undefined
+   */
+  offset?: number;
+};
+
+/**
+ * @description OK
+ */
+export type SearchActivities200 = ModelsSearchActivitiesResult;
+
+/**
+ * @description Bad Request
+ */
+export type SearchActivities400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type SearchActivities401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type SearchActivities404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SearchActivities422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SearchActivities500 = ErrsAPIError;
+
+export type SearchActivitiesQueryResponse = SearchActivities200;
+
+export type SearchActivitiesQuery = {
+  Response: SearchActivities200;
+  PathParams: SearchActivitiesPathParams;
+  QueryParams: SearchActivitiesQueryParams;
+  Errors:
+    | SearchActivities400
+    | SearchActivities401
+    | SearchActivities404
+    | SearchActivities422
+    | SearchActivities500;
+};
+
+export type SearchTripMembersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+export type SearchTripMembersQueryParams = {
+  /**
+   * @description Search query (1-255 chars)
+   * @type string
+   */
+  q: string;
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Pagination offset (default 0)
+   * @type integer | undefined
+   */
+  offset?: number;
+};
+
+/**
+ * @description OK
+ */
+export type SearchTripMembers200 = ModelsSearchMembersResult;
+
+/**
+ * @description Bad Request
+ */
+export type SearchTripMembers400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type SearchTripMembers401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type SearchTripMembers404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type SearchTripMembers422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type SearchTripMembers500 = ErrsAPIError;
+
+export type SearchTripMembersQueryResponse = SearchTripMembers200;
+
+export type SearchTripMembersQuery = {
+  Response: SearchTripMembers200;
+  PathParams: SearchTripMembersPathParams;
+  QueryParams: SearchTripMembersQueryParams;
+  Errors:
+    | SearchTripMembers400
+    | SearchTripMembers401
+    | SearchTripMembers404
+    | SearchTripMembers422
+    | SearchTripMembers500;
 };
 
 export type JoinTripByInvitePathParams = {

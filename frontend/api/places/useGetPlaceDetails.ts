@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPlaceDetailsMutationRequest,
   GetPlaceDetailsMutationResponse,
@@ -31,9 +31,9 @@ export type GetPlaceDetailsMutationKey = ReturnType<
  * {@link /api/v1/search/places/details}
  */
 export async function getPlaceDetails(
-  data?: GetPlaceDetailsMutationRequest,
+  data: GetPlaceDetailsMutationRequest,
   config: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -53,17 +53,17 @@ export async function getPlaceDetails(
   return res.data;
 }
 
-export function getPlaceDetailsMutationOptions(
+export function getPlaceDetailsMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = getPlaceDetailsMutationKey();
   return mutationOptions<
     GetPlaceDetailsMutationResponse,
     ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
-    { data?: GetPlaceDetailsMutationRequest },
-    typeof mutationKey
+    { data: GetPlaceDetailsMutationRequest },
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -82,11 +82,11 @@ export function useGetPlaceDetails<TContext>(
     mutation?: UseMutationOptions<
       GetPlaceDetailsMutationResponse,
       ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
-      { data?: GetPlaceDetailsMutationRequest },
+      { data: GetPlaceDetailsMutationRequest },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<GetPlaceDetailsMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -100,14 +100,14 @@ export function useGetPlaceDetails<TContext>(
   ) as UseMutationOptions<
     GetPlaceDetailsMutationResponse,
     ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
-    { data?: GetPlaceDetailsMutationRequest },
+    { data: GetPlaceDetailsMutationRequest },
     TContext
   >;
 
   return useMutation<
     GetPlaceDetailsMutationResponse,
     ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
-    { data?: GetPlaceDetailsMutationRequest },
+    { data: GetPlaceDetailsMutationRequest },
     TContext
   >(
     {
@@ -119,7 +119,7 @@ export function useGetPlaceDetails<TContext>(
   ) as UseMutationResult<
     GetPlaceDetailsMutationResponse,
     ResponseErrorConfig<GetPlaceDetails400 | GetPlaceDetails500>,
-    { data?: GetPlaceDetailsMutationRequest },
+    { data: GetPlaceDetailsMutationRequest },
     TContext
   >;
 }

@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetRankPollVotersQueryResponse,
   GetRankPollVotersPathParams,
@@ -45,7 +45,7 @@ export type GetRankPollVotersSuspenseQueryKey = ReturnType<
 export async function getRankPollVotersSuspense(
   tripID: GetRankPollVotersPathParams["tripID"],
   pollId: GetRankPollVotersPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -70,7 +70,7 @@ export async function getRankPollVotersSuspense(
 export function getRankPollVotersSuspenseQueryOptions(
   tripID: GetRankPollVotersPathParams["tripID"],
   pollId: GetRankPollVotersPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getRankPollVotersSuspenseQueryKey(tripID, pollId);
   return queryOptions<
@@ -88,7 +88,9 @@ export function getRankPollVotersSuspenseQueryOptions(
     enabled: !!(tripID && pollId),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getRankPollVotersSuspense(tripID, pollId, config);
     },
   });
@@ -120,7 +122,7 @@ export function useGetRankPollVotersSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

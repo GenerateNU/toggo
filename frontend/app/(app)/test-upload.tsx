@@ -3,7 +3,7 @@ import {
   useGetImageAllSizes,
   useUploadImage,
   useUploadProfilePicture,
-} from "@/api/files";
+} from "@/api/files/custom";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Button, Image, ScrollView, Text, View } from "react-native";

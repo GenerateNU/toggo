@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreatePitchMutationRequest,
   CreatePitchMutationResponse,
@@ -35,7 +35,7 @@ export async function createPitch(
   tripID: CreatePitchPathParams["tripID"],
   data: CreatePitchMutationRequest,
   config: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,9 +57,9 @@ export async function createPitch(
   return res.data;
 }
 
-export function createPitchMutationOptions(
+export function createPitchMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = createPitchMutationKey();
@@ -72,7 +72,7 @@ export function createPitchMutationOptions(
       tripID: CreatePitchPathParams["tripID"];
       data: CreatePitchMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -100,7 +100,7 @@ export function useCreatePitch<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

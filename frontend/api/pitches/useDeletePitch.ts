@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DeletePitchMutationResponse,
   DeletePitchPathParams,
@@ -32,7 +32,7 @@ export type DeletePitchMutationKey = ReturnType<typeof deletePitchMutationKey>;
 export async function deletePitch(
   tripID: DeletePitchPathParams["tripID"],
   pitchID: DeletePitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -48,8 +48,8 @@ export async function deletePitch(
   return res.data;
 }
 
-export function deletePitchMutationOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+export function deletePitchMutationOptions<TContext = unknown>(
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = deletePitchMutationKey();
   return mutationOptions<
@@ -59,7 +59,7 @@ export function deletePitchMutationOptions(
       tripID: DeletePitchPathParams["tripID"];
       pitchID: DeletePitchPathParams["pitchID"];
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, pitchID }) => {
@@ -84,7 +84,7 @@ export function useDeletePitch<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

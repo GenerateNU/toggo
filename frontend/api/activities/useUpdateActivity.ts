@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateActivityMutationRequest,
   UpdateActivityMutationResponse,
@@ -38,9 +38,9 @@ export type UpdateActivityMutationKey = ReturnType<
 export async function updateActivity(
   tripID: UpdateActivityPathParams["tripID"],
   activityID: UpdateActivityPathParams["activityID"],
-  data?: UpdateActivityMutationRequest,
+  data: UpdateActivityMutationRequest,
   config: Partial<RequestConfig<UpdateActivityMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -67,9 +67,9 @@ export async function updateActivity(
   return res.data;
 }
 
-export function updateActivityMutationOptions(
+export function updateActivityMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateActivityMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updateActivityMutationKey();
@@ -86,9 +86,9 @@ export function updateActivityMutationOptions(
     {
       tripID: UpdateActivityPathParams["tripID"];
       activityID: UpdateActivityPathParams["activityID"];
-      data?: UpdateActivityMutationRequest;
+      data: UpdateActivityMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, activityID, data }) => {
@@ -117,12 +117,12 @@ export function useUpdateActivity<TContext>(
       {
         tripID: UpdateActivityPathParams["tripID"];
         activityID: UpdateActivityPathParams["activityID"];
-        data?: UpdateActivityMutationRequest;
+        data: UpdateActivityMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateActivityMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -146,7 +146,7 @@ export function useUpdateActivity<TContext>(
     {
       tripID: UpdateActivityPathParams["tripID"];
       activityID: UpdateActivityPathParams["activityID"];
-      data?: UpdateActivityMutationRequest;
+      data: UpdateActivityMutationRequest;
     },
     TContext
   >;
@@ -164,7 +164,7 @@ export function useUpdateActivity<TContext>(
     {
       tripID: UpdateActivityPathParams["tripID"];
       activityID: UpdateActivityPathParams["activityID"];
-      data?: UpdateActivityMutationRequest;
+      data: UpdateActivityMutationRequest;
     },
     TContext
   >(
@@ -187,7 +187,7 @@ export function useUpdateActivity<TContext>(
     {
       tripID: UpdateActivityPathParams["tripID"];
       activityID: UpdateActivityPathParams["activityID"];
-      data?: UpdateActivityMutationRequest;
+      data: UpdateActivityMutationRequest;
     },
     TContext
   >;

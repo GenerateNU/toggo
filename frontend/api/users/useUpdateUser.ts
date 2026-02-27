@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
@@ -33,9 +33,9 @@ export type UpdateUserMutationKey = ReturnType<typeof updateUserMutationKey>;
  */
 export async function updateUser(
   userID: UpdateUserPathParams["userID"],
-  data?: UpdateUserMutationRequest,
+  data: UpdateUserMutationRequest,
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,9 +57,9 @@ export async function updateUser(
   return res.data;
 }
 
-export function updateUserMutationOptions(
+export function updateUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updateUserMutationKey();
@@ -68,11 +68,8 @@ export function updateUserMutationOptions(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    {
-      userID: UpdateUserPathParams["userID"];
-      data?: UpdateUserMutationRequest;
-    },
-    typeof mutationKey
+    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ userID, data }) => {
@@ -95,12 +92,12 @@ export function useUpdateUser<TContext>(
       >,
       {
         userID: UpdateUserPathParams["userID"];
-        data?: UpdateUserMutationRequest;
+        data: UpdateUserMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateUserMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -113,10 +110,7 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    {
-      userID: UpdateUserPathParams["userID"];
-      data?: UpdateUserMutationRequest;
-    },
+    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
     TContext
   >;
 
@@ -125,10 +119,7 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    {
-      userID: UpdateUserPathParams["userID"];
-      data?: UpdateUserMutationRequest;
-    },
+    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
     TContext
   >(
     {
@@ -142,10 +133,7 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    {
-      userID: UpdateUserPathParams["userID"];
-      data?: UpdateUserMutationRequest;
-    },
+    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
     TContext
   >;
 }

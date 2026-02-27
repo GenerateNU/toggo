@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateTripInviteMutationRequest,
   CreateTripInviteMutationResponse,
@@ -36,9 +36,9 @@ export type CreateTripInviteMutationKey = ReturnType<
  */
 export async function createTripInvite(
   tripID: CreateTripInvitePathParams["tripID"],
-  data?: CreateTripInviteMutationRequest,
+  data: CreateTripInviteMutationRequest,
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,9 +64,9 @@ export async function createTripInvite(
   return res.data;
 }
 
-export function createTripInviteMutationOptions(
+export function createTripInviteMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = createTripInviteMutationKey();
@@ -81,9 +81,9 @@ export function createTripInviteMutationOptions(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data?: CreateTripInviteMutationRequest;
+      data: CreateTripInviteMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -110,12 +110,12 @@ export function useCreateTripInvite<TContext>(
       >,
       {
         tripID: CreateTripInvitePathParams["tripID"];
-        data?: CreateTripInviteMutationRequest;
+        data: CreateTripInviteMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -137,7 +137,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data?: CreateTripInviteMutationRequest;
+      data: CreateTripInviteMutationRequest;
     },
     TContext
   >;
@@ -153,7 +153,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data?: CreateTripInviteMutationRequest;
+      data: CreateTripInviteMutationRequest;
     },
     TContext
   >(
@@ -174,7 +174,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data?: CreateTripInviteMutationRequest;
+      data: CreateTripInviteMutationRequest;
     },
     TContext
   >;

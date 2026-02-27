@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   ListPitchesQueryResponse,
   ListPitchesPathParams,
@@ -23,7 +23,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const listPitchesSuspenseQueryKey = (
   tripID: ListPitchesPathParams["tripID"],
-  params?: ListPitchesQueryParams,
+  params: ListPitchesQueryParams = {},
 ) =>
   [
     { url: "/api/v1/trips/:tripID/pitches", params: { tripID: tripID } },
@@ -42,7 +42,7 @@ export type ListPitchesSuspenseQueryKey = ReturnType<
 export async function listPitchesSuspense(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -62,7 +62,7 @@ export async function listPitchesSuspense(
 export function listPitchesSuspenseQueryOptions(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = listPitchesSuspenseQueryKey(tripID, params);
   return queryOptions<
@@ -74,7 +74,9 @@ export function listPitchesSuspenseQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return listPitchesSuspense(tripID, params, config);
     },
   });
@@ -100,7 +102,7 @@ export function useListPitchesSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

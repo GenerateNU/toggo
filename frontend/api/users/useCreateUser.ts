@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateUserMutationRequest,
   CreateUserMutationResponse,
@@ -31,7 +31,7 @@ export type CreateUserMutationKey = ReturnType<typeof createUserMutationKey>;
 export async function createUser(
   data: CreateUserMutationRequest,
   config: Partial<RequestConfig<CreateUserMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -51,9 +51,9 @@ export async function createUser(
   return res.data;
 }
 
-export function createUserMutationOptions(
+export function createUserMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateUserMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = createUserMutationKey();
@@ -61,7 +61,7 @@ export function createUserMutationOptions(
     CreateUserMutationResponse,
     ResponseErrorConfig<CreateUser400 | CreateUser422 | CreateUser500>,
     { data: CreateUserMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -84,7 +84,7 @@ export function useCreateUser<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateUserMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

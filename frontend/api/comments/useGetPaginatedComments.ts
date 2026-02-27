@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPaginatedCommentsQueryResponse,
   GetPaginatedCommentsPathParams,
@@ -27,7 +27,7 @@ export const getPaginatedCommentsQueryKey = (
   tripID: GetPaginatedCommentsPathParams["tripID"],
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
-  params?: GetPaginatedCommentsQueryParams,
+  params: GetPaginatedCommentsQueryParams = {},
 ) =>
   [
     {
@@ -51,7 +51,7 @@ export async function getPaginatedComments(
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
   params?: GetPaginatedCommentsQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -79,7 +79,7 @@ export function getPaginatedCommentsQueryOptions(
   entityType: GetPaginatedCommentsPathParams["entityType"],
   entityID: GetPaginatedCommentsPathParams["entityID"],
   params?: GetPaginatedCommentsQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getPaginatedCommentsQueryKey(
     tripID,
@@ -102,7 +102,9 @@ export function getPaginatedCommentsQueryOptions(
     enabled: !!(tripID && entityType && entityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPaginatedComments(tripID, entityType, entityID, params, config);
     },
   });
@@ -138,7 +140,7 @@ export function useGetPaginatedComments<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

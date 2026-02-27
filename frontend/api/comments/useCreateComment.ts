@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   CreateCommentMutationRequest,
   CreateCommentMutationResponse,
@@ -36,7 +36,7 @@ export type CreateCommentMutationKey = ReturnType<
 export async function createComment(
   data: CreateCommentMutationRequest,
   config: Partial<RequestConfig<CreateCommentMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -62,9 +62,9 @@ export async function createComment(
   return res.data;
 }
 
-export function createCommentMutationOptions(
+export function createCommentMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<CreateCommentMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = createCommentMutationKey();
@@ -78,7 +78,7 @@ export function createCommentMutationOptions(
       | CreateComment500
     >,
     { data: CreateCommentMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -107,7 +107,7 @@ export function useCreateComment<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateCommentMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

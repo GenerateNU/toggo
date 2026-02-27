@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdatePollMutationRequest,
   UpdatePollMutationResponse,
@@ -36,9 +36,9 @@ export type UpdatePollMutationKey = ReturnType<typeof updatePollMutationKey>;
 export async function updatePoll(
   tripID: UpdatePollPathParams["tripID"],
   pollId: UpdatePollPathParams["pollId"],
-  data?: UpdatePollMutationRequest,
+  data: UpdatePollMutationRequest,
   config: Partial<RequestConfig<UpdatePollMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -65,9 +65,9 @@ export async function updatePoll(
   return res.data;
 }
 
-export function updatePollMutationOptions(
+export function updatePollMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdatePollMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updatePollMutationKey();
@@ -84,9 +84,9 @@ export function updatePollMutationOptions(
     {
       tripID: UpdatePollPathParams["tripID"];
       pollId: UpdatePollPathParams["pollId"];
-      data?: UpdatePollMutationRequest;
+      data: UpdatePollMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -115,12 +115,12 @@ export function useUpdatePoll<TContext>(
       {
         tripID: UpdatePollPathParams["tripID"];
         pollId: UpdatePollPathParams["pollId"];
-        data?: UpdatePollMutationRequest;
+        data: UpdatePollMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdatePollMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -141,7 +141,7 @@ export function useUpdatePoll<TContext>(
     {
       tripID: UpdatePollPathParams["tripID"];
       pollId: UpdatePollPathParams["pollId"];
-      data?: UpdatePollMutationRequest;
+      data: UpdatePollMutationRequest;
     },
     TContext
   >;
@@ -159,7 +159,7 @@ export function useUpdatePoll<TContext>(
     {
       tripID: UpdatePollPathParams["tripID"];
       pollId: UpdatePollPathParams["pollId"];
-      data?: UpdatePollMutationRequest;
+      data: UpdatePollMutationRequest;
     },
     TContext
   >(
@@ -182,7 +182,7 @@ export function useUpdatePoll<TContext>(
     {
       tripID: UpdatePollPathParams["tripID"];
       pollId: UpdatePollPathParams["pollId"];
-      data?: UpdatePollMutationRequest;
+      data: UpdatePollMutationRequest;
     },
     TContext
   >;

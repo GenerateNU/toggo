@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPitchQueryResponse,
   GetPitchPathParams,
@@ -43,7 +43,7 @@ export type GetPitchSuspenseQueryKey = ReturnType<
 export async function getPitchSuspense(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -62,7 +62,7 @@ export async function getPitchSuspense(
 export function getPitchSuspenseQueryOptions(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getPitchSuspenseQueryKey(tripID, pitchID);
   return queryOptions<
@@ -74,7 +74,9 @@ export function getPitchSuspenseQueryOptions(
     enabled: !!(tripID && pitchID),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPitchSuspense(tripID, pitchID, config);
     },
   });
@@ -100,7 +102,7 @@ export function useGetPitchSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

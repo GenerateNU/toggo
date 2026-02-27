@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   PromoteToAdminMutationResponse,
   PromoteToAdminPathParams,
@@ -35,7 +35,7 @@ export type PromoteToAdminMutationKey = ReturnType<
 export async function promoteToAdmin(
   tripID: PromoteToAdminPathParams["tripID"],
   userID: PromoteToAdminPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -56,8 +56,8 @@ export async function promoteToAdmin(
   return res.data;
 }
 
-export function promoteToAdminMutationOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+export function promoteToAdminMutationOptions<TContext = unknown>(
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = promoteToAdminMutationKey();
   return mutationOptions<
@@ -72,7 +72,7 @@ export function promoteToAdminMutationOptions(
       tripID: PromoteToAdminPathParams["tripID"];
       userID: PromoteToAdminPathParams["userID"];
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, userID }) => {
@@ -102,7 +102,7 @@ export function usePromoteToAdmin<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};
