@@ -1,4 +1,4 @@
-package utilities
+package utilities //nolint:revive
 
 import (
 	"fmt"

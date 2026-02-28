@@ -32,36 +32,36 @@ export default function Home() {
       gap="md"
       backgroundColor="white"
     >
-       <Box
-          marginTop="md"
-          padding="md"
-          borderRadius="sm"
-          backgroundColor="surfaceCard"
-          alignSelf="stretch"
-          gap="xs"
+      <Box
+        marginTop="md"
+        padding="md"
+        borderRadius="sm"
+        backgroundColor="surfaceCard"
+        alignSelf="stretch"
+        gap="xs"
+      >
+        <Text variant="smLabel" color="textQuaternary">
+          Debug: JWT
+        </Text>
+        <Text
+          variant="smLabel"
+          color="textQuaternary"
+          numberOfLines={3}
+          style={{ fontFamily: "monospace" }}
         >
-          <Text variant="smLabel" color="textQuaternary">
-            Debug: JWT
-          </Text>
-          <Text
-            variant="smLabel"
-            color="textQuaternary"
-            numberOfLines={3}
-            style={{ fontFamily: "monospace" }}
-          >
-            {jwt ?? "Not signed in"}
-          </Text>
-          {jwt && (
-            <Box alignSelf="flex-start">
-              <Button
-                layout="textOnly"
-                label="Copy JWT"
-                variant="Secondary"
-                onPress={copyJwt}
-              />
-            </Box>
-          )}
-        </Box>
+          {jwt ?? "Not signed in"}
+        </Text>
+        {jwt && (
+          <Box alignSelf="flex-start">
+            <Button
+              layout="textOnly"
+              label="Copy JWT"
+              variant="Secondary"
+              onPress={copyJwt}
+            />
+          </Box>
+        )}
+      </Box>
       <Button
         layout="textOnly"
         label="Test Image Upload"

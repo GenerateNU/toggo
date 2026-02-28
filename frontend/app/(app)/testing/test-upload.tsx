@@ -190,7 +190,9 @@ export default function TestUploadScreen() {
               },
             );
           } catch (e) {
-            alert("Upload to S3 failed: " + (e instanceof Error ? e.message : e));
+            alert(
+              "Upload to S3 failed: " + (e instanceof Error ? e.message : e),
+            );
           }
         },
         onError: (err) =>
@@ -233,7 +235,9 @@ export default function TestUploadScreen() {
               },
             );
           } catch (e) {
-            alert("Upload to S3 failed: " + (e instanceof Error ? e.message : e));
+            alert(
+              "Upload to S3 failed: " + (e instanceof Error ? e.message : e),
+            );
           }
         },
         onError: (err) =>
@@ -359,7 +363,10 @@ export default function TestUploadScreen() {
             </Text>
             <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
               {galleryAllSizes.files.map((sizeData) => (
-                <View key={sizeData.size ?? ""} style={{ alignItems: "center" }}>
+                <View
+                  key={sizeData.size ?? ""}
+                  style={{ alignItems: "center" }}
+                >
                   <Text style={{ fontSize: 10, marginBottom: 4 }}>
                     {sizeData.size}
                   </Text>

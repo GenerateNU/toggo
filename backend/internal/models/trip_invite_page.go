@@ -4,10 +4,10 @@ import "html/template"
 
 // TripInvitePageData contains data rendered by the invite landing page.
 type TripInvitePageData struct {
-	TripName         string
-	InviteCode       string
-	DeepLink         template.URL
-	CanonicalURL     string
+	TripName                 string
+	InviteCode               string
+	DeepLink                 template.URL
+	CanonicalURL             string
 	CoverImageURL            *string
 	InviterName              string
 	InviterProfilePictureURL *string
