@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   UpdateTripMutationRequest,
   UpdateTripMutationResponse,
@@ -34,9 +34,9 @@ export type UpdateTripMutationKey = ReturnType<typeof updateTripMutationKey>;
  */
 export async function updateTrip(
   tripID: UpdateTripPathParams["tripID"],
-  data?: UpdateTripMutationRequest,
+  data: UpdateTripMutationRequest,
   config: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -62,9 +62,9 @@ export async function updateTrip(
   return res.data;
 }
 
-export function updateTripMutationOptions(
+export function updateTripMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = updateTripMutationKey();
@@ -77,11 +77,8 @@ export function updateTripMutationOptions(
       | UpdateTrip422
       | UpdateTrip500
     >,
-    {
-      tripID: UpdateTripPathParams["tripID"];
-      data?: UpdateTripMutationRequest;
-    },
-    typeof mutationKey
+    { tripID: UpdateTripPathParams["tripID"]; data: UpdateTripMutationRequest },
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -108,12 +105,12 @@ export function useUpdateTrip<TContext>(
       >,
       {
         tripID: UpdateTripPathParams["tripID"];
-        data?: UpdateTripMutationRequest;
+        data: UpdateTripMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateTripMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {
@@ -130,10 +127,7 @@ export function useUpdateTrip<TContext>(
       | UpdateTrip422
       | UpdateTrip500
     >,
-    {
-      tripID: UpdateTripPathParams["tripID"];
-      data?: UpdateTripMutationRequest;
-    },
+    { tripID: UpdateTripPathParams["tripID"]; data: UpdateTripMutationRequest },
     TContext
   >;
 
@@ -146,10 +140,7 @@ export function useUpdateTrip<TContext>(
       | UpdateTrip422
       | UpdateTrip500
     >,
-    {
-      tripID: UpdateTripPathParams["tripID"];
-      data?: UpdateTripMutationRequest;
-    },
+    { tripID: UpdateTripPathParams["tripID"]; data: UpdateTripMutationRequest },
     TContext
   >(
     {
@@ -167,10 +158,7 @@ export function useUpdateTrip<TContext>(
       | UpdateTrip422
       | UpdateTrip500
     >,
-    {
-      tripID: UpdateTripPathParams["tripID"];
-      data?: UpdateTripMutationRequest;
-    },
+    { tripID: UpdateTripPathParams["tripID"]; data: UpdateTripMutationRequest },
     TContext
   >;
 }

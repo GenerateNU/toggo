@@ -1,13 +1,11 @@
 import { useUser } from "@/contexts/user";
-import { Box } from "@/design-system/base/box";
-import { Button } from "@/design-system/base/button";
-import { Text } from "@/design-system/base/text";
+import { Box, Button, Text } from "@/design-system";
 import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, TextInput } from "react-native";
+import { TextInput } from "react-native";
 import { z } from "zod";
 
 const OTP_LENGTH = 6;
@@ -35,11 +33,9 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
     .concat(Array(OTP_LENGTH - value.length).fill(""));
 
   const handleChange = (text: string, index: number) => {
-    // Only allow numeric input
     const numericText = text.replace(/[^0-9]/g, "");
 
     if (numericText.length === 0) {
-      // Handle deletion
       const newDigits = [...digits];
       newDigits[index] = "";
       onChange(newDigits.join(""));
@@ -49,12 +45,8 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
     if (numericText.length === 1) {
       const newDigits = [...digits];
       newDigits[index] = numericText;
-      const newValue = newDigits.join("");
-      onChange(newValue);
-
-      if (index < OTP_LENGTH - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
+      onChange(newDigits.join(""));
+      if (index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
     } else if (numericText.length === OTP_LENGTH) {
       onChange(numericText);
       inputRefs.current[OTP_LENGTH - 1]?.focus();
@@ -75,19 +67,16 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
   };
 
   return (
-    <Box flexDirection="row" justifyContent="space-between" gap="s">
+    <Box flexDirection="row" justifyContent="space-between" gap="sm">
       {digits.slice(0, OTP_LENGTH).map((digit, index) => (
         <Box
           key={index}
           flex={1}
           aspectRatio={1}
-          maxWidth={50}
           borderWidth={2}
-          borderColor={
-            hasError ? "sunsetOrange" : digit ? "forestGreen" : "mountainGray"
-          }
-          borderRadius="s"
-          backgroundColor="cloudWhite"
+          borderColor={hasError ? "error" : digit ? "success" : "borderPrimary"}
+          borderRadius="sm"
+          backgroundColor="white"
           justifyContent="center"
           alignItems="center"
         >
@@ -116,7 +105,7 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
   );
 }
 
-export function OTPVerificationForm() {
+export default function OTPVerificationForm() {
   const { verifyOTP, sendOTP, isPending, refreshCurrentUser } = useUser();
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -125,20 +114,15 @@ export function OTPVerificationForm() {
   const [error, setError] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!phoneNumber) {
-      router.replace("/(auth)/login");
-    }
+    if (!phoneNumber) router.replace("/(auth)/login");
   }, [phoneNumber, router]);
 
   useEffect(() => {
     if (timer <= 0) return;
-
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-
+    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     return () => clearInterval(interval);
   }, [timer]);
 
@@ -158,11 +142,13 @@ export function OTPVerificationForm() {
   const onSubmit = async (data: OTPFormData) => {
     setError(null);
     if (!phoneNumber) return;
+    setIsSubmitting(true);
 
     try {
       const normalized = normalizePhone(phoneNumber);
       if (!normalized) {
         setError("Invalid phone number");
+        setIsSubmitting(false);
         return;
       }
 
@@ -170,8 +156,6 @@ export function OTPVerificationForm() {
 
       try {
         const user = await refreshCurrentUser();
-
-        // If the profile is incomplete, send to completion even if the record exists
         if (!user?.name || !user?.username) {
           router.replace({
             pathname: "/(auth)/complete-profile",
@@ -179,8 +163,6 @@ export function OTPVerificationForm() {
           });
           return;
         }
-
-        return;
       } catch (err: any) {
         const status =
           err?.status ?? err?.data?.status ?? err?.response?.status;
@@ -188,9 +170,9 @@ export function OTPVerificationForm() {
           setError(
             err?.message || "Failed to fetch account. Please try again.",
           );
+          setIsSubmitting(false);
           return;
         }
-
         router.replace({
           pathname: "/(auth)/complete-profile",
           params: { phone: normalized.e164 },
@@ -198,6 +180,7 @@ export function OTPVerificationForm() {
       }
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
+      setIsSubmitting(false);
     }
   };
 
@@ -221,21 +204,20 @@ export function OTPVerificationForm() {
   };
 
   return (
-    <Box gap="m">
+    <Box gap="md">
       {error && (
-        <Box backgroundColor="sunsetOrange" padding="s" borderRadius="s">
-          <Text variant="caption" color="cloudWhite">
+        <Box backgroundColor="error" padding="sm" borderRadius="sm">
+          <Text variant="smParagraph" color="white">
             {error}
           </Text>
         </Box>
       )}
-
       <Controller
         name="otp"
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
-          <Box gap="s">
-            <Text variant="caption" color="forestGreen">
+          <Box gap="sm">
+            <Text variant="smLabel" color="textSecondary">
               Enter OTP sent to {phoneNumber}
             </Text>
             <OTPInput
@@ -245,36 +227,35 @@ export function OTPVerificationForm() {
               hasError={!!formState.errors.otp}
             />
             {formState.errors.otp && (
-              <Text variant="caption" color="sunsetOrange">
+              <Text variant="xsParagraph" color="error">
                 {formState.errors.otp.message}
               </Text>
             )}
           </Box>
         )}
       />
-
       <Button
+        layout="textOnly"
+        label="Verify OTP"
+        variant="Primary"
+        loading={isSubmitting}
+        loadingLabel="Verifying..."
+        disabled={!formState.isValid || isSubmitting}
         onPress={handleSubmit(onSubmit)}
-        disabled={!formState.isValid || isPending}
-      >
-        {isPending ? (
-          <ActivityIndicator color="cloudWhite" />
-        ) : (
-          <Text variant="caption" color="cloudWhite">
-            Verify OTP
-          </Text>
-        )}
-      </Button>
-
-      <Text variant="caption" color="mountainGray" mt="s">
+      />
+      <Text variant="smParagraph" color="textSecondary">
         {canResend ? "You can resend the code now." : `Resend OTP in ${timer}s`}
       </Text>
 
-      <Button onPress={handleResendOTP} disabled={!canResend || isPending}>
-        <Text variant="caption" color="cloudWhite">
-          Resend OTP
-        </Text>
-      </Button>
+      <Button
+        layout="textOnly"
+        label="Resend OTP"
+        variant="Tertiary"
+        loading={isPending}
+        loadingLabel="Sending..."
+        disabled={!canResend || isPending}
+        onPress={handleResendOTP}
+      />
     </Box>
   );
 }

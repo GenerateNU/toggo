@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPollQueryResponse,
   GetPollPathParams,
@@ -45,7 +45,7 @@ export type GetPollSuspenseQueryKey = ReturnType<
 export async function getPollSuspense(
   tripID: GetPollPathParams["tripID"],
   pollId: GetPollPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -66,7 +66,7 @@ export async function getPollSuspense(
 export function getPollSuspenseQueryOptions(
   tripID: GetPollPathParams["tripID"],
   pollId: GetPollPathParams["pollId"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getPollSuspenseQueryKey(tripID, pollId);
   return queryOptions<
@@ -80,7 +80,9 @@ export function getPollSuspenseQueryOptions(
     enabled: !!(tripID && pollId),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPollSuspense(tripID, pollId, config);
     },
   });
@@ -108,7 +110,7 @@ export function useGetPollSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

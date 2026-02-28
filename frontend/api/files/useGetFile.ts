@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetFileQueryResponse,
   GetFilePathParams,
@@ -41,7 +41,7 @@ export type GetFileQueryKey = ReturnType<typeof getFileQueryKey>;
 export async function getFile(
   imageId: GetFilePathParams["imageId"],
   size: GetFilePathParams["size"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -60,7 +60,7 @@ export async function getFile(
 export function getFileQueryOptions(
   imageId: GetFilePathParams["imageId"],
   size: GetFilePathParams["size"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getFileQueryKey(imageId, size);
   return queryOptions<
@@ -72,7 +72,9 @@ export function getFileQueryOptions(
     enabled: !!(imageId && size),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getFile(imageId, size, config);
     },
   });
@@ -100,7 +102,7 @@ export function useGetFile<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

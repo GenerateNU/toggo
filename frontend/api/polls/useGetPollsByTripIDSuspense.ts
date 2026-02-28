@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPollsByTripIDQueryResponse,
   GetPollsByTripIDPathParams,
@@ -24,7 +24,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getPollsByTripIDSuspenseQueryKey = (
   tripID: GetPollsByTripIDPathParams["tripID"],
-  params?: GetPollsByTripIDQueryParams,
+  params: GetPollsByTripIDQueryParams = {},
 ) =>
   [
     { url: "/api/v1/trips/:tripID/vote-polls", params: { tripID: tripID } },
@@ -43,7 +43,7 @@ export type GetPollsByTripIDSuspenseQueryKey = ReturnType<
 export async function getPollsByTripIDSuspense(
   tripID: GetPollsByTripIDPathParams["tripID"],
   params?: GetPollsByTripIDQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -68,7 +68,7 @@ export async function getPollsByTripIDSuspense(
 export function getPollsByTripIDSuspenseQueryOptions(
   tripID: GetPollsByTripIDPathParams["tripID"],
   params?: GetPollsByTripIDQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getPollsByTripIDSuspenseQueryKey(tripID, params);
   return queryOptions<
@@ -85,7 +85,9 @@ export function getPollsByTripIDSuspenseQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPollsByTripIDSuspense(tripID, params, config);
     },
   });
@@ -116,7 +118,7 @@ export function useGetPollsByTripIDSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

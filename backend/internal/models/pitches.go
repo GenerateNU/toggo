@@ -9,22 +9,22 @@ import (
 
 type TripPitch struct {
 	bun.BaseModel `bun:"table:trip_pitches"` // need to specify table name so bun doesn't mess up and use wrong default (looks for trip_pitch insetead)
-	ID         uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
-	TripID     uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
-	UserID     uuid.UUID  `bun:"user_id,type:uuid,notnull" json:"user_id"`
-	Title      string     `bun:"title,notnull" json:"title"`
-	Description string    `bun:"description" json:"description"`
-	AudioS3Key string     `bun:"audio_s3_key,notnull" json:"audio_s3_key"`
-	Duration   *int       `bun:"duration" json:"duration,omitempty"`
-	CreatedAt  time.Time  `bun:"created_at,nullzero" json:"created_at"`
-	UpdatedAt  time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
+	ID            uuid.UUID                  `bun:"id,pk,type:uuid" json:"id"`
+	TripID        uuid.UUID                  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
+	UserID        uuid.UUID                  `bun:"user_id,type:uuid,notnull" json:"user_id"`
+	Title         string                     `bun:"title,notnull" json:"title"`
+	Description   string                     `bun:"description" json:"description"`
+	AudioS3Key    string                     `bun:"audio_s3_key,notnull" json:"audio_s3_key"`
+	Duration      *int                       `bun:"duration" json:"duration,omitempty"`
+	CreatedAt     time.Time                  `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt     time.Time                  `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 type CreatePitchRequest struct {
-	Title          string `validate:"required,min=1" json:"title"`
-	Description    string `validate:"omitempty" json:"description"`
-	ContentType    string `validate:"required,min=1" json:"content_type"`
-	ContentLength  int64  `validate:"required,gte=1" json:"content_length"`
+	Title         string `validate:"required,min=1" json:"title"`
+	Description   string `validate:"omitempty" json:"description"`
+	ContentType   string `validate:"required,min=1" json:"content_type"`
+	ContentLength int64  `validate:"required,gte=1" json:"content_length"`
 }
 
 type UpdatePitchRequest struct {

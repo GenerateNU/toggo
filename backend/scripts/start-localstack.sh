@@ -8,7 +8,7 @@ echo "Waiting for LocalStack to be ready..."
 localstack wait
 
 echo "Creating S3 bucket via Doppler..."
-doppler run -- bash -c '
+doppler run --config dev -- bash -c '
   if [[ -z "$S3_BUCKET_NAME" ]]; then
     echo "❌ S3_BUCKET_NAME is not set in Doppler"
     exit 1

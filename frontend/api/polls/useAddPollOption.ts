@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   AddPollOptionMutationRequest,
   AddPollOptionMutationResponse,
@@ -41,7 +41,7 @@ export async function addPollOption(
   pollId: AddPollOptionPathParams["pollId"],
   data: AddPollOptionMutationRequest,
   config: Partial<RequestConfig<AddPollOptionMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -69,9 +69,9 @@ export async function addPollOption(
   return res.data;
 }
 
-export function addPollOptionMutationOptions(
+export function addPollOptionMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<AddPollOptionMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = addPollOptionMutationKey();
@@ -91,7 +91,7 @@ export function addPollOptionMutationOptions(
       pollId: AddPollOptionPathParams["pollId"];
       data: AddPollOptionMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -126,7 +126,7 @@ export function useAddPollOption<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<AddPollOptionMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

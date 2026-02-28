@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   ListPitchesQueryResponse,
   ListPitchesPathParams,
@@ -23,7 +23,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const listPitchesQueryKey = (
   tripID: ListPitchesPathParams["tripID"],
-  params?: ListPitchesQueryParams,
+  params: ListPitchesQueryParams = {},
 ) =>
   [
     { url: "/api/v1/trips/:tripID/pitches", params: { tripID: tripID } },
@@ -40,7 +40,7 @@ export type ListPitchesQueryKey = ReturnType<typeof listPitchesQueryKey>;
 export async function listPitches(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -60,7 +60,7 @@ export async function listPitches(
 export function listPitchesQueryOptions(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = listPitchesQueryKey(tripID, params);
   return queryOptions<
@@ -72,7 +72,9 @@ export function listPitchesQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return listPitches(tripID, params, config);
     },
   });
@@ -100,7 +102,7 @@ export function useListPitches<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

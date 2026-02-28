@@ -1,4 +1,5 @@
 import { useUser } from "@/contexts/user";
+import { BackButton } from "@/design-system";
 import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {
@@ -12,23 +13,31 @@ const Layout = () => {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ headerShown: false, gestureEnabled: false }}
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+          headerLeft: () => <BackButton />,
+        }}
       />
       <Stack.Screen
-        name="test-realtime"
-        options={{ title: "Realtime Test", headerShown: true }}
+        name="testing"
+        options={{
+          headerTransparent: true,
+          headerShown: false,
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
       />
       <Stack.Screen
-        name="test-poll"
-        options={{ title: "Poll API Test", headerShown: true }}
-      />
-      <Stack.Screen
-        name="test-maps"
-        options={{ title: "Google Maps API Test", headerShown: true }}
-      />
-      <Stack.Screen
-        name="test-rank-poll"
-        options={{ title: "Rank Poll API Test", headerShown: true }}
+        name="ui-kit"
+        options={{
+          headerTransparent: true,
+          headerShown: false,
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
       />
     </Stack>
   );

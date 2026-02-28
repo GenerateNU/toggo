@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   DeleteCommentMutationResponse,
   DeleteCommentPathParams,
@@ -34,7 +34,7 @@ export type DeleteCommentMutationKey = ReturnType<
  */
 export async function deleteComment(
   commentID: DeleteCommentPathParams["commentID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -52,8 +52,8 @@ export async function deleteComment(
   return res.data;
 }
 
-export function deleteCommentMutationOptions(
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+export function deleteCommentMutationOptions<TContext = unknown>(
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const mutationKey = deleteCommentMutationKey();
   return mutationOptions<
@@ -62,7 +62,7 @@ export function deleteCommentMutationOptions(
       DeleteComment400 | DeleteComment401 | DeleteComment404 | DeleteComment500
     >,
     { commentID: DeleteCommentPathParams["commentID"] },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ commentID }) => {
@@ -89,7 +89,7 @@ export function useDeleteComment<TContext>(
       { commentID: DeleteCommentPathParams["commentID"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

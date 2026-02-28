@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   AddMemberMutationRequest,
   AddMemberMutationResponse,
@@ -33,7 +33,7 @@ export type AddMemberMutationKey = ReturnType<typeof addMemberMutationKey>;
 export async function addMember(
   data: AddMemberMutationRequest,
   config: Partial<RequestConfig<AddMemberMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -55,9 +55,9 @@ export async function addMember(
   return res.data;
 }
 
-export function addMemberMutationOptions(
+export function addMemberMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<AddMemberMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = addMemberMutationKey();
@@ -67,7 +67,7 @@ export function addMemberMutationOptions(
       AddMember400 | AddMember401 | AddMember422 | AddMember500
     >,
     { data: AddMemberMutationRequest },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -92,7 +92,7 @@ export function useAddMember<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<AddMemberMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

@@ -41,10 +41,10 @@ func createPitch(t *testing.T, app *fiber.App, userID, tripID string, title, con
 			Method: testkit.POST,
 			UserID: &userID,
 			Body: models.CreatePitchRequest{
-				Title:          title,
-				Description:    "",
-				ContentType:    contentType,
-				ContentLength:  1024,
+				Title:         title,
+				Description:   "",
+				ContentType:   contentType,
+				ContentLength: 1024,
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -76,10 +76,10 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:          "My pitch",
-					Description:    "Optional desc",
-					ContentType:    "audio/mpeg",
-					ContentLength:  1024,
+					Title:         "My pitch",
+					Description:   "Optional desc",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
 				},
 			}).
 			AssertStatus(http.StatusCreated).
@@ -105,9 +105,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:          "Pitch",
-					ContentType:    "audio/mpeg",
-					ContentLength:  1024,
+					Title:         "Pitch",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
 				},
 			}).
 			AssertStatus(http.StatusBadRequest)
@@ -121,9 +121,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:          "",
-					ContentType:    "audio/mpeg",
-					ContentLength:  1024,
+					Title:         "",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
 				},
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
@@ -138,9 +138,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &otherUser,
 				Body: models.CreatePitchRequest{
-					Title:          "Pitch",
-					ContentType:    "audio/mpeg",
-					ContentLength:  1024,
+					Title:         "Pitch",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
 				},
 			}).
 			AssertStatus(http.StatusNotFound)
@@ -155,9 +155,9 @@ func TestPitchCreate(t *testing.T) {
 				Method: testkit.POST,
 				UserID: &userID,
 				Body: models.CreatePitchRequest{
-					Title:          "Pitch",
-					ContentType:    "audio/mpeg",
-					ContentLength:  services.MaxPitchAudioSize + 1,
+					Title:         "Pitch",
+					ContentType:   "audio/mpeg",
+					ContentLength: services.MaxPitchAudioSize + 1,
 				},
 			}).
 			AssertStatus(http.StatusBadRequest)

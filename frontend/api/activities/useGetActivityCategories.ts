@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetActivityCategoriesQueryResponse,
   GetActivityCategoriesPathParams,
@@ -26,7 +26,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 export const getActivityCategoriesQueryKey = (
   tripID: GetActivityCategoriesPathParams["tripID"],
   activityID: GetActivityCategoriesPathParams["activityID"],
-  params?: GetActivityCategoriesQueryParams,
+  params: GetActivityCategoriesQueryParams = {},
 ) =>
   [
     {
@@ -49,7 +49,7 @@ export async function getActivityCategories(
   tripID: GetActivityCategoriesPathParams["tripID"],
   activityID: GetActivityCategoriesPathParams["activityID"],
   params?: GetActivityCategoriesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -76,7 +76,7 @@ export function getActivityCategoriesQueryOptions(
   tripID: GetActivityCategoriesPathParams["tripID"],
   activityID: GetActivityCategoriesPathParams["activityID"],
   params?: GetActivityCategoriesQueryParams,
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getActivityCategoriesQueryKey(tripID, activityID, params);
   return queryOptions<
@@ -94,7 +94,9 @@ export function getActivityCategoriesQueryOptions(
     enabled: !!(tripID && activityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getActivityCategories(tripID, activityID, params, config);
     },
   });
@@ -129,7 +131,7 @@ export function useGetActivityCategories<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

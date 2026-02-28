@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   AddRankPollOptionMutationRequest,
   AddRankPollOptionMutationResponse,
@@ -41,7 +41,7 @@ export async function addRankPollOption(
   pollId: AddRankPollOptionPathParams["pollId"],
   data: AddRankPollOptionMutationRequest,
   config: Partial<RequestConfig<AddRankPollOptionMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -69,9 +69,9 @@ export async function addRankPollOption(
   return res.data;
 }
 
-export function addRankPollOptionMutationOptions(
+export function addRankPollOptionMutationOptions<TContext = unknown>(
   config: Partial<RequestConfig<AddRankPollOptionMutationRequest>> & {
-    client?: typeof fetch;
+    client?: Client;
   } = {},
 ) {
   const mutationKey = addRankPollOptionMutationKey();
@@ -91,7 +91,7 @@ export function addRankPollOptionMutationOptions(
       pollId: AddRankPollOptionPathParams["pollId"];
       data: AddRankPollOptionMutationRequest;
     },
-    typeof mutationKey
+    TContext
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -126,7 +126,7 @@ export function useAddRankPollOption<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<AddRankPollOptionMutationRequest>> & {
-      client?: typeof fetch;
+      client?: Client;
     };
   } = {},
 ) {

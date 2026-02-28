@@ -4,7 +4,7 @@
  */
 
 import fetch from "../client";
-import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetPitchQueryResponse,
   GetPitchPathParams,
@@ -41,7 +41,7 @@ export type GetPitchQueryKey = ReturnType<typeof getPitchQueryKey>;
 export async function getPitch(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -60,7 +60,7 @@ export async function getPitch(
 export function getPitchQueryOptions(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
+  config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const queryKey = getPitchQueryKey(tripID, pitchID);
   return queryOptions<
@@ -72,7 +72,9 @@ export function getPitchQueryOptions(
     enabled: !!(tripID && pitchID),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPitch(tripID, pitchID, config);
     },
   });
@@ -100,7 +102,7 @@ export function useGetPitch<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: typeof fetch };
+    client?: Partial<RequestConfig> & { client?: Client };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
