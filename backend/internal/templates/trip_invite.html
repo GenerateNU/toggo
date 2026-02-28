@@ -32,12 +32,12 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(180deg, #ffffff 0%, #ffffff 40%, #fff5eb 60%, #ffe8d0 80%, #ffd4a8 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #ffffff 35%, #fffcf8 50%, #fff5eb 65%, #ffedda 80%, #ffe4c8 100%);
     }
     .cover-section {
       position: relative;
       width: 100%;
-      height: 220px;
+      height: 180px;
       flex-shrink: 0;
       overflow: hidden;
     }
@@ -69,7 +69,7 @@
     }
     .card-section {
       position: relative;
-      margin-top: -24px;
+      margin-top: -32px;
       background: white;
       border-radius: 1.25rem 1.25rem 0 0;
       padding: 24px 20px 20px;
@@ -226,7 +226,7 @@
           {{ end }}
         </div>
         <span style="font-size:14px;color:#999;">
-          <span style="font-weight:600;color:#555;">{{ .Data.InviterName }}</span> and {{ .Data.OtherMemberCount }} other{{ if gt .Data.OtherMemberCount 1 }}s{{ end }}
+          <span style="font-weight:600;color:#555;">{{ .Data.InviterName }}</span>{{ if gt .Data.OtherMemberCount 0 }} and {{ .Data.OtherMemberCount }} other{{ if gt .Data.OtherMemberCount 1 }}s{{ end }}{{ end }}
         </span>
       </div>
 
