@@ -141,7 +141,7 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "md",
     borderWidth: "none",
-    contentColor: "black",
+    contentColor: "iconTertiary",
   },
 } as const satisfies Record<string, ButtonVariantStyle>;
 
