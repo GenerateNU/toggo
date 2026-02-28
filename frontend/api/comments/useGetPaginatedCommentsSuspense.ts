@@ -102,9 +102,7 @@ export function getPaginatedCommentsSuspenseQueryOptions(
     enabled: !!(tripID && entityType && entityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPaginatedCommentsSuspense(
         tripID,
         entityType,

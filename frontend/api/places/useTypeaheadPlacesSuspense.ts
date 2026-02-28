@@ -69,9 +69,7 @@ export function typeaheadPlacesSuspenseQueryOptions(
     enabled: !!params,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return typeaheadPlacesSuspense(params, config);
     },
   });

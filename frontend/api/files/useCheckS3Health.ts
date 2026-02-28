@@ -52,9 +52,7 @@ export function checkS3HealthQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return checkS3Health(config);
     },
   });

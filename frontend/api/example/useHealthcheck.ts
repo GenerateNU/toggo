@@ -51,9 +51,7 @@ export function healthcheckQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return healthcheck(config);
     },
   });

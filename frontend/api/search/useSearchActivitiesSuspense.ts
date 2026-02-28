@@ -91,9 +91,7 @@ export function searchActivitiesSuspenseQueryOptions(
     enabled: !!(tripID && params),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return searchActivitiesSuspense(tripID, params, config);
     },
   });

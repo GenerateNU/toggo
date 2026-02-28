@@ -88,9 +88,7 @@ export function getRankPollResultsSuspenseQueryOptions(
     enabled: !!(tripID && pollId),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getRankPollResultsSuspense(tripID, pollId, config);
     },
   });

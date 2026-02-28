@@ -33,7 +33,7 @@ export type UpdateUserMutationKey = ReturnType<typeof updateUserMutationKey>;
  */
 export async function updateUser(
   userID: UpdateUserPathParams["userID"],
-  data: UpdateUserMutationRequest,
+  data?: UpdateUserMutationRequest,
   config: Partial<RequestConfig<UpdateUserMutationRequest>> & {
     client?: Client;
   } = {},
@@ -68,7 +68,10 @@ export function updateUserMutationOptions<TContext = unknown>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
+    {
+      userID: UpdateUserPathParams["userID"];
+      data?: UpdateUserMutationRequest;
+    },
     TContext
   >({
     mutationKey,
@@ -92,7 +95,7 @@ export function useUpdateUser<TContext>(
       >,
       {
         userID: UpdateUserPathParams["userID"];
-        data: UpdateUserMutationRequest;
+        data?: UpdateUserMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
@@ -110,7 +113,10 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
+    {
+      userID: UpdateUserPathParams["userID"];
+      data?: UpdateUserMutationRequest;
+    },
     TContext
   >;
 
@@ -119,7 +125,10 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
+    {
+      userID: UpdateUserPathParams["userID"];
+      data?: UpdateUserMutationRequest;
+    },
     TContext
   >(
     {
@@ -133,7 +142,10 @@ export function useUpdateUser<TContext>(
     ResponseErrorConfig<
       UpdateUser400 | UpdateUser404 | UpdateUser422 | UpdateUser500
     >,
-    { userID: UpdateUserPathParams["userID"]; data: UpdateUserMutationRequest },
+    {
+      userID: UpdateUserPathParams["userID"];
+      data?: UpdateUserMutationRequest;
+    },
     TContext
   >;
 }
