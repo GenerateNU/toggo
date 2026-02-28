@@ -68,6 +68,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.6 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -86,6 +87,7 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
+	github.com/slack-go/slack v0.14.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

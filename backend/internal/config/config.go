@@ -3,14 +3,15 @@ package config
 import "os"
 
 type Configuration struct {
-	App         AppConfig
-	Database    DatabaseConfig
-	Auth        AuthConfig
-	AWS         AWSConfig
-	Temporal    TemporalConfig
-	Redis       RedisConfig
-	GoogleMaps  GoogleMapsConfig
-	Environment string
+	App              AppConfig
+	Database         DatabaseConfig
+	Auth             AuthConfig
+	AWS              AWSConfig
+	Temporal         TemporalConfig
+	Redis            RedisConfig
+	GoogleMaps       GoogleMapsConfig
+	ExpoNotification ExpoNotificationConfig
+	Environment      string
 }
 
 func LoadConfiguration() (*Configuration, error) {
@@ -49,14 +50,20 @@ func LoadConfiguration() (*Configuration, error) {
 		return nil, err
 	}
 
+	expoNotificationConfig, err := LoadExpoNotificationConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Configuration{
-		App:         *appConfig,
-		Database:    *databaseConfig,
-		Auth:        *authConfig,
-		AWS:         *awsConfig,
-		Temporal:    *temporalConfig,
-		Redis:       *redisConfig,
-		GoogleMaps:  *googleMapsConfig,
-		Environment: os.Getenv("APP_ENVIRONMENT"),
+		App:              *appConfig,
+		Database:         *databaseConfig,
+		Auth:             *authConfig,
+		AWS:              *awsConfig,
+		Temporal:         *temporalConfig,
+		Redis:            *redisConfig,
+		GoogleMaps:       *googleMapsConfig,
+		ExpoNotification: *expoNotificationConfig,
+		Environment:      os.Getenv("APP_ENVIRONMENT"),
 	}, nil
 }
