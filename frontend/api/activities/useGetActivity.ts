@@ -86,9 +86,7 @@ export function getActivityQueryOptions(
     enabled: !!(tripID && activityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getActivity(tripID, activityID, config);
     },
   });

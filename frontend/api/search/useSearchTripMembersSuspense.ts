@@ -88,9 +88,7 @@ export function searchTripMembersSuspenseQueryOptions(
     enabled: !!(tripID && params),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return searchTripMembersSuspense(tripID, params, config);
     },
   });

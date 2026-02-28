@@ -60,9 +60,7 @@ export function getUserSuspenseQueryOptions(
     enabled: !!userID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getUserSuspense(userID, config);
     },
   });

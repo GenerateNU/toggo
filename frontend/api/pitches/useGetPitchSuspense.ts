@@ -74,9 +74,7 @@ export function getPitchSuspenseQueryOptions(
     enabled: !!(tripID && pitchID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPitchSuspense(tripID, pitchID, config);
     },
   });

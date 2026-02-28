@@ -77,9 +77,7 @@ export function getMembershipQueryOptions(
     enabled: !!(tripID && userID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getMembership(tripID, userID, config);
     },
   });
