@@ -3,8 +3,7 @@ import { Box, Button, Text } from "@/design-system";
 import { router } from "expo-router";
 
 export default function Home() {
-  const { currentUser, logout, isPending } = useUser();
-  const displayName = currentUser?.name || currentUser?.username || "Traveler";
+  const { currentUser } = useUser();
 
   return (
     <Box
@@ -15,15 +14,18 @@ export default function Home() {
       gap="md"
       backgroundColor="white"
     >
-      <Text variant="logoXxl" color="brandPrimary">
-        toggo
-      </Text>
-      <Text variant="lgHeading">Welcome, {displayName}</Text>
+      <Text variant="lgHeading">Home</Text>
       {currentUser?.username && (
         <Text variant="smParagraph" color="textSecondary">
-          @{currentUser.username}
+          Hello @{currentUser.username}
         </Text>
       )}
+      <Button
+        layout="textOnly"
+        label="Settings"
+        variant="Primary"
+        onPress={() => router.push("/settings")}
+      />
       <Button
         layout="textOnly"
         label="Proof of Concept"
@@ -32,18 +34,9 @@ export default function Home() {
       />
       <Button
         layout="textOnly"
-        label="UI Kit / Design System"
+        label="Design System"
         variant="Primary"
         onPress={() => router.push("/ui-kit")}
-      />
-      <Button
-        layout="textOnly"
-        label="Logout"
-        variant="Secondary"
-        loading={isPending}
-        loadingLabel="Logging out..."
-        disabled={isPending}
-        onPress={logout}
       />
     </Box>
   );

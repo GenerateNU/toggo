@@ -30,6 +30,16 @@ const Layout = () => {
         }}
       />
       <Stack.Screen
+        name="settings"
+        options={{
+          headerTransparent: true,
+          headerShown: false,
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
+      />
+      <Stack.Screen
         name="ui-kit"
         options={{
           headerTransparent: true,
