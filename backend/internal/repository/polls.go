@@ -73,7 +73,7 @@ func (r *pollRepository) FindPollByID(ctx context.Context, pollID uuid.UUID) (*m
 	err := r.db.NewSelect().
 		Model(poll).
 		Relation("Options").
-		Where("p.id = ?", pollID).
+		Where("id = ?", pollID).
 		Scan(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -91,7 +91,7 @@ func (r *pollRepository) FindPollMetaByID(ctx context.Context, pollID uuid.UUID)
 	poll := &models.Poll{}
 	err := r.db.NewSelect().
 		Model(poll).
-		Where("p.id = ?", pollID).
+		Where("id = ?", pollID).
 		Scan(ctx)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -126,12 +126,12 @@ func (r *pollRepository) FindPollsByTripIDWithCursor(ctx context.Context, tripID
 	query := r.db.NewSelect().
 		Model(&polls).
 		Relation("Options").
-		Where("p.trip_id = ?", tripID).
-		OrderExpr("p.created_at DESC, p.id DESC").
+		Where("trip_id = ?", tripID).
+		OrderExpr("created_at DESC, id DESC").
 		Limit(fetchLimit + 1)
 
 	if cursor != nil {
-		query = query.Where("(p.created_at < ?) OR (p.created_at = ? AND p.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
+		query = query.Where("(created_at < ?) OR (created_at = ? AND id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
 
 	if err := query.Scan(ctx); err != nil {
