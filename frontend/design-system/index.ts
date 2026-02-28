@@ -10,11 +10,6 @@ export { Button } from "./components/buttons/button";
 
 // ─── Avatars ──────────────────────────────────────────────────────────────────
 export { Avatar } from "./components/avatars/avatar";
-export {
-  AvatarGroup,
-  AvatarGroupLabel,
-} from "./components/avatars/avatar-group";
-export type { AvatarGroupMember } from "./components/avatars/avatar-group";
 
 // ─── High Order ───────────────────────────────────────────────────────────────
 export { Resource as ResourceView } from "./components/high-order/resource-view";

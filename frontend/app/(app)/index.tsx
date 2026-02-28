@@ -15,13 +15,15 @@ export default function Home() {
       gap="md"
       backgroundColor="white"
     >
-      <Text variant="lgHeading">Welcome, {displayName} ✨</Text>
+      <Text variant="logoXxl" color="brandPrimary">
+        toggo
+      </Text>
+      <Text variant="lgHeading">Welcome, {displayName}</Text>
       {currentUser?.username && (
         <Text variant="smParagraph" color="textSecondary">
           @{currentUser.username}
         </Text>
       )}
-
       <Button
         layout="textOnly"
         label="Proof of Concept"

@@ -1,4 +1,4 @@
-import { Box } from "@/design-system";
+import { Box } from "@/design-system/primitives/box";
 import { useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import React from "react";

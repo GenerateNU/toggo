@@ -1,5 +1,4 @@
 import { Avatar } from "@/design-system/components/avatars/avatar";
-import { AvatarGroup } from "@/design-system/components/avatars/avatar-group";
 import { Button } from "@/design-system/components/buttons/button";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
@@ -31,13 +30,7 @@ function Section({
   return (
     <Box width="100%" gap="sm">
       <Text variant="lgHeading">{title}</Text>
-      <Box
-        width="100%"
-        padding="md"
-        borderRadius="md"
-        backgroundColor="surfaceBackground"
-        gap="sm"
-      >
+      <Box width="100%" borderRadius="md" gap="sm">
         {children}
       </Box>
     </Box>
@@ -220,18 +213,6 @@ export default function UIKit() {
         </Row>
         <Row label="with photo">
           <Avatar variant="lg" profilePhoto="https://i.pravatar.cc/150?img=3" />
-        </Row>
-        <Row label="group">
-          <AvatarGroup
-            members={[
-              { id: "1", seed: "alice" },
-              { id: "2", seed: "bob" },
-              { id: "3", seed: "carol" },
-              { id: "4", seed: "dave" },
-              { id: "5", seed: "eve" },
-            ]}
-            size="md"
-          />
         </Row>
       </Section>
 
