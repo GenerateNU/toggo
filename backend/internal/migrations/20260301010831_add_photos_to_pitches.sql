@@ -1,8 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE pitch_images (
-    pitch_id UUID NOT NULL REFERENCES pitches(id) ON DELETE CASCADE,
-    image_id UUID NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+    pitch_id UUID NOT NULL REFERENCES trip_pitches(id) ON DELETE CASCADE,
+    -- image_id references images(image_id) at the application level;
+    -- no DB-level FK because images table uses a composite PK (image_id, size)
+    image_id UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     PRIMARY KEY (pitch_id, image_id)
 );
