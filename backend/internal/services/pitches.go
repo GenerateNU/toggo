@@ -25,7 +25,7 @@ type PitchServiceInterface interface {
 	Create(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePitchRequest) (*models.CreatePitchResponse, error)
 	GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (*models.PitchAPIResponse, error)
 	List(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.PitchCursorPageResult, error)
-	Update(ctx context.Context, tripID, pitchID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error)
+	Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error)
 	Delete(ctx context.Context, tripID, pitchID uuid.UUID) error
 }
 
@@ -35,6 +35,7 @@ type PitchService struct {
 	presignClient  interfaces.S3PresignClient
 	pitchRepo      repository.PitchRepository
 	membershipRepo repository.MembershipRepository
+	imageRepo      repository.ImageRepository
 	bucketName     string
 	urlExpiration  time.Duration
 }
@@ -43,6 +44,7 @@ type PitchServiceConfig struct {
 	PresignClient  interfaces.S3PresignClient
 	PitchRepo      repository.PitchRepository
 	MembershipRepo repository.MembershipRepository
+	ImageRepo      repository.ImageRepository
 	BucketName     string
 	URLExpiration  time.Duration
 }
@@ -56,12 +58,14 @@ func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
 		presignClient:  cfg.PresignClient,
 		pitchRepo:      cfg.PitchRepo,
 		membershipRepo: cfg.MembershipRepo,
+		imageRepo:      cfg.ImageRepo,
 		bucketName:     cfg.BucketName,
 		urlExpiration:  expiration,
 	}
 }
 
-// Create creates a pitch record and returns metadata plus a presigned PUT URL for uploading the audio file.
+// Create creates a pitch record (with image associations in one transaction) and returns
+// metadata plus a presigned PUT URL for uploading the audio file.
 func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePitchRequest) (*models.CreatePitchResponse, error) {
 	isMember, err := s.membershipRepo.IsMember(ctx, tripID, userID)
 	if err != nil {
@@ -69,6 +73,10 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 	if !isMember {
 		return nil, errs.Forbidden()
+	}
+
+	if err := s.validateImageIDs(ctx, req.ImageIDs); err != nil {
+		return nil, err
 	}
 
 	pitchID := uuid.New()
@@ -87,7 +95,7 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 		Description: req.Description,
 		AudioS3Key:  audioKey,
 	}
-	created, err := s.pitchRepo.Create(ctx, pitch)
+	created, err := s.pitchRepo.CreateWithImages(ctx, pitch, req.ImageIDs)
 	if err != nil {
 		return nil, fmt.Errorf("create pitch: %w", err)
 	}
@@ -110,7 +118,7 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 
 	expiresAt := time.Now().Add(s.urlExpiration).UTC().Format(time.RFC3339)
-	apiPitch := pitchToAPIResponse(created, "") // no download URL until audio is uploaded
+	apiPitch := pitchToAPIResponse(created, "", req.ImageIDs) // no download URL until audio is uploaded
 	return &models.CreatePitchResponse{
 		Pitch:     apiPitch,
 		UploadURL: presigned.URL,
@@ -118,7 +126,7 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}, nil
 }
 
-// GetByID returns a pitch by id and trip id with a presigned GET URL for the audio file.
+// GetByID returns a pitch by id and trip id with a presigned GET URL for the audio file and its image IDs.
 func (s *PitchService) GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (*models.PitchAPIResponse, error) {
 	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
 	if err != nil {
@@ -128,11 +136,16 @@ func (s *PitchService) GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (
 	if err != nil {
 		return nil, fmt.Errorf("presign download URL: %w", err)
 	}
-	resp := pitchToAPIResponse(pitch, audioURL)
+	imageIDs, err := s.pitchRepo.GetImageIDsForPitch(ctx, pitchID)
+	if err != nil {
+		return nil, fmt.Errorf("fetch pitch image IDs: %w", err)
+	}
+	resp := pitchToAPIResponse(pitch, audioURL, imageIDs)
 	return &resp, nil
 }
 
-// List returns pitches for a trip with cursor-based pagination; each item includes a presigned audio URL.
+// List returns pitches for a trip with cursor-based pagination; each item includes a presigned audio URL
+// and associated image IDs (batch-loaded to avoid N+1).
 func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.PitchCursorPageResult, error) {
 	if limit <= 0 {
 		limit = 20
@@ -155,13 +168,23 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 		return nil, err
 	}
 
+	// Batch-load all image IDs in a single query to avoid N+1.
+	pitchIDs := make([]uuid.UUID, len(pitches))
+	for i, p := range pitches {
+		pitchIDs[i] = p.ID
+	}
+	imageIDMap, err := s.pitchRepo.GetImageIDsForPitches(ctx, pitchIDs)
+	if err != nil {
+		return nil, fmt.Errorf("batch fetch pitch image IDs: %w", err)
+	}
+
 	items := make([]*models.PitchAPIResponse, 0, len(pitches))
 	for _, p := range pitches {
 		audioURL, err := s.presignGetURL(ctx, p.AudioS3Key)
 		if err != nil {
 			return nil, fmt.Errorf("presign download URL for pitch %s: %w", p.ID, err)
 		}
-		resp := pitchToAPIResponse(p, audioURL)
+		resp := pitchToAPIResponse(p, audioURL, imageIDMap[p.ID])
 		items = append(items, &resp)
 	}
 
@@ -181,17 +204,55 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 	}, nil
 }
 
-// Update updates pitch metadata (title, description, duration) and returns the updated pitch with presigned audio URL.
-func (s *PitchService) Update(ctx context.Context, tripID, pitchID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error) {
-	updated, err := s.pitchRepo.Update(ctx, pitchID, tripID, &req)
+// Update updates pitch metadata and, when ImageIDs is provided in the request, replaces image associations.
+// Only the pitch creator (userID == pitch.UserID) is allowed to update; members who did not create the pitch get a 403.
+func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error) {
+	existing, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
 	if err != nil {
 		return nil, err
 	}
+	if existing.UserID != userID {
+		return nil, errs.Forbidden()
+	}
+
+	if req.ImageIDs != nil {
+		if err := s.validateImageIDs(ctx, *req.ImageIDs); err != nil {
+			return nil, err
+		}
+	}
+
+	// Only hit the DB for a metadata update when at least one field is provided.
+	// Sending only image_ids with no other fields would produce an empty SET clause.
+	var updated *models.TripPitch
+	if req.Title != nil || req.Description != nil || req.Duration != nil {
+		var err error
+		updated, err = s.pitchRepo.Update(ctx, pitchID, tripID, &req)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		updated = existing
+	}
+
+	// Replace image associations when the caller explicitly passes image_ids.
+	if req.ImageIDs != nil {
+		if err := s.pitchRepo.SetImages(ctx, pitchID, *req.ImageIDs); err != nil {
+			return nil, fmt.Errorf("update pitch images: %w", err)
+		}
+	}
+
 	audioURL, err := s.presignGetURL(ctx, updated.AudioS3Key)
 	if err != nil {
 		return nil, fmt.Errorf("presign download URL: %w", err)
 	}
-	resp := pitchToAPIResponse(updated, audioURL)
+
+	// Always read back the current image IDs so the response is consistent.
+	imageIDs, err := s.pitchRepo.GetImageIDsForPitch(ctx, pitchID)
+	if err != nil {
+		return nil, fmt.Errorf("fetch pitch image IDs: %w", err)
+	}
+
+	resp := pitchToAPIResponse(updated, audioURL, imageIDs)
 	return &resp, nil
 }
 
@@ -211,7 +272,23 @@ func (s *PitchService) presignGetURL(ctx context.Context, key string) (string, e
 	return presigned.URL, nil
 }
 
-func pitchToAPIResponse(p *models.TripPitch, audioURL string) models.PitchAPIResponse {
+// validateImageIDs checks the image count limit and that every image exists as a confirmed upload.
+func (s *PitchService) validateImageIDs(ctx context.Context, imageIDs []uuid.UUID) error {
+	if len(imageIDs) > models.MaxPitchImages {
+		return errs.BadRequest(fmt.Errorf("a pitch can have at most %d images", models.MaxPitchImages))
+	}
+	for _, id := range imageIDs {
+		if _, err := s.imageRepo.FindByID(ctx, id); err != nil {
+			if errs.IsNotFound(err) {
+				return errs.BadRequest(fmt.Errorf("image %s not found or not yet confirmed", id))
+			}
+			return err
+		}
+	}
+	return nil
+}
+
+func pitchToAPIResponse(p *models.TripPitch, audioURL string, imageIDs []uuid.UUID) models.PitchAPIResponse {
 	return models.PitchAPIResponse{
 		ID:          p.ID,
 		TripID:      p.TripID,
@@ -220,6 +297,7 @@ func pitchToAPIResponse(p *models.TripPitch, audioURL string) models.PitchAPIRes
 		Description: p.Description,
 		AudioURL:    audioURL,
 		Duration:    p.Duration,
+		ImageIDs:    imageIDs,
 		CreatedAt:   p.CreatedAt,
 		UpdatedAt:   p.UpdatedAt,
 	}
