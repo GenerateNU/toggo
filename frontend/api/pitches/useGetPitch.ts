@@ -72,9 +72,7 @@ export function getPitchQueryOptions(
     enabled: !!(tripID && pitchID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPitch(tripID, pitchID, config);
     },
   });

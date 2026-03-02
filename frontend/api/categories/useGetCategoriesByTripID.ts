@@ -82,9 +82,7 @@ export function getCategoriesByTripIDQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getCategoriesByTripID(tripID, config);
     },
   });

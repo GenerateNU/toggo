@@ -80,9 +80,7 @@ export function getPollSuspenseQueryOptions(
     enabled: !!(tripID && pollId),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPollSuspense(tripID, pollId, config);
     },
   });
