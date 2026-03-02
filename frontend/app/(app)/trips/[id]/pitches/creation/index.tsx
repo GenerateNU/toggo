@@ -22,7 +22,7 @@ export default function CreatePitch() {
             STATUS
           </Text>
           <Text variant="mdParagraph" color="textSecondary">
-            Pitch creation flow — coming soon.
+            Pitch creation flow: coming soon.
           </Text>
         </Box>
       </Box>

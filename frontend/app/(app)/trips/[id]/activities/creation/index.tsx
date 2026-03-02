@@ -22,7 +22,7 @@ export default function CreateActivity() {
             STATUS
           </Text>
           <Text variant="mdParagraph" color="textSecondary">
-            Activity creation flow — coming soon.
+            Activity creation flow: coming soon.
           </Text>
         </Box>
       </Box>

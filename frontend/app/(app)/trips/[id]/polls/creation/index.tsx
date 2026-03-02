@@ -22,7 +22,7 @@ export default function CreatePoll() {
             STATUS
           </Text>
           <Text variant="mdParagraph" color="textSecondary">
-            Poll creation flow — coming soon.
+            Poll creation flow: coming soon.
           </Text>
         </Box>
       </Box>
