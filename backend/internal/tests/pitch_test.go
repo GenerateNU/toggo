@@ -634,6 +634,29 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
+	t.Run("update that would exceed image cap via merge returns 400", func(t *testing.T) {
+		requireS3(t)
+		// Fill the pitch up to MaxPitchImages.
+		existingIDs := make([]uuid.UUID, models.MaxPitchImages)
+		for i := range existingIDs {
+			existingIDs[i] = createConfirmedImage(t)
+		}
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "CapMergeImg", existingIDs)
+
+		// One additional new image would push merged total to MaxPitchImages+1.
+		extraID := createConfirmedImage(t)
+		extraSlice := []uuid.UUID{extraID}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &extraSlice},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
 	t.Run("update omitting image_ids leaves associations unchanged", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)

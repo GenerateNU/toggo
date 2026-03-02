@@ -219,6 +219,31 @@ func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.
 		if err := s.validateImageIDs(ctx, *req.ImageIDs); err != nil {
 			return nil, err
 		}
+		// UpdateWithImages is additive (ON CONFLICT DO NOTHING), not a replacement.
+		// Enforce the cap against the post-merge total so we cannot silently
+		// accumulate more than MaxPitchImages even across separate calls.
+		if len(*req.ImageIDs) > 0 {
+			existingIDs, err := s.pitchRepo.GetImageIDsForPitch(ctx, pitchID)
+			if err != nil {
+				return nil, fmt.Errorf("fetch existing pitch image IDs: %w", err)
+			}
+			existingSet := make(map[uuid.UUID]struct{}, len(existingIDs))
+			for _, id := range existingIDs {
+				existingSet[id] = struct{}{}
+			}
+			mergedCount := len(existingIDs)
+			for _, id := range *req.ImageIDs {
+				if _, alreadyExists := existingSet[id]; !alreadyExists {
+					mergedCount++
+				}
+			}
+			if mergedCount > models.MaxPitchImages {
+				return nil, errs.BadRequest(fmt.Errorf(
+					"adding these images would exceed the limit of %d images per pitch",
+					models.MaxPitchImages,
+				))
+			}
+		}
 	}
 
 	// When image_ids are provided, use UpdateWithImages so metadata update and
