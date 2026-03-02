@@ -19,40 +19,7 @@ export default function LoginPage() {
       </Box>
 
       <Box flex={1} justifyContent="center" alignItems="center">
-        <Box
-          width={140}
-          height={140}
-          justifyContent="center"
-          alignItems="center"
-          gap="xs"
-        >
-          <Box flexDirection="row" gap="xs" alignItems="flex-end">
-            <Box
-              width={0}
-              height={0}
-              style={{
-                borderLeftWidth: 26,
-                borderRightWidth: 26,
-                borderBottomWidth: 44,
-                borderLeftColor: "transparent",
-                borderRightColor: "transparent",
-                borderBottomColor: "#000",
-              }}
-            />
-            <Box
-              width={44}
-              height={44}
-              borderRadius="full"
-              backgroundColor="secondaryBackground"
-            />
-          </Box>
-          <Box
-            width={44}
-            height={44}
-            style={{ transform: [{ rotate: "45deg" }] }}
-            backgroundColor="black"
-          />
-        </Box>
+        <Text variant="xxlHeading">🚌</Text>
       </Box>
 
       <Button

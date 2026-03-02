@@ -14,6 +14,7 @@ interface BottomSheetModalProps {
   onClose?: () => void;
   scrollEnabled?: boolean;
   onChange?: (index: number) => void;
+  disableClose?: boolean;
 }
 
 type Ref = BottomSheetMethods;
@@ -26,6 +27,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       snapPoints = ["70%", "95%"],
       initialIndex = -1,
       onClose,
+      disableClose = false,
     },
     ref,
   ) => {
@@ -35,9 +37,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           {...props}
           disappearsOnIndex={-1}
           appearsOnIndex={0}
+          pressBehavior={disableClose ? "none" : "close"}
         />
       ),
-      [],
+      [disableClose],
     );
 
     const handleClose = useCallback(() => {
@@ -56,8 +59,8 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           snapPoints={snapPoints}
           backdropComponent={renderBackdrop}
           enableDynamicSizing={false}
-          enablePanDownToClose
-          enableHandlePanningGesture
+          enablePanDownToClose={!disableClose}
+          enableHandlePanningGesture={!disableClose}
           keyboardBlurBehavior="none"
           keyboardBehavior="extend"
           enableBlurKeyboardOnGesture={false}

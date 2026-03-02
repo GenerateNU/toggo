@@ -1,7 +1,7 @@
 import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useCreateUser } from "@/api/users/useCreateUser";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
-import { useUser } from "@/contexts/user";
+import { useUserStore } from "@/auth/store";
 import { Box, Button, Text } from "@/design-system";
 import { getDeviceTimeZone } from "@/utilities/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,18 +30,21 @@ type ProfileFormData = z.infer<typeof PROFILE_SCHEMA>;
 
 interface CompleteProfileFormProps {
   profilePhotoUri?: string | null;
+  onSuccess?: () => void;
 }
 
 export default function CompleteProfileForm({
   profilePhotoUri,
+  onSuccess,
 }: CompleteProfileFormProps) {
-  const { refreshCurrentUser } = useUser();
+  const refreshCurrentUser = useUserStore((s) => s.refreshCurrentUser);
+  const storePhone = useUserStore((s) => s.phoneNumber);
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutateAsync: uploadProfilePicture } = useUploadProfilePicture();
   const params = useLocalSearchParams();
   const router = useRouter();
-  const phone = params.phone as string | undefined;
+  const phone = (params.phone as string | undefined) || storePhone || undefined;
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,7 +104,11 @@ export default function CompleteProfileForm({
       }
 
       await refreshCurrentUser();
-      router.replace("/(app)");
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.replace("/(app)");
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to create account. Please try again.");
       setIsSubmitting(false);

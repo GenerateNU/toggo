@@ -62,15 +62,15 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="auto" />
         <ThemeProvider theme={theme}>
-          <PortalProvider>
-            <QueryClientProvider client={queryClient}>
-              <UserProvider>
-                <NotificationProvider>
+          <QueryClientProvider client={queryClient}>
+            <UserProvider>
+              <NotificationProvider>
+                <PortalProvider>
                   <Slot />
-                </NotificationProvider>
-              </UserProvider>
-            </QueryClientProvider>
-          </PortalProvider>
+                </PortalProvider>
+              </NotificationProvider>
+            </UserProvider>
+          </QueryClientProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
