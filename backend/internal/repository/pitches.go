@@ -150,22 +150,86 @@ func (r *pitchRepository) Delete(ctx context.Context, id, tripID uuid.UUID) erro
 // Passing an empty slice removes all associations.
 func (r *pitchRepository) SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error {
 	return r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		if _, err := tx.NewDelete().
-			TableExpr("pitch_images").
-			Where("pitch_id = ?", pitchID).
-			Exec(ctx); err != nil {
-			return err
-		}
 		if len(imageIDs) == 0 {
-			return nil
+			_, err := tx.NewDelete().
+				TableExpr("pitch_images").
+				Where("pitch_id = ?", pitchID).
+				Exec(ctx)
+			return err
 		}
 		rows := make([]models.PitchImage, len(imageIDs))
 		for i, id := range imageIDs {
 			rows[i] = models.PitchImage{PitchID: pitchID, ImageID: id}
 		}
-		_, err := tx.NewInsert().Model(&rows).Exec(ctx)
+		_, err := tx.NewInsert().
+			Model(&rows).
+			On("CONFLICT (pitch_id, image_id) DO NOTHING").
+			Exec(ctx)
 		return err
 	})
+}
+
+// UpdateWithImages atomically updates pitch metadata and merges image associations
+// in a single transaction. Empty imageIDs removes all associations; non-empty
+// imageIDs adds missing ones via tx.NewInsert() without removing existing pitch_images rows.
+func (r *pitchRepository) UpdateWithImages(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest, imageIDs []uuid.UUID) (*models.TripPitch, error) {
+	var result models.TripPitch
+	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+		// Update metadata only when at least one field is provided.
+		if req.Title != nil || req.Description != nil || req.Duration != nil {
+			upd := tx.NewUpdate().
+				Model((*models.TripPitch)(nil)).
+				Where("id = ? AND trip_id = ?", id, tripID)
+			if req.Title != nil {
+				upd = upd.Set("title = ?", *req.Title)
+			}
+			if req.Description != nil {
+				upd = upd.Set("description = ?", *req.Description)
+			}
+			if req.Duration != nil {
+				upd = upd.Set("duration = ?", *req.Duration)
+			}
+			res, err := upd.Exec(ctx)
+			if err != nil {
+				return err
+			}
+			if n, _ := res.RowsAffected(); n == 0 {
+				return errs.ErrNotFound
+			}
+		}
+		// Merge image associations inside the same transaction.
+		if len(imageIDs) == 0 {
+			if _, err := tx.NewDelete().
+				TableExpr("pitch_images").
+				Where("pitch_id = ?", id).
+				Exec(ctx); err != nil {
+				return err
+			}
+		} else {
+			imgRows := make([]models.PitchImage, len(imageIDs))
+			for i, imgID := range imageIDs {
+				imgRows[i] = models.PitchImage{PitchID: id, ImageID: imgID}
+			}
+			if _, err := tx.NewInsert().
+				Model(&imgRows).
+				On("CONFLICT (pitch_id, image_id) DO NOTHING").
+				Exec(ctx); err != nil {
+				return err
+			}
+		}
+		// Read back the updated pitch within the same transaction.
+		return tx.NewSelect().
+			Model(&result).
+			Where("id = ? AND trip_id = ?", id, tripID).
+			Scan(ctx)
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.ErrNotFound
+		}
+		return nil, err
+	}
+	return &result, nil
 }
 
 // GetImageIDsForPitch returns the image IDs associated with a single pitch.

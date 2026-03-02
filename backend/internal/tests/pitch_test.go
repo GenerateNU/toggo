@@ -488,6 +488,25 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
+	t.Run("create pitch with duplicate image IDs returns 400", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Dup image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{imgID, imgID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
 	// -- GET includes image_ids --
 
 	t.Run("get pitch includes image_ids", func(t *testing.T) {
@@ -541,11 +560,11 @@ func TestPitchImages(t *testing.T) {
 
 	// -- UPDATE image associations --
 
-	t.Run("update replaces image associations", func(t *testing.T) {
+	t.Run("update adds image associations (existing images are not removed)", func(t *testing.T) {
 		requireS3(t)
 		img1 := createConfirmedImage(t)
 		img2 := createConfirmedImage(t)
-		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "ReplaceImg", []uuid.UUID{img1})
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "AddImg", []uuid.UUID{img1})
 
 		img2Slice := []uuid.UUID{img2}
 		resp := testkit.New(t).
@@ -560,8 +579,11 @@ func TestPitchImages(t *testing.T) {
 			GetBody()
 		ids, ok := resp["image_ids"].([]any)
 		require.True(t, ok)
-		require.Len(t, ids, 1)
-		assert.Equal(t, img2.String(), ids[0].(string))
+		// Both img1 (existing) and img2 (newly added) should be present.
+		require.Len(t, ids, 2)
+		idStrs := []string{ids[0].(string), ids[1].(string)}
+		assert.Contains(t, idStrs, img1.String())
+		assert.Contains(t, idStrs, img2.String())
 	})
 
 	t.Run("update with empty image_ids removes all associations", func(t *testing.T) {
@@ -570,7 +592,7 @@ func TestPitchImages(t *testing.T) {
 		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "RemoveImg", []uuid.UUID{imgID})
 
 		empty := []uuid.UUID{}
-		resp := testkit.New(t).
+		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
@@ -578,12 +600,38 @@ func TestPitchImages(t *testing.T) {
 				UserID: &userID,
 				Body:   models.UpdatePitchRequest{ImageIDs: &empty},
 			}).
+			AssertStatus(http.StatusOK)
+
+		// Follow-up GET must confirm the image association was actually removed.
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		// image_ids is omitempty — absent or empty both mean no images
-		if ids, ok := resp["image_ids"].([]any); ok {
+		// image_ids is omitempty — absent key or empty slice both mean no images.
+		if ids, ok := getResp["image_ids"].([]any); ok {
 			assert.Len(t, ids, 0)
 		}
+	})
+
+	t.Run("update with duplicate image IDs returns 400", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitch(t, app, userID, tripID, "DupUpdateImg", "audio/mpeg")
+		dupSlice := []uuid.UUID{imgID, imgID}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &dupSlice},
+			}).
+			AssertStatus(http.StatusBadRequest)
 	})
 
 	t.Run("update omitting image_ids leaves associations unchanged", func(t *testing.T) {

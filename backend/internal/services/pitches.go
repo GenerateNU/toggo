@@ -87,6 +87,13 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	// Single bucket, folder layout per ticket: trips/:tripId/pitches (e.g. profile_pictures/ elsewhere)
 	audioKey := fmt.Sprintf("trips/%s/pitches/%s.%s", tripID.String(), pitchID.String(), ext)
 
+	if req.ContentLength <= 0 {
+		return nil, errs.BadRequest(errors.New("content_length must be positive"))
+	}
+	if req.ContentLength > MaxPitchAudioSize {
+		return nil, errs.BadRequest(fmt.Errorf("content_length exceeds maximum allowed size (%d bytes)", MaxPitchAudioSize))
+	}
+
 	pitch := &models.TripPitch{
 		ID:          pitchID,
 		TripID:      tripID,
@@ -98,13 +105,6 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	created, err := s.pitchRepo.CreateWithImages(ctx, pitch, req.ImageIDs)
 	if err != nil {
 		return nil, fmt.Errorf("create pitch: %w", err)
-	}
-
-	if req.ContentLength <= 0 {
-		return nil, errs.BadRequest(errors.New("content_length must be positive"))
-	}
-	if req.ContentLength > MaxPitchAudioSize {
-		return nil, errs.BadRequest(fmt.Errorf("content_length exceeds maximum allowed size (%d bytes)", MaxPitchAudioSize))
 	}
 
 	presigned, err := s.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
@@ -221,10 +221,16 @@ func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.
 		}
 	}
 
-	// Only hit the DB for a metadata update when at least one field is provided.
-	// Sending only image_ids with no other fields would produce an empty SET clause.
+	// When image_ids are provided, use UpdateWithImages so metadata update and
+	// image association merge happen atomically in a single transaction.
 	var updated *models.TripPitch
-	if req.Title != nil || req.Description != nil || req.Duration != nil {
+	if req.ImageIDs != nil {
+		var err error
+		updated, err = s.pitchRepo.UpdateWithImages(ctx, pitchID, tripID, &req, *req.ImageIDs)
+		if err != nil {
+			return nil, err
+		}
+	} else if req.Title != nil || req.Description != nil || req.Duration != nil {
 		var err error
 		updated, err = s.pitchRepo.Update(ctx, pitchID, tripID, &req)
 		if err != nil {
@@ -232,13 +238,6 @@ func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.
 		}
 	} else {
 		updated = existing
-	}
-
-	// Replace image associations when the caller explicitly passes image_ids.
-	if req.ImageIDs != nil {
-		if err := s.pitchRepo.SetImages(ctx, pitchID, *req.ImageIDs); err != nil {
-			return nil, fmt.Errorf("update pitch images: %w", err)
-		}
 	}
 
 	audioURL, err := s.presignGetURL(ctx, updated.AudioS3Key)
@@ -272,12 +271,18 @@ func (s *PitchService) presignGetURL(ctx context.Context, key string) (string, e
 	return presigned.URL, nil
 }
 
-// validateImageIDs checks the image count limit and that every image exists as a confirmed upload.
+// validateImageIDs checks the image count limit, rejects duplicate IDs, and
+// verifies that every image exists as a confirmed upload.
 func (s *PitchService) validateImageIDs(ctx context.Context, imageIDs []uuid.UUID) error {
 	if len(imageIDs) > models.MaxPitchImages {
 		return errs.BadRequest(fmt.Errorf("a pitch can have at most %d images", models.MaxPitchImages))
 	}
+	seen := make(map[uuid.UUID]struct{}, len(imageIDs))
 	for _, id := range imageIDs {
+		if _, ok := seen[id]; ok {
+			return errs.BadRequest(fmt.Errorf("duplicate image ID: %s", id))
+		}
+		seen[id] = struct{}{}
 		if _, err := s.imageRepo.FindByID(ctx, id); err != nil {
 			if errs.IsNotFound(err) {
 				return errs.BadRequest(fmt.Errorf("image %s not found or not yet confirmed", id))
