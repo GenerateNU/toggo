@@ -26,3 +26,7 @@ export { BackButton } from "./components/navigation/arrow";
 
 // ─── UI Kit Display (for testing/showcasing components) ──────────────────────────────
 export { default as UIKitDisplay } from "./components/ui-kit-display/display";
+
+// ─── Skeletons ──────────────────────────────────────────────────────────────────────
+export { default as SkeletonCircle } from "./components/skeleton/circle";
+export { default as SkeletonRect } from "./components/skeleton/rectangle";
