@@ -116,10 +116,18 @@ type CommentRepository interface {
 // PitchRepository handles persistence for trip pitches (audio pitches per trip).
 type PitchRepository interface {
 	Create(ctx context.Context, pitch *models.TripPitch) (*models.TripPitch, error)
+	// CreateWithImages inserts the pitch and its initial image associations in a single transaction.
+	CreateWithImages(ctx context.Context, pitch *models.TripPitch, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.TripPitch, error)
 	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error)
 	Update(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest) (*models.TripPitch, error)
 	Delete(ctx context.Context, id, tripID uuid.UUID) error
+
+	// SetImages fully replaces the image associations for a pitch inside a transaction.
+	// Passing an empty slice removes all associations.
+	SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error
+	GetImageIDsForPitch(ctx context.Context, pitchID uuid.UUID) ([]uuid.UUID, error)
+	GetImageIDsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error)
 }
 
 type ActivityRepository interface {
