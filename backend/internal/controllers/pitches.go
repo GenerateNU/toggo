@@ -26,7 +26,8 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 }
 
 // @Summary      Create a pitch
-// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+// @Description  Optionally supply up to 5 confirmed image IDs (image_ids) to associate with the pitch.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
@@ -134,7 +135,9 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 }
 
 // @Summary      Update a pitch
-// @Description  Updates pitch metadata (title, description, duration)
+// @Description  Updates pitch metadata (title, description, duration).
+// @Description  When image_ids is present it fully replaces the pitch's image associations
+// @Description  (pass an empty array to remove all images; omit the field to leave images unchanged).
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
@@ -149,6 +152,12 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/pitches/{pitchID} [patch]
 // @ID           updatePitch
 func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
+	userIDStr, ok := c.Locals("userID").(string)
+	userID, validateErr := validators.ValidateID(userIDStr)
+	if !ok || validateErr != nil {
+		return errs.Unauthorized()
+	}
+
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -166,7 +175,7 @@ func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
 		return err
 	}
 
-	pitch, err := ctrl.pitchService.Update(c.Context(), tripID, pitchID, req)
+	pitch, err := ctrl.pitchService.Update(c.Context(), tripID, pitchID, userID, req)
 	if err != nil {
 		if errs.IsNotFound(err) {
 			return errs.NewAPIError(http.StatusNotFound, err)
