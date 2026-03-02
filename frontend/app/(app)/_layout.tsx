@@ -49,6 +49,16 @@ const Layout = () => {
           headerLeft: () => <BackButton />,
         }}
       />
+      <Stack.Screen
+        name="trips"
+        options={{
+          headerTransparent: true,
+          headerShown: false,
+          headerTitle: "",
+          headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
+        }}
+      />
     </Stack>
   );
 };

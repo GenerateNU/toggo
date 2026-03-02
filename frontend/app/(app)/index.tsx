@@ -1,9 +1,11 @@
 import { useUser } from "@/contexts/user";
 import { Box, Button, Text } from "@/design-system";
+import { useCreateTrip } from "@/index";
 import { router } from "expo-router";
 
 export default function Home() {
   const { currentUser } = useUser();
+  const createTripMutation = useCreateTrip();
 
   return (
     <Box
@@ -37,6 +39,27 @@ export default function Home() {
         label="Design System"
         variant="Primary"
         onPress={() => router.push("/ui-kit")}
+      />
+      <Button
+        layout="textOnly"
+        label={createTripMutation.isPending ? "Creating..." : "Create Trip"}
+        variant="Primary"
+        disabled={createTripMutation.isPending}
+        onPress={async () => {
+          const data = {
+            name: "New Trip",
+            budget_min: 1,
+            budget_max: 1000,
+          };
+          try {
+            const result = await createTripMutation.mutateAsync({ data });
+            if (result?.id) {
+              router.push(`/trips/${result.id}`);
+            }
+          } catch (e) {
+            console.log("Error creating trip", e);
+          }
+        }}
       />
     </Box>
   );

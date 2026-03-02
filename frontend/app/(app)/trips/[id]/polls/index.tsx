@@ -1,6 +1,6 @@
 import { Box, Text } from "@/design-system";
 
-export default function Activities() {
+export default function Polls() {
   return (
     <Box
       flex={1}
@@ -9,7 +9,7 @@ export default function Activities() {
       backgroundColor="white"
     >
       <Text variant="lgHeading" color="black">
-        Activities Page
+        Polls Page
       </Text>
     </Box>
   );
