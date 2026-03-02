@@ -1,4 +1,5 @@
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
+import { getTrip } from "@/api/trips/useGetTrip";
 import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
@@ -19,9 +20,10 @@ export default function Home() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Profile created!");
+  const [toastVariant, setToastVariant] = useState<"success" | "error">("success");
   const [toastOpacity] = useState(() => new Animated.Value(0));
 
-  const { joinedTrip } = useLocalSearchParams<{ joinedTrip?: string }>();
+  const { joinedTripName, joinError } = useLocalSearchParams<{ joinedTripName?: string; joinError?: string }>();
 
   const needsProfile = !currentUser?.username;
 
@@ -36,8 +38,9 @@ export default function Home() {
   }, [needsProfile]);
 
   // Show "Trip added!" toast from deeplink join redirect
-  const triggerToast = (message: string) => {
+  const triggerToast = (message: string, variant: "success" | "error" = "success") => {
     setToastMessage(message);
+    setToastVariant(variant);
     setShowToast(true);
     toastOpacity.setValue(0);
     Animated.sequence([
@@ -56,20 +59,36 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (joinedTrip === "1") {
-      triggerToast("Trip added!");
+    if (joinedTripName) {
+      triggerToast(`You've been added to ${joinedTripName}!`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinedTrip]);
+  }, [joinedTripName]);
+
+  useEffect(() => {
+    if (joinError) {
+      triggerToast(joinError, "error");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinError]);
 
   const handleProfileCreated = async () => {
     bottomSheetRef.current?.close();
     // Join pending trip if one was saved
     if (pendingTripCode) {
       try {
-        await joinTripByInvite(pendingTripCode);
+        const membership = await joinTripByInvite(pendingTripCode);
         setPendingTripCode(null);
-        triggerToast("Profile created & trip added!");
+        let tripName = "Trip";
+        if (membership?.trip_id) {
+          try {
+            const trip = await getTrip(membership.trip_id);
+            tripName = trip?.name ?? tripName;
+          } catch {
+            // ignore — fallback to generic name
+          }
+        }
+        triggerToast(`Profile created & added to ${tripName}!`);
       } catch {
         setPendingTripCode(null);
         triggerToast("Profile created!");
@@ -160,7 +179,12 @@ export default function Home() {
       </BottomSheet>
 
       {showToast && (
-        <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
+        <Animated.View
+          style={[
+            styles.toast,
+            { opacity: toastOpacity, backgroundColor: toastVariant === "error" ? "#c0392b" : "#1a1a1a" },
+          ]}
+        >
           <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>
             <Check size={18} color="#fff" />
             <Text variant="smParagraph" color="white">
@@ -190,7 +214,6 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 20,
     right: 20,
-    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,

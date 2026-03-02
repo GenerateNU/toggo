@@ -1,16 +1,10 @@
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
+import { getTrip } from "@/api/trips/useGetTrip";
 import { useUserStore } from "@/auth/store";
 import { Box, Text } from "@/design-system";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 
-/**
- * Deep link handler: frontend://join?code=XXXX
- *
- * - Authenticated + has profile  → join trip immediately, go home with toast param
- * - Authenticated + no profile   → save code, go home (bottom sheet will open)
- * - Not authenticated            → save code, go to login
- */
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
   const router = useRouter();
@@ -34,19 +28,36 @@ export default function JoinScreen() {
       }
 
       if (!hasProfile) {
-        // Authenticated but no profile yet — save code, go home (profile bottom sheet opens)
+        // authenticated but no profile yet: save code, go home (profile bottom sheet opens)
         setPendingTripCode(code);
         router.replace("/(app)");
         return;
       }
 
-      // Fully authenticated — join now
+      // fully authenticated: join now
       try {
-        await joinTripByInvite(code);
-        router.replace({ pathname: "/(app)", params: { joinedTrip: "1" } });
-      } catch {
-        // If already a member or code invalid, still go home
-        router.replace("/(app)");
+        const membership = await joinTripByInvite(code);
+        let tripName = "Trip";
+        if (membership?.trip_id) {
+          try {
+            const trip = await getTrip(membership.trip_id);
+            tripName = trip?.name ?? tripName;
+          } catch {
+            // ignore — fallback to generic name
+          }
+        }
+        router.replace({ pathname: "/(app)", params: { joinedTripName: tripName } });
+      } catch (err) {
+        const status = (err as any)?.status;
+        let joinError: string;
+        if (status === 400 || status === 404) {
+          joinError = "Invite code is invalid or expired";
+        } else if (status === 409) {
+          joinError = "You're already a member of this trip";
+        } else {
+          joinError = "Something went wrong – we couldn't add you";
+        }
+        router.replace({ pathname: "/(app)", params: { joinError } });
       }
     };
 
