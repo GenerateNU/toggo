@@ -21,7 +21,7 @@ export const ColorPalette = {
   // Icon
   iconPrimary: "#ffffff",
   iconSecondary: "#000000",
-  iconTertiary: "#FEFEFE",
+  iconTertiary: "#7E7E7E",
 
   // Surface
   surfaceBackground: "#F5F5F7",

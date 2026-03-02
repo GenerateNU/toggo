@@ -1,5 +1,5 @@
 import { useUser } from "@/contexts/user";
-import { BackButton } from "@/design-system";
+import { BackButton } from "@/design-system/components/navigation/arrow";
 import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {
@@ -10,53 +10,49 @@ const Layout = () => {
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerLeft: () => <BackButton />,
+        headerBackVisible: false,
+        headerTitleAlign: "center",
+        headerTransparent: true,
+        headerTitle: "",
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerTitle: "",
+          headerTransparent: true,
           gestureEnabled: false,
-          headerLeft: () => <BackButton />,
         }}
       />
       <Stack.Screen
-        name="testing"
+        name="activities"
         options={{
-          headerTransparent: true,
           headerShown: false,
           headerTitle: "",
-          headerShadowVisible: false,
-          headerLeft: () => <BackButton />,
+          headerTransparent: true,
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen
-        name="settings"
+        name="pitches"
         options={{
-          headerTransparent: true,
           headerShown: false,
           headerTitle: "",
-          headerShadowVisible: false,
-          headerLeft: () => <BackButton />,
+          headerTransparent: true,
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen
-        name="ui-kit"
+        name="polls"
         options={{
-          headerTransparent: true,
           headerShown: false,
           headerTitle: "",
-          headerShadowVisible: false,
-          headerLeft: () => <BackButton />,
-        }}
-      />
-      <Stack.Screen
-        name="trips"
-        options={{
           headerTransparent: true,
-          headerShown: false,
-          headerTitle: "",
-          headerShadowVisible: false,
-          headerLeft: () => <BackButton />,
+          gestureEnabled: false,
         }}
       />
     </Stack>
