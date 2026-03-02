@@ -65,9 +65,7 @@ export function searchTripsSuspenseQueryOptions(
     enabled: !!params,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return searchTripsSuspense(params, config);
     },
   });

@@ -60,9 +60,7 @@ export function getCurrentUserSuspenseQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getCurrentUserSuspense(config);
     },
   });

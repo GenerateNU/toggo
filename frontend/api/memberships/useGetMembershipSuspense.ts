@@ -79,9 +79,7 @@ export function getMembershipSuspenseQueryOptions(
     enabled: !!(tripID && userID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getMembershipSuspense(tripID, userID, config);
     },
   });

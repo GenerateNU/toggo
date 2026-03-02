@@ -88,9 +88,7 @@ export function getActivitySuspenseQueryOptions(
     enabled: !!(tripID && activityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getActivitySuspense(tripID, activityID, config);
     },
   });

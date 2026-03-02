@@ -102,9 +102,7 @@ export function getPaginatedCommentsQueryOptions(
     enabled: !!(tripID && entityType && entityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPaginatedComments(tripID, entityType, entityID, params, config);
     },
   });
