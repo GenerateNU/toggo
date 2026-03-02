@@ -1,10 +1,7 @@
 import { Box, Text } from "@/design-system";
-import { useLocalSearchParams } from "expo-router";
-import OTPVerificationForm from "./components/verify-form";
+import PhoneNumberForm from "./components/login-form";
 
-export default function VerifyPage() {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
-
+export default function PhonePage() {
   return (
     <Box
       flex={1}
@@ -18,17 +15,15 @@ export default function VerifyPage() {
           TOGGO
         </Text>
         <Text variant="xxlHeading" color="textSecondary" marginTop="lg">
-          Enter Verification Code
+          Enter your phone number
         </Text>
-        {phone && (
-          <Text variant="mdParagraph" color="textQuaternary">
-            We have sent the code to {phone}
-          </Text>
-        )}
+        <Text variant="mdParagraph" color="textQuaternary">
+          We'll send you a verification code.
+        </Text>
       </Box>
 
       <Box flex={1} justifyContent="center">
-        <OTPVerificationForm />
+        <PhoneNumberForm />
       </Box>
     </Box>
   );

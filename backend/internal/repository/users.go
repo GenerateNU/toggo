@@ -72,6 +72,11 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("timezone = ?", *req.Timezone)
 	}
 
+	if req.ProfilePicture != nil {
+		updates["profile_picture"] = *req.ProfilePicture
+		updateQuery = updateQuery.Set("profile_picture = ?", *req.ProfilePicture)
+	}
+
 	if req.DeviceToken != nil {
 		trimmedToken := strings.TrimSpace(*req.DeviceToken)
 		updateQuery = updateQuery.Set("device_token = ?", trimmedToken)

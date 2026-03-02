@@ -1,12 +1,77 @@
 import { useUser } from "@/contexts/user";
-import { Redirect } from "expo-router";
+import { Box, Text } from "@/design-system";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function Index() {
   const { isAuthenticated } = useUser();
+  const router = useRouter();
 
-  if (isAuthenticated) {
-    return <Redirect href="/(app)" />;
-  }
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isAuthenticated) {
+        router.replace("/(app)");
+      } else {
+        router.replace("/(auth)/login");
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated]);
 
-  return <Redirect href="/(auth)/login" />;
+  return (
+    <Box
+      flex={1}
+      backgroundColor="white"
+      justifyContent="space-between"
+      padding="lg"
+      paddingBottom="xl"
+    >
+      <Box flex={1} justifyContent="center" alignItems="center" gap="lg">
+        <Box
+          width={120}
+          height={120}
+          justifyContent="center"
+          alignItems="center"
+          gap="xs"
+        >
+          <Box flexDirection="row" gap="xs" alignItems="flex-end">
+            <Box
+              width={0}
+              height={0}
+              style={{
+                borderLeftWidth: 22,
+                borderRightWidth: 22,
+                borderBottomWidth: 38,
+                borderLeftColor: "transparent",
+                borderRightColor: "transparent",
+                borderBottomColor: "#000",
+              }}
+            />
+            <Box
+              width={38}
+              height={38}
+              borderRadius="full"
+              backgroundColor="secondaryBackground"
+            />
+          </Box>
+          <Box
+            width={38}
+            height={38}
+            style={{ transform: [{ rotate: "45deg" }] }}
+            backgroundColor="black"
+          />
+        </Box>
+      </Box>
+
+      <Box gap="xs">
+        <Text
+          variant="xxlHeading"
+          color="textSecondary"
+          style={{ lineHeight: 38 }}
+        >
+          group trips shouldn't die in the group chat
+        </Text>
+      </Box>
+    </Box>
+  );
 }

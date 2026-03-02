@@ -1,3 +1,4 @@
+import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useCreateUser } from "@/api/users/useCreateUser";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
@@ -27,10 +28,17 @@ const PROFILE_SCHEMA = z.object({
 
 type ProfileFormData = z.infer<typeof PROFILE_SCHEMA>;
 
-export default function CompleteProfileForm() {
+interface CompleteProfileFormProps {
+  profilePhotoUri?: string | null;
+}
+
+export default function CompleteProfileForm({
+  profilePhotoUri,
+}: CompleteProfileFormProps) {
   const { refreshCurrentUser } = useUser();
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
+  const { mutateAsync: uploadProfilePicture } = useUploadProfilePicture();
   const params = useLocalSearchParams();
   const router = useRouter();
   const phone = params.phone as string | undefined;
@@ -67,13 +75,29 @@ export default function CompleteProfileForm() {
         },
       });
 
-      const timezone = getDeviceTimeZone();
-      if (timezone && created?.id) {
+      if (!created?.id) {
+        throw new Error("User creation returned no ID");
+      }
+
+      let profilePictureId: string | undefined;
+      if (profilePhotoUri) {
         try {
-          await updateUser({ userID: created.id, data: { timezone } });
+          const result = await uploadProfilePicture({ uri: profilePhotoUri });
+          profilePictureId = result.imageId;
+          console.log("[profile] uploaded photo, imageId:", profilePictureId);
         } catch (err) {
-          console.warn("Failed to update timezone", err);
+          console.error("[profile] photo upload failed:", err);
         }
+      }
+
+      const timezone = getDeviceTimeZone();
+      const updateData: Record<string, string> = {};
+      if (timezone) updateData.timezone = timezone;
+      if (profilePictureId) updateData.profile_picture = profilePictureId;
+
+      if (Object.keys(updateData).length > 0) {
+        console.log("[profile] updateUser payload:", updateData);
+        await updateUser({ userID: created.id, data: updateData });
       }
 
       await refreshCurrentUser();

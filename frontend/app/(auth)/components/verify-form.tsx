@@ -158,7 +158,7 @@ export default function OTPVerificationForm() {
         const user = await refreshCurrentUser();
         if (!user?.name || !user?.username) {
           router.replace({
-            pathname: "/(auth)/complete-profile",
+            pathname: "/(auth)/verified",
             params: { phone: normalized.e164 },
           });
           return;
@@ -174,7 +174,7 @@ export default function OTPVerificationForm() {
           return;
         }
         router.replace({
-          pathname: "/(auth)/complete-profile",
+          pathname: "/(auth)/verified",
           params: { phone: normalized.e164 },
         });
       }
@@ -217,9 +217,6 @@ export default function OTPVerificationForm() {
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="sm">
-            <Text variant="smLabel" color="textSecondary">
-              Enter OTP sent to {phoneNumber}
-            </Text>
             <OTPInput
               value={value}
               onChange={onChange}
@@ -236,26 +233,33 @@ export default function OTPVerificationForm() {
       />
       <Button
         layout="textOnly"
-        label="Verify OTP"
+        label="Verify phone number"
         variant="Primary"
         loading={isSubmitting}
         loadingLabel="Verifying..."
         disabled={!formState.isValid || isSubmitting}
         onPress={handleSubmit(onSubmit)}
       />
-      <Text variant="smParagraph" color="textSecondary">
-        {canResend ? "You can resend the code now." : `Resend OTP in ${timer}s`}
-      </Text>
 
-      <Button
-        layout="textOnly"
-        label="Resend OTP"
-        variant="Tertiary"
-        loading={isPending}
-        loadingLabel="Sending..."
-        disabled={!canResend || isPending}
-        onPress={handleResendOTP}
-      />
+      <Box alignItems="center" marginTop="xs">
+        {canResend ? (
+          <Text variant="smParagraph" color="textQuaternary">
+            Didn't receive a code?{" "}
+            <Text
+              variant="smParagraph"
+              color="textSecondary"
+              onPress={!isPending ? handleResendOTP : undefined}
+              style={{ fontWeight: "600", textDecorationLine: "underline" }}
+            >
+              Resend code
+            </Text>
+          </Text>
+        ) : (
+          <Text variant="smParagraph" color="textQuaternary">
+            Didn't receive a code? Resend in {timer}s
+          </Text>
+        )}
+      </Box>
     </Box>
   );
 }

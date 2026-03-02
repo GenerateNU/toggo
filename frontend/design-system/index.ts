@@ -26,3 +26,13 @@ export { BackButton } from "./components/navigation/arrow";
 
 // ─── UI Kit Display (for testing/showcasing components) ──────────────────────────────
 export { default as UIKitDisplay } from "./components/ui-kit-display/display";
+
+// ─── Bottom Sheet ──────────────────────────────────────────────────────────────────────
+export { default as BottomSheet } from "./components/bottom-sheet/bottom-sheet";
+
+// ─── Image Picker ──────────────────────────────────────────────────────────────────────
+export { ImagePicker } from "./components/image-picker/image-picker";
+export type {
+  ImagePickerProps,
+  ImagePickerVariant,
+} from "./components/image-picker/image-picker";

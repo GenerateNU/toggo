@@ -1,6 +1,7 @@
 import { NotificationProvider } from "@/contexts/notification";
 import { UserProvider } from "@/contexts/user";
 import { theme } from "@/design-system";
+import { PortalProvider } from "@gorhom/portal";
 import { ThemeProvider } from "@shopify/restyle";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
@@ -10,7 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -59,9 +60,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1 }}>
-          <StatusBar style="auto" />
-          <ThemeProvider theme={theme}>
+        <StatusBar style="auto" />
+        <ThemeProvider theme={theme}>
+          <PortalProvider>
             <QueryClientProvider client={queryClient}>
               <UserProvider>
                 <NotificationProvider>
@@ -69,8 +70,8 @@ export default function RootLayout() {
                 </NotificationProvider>
               </UserProvider>
             </QueryClientProvider>
-          </ThemeProvider>
-        </SafeAreaView>
+          </PortalProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
