@@ -19,6 +19,8 @@ import {
 import { ArrowRight, Mail, Star } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Animated, Easing, TouchableOpacity } from "react-native";
+import SkeletonCircle from "../skeleton/circle";
+import SkeletonRect from "../skeleton/rectangle";
 
 function Section({
   title,
@@ -110,6 +112,21 @@ export default function UIKit() {
           Subjected to change.
         </Text>
       </Box>
+
+      <Section title="Skeleton">
+        <Text variant="xsLabel" color="textSecondary">
+          shapes
+        </Text>
+        <Row label="rect">
+          <SkeletonRect width="half" height="md" />
+        </Row>
+        <Row label="square">
+          <SkeletonRect size="xl" />
+        </Row>
+        <Row label="circle">
+          <SkeletonCircle size="xl" />
+        </Row>
+      </Section>
 
       <Section title="Color">
         {(Object.keys(ColorPalette) as ColorName[]).map((key) => (

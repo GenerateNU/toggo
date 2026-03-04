@@ -44,5 +44,8 @@ export type {
 export { Illustration } from "./components/brand/illustration";
 export { Logo } from "./components/brand/logo";
 export { SplashScreen } from "./components/brand/splash-screen";
-
 export { Screen } from "./components/high-order/screen";
+
+// ─── Skeletons ──────────────────────────────────────────────────────────────────────
+export { default as SkeletonCircle } from "./components/skeleton/circle";
+export { default as SkeletonRect } from "./components/skeleton/rectangle";
