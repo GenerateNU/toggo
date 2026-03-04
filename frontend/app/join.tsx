@@ -46,7 +46,10 @@ export default function JoinScreen() {
             // ignore — fallback to generic name
           }
         }
-        router.replace({ pathname: "/(app)", params: { joinedTripName: tripName } });
+        router.replace({
+          pathname: "/(app)",
+          params: { joinedTripName: tripName },
+        });
       } catch (err) {
         const status = (err as any)?.status;
         let joinError: string;

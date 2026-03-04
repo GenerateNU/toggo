@@ -1,4 +1,5 @@
 import { getAuthToken } from "@/api/client";
+import { Screen } from "@/design-system";
 import Constants from "expo-constants";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -279,111 +280,113 @@ export default function TestRealtimeScreen() {
   }, []);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <Text style={styles.title}>Realtime Test</Text>
-      <Text style={styles.subtitle}>
-        API: {API_URL} | WS: {WS_URL}
-      </Text>
-
-      {/* Connection Controls */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Connection: {connected ? "🟢 Connected" : "🔴 Disconnected"}
+    <Screen>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <Text style={styles.title}>Realtime Test</Text>
+        <Text style={styles.subtitle}>
+          API: {API_URL} | WS: {WS_URL}
         </Text>
-        <View style={styles.row}>
-          <Button title="Connect" onPress={connect} disabled={connected} />
-          <Button
-            title="Disconnect"
-            onPress={disconnect}
-            disabled={!connected}
-          />
-          <Button title="Ping" onPress={sendPing} disabled={!connected} />
-        </View>
-      </View>
 
-      {/* Subscription Controls */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Subscription</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Trip ID (UUID)"
-          value={tripId}
-          onChangeText={setTripId}
-          autoCapitalize="none"
-        />
-        <View style={styles.row}>
-          <Button
-            title="Subscribe"
-            onPress={subscribe}
-            disabled={!connected || subscribed}
-          />
-          <Button
-            title="Unsubscribe"
-            onPress={unsubscribe}
-            disabled={!connected || !subscribed}
-          />
-          <Button title="Get Trip" onPress={getTrip} />
+        {/* Connection Controls */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Connection: {connected ? "🟢 Connected" : "🔴 Disconnected"}
+          </Text>
+          <View style={styles.row}>
+            <Button title="Connect" onPress={connect} disabled={connected} />
+            <Button
+              title="Disconnect"
+              onPress={disconnect}
+              disabled={!connected}
+            />
+            <Button title="Ping" onPress={sendPing} disabled={!connected} />
+          </View>
         </View>
-      </View>
 
-      {/* Create Trip */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Create Trip (with your JWT)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Trip name"
-          value={createTripName}
-          onChangeText={setCreateTripName}
-        />
-        <View style={styles.row}>
+        {/* Subscription Controls */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Subscription</Text>
           <TextInput
-            style={[styles.input, styles.smallInput]}
-            placeholder="Min Budget"
-            value={budgetMin}
-            onChangeText={setBudgetMin}
-            keyboardType="numeric"
+            style={styles.input}
+            placeholder="Enter Trip ID (UUID)"
+            value={tripId}
+            onChangeText={setTripId}
+            autoCapitalize="none"
           />
+          <View style={styles.row}>
+            <Button
+              title="Subscribe"
+              onPress={subscribe}
+              disabled={!connected || subscribed}
+            />
+            <Button
+              title="Unsubscribe"
+              onPress={unsubscribe}
+              disabled={!connected || !subscribed}
+            />
+            <Button title="Get Trip" onPress={getTrip} />
+          </View>
+        </View>
+
+        {/* Create Trip */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Create Trip (with your JWT)</Text>
           <TextInput
-            style={[styles.input, styles.smallInput]}
-            placeholder="Max Budget"
-            value={budgetMax}
-            onChangeText={setBudgetMax}
-            keyboardType="numeric"
+            style={styles.input}
+            placeholder="Trip name"
+            value={createTripName}
+            onChangeText={setCreateTripName}
           />
+          <View style={styles.row}>
+            <TextInput
+              style={[styles.input, styles.smallInput]}
+              placeholder="Min Budget"
+              value={budgetMin}
+              onChangeText={setBudgetMin}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={[styles.input, styles.smallInput]}
+              placeholder="Max Budget"
+              value={budgetMax}
+              onChangeText={setBudgetMax}
+              keyboardType="numeric"
+            />
+          </View>
+          <Button title="Create Trip" onPress={createTrip} />
         </View>
-        <Button title="Create Trip" onPress={createTrip} />
-      </View>
 
-      {/* Update Controls */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Update Trip (triggers event)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="New trip name"
-          value={newTripName}
-          onChangeText={setNewTripName}
-        />
-        <Button title="Update Trip from App" onPress={updateTripFromApp} />
-      </View>
-
-      {/* Logs */}
-      <View style={styles.logsSection}>
-        <View style={styles.logsHeader}>
-          <Text style={styles.sectionTitle}>Logs</Text>
-          <Button title="Clear" onPress={() => setLogs([])} />
+        {/* Update Controls */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Update Trip (triggers event)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="New trip name"
+            value={newTripName}
+            onChangeText={setNewTripName}
+          />
+          <Button title="Update Trip from App" onPress={updateTripFromApp} />
         </View>
-        <ScrollView style={styles.logsContainer}>
-          {logs.map((log, index) => (
-            <Text key={index} style={styles.logItem}>
-              {log}
-            </Text>
-          ))}
-        </ScrollView>
-      </View>
-    </ScrollView>
+
+        {/* Logs */}
+        <View style={styles.logsSection}>
+          <View style={styles.logsHeader}>
+            <Text style={styles.sectionTitle}>Logs</Text>
+            <Button title="Clear" onPress={() => setLogs([])} />
+          </View>
+          <ScrollView style={styles.logsContainer}>
+            {logs.map((log, index) => (
+              <Text key={index} style={styles.logItem}>
+                {log}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 

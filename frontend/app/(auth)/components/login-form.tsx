@@ -79,9 +79,7 @@ export default function PhoneNumberForm() {
             <Box gap="xs">
               <Box
                 flexDirection="row"
-                borderColor={
-                  formState.errors.phone ? "error" : "borderPrimary"
-                }
+                borderColor={formState.errors.phone ? "error" : "borderPrimary"}
                 borderRadius="sm"
                 overflow="hidden"
                 backgroundColor="white"
@@ -106,19 +104,13 @@ export default function PhoneNumberForm() {
                       withEmoji={false}
                       visible={pickerVisible}
                       onClose={() => setPickerVisible(false)}
-                      onSelect={(country) =>
-                        setCountryCode(country.cca2)
-                      }
+                      onSelect={(country) => setCountryCode(country.cca2)}
                       containerButtonStyle={{
                         padding: 0,
                         marginBottom: 7,
                       }}
                     />
-                    <Icon
-                      icon={ChevronDown}
-                      size="xs"
-                      color="textQuaternary"
-                    />
+                    <Icon icon={ChevronDown} size="xs" color="textQuaternary" />
                   </Box>
                 </Pressable>
 

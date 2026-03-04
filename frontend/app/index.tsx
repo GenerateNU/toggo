@@ -18,7 +18,5 @@ export default function Index() {
     return () => clearTimeout(timeout);
   }, [isAuthenticated, router]);
 
-  return (
-    <SplashScreen />
-  );
+  return <SplashScreen />;
 }

@@ -1,16 +1,18 @@
-import { Box, Text } from "@/design-system";
+import { Box, Screen, Text } from "@/design-system";
 
 export default function Pitches() {
   return (
-    <Box
-      flex={1}
-      justifyContent="center"
-      alignItems="center"
-      backgroundColor="white"
-    >
-      <Text variant="lgHeading" color="black">
-        Pitches Page
-      </Text>
-    </Box>
+    <Screen>
+      <Box
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="white"
+      >
+        <Text variant="lgHeading" color="black">
+          Pitches Page
+        </Text>
+      </Box>
+    </Screen>
   );
 }

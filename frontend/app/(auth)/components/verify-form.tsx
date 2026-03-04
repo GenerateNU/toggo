@@ -172,7 +172,9 @@ export default function OTPVerificationForm() {
         user = await refreshCurrentUser();
       } catch (refreshErr: any) {
         const status =
-          refreshErr?.status ?? refreshErr?.data?.status ?? refreshErr?.response?.status;
+          refreshErr?.status ??
+          refreshErr?.data?.status ??
+          refreshErr?.response?.status;
         if (status === 404 || refreshErr?.message === "User not found") {
           router.replace({
             pathname: "/(auth)/verified",
@@ -190,8 +192,6 @@ export default function OTPVerificationForm() {
         });
         return;
       }
-
-      router.replace("/");
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
       setIsSubmitting(false);

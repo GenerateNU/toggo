@@ -20,10 +20,15 @@ export default function Home() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Profile created!");
-  const [toastVariant, setToastVariant] = useState<"success" | "error">("success");
+  const [toastVariant, setToastVariant] = useState<"success" | "error">(
+    "success",
+  );
   const [toastOpacity] = useState(() => new Animated.Value(0));
 
-  const { joinedTripName, joinError } = useLocalSearchParams<{ joinedTripName?: string; joinError?: string }>();
+  const { joinedTripName, joinError } = useLocalSearchParams<{
+    joinedTripName?: string;
+    joinError?: string;
+  }>();
 
   const needsProfile = !currentUser?.username;
 
@@ -38,7 +43,10 @@ export default function Home() {
   }, [needsProfile]);
 
   // Show "Trip added!" toast from deeplink join redirect
-  const triggerToast = (message: string, variant: "success" | "error" = "success") => {
+  const triggerToast = (
+    message: string,
+    variant: "success" | "error" = "success",
+  ) => {
     setToastMessage(message);
     setToastVariant(variant);
     setShowToast(true);
@@ -182,7 +190,10 @@ export default function Home() {
         <Animated.View
           style={[
             styles.toast,
-            { opacity: toastOpacity, backgroundColor: toastVariant === "error" ? "#c0392b" : "#1a1a1a" },
+            {
+              opacity: toastOpacity,
+              backgroundColor: toastVariant === "error" ? "#c0392b" : "#1a1a1a",
+            },
           ]}
         >
           <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>

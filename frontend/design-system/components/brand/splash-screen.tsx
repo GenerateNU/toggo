@@ -12,10 +12,7 @@ export function SplashScreen() {
       paddingBottom="xl"
     >
       <Box gap="xs">
-        <Text
-          variant="xxlHeading"
-          color="textSecondary"
-        >
+        <Text variant="xxlHeading" color="textSecondary">
           group trips shouldn't die in the group chat
         </Text>
       </Box>

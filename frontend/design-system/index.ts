@@ -37,7 +37,7 @@ export { default as BottomSheet } from "./components/bottom-sheet/bottom-sheet";
 export { ImagePicker } from "./components/image-picker/image-picker";
 export type {
   ImagePickerProps,
-  ImagePickerVariant
+  ImagePickerVariant,
 } from "./components/image-picker/image-picker";
 
 // ─── Brand ──────────────────────────────────────────────────────────────────────
@@ -45,3 +45,4 @@ export { Illustration } from "./components/brand/illustration";
 export { Logo } from "./components/brand/logo";
 export { SplashScreen } from "./components/brand/splash-screen";
 
+export { Screen } from "./components/high-order/screen";
