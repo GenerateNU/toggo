@@ -87,7 +87,6 @@ export default function CompleteProfileForm({
         try {
           const result = await uploadProfilePicture({ uri: profilePhotoUri });
           profilePictureId = result.imageId;
-          console.log("[profile] uploaded photo, imageId:", profilePictureId);
         } catch (err) {
           console.error("[profile] photo upload failed:", err);
         }
@@ -99,7 +98,6 @@ export default function CompleteProfileForm({
       if (profilePictureId) updateData.profile_picture = profilePictureId;
 
       if (Object.keys(updateData).length > 0) {
-        console.log("[profile] updateUser payload:", updateData);
         await updateUser({ userID: created.id, data: updateData });
       }
 

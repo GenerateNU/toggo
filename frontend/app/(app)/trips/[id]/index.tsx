@@ -1,10 +1,38 @@
+import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { Box, Button, Screen, Text } from "@/design-system";
+import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { ActivityIndicator, Share } from "react-native";
 
 const DUMMY_ID = "dummy-entity-001";
 
 export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
+  const createInviteMutation = useCreateTripInvite();
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+
+  const handleInvite = async () => {
+    try {
+      const invite = await createInviteMutation.mutateAsync({
+        tripID: tripID!,
+      });
+      const code = invite.code;
+      if (!code) return;
+
+      const deepLink = Linking.createURL("join", {
+        queryParams: { code },
+      });
+      setInviteLink(deepLink);
+
+      await Share.share({
+        message: `Join my trip on Toggo! ${deepLink}`,
+        url: deepLink,
+      });
+    } catch (e) {
+      console.error("Failed to create invite:", e);
+    }
+  };
 
   return (
     <Screen>
@@ -87,6 +115,41 @@ export default function Trip() {
               variant="Secondary"
               onPress={() => router.push(`/trips/${tripID}/polls/creation`)}
             />
+          </Box>
+
+          <Text variant="smLabel" color="textQuaternary" marginTop="sm">
+            INVITE
+          </Text>
+          <Box gap="sm">
+            <Button
+              layout="textOnly"
+              label={
+                createInviteMutation.isPending
+                  ? "Generating..."
+                  : "Invite via Link"
+              }
+              variant="Secondary"
+              disabled={createInviteMutation.isPending}
+              onPress={handleInvite}
+            />
+            {createInviteMutation.isPending && (
+              <ActivityIndicator size="small" />
+            )}
+            {inviteLink && (
+              <Box
+                backgroundColor="surfaceCard"
+                padding="sm"
+                borderRadius="sm"
+              >
+                <Text
+                  variant="xsParagraph"
+                  color="textQuaternary"
+                  numberOfLines={1}
+                >
+                  {inviteLink}
+                </Text>
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>

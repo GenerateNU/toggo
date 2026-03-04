@@ -58,7 +58,7 @@ export default function JoinScreen() {
         } else if (status === 409) {
           joinError = "You're already a member of this trip";
         } else {
-          joinError = "Something went wrong – we couldn't add you";
+          joinError = "Something went wrong, we couldn't add you";
         }
         router.replace({ pathname: "/(app)", params: { joinError } });
       }
