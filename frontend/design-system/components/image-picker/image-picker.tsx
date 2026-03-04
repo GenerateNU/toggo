@@ -1,3 +1,4 @@
+import { Icon } from "@/design-system";
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
@@ -117,7 +118,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             contentFit="cover"
           />
         ) : (
-          <ImageIcon size={size * 0.35} color="#858585" />
+          <Icon icon={ImageIcon} size="md" color="textQuaternary" />
         )}
       </Box>
 
@@ -134,7 +135,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
         borderWidth={2}
         borderColor="white"
       >
-        <Pencil size={size * 0.14} color="#FFFFFF" />
+        <Icon icon={Pencil} size="xs" color="white" />
       </Box>
     </Pressable>
   );
@@ -163,7 +164,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
           />
         ) : (
           <Box gap="xs" alignItems="center">
-            <ImageIcon size={32} color="#858585" />
+            <Icon icon={ImageIcon} size="md" color="textQuaternary" />
             <Text variant="smLabel" color="textQuaternary">
               {placeholder}
             </Text>
@@ -179,7 +180,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             padding="xs"
             borderTopLeftRadius="sm"
           >
-            <Pencil size={14} color="#FFFFFF" />
+            <Icon icon={Pencil} size="xs" color="white" />
           </Box>
         )}
       </Box>
@@ -206,7 +207,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               Select photo
             </Text>
             <TouchableOpacity onPress={closeSheet} hitSlop={12}>
-              <X size={20} color="#858585" />
+              <Icon icon={X} size="sm" color="textQuaternary" />
             </TouchableOpacity>
           </Box>
 
@@ -219,7 +220,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               backgroundColor="surfaceBackground"
               borderRadius="md"
             >
-              <Camera size={20} color="#000000" />
+              <Icon icon={Camera} size="sm" color="iconSecondary" />
               <Text variant="mdParagraph" color="textSecondary">
                 Take a photo
               </Text>
@@ -235,7 +236,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               backgroundColor="surfaceBackground"
               borderRadius="md"
             >
-              <ImageIcon size={20} color="#000000" />
+              <Icon icon={ImageIcon} size="sm" color="textQuaternary" />
               <Text variant="mdParagraph" color="textSecondary">
                 Choose from library
               </Text>
@@ -252,7 +253,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
                 backgroundColor="surfaceBackground"
                 borderRadius="md"
               >
-                <Trash2 size={20} color="#FF3B30" />
+                <Icon icon={Trash2} size="sm" color="error" />
                 <Text variant="mdParagraph" color="error">
                   Remove photo
                 </Text>

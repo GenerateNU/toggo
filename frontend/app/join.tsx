@@ -8,15 +8,20 @@ import { useEffect, useRef } from "react";
 export default function JoinScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
   const router = useRouter();
-  const handled = useRef(false);
+  const lastHandledCode = useRef<string | null>(null);
 
   const isAuthenticated = useUserStore((s) => s.isAuthenticated);
   const currentUser = useUserStore((s) => s.currentUser);
   const setPendingTripCode = useUserStore((s) => s.setPendingTripCode);
 
   useEffect(() => {
-    if (handled.current || !code) return;
-    handled.current = true;
+    if (!code) {
+      router.replace("/(app)");
+      return;
+    }
+
+    if (lastHandledCode.current === code) return;
+    lastHandledCode.current = code;
 
     const handle = async () => {
       const hasProfile = !!currentUser?.username;
