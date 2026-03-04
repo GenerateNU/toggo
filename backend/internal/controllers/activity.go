@@ -408,7 +408,7 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 // @Param tripID path string true "Trip ID"
 // @Param activityID path string true "Activity ID"
 // @Param request body models.ActivityRSVPRequestPayload true "RSVP request payload"
-// @Success 200 {object} models.ActivityRSVPResponse
+// @Success 200 {object} models.ActivityRSVPAPIResponse
 // @Failure 400 {object} errs.APIError
 // @Failure 401 {object} errs.APIError
 // @Failure 403 {object} errs.APIError
