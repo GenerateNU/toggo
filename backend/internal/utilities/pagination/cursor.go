@@ -33,6 +33,23 @@ func DecodeCursor[T any](token string, cursor *T) error {
 	return nil
 }
 
+func EncodeTimeCursor(createdAt time.Time) (string, error) {
+	return createdAt.UTC().Format(time.RFC3339Nano), nil
+}
+
+func DecodeTimeCursor(token string) (time.Time, error) {
+	if token == "" {
+		return time.Time{}, nil
+	}
+
+	t, err := time.Parse(time.RFC3339Nano, token)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return t, nil
+}
+
 // EncodeTimeUUIDCursorFromValues builds a cursor token from timestamp and UUID values.
 func EncodeTimeUUIDCursorFromValues(createdAt time.Time, id uuid.UUID) (string, error) {
 	return EncodeTimeUUIDCursor(models.TimeUUIDCursor{CreatedAt: createdAt, ID: id})

@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -407,70 +406,86 @@ func (s *ActivityService) UpdateActivityRSVP(ctx context.Context, tripID, activi
 	return rsvp, nil
 }
 
-func (s *ActivityService) GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) (*models.ActivityRSVPsPageResult, error) {
-	fmt.Printf("[DEBUG] GetActivityRSVPs (service): tripID=%v activityID=%v userID=%v limit=%d cursorToken=%v statusFilter=%v\n", tripID, activityID, userID, limit, cursorToken, statusFilter)
+func (s *ActivityService) GetActivityRSVPs(
+	ctx context.Context,
+	tripID uuid.UUID,
+	activityID uuid.UUID,
+	userID uuid.UUID,
+	limit int,
+	cursorToken string,
+	statusFilter string,
+) (*models.ActivityRSVPsPageResult, error) {
+
 	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
 		return nil, err
 	}
 
-	var cursor time.Time
-	if cursorToken != "" {
-		parsed, err := pagination.DecodeTimeUUIDCursor(cursorToken)
-		if err != nil {
-			return nil, err
-		}
-		if parsed != nil {
-			cursor = parsed.CreatedAt
-		} else {
-			cursor = time.Time{}
-		}
-	} else {
-		cursor = time.Time{}
-	}
-
-	rsvps, lastRSVP, err := s.ActivityRSVP.GetActivityRSVPs(ctx, tripID, activityID, userID, limit, cursor, statusFilter)
+	cursor, err := pagination.DecodeTimeCursor(cursorToken)
 	if err != nil {
-		fmt.Printf("[ERROR] GetActivityRSVPs (repo) failed: %v\n", err)
 		return nil, err
 	}
-	fmt.Printf("[DEBUG] RSVPs fetched: %+v\n", rsvps)
 
-	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, rsvps, func(item models.ActivityRSVPDatabaseResponse) *string {
-		return item.ProfilePictureKey
-	}, models.ImageSizeSmall)
+	rsvps, lastCreatedAt, err := s.ActivityRSVP.GetActivityRSVPs(
+		ctx,
+		tripID,
+		activityID,
+		userID,
+		limit,
+		cursor,
+		statusFilter,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	fileURLMap := pagination.FetchFileURLs(
+		ctx,
+		s.fileService,
+		rsvps,
+		func(item models.ActivityRSVPDatabaseResponse) *string {
+			return item.ProfilePictureKey
+		},
+		models.ImageSizeSmall,
+	)
 
 	apiRSVPs := make([]models.ActivityRSVPAPIResponse, 0, len(rsvps))
 	for _, rsvp := range rsvps {
-		var profilePictureURL *string
-		if rsvp.ProfilePictureKey != nil && *rsvp.ProfilePictureKey != "" {
-			if url, exists := fileURLMap[*rsvp.ProfilePictureKey]; exists {
-				profilePictureURL = &url
-			}
-		}
-		apiRSVPs = append(apiRSVPs, models.ActivityRSVPAPIResponse{
-			UserID:            rsvp.UserID,
-			Username:          rsvp.Username,
-			ActivityID:        rsvp.ActivityID,
-			ProfilePictureURL: profilePictureURL,
-			Status:            rsvp.Status,
-			CreatedAt:         rsvp.CreatedAt,
-			UpdatedAt:         rsvp.UpdatedAt,
-		})
+		apiRSVPs = append(apiRSVPs, toRSVPAPIResponse(rsvp, fileURLMap))
 	}
 
 	var nextCursor *string
-	if lastRSVP != nil {
-		token, err := pagination.EncodeTimeUUIDCursorFromValues(lastRSVP.CreatedAt, lastRSVP.UserID)
-		if err == nil {
-			nextCursor = &token
-		}
+	if !lastCreatedAt.IsZero() {
+		token := lastCreatedAt.Format(time.RFC3339Nano)
+		nextCursor = &token
 	}
 
-	result := &models.ActivityRSVPsPageResult{
+	return &models.ActivityRSVPsPageResult{
 		RSVPs:      apiRSVPs,
 		Limit:      limit,
 		NextCursor: nextCursor,
+	}, nil
+}
+
+func toRSVPAPIResponse(
+	rsvp models.ActivityRSVPDatabaseResponse,
+	fileURLMap map[string]string,
+) models.ActivityRSVPAPIResponse {
+
+	var profilePictureURL *string
+
+	if rsvp.ProfilePictureKey != nil && *rsvp.ProfilePictureKey != "" {
+		if url, exists := fileURLMap[*rsvp.ProfilePictureKey]; exists {
+			profilePictureURL = &url
+		}
 	}
 
-	return result, nil
+	return models.ActivityRSVPAPIResponse{
+		UserID:            rsvp.UserID,
+		Username:          rsvp.Username,
+		ActivityID:        rsvp.ActivityID,
+		ProfilePictureURL: profilePictureURL,
+		Status:            rsvp.Status,
+		CreatedAt:         rsvp.CreatedAt,
+		UpdatedAt:         rsvp.UpdatedAt,
+	}
 }

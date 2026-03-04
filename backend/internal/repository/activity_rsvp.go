@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 	"toggo/internal/models"
 
@@ -22,7 +21,7 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 	limit int,
 	cursorToken time.Time,
 	statusFilter string,
-) ([]models.ActivityRSVPDatabaseResponse, *models.ActivityRSVPDatabaseResponse, error) {
+) ([]models.ActivityRSVPDatabaseResponse, time.Time, error) {
 	var rsvps []models.ActivityRSVPDatabaseResponse
 
 	query := r.db.NewSelect().
@@ -44,9 +43,6 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 		Order("ar.created_at DESC").
 		Limit(limit)
 
-	fmt.Printf("[DEBUG] GetActivityRSVPs: tripID=%v activityID=%v userID=%v limit=%d cursorToken=%v statusFilter=%v\n",
-		tripID, activityID, userID, limit, cursorToken, statusFilter)
-
 	if statusFilter != "" {
 		query.Where("ar.status = ?", statusFilter)
 	}
@@ -57,16 +53,16 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 
 	err := query.Scan(ctx, &rsvps)
 	if err != nil {
-		return nil, nil, err
+		return rsvps, time.Time{}, nil
 	}
 
-	var lastRSVP *models.ActivityRSVPDatabaseResponse
+	var nextCursor time.Time
 	if len(rsvps) == limit {
 		last := rsvps[len(rsvps)-1]
-		lastRSVP = &last
+		nextCursor = last.CreatedAt
 	}
 
-	return rsvps, lastRSVP, nil
+	return rsvps, nextCursor, nil
 }
 
 func (r *activityRSVPRepository) UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error) {
