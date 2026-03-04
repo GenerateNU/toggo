@@ -1,6 +1,7 @@
+import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useCreateUser } from "@/api/users/useCreateUser";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
-import { useUser } from "@/contexts/user";
+import { useUserStore } from "@/auth/store";
 import { Box, Button, Text } from "@/design-system";
 import { getDeviceTimeZone } from "@/utilities/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,13 +28,23 @@ const PROFILE_SCHEMA = z.object({
 
 type ProfileFormData = z.infer<typeof PROFILE_SCHEMA>;
 
-export default function CompleteProfileForm() {
-  const { refreshCurrentUser } = useUser();
+interface CompleteProfileFormProps {
+  profilePhotoUri?: string | null;
+  onSuccess?: () => void;
+}
+
+export default function CompleteProfileForm({
+  profilePhotoUri,
+  onSuccess,
+}: CompleteProfileFormProps) {
+  const refreshCurrentUser = useUserStore((s) => s.refreshCurrentUser);
+  const storePhone = useUserStore((s) => s.phoneNumber);
   const { mutateAsync: createUser } = useCreateUser();
   const { mutateAsync: updateUser } = useUpdateUser();
+  const { mutateAsync: uploadProfilePicture } = useUploadProfilePicture();
   const params = useLocalSearchParams();
   const router = useRouter();
-  const phone = params.phone as string | undefined;
+  const phone = (params.phone as string | undefined) || storePhone || undefined;
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,17 +78,35 @@ export default function CompleteProfileForm() {
         },
       });
 
-      const timezone = getDeviceTimeZone();
-      if (timezone && created?.id) {
+      if (!created?.id) {
+        throw new Error("User creation returned no ID");
+      }
+
+      let profilePictureId: string | undefined;
+      if (profilePhotoUri) {
         try {
-          await updateUser({ userID: created.id, data: { timezone } });
+          const result = await uploadProfilePicture({ uri: profilePhotoUri });
+          profilePictureId = result.imageId;
         } catch (err) {
-          console.warn("Failed to update timezone", err);
+          console.error("[profile] photo upload failed:", err);
         }
       }
 
+      const timezone = getDeviceTimeZone();
+      const updateData: Record<string, string> = {};
+      if (timezone) updateData.timezone = timezone;
+      if (profilePictureId) updateData.profile_picture = profilePictureId;
+
+      if (Object.keys(updateData).length > 0) {
+        await updateUser({ userID: created.id, data: updateData });
+      }
+
       await refreshCurrentUser();
-      router.replace("/(app)");
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.replace("/(app)");
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to create account. Please try again.");
       setIsSubmitting(false);

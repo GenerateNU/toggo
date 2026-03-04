@@ -1,12 +1,22 @@
 import { useUser } from "@/contexts/user";
-import { Redirect } from "expo-router";
+import { SplashScreen } from "@/design-system/components/brand/splash-screen";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
 
 export default function Index() {
   const { isAuthenticated } = useUser();
+  const router = useRouter();
 
-  if (isAuthenticated) {
-    return <Redirect href="/(app)" />;
-  }
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isAuthenticated) {
+        router.replace("/(app)");
+      } else {
+        router.replace("/(auth)/login");
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated, router]);
 
-  return <Redirect href="/(auth)/login" />;
+  return <SplashScreen />;
 }

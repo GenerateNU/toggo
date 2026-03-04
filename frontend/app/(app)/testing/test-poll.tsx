@@ -1,4 +1,5 @@
 import { getAuthToken } from "@/api/client";
+import { Screen } from "@/design-system";
 import Constants from "expo-constants";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -261,661 +262,683 @@ const sec = StyleSheet.create({
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function TestPollScreen() {
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.container}>
-      <Text style={s.heading}>Poll API Test Suite</Text>
-      <Text style={s.subheading}>
-        Each section tests a group of endpoints. Tap a button to run a test and
-        see the response inline.
-      </Text>
+    <Screen>
+      <ScrollView style={s.root} contentContainerStyle={s.container}>
+        <Text style={s.heading}>Poll API Test Suite</Text>
+        <Text style={s.subheading}>
+          Each section tests a group of endpoints. Tap a button to run a test
+          and see the response inline.
+        </Text>
 
-      {/* ── 0  SETUP ────────────────────────────────────────────────── */}
-      <Section
-        title="0 · Setup"
-        description="Ensure user exists and create a trip for all subsequent tests."
-      >
-        <TestButton label="Ensure User" onRun={async () => ensureUser()} />
-        <TestButton label="Create Trip" onRun={async () => setupTrip()} />
-      </Section>
+        {/* ── 0  SETUP ────────────────────────────────────────────────── */}
+        <Section
+          title="0 · Setup"
+          description="Ensure user exists and create a trip for all subsequent tests."
+        >
+          <TestButton label="Ensure User" onRun={async () => ensureUser()} />
+          <TestButton label="Create Trip" onRun={async () => setupTrip()} />
+        </Section>
 
-      {/* ── 1  CREATE POLL ──────────────────────────────────────────── */}
-      <Section
-        title="1 · Create Poll"
-        description="POST /trips/:tripID/vote-polls — creates polls with options."
-      >
-        <TestButton
-          label="Create valid poll (3 options)"
-          onRun={async () => {
-            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Where should we eat?",
-              poll_type: "single",
-              options: [
-                { name: "Sushi", option_type: "custom" },
-                { name: "Tacos", option_type: "custom" },
-                { name: "Pizza", option_type: "custom" },
-              ],
-            });
-            if (res.ok) {
-              pollId = res.data.id;
-              optionIds = (res.data.options || []).map((o: any) => o.id);
+        {/* ── 1  CREATE POLL ──────────────────────────────────────────── */}
+        <Section
+          title="1 · Create Poll"
+          description="POST /trips/:tripID/vote-polls — creates polls with options."
+        >
+          <TestButton
+            label="Create valid poll (3 options)"
+            onRun={async () => {
+              const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Where should we eat?",
+                poll_type: "single",
+                options: [
+                  { name: "Sushi", option_type: "custom" },
+                  { name: "Tacos", option_type: "custom" },
+                  { name: "Pizza", option_type: "custom" },
+                ],
+              });
+              if (res.ok) {
+                pollId = res.data.id;
+                optionIds = (res.data.options || []).map((o: any) => o.id);
+              }
+              return res;
+            }}
+          />
+          <TestButton
+            label="❌ Missing question (expect 422)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls`, {
+                poll_type: "single",
+                options: [{ name: "A", option_type: "custom" }],
+              })
             }
-            return res;
-          }}
-        />
-        <TestButton
-          label="❌ Missing question (expect 422)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls`, {
-              poll_type: "single",
-              options: [{ name: "A", option_type: "custom" }],
-            })
-          }
-        />
-        <TestButton
-          label="✅ No options param provided → defaults to Yes/No (expect 201)"
-          onRun={async () => {
-            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Should we go?",
-              poll_type: "single",
-            });
-            return res;
-          }}
-        />
-        <TestButton
-          label="❌ Only 1 option (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Bad poll",
-              poll_type: "single",
-              options: [{ name: "Lonely option", option_type: "custom" }],
-            })
-          }
-        />
-        <TestButton
-          label="❌ '' name in option content (expect 422)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Bad poll",
-              poll_type: "single",
-              options: [{ name: "", option_type: "custom" }],
-            })
-          }
-        />
-        <TestButton
-          label="✅ Create poll with exactly 15 options (expect 201)"
-          onRun={async () => {
-            const opts = Array.from({ length: 15 }, (_, i) => ({
-              name: `Option ${i + 1}`,
-              option_type: "custom",
-            }));
-            return api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Max options poll",
-              poll_type: "single",
-              options: opts,
-            });
-          }}
-        />
-        <TestButton
-          label="❌ 16 options (expect 400)"
-          onRun={async () => {
-            const opts = Array.from({ length: 16 }, (_, i) => ({
-              name: `Option ${i + 1}`,
-              option_type: "custom",
-            }));
-            return api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Too many options",
-              poll_type: "single",
-              options: opts,
-            });
-          }}
-        />
-      </Section>
-
-      {/* ── 2  GET POLL ─────────────────────────────────────────────── */}
-      <Section
-        title="2 · Get Poll"
-        description="GET /trips/:tripID/vote-polls/:pollID — retrieves a single poll."
-      >
-        <TestButton
-          label="Get created poll"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="❌ Get non-existent poll (expect 404)"
-          onRun={() =>
-            api(
-              "GET",
-              `/trips/${tripId}/vote-polls/00000000-0000-0000-0000-000000000000`,
-            )
-          }
-        />
-      </Section>
-
-      {/* ── 3  UPDATE POLL ──────────────────────────────────────────── */}
-      <Section
-        title="3 · Update Poll"
-        description="PATCH /trips/:tripID/vote-polls/:pollID — updates question or deadline."
-      >
-        <TestButton
-          label="Update question text"
-          onRun={() =>
-            api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
-              question: "Where should we eat dinner?",
-            })
-          }
-        />
-        <TestButton
-          label="Set deadline (future)"
-          onRun={() => {
-            const future = new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000,
-            ).toISOString();
-            return api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
-              deadline: future,
-            });
-          }}
-        />
-        <TestButton
-          label="Verify update (GET)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-      </Section>
-
-      {/* ── 4  OPTIONS (Add / Remove) ───────────────────────────────── */}
-      <Section
-        title="4 · Options"
-        description="POST & DELETE /trips/:tripID/vote-polls/:pollID/options"
-      >
-        <TestButton
-          label="Add option 'Burgers'"
-          onRun={async () => {
-            const res = await api(
-              "POST",
-              `/trips/${tripId}/vote-polls/${pollId}/options`,
-              { name: "Burgers", option_type: "custom" },
-            );
-            if (res.ok && res.data?.id) optionIds.push(res.data.id);
-            return res;
-          }}
-        />
-        <TestButton
-          label="Verify option added (GET poll)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="Remove last option (returns deleted option)"
-          onRun={async () => {
-            const id = optionIds.pop();
-            if (!id)
-              return {
-                status: 0,
-                ok: false,
-                data: "No option to remove",
-                duration: 0,
-              };
-            return api(
-              "DELETE",
-              `/trips/${tripId}/vote-polls/${pollId}/options/${id}`,
-            );
-          }}
-        />
-        <TestButton
-          label="Verify option removed (GET poll)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="❌ Cannot delete when only 2 options remain (expect 400)"
-          onRun={async () => {
-            // Create a fresh 2-option poll
-            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Min options test",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            });
-            if (!res.ok) return res;
-            const opts = (res.data.options || []).map((o: any) => o.id);
-            return api(
-              "DELETE",
-              `/trips/${tripId}/vote-polls/${res.data.id}/options/${opts[0]}`,
-            );
-          }}
-        />
-      </Section>
-
-      {/* ── 5  VOTING ───────────────────────────────────────────────── */}
-      <Section
-        title="5 · Voting"
-        description="POST /trips/:tripID/vote-polls/:pollID/vote — cast and change votes."
-      >
-        <TestButton
-          label="Vote for first option"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
-              option_ids: [optionIds[0]],
-            })
-          }
-        />
-        <TestButton
-          label="Check vote counts (GET poll)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="Change vote to second option"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
-              option_ids: [optionIds[1]],
-            })
-          }
-        />
-        <TestButton
-          label="Verify changed vote (GET poll)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="Unvote (empty option_ids)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
-              option_ids: [],
-            })
-          }
-        />
-        <TestButton
-          label="Verify unvoted (GET poll)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-      </Section>
-
-      {/* ── 6  MULTI-VOTE ───────────────────────────────────────────── */}
-      <Section
-        title="6 · Multi-Vote Poll"
-        description="Create a poll with allows_multiple_votes=true, then vote for multiple."
-      >
-        <TestButton
-          label="Create multi-vote poll"
-          onRun={async () => {
-            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "What activities?",
-              poll_type: "multi",
-              options: [
-                { name: "Hiking", option_type: "custom" },
-                { name: "Swimming", option_type: "custom" },
-                { name: "Museum", option_type: "custom" },
-              ],
-            });
-            if (res.ok) {
-              pollId = res.data.id;
-              optionIds = (res.data.options || []).map((o: any) => o.id);
+          />
+          <TestButton
+            label="✅ No options param provided → defaults to Yes/No (expect 201)"
+            onRun={async () => {
+              const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Should we go?",
+                poll_type: "single",
+              });
+              return res;
+            }}
+          />
+          <TestButton
+            label="❌ Only 1 option (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Bad poll",
+                poll_type: "single",
+                options: [{ name: "Lonely option", option_type: "custom" }],
+              })
             }
-            return res;
-          }}
-        />
-        <TestButton
-          label="Vote for 2 options"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
-              option_ids: [optionIds[0], optionIds[1]],
-            })
-          }
-        />
-        <TestButton
-          label="Verify multi-vote counts"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-        <TestButton
-          label="❌ Multi-vote on single-vote poll (expect 409)"
-          onRun={async () => {
-            // create a single-vote poll first
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Single only?",
-              poll_type: "single",
-              options: [
-                { name: "Yes", option_type: "custom" },
-                { name: "No", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const opts = (p.data.options || []).map((o: any) => o.id);
-            return api(
-              "POST",
-              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
-              {
-                option_ids: opts, // 2 options on single-vote → should fail
-              },
-            );
-          }}
-        />
-      </Section>
-
-      {/* ── 7  LIST / PAGINATION ────────────────────────────────────── */}
-      <Section
-        title="7 · List & Pagination"
-        description="GET /trips/:tripID/vote-polls?limit=N&cursor=…"
-      >
-        <TestButton
-          label="Seed 3 more polls"
-          onRun={async () => {
-            const results = [];
-            for (let i = 1; i <= 3; i++) {
-              results.push(
-                await api("POST", `/trips/${tripId}/vote-polls`, {
-                  question: `Pagination poll ${i}`,
-                  poll_type: "single",
-                  options: [
-                    { name: "A", option_type: "custom" },
-                    { name: "B", option_type: "custom" },
-                  ],
-                }),
-              );
+          />
+          <TestButton
+            label="❌ '' name in option content (expect 422)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Bad poll",
+                poll_type: "single",
+                options: [{ name: "", option_type: "custom" }],
+              })
             }
-            const ok = results.every((r) => r.ok);
-            return {
-              status: ok ? 201 : 400,
-              ok,
-              data: results.map((r) => ({
-                status: r.status,
-                id: r.data?.id,
-              })),
-              duration: results.reduce((s, r) => s + r.duration, 0),
-            };
-          }}
-        />
-        <TestButton
-          label="List all (limit=10)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls?limit=10`)}
-        />
-        <TestButton
-          label="Page 1 (limit=2)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls?limit=2`)}
-        />
-        <TestButton
-          label="Page 2 (use cursor from page 1)"
-          onRun={async () => {
-            const page1 = await api(
-              "GET",
-              `/trips/${tripId}/vote-polls?limit=2`,
-            );
-            if (!page1.ok || !page1.data?.next_cursor) {
-              return {
-                status: 0,
-                ok: false,
-                data: "No cursor from page 1",
-                duration: page1.duration,
-              };
-            }
-            return api(
-              "GET",
-              `/trips/${tripId}/vote-polls?limit=2&cursor=${page1.data.next_cursor}`,
-            );
-          }}
-        />
-        <TestButton
-          label="❌ Invalid cursor (expect 400)"
-          onRun={() =>
-            api(
-              "GET",
-              `/trips/${tripId}/vote-polls?limit=2&cursor=not-a-valid-cursor`,
-            )
-          }
-        />
-      </Section>
-
-      {/* ── 8  DELETE ───────────────────────────────────────────────── */}
-      <Section
-        title="8 · Delete Poll"
-        description="DELETE /trips/:tripID/vote-polls/:pollID"
-      >
-        <TestButton
-          label="Create poll to delete"
-          onRun={async () => {
-            const res = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Delete me",
-              poll_type: "single",
-            });
-            if (res.ok) pollId = res.data.id;
-            return res;
-          }}
-        />
-        <TestButton
-          label="Delete poll (returns deleted poll)"
-          onRun={async () => {
-            const res = await api(
-              "DELETE",
-              `/trips/${tripId}/vote-polls/${pollId}`,
-            );
-            return res;
-          }}
-        />
-        <TestButton
-          label="Verify deleted (expect 404)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
-        />
-      </Section>
-
-      {/* ── 9  DEADLINE ENFORCEMENT ─────────────────────────────────── */}
-      <Section
-        title="9 · Deadline Enforcement"
-        description="❌ Set a past deadline — should be rejected."
-      >
-        <TestButton
-          label="❌ Create poll + set past deadline"
-          onRun={async () => {
-            const create = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Expired poll",
-              name: "Expired poll",
-              poll_type: "single",
-              options: [
-                { name: "Opt", option_type: "custom" },
-                { name: "Opt2", option_type: "custom" },
-              ],
-            });
-            if (!create.ok) return create;
-            pollId = create.data.id;
-            optionIds = (create.data.options || []).map((o: any) => o.id);
-            const past = new Date(Date.now() - 60_000).toISOString();
-            return api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
-              deadline: past,
-            });
-          }}
-        />
-      </Section>
-
-      {/* ── 10  EDGE CASES ───────────────────────────────────────────── */}
-      <Section
-        title="10 · Edge Cases"
-        description="Boundary conditions not covered above — invalid IDs, constraint violations, cascading deletes."
-      >
-        <TestButton
-          label="❌ Create poll with invalid poll_type (expect 422)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Bad type",
-              poll_type: "invalid_type",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Create poll on invalid trip UUID (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/not-a-uuid/vote-polls`, {
-              question: "Bad trip",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Get poll with invalid UUID (expect 400)"
-          onRun={() => api("GET", `/trips/${tripId}/vote-polls/not-a-uuid`)}
-        />
-        <TestButton
-          label="❌ Add option after votes exist (expect 409)"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Option lock test",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-                { name: "C", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const opts = (p.data.options || []).map((o: any) => o.id);
-            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [opts[0]],
-            });
-            return api(
-              "POST",
-              `/trips/${tripId}/vote-polls/${p.data.id}/options`,
-              {
-                name: "Too late",
+          />
+          <TestButton
+            label="✅ Create poll with exactly 15 options (expect 201)"
+            onRun={async () => {
+              const opts = Array.from({ length: 15 }, (_, i) => ({
+                name: `Option ${i + 1}`,
                 option_type: "custom",
-              },
-            );
-          }}
-        />
-        <TestButton
-          label="❌ Delete option after votes exist (expect 409)"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Option lock delete test",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-                { name: "C", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const opts = (p.data.options || []).map((o: any) => o.id);
-            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [opts[0]],
-            });
-            return api(
-              "DELETE",
-              `/trips/${tripId}/vote-polls/${p.data.id}/options/${opts[2]}`,
-            );
-          }}
-        />
-        <TestButton
-          label="❌ Duplicate option IDs in vote (expect 409)"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Dup vote test",
-              poll_type: "multi",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const firstOpt = p.data.options[0].id;
-            return api(
-              "POST",
-              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
-              {
-                option_ids: [firstOpt, firstOpt],
-              },
-            );
-          }}
-        />
-        <TestButton
-          label="✅ Re-vote same option is idempotent (expect 200)"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Idempotent test",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const opt = p.data.options[0].id;
-            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [opt],
-            });
-            return api(
-              "POST",
-              `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
-              {
-                option_ids: [opt],
-              },
-            );
-          }}
-        />
-        <TestButton
-          label="✅ Update preserves existing votes"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Before update",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            const opt = p.data.options[0].id;
-            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [opt],
-            });
-            await api("PATCH", `/trips/${tripId}/vote-polls/${p.data.id}`, {
-              question: "After update",
-            });
-            return api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
-          }}
-        />
-        <TestButton
-          label="✅ Delete poll cascades votes (expect 200 → 404)"
-          onRun={async () => {
-            const p = await api("POST", `/trips/${tripId}/vote-polls`, {
-              question: "Cascade test",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            });
-            if (!p.ok) return p;
-            await api("POST", `/trips/${tripId}/vote-polls/${p.data.id}/vote`, {
-              option_ids: [p.data.options[0].id],
-            });
-            const del = await api(
-              "DELETE",
-              `/trips/${tripId}/vote-polls/${p.data.id}`,
-            );
-            const verify = await api(
-              "GET",
-              `/trips/${tripId}/vote-polls/${p.data.id}`,
-            );
-            return {
-              status: del.status === 200 && verify.status === 404 ? 200 : 500,
-              ok: del.status === 200 && verify.status === 404,
-              data: { deleted_poll: del.data, get_after: verify.status },
-              duration: del.duration + verify.duration,
-            };
-          }}
-        />
-      </Section>
+              }));
+              return api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Max options poll",
+                poll_type: "single",
+                options: opts,
+              });
+            }}
+          />
+          <TestButton
+            label="❌ 16 options (expect 400)"
+            onRun={async () => {
+              const opts = Array.from({ length: 16 }, (_, i) => ({
+                name: `Option ${i + 1}`,
+                option_type: "custom",
+              }));
+              return api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Too many options",
+                poll_type: "single",
+                options: opts,
+              });
+            }}
+          />
+        </Section>
 
-      {/* ── 11  END-TO-END FLOW + REALTIME ──────────────────────────── */}
-      <E2ESection />
+        {/* ── 2  GET POLL ─────────────────────────────────────────────── */}
+        <Section
+          title="2 · Get Poll"
+          description="GET /trips/:tripID/vote-polls/:pollID — retrieves a single poll."
+        >
+          <TestButton
+            label="Get created poll"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="❌ Get non-existent poll (expect 404)"
+            onRun={() =>
+              api(
+                "GET",
+                `/trips/${tripId}/vote-polls/00000000-0000-0000-0000-000000000000`,
+              )
+            }
+          />
+        </Section>
 
-      {/* ── 12  REALTIME PLAYGROUND ─────────────────────────────────── */}
-      <RealtimePlayground />
+        {/* ── 3  UPDATE POLL ──────────────────────────────────────────── */}
+        <Section
+          title="3 · Update Poll"
+          description="PATCH /trips/:tripID/vote-polls/:pollID — updates question or deadline."
+        >
+          <TestButton
+            label="Update question text"
+            onRun={() =>
+              api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
+                question: "Where should we eat dinner?",
+              })
+            }
+          />
+          <TestButton
+            label="Set deadline (future)"
+            onRun={() => {
+              const future = new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000,
+              ).toISOString();
+              return api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
+                deadline: future,
+              });
+            }}
+          />
+          <TestButton
+            label="Verify update (GET)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+        </Section>
 
-      <View style={{ height: 60 }} />
-    </ScrollView>
+        {/* ── 4  OPTIONS (Add / Remove) ───────────────────────────────── */}
+        <Section
+          title="4 · Options"
+          description="POST & DELETE /trips/:tripID/vote-polls/:pollID/options"
+        >
+          <TestButton
+            label="Add option 'Burgers'"
+            onRun={async () => {
+              const res = await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${pollId}/options`,
+                { name: "Burgers", option_type: "custom" },
+              );
+              if (res.ok && res.data?.id) optionIds.push(res.data.id);
+              return res;
+            }}
+          />
+          <TestButton
+            label="Verify option added (GET poll)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="Remove last option (returns deleted option)"
+            onRun={async () => {
+              const id = optionIds.pop();
+              if (!id)
+                return {
+                  status: 0,
+                  ok: false,
+                  data: "No option to remove",
+                  duration: 0,
+                };
+              return api(
+                "DELETE",
+                `/trips/${tripId}/vote-polls/${pollId}/options/${id}`,
+              );
+            }}
+          />
+          <TestButton
+            label="Verify option removed (GET poll)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="❌ Cannot delete when only 2 options remain (expect 400)"
+            onRun={async () => {
+              // Create a fresh 2-option poll
+              const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Min options test",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              });
+              if (!res.ok) return res;
+              const opts = (res.data.options || []).map((o: any) => o.id);
+              return api(
+                "DELETE",
+                `/trips/${tripId}/vote-polls/${res.data.id}/options/${opts[0]}`,
+              );
+            }}
+          />
+        </Section>
+
+        {/* ── 5  VOTING ───────────────────────────────────────────────── */}
+        <Section
+          title="5 · Voting"
+          description="POST /trips/:tripID/vote-polls/:pollID/vote — cast and change votes."
+        >
+          <TestButton
+            label="Vote for first option"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
+                option_ids: [optionIds[0]],
+              })
+            }
+          />
+          <TestButton
+            label="Check vote counts (GET poll)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="Change vote to second option"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
+                option_ids: [optionIds[1]],
+              })
+            }
+          />
+          <TestButton
+            label="Verify changed vote (GET poll)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="Unvote (empty option_ids)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
+                option_ids: [],
+              })
+            }
+          />
+          <TestButton
+            label="Verify unvoted (GET poll)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+        </Section>
+
+        {/* ── 6  MULTI-VOTE ───────────────────────────────────────────── */}
+        <Section
+          title="6 · Multi-Vote Poll"
+          description="Create a poll with allows_multiple_votes=true, then vote for multiple."
+        >
+          <TestButton
+            label="Create multi-vote poll"
+            onRun={async () => {
+              const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "What activities?",
+                poll_type: "multi",
+                options: [
+                  { name: "Hiking", option_type: "custom" },
+                  { name: "Swimming", option_type: "custom" },
+                  { name: "Museum", option_type: "custom" },
+                ],
+              });
+              if (res.ok) {
+                pollId = res.data.id;
+                optionIds = (res.data.options || []).map((o: any) => o.id);
+              }
+              return res;
+            }}
+          />
+          <TestButton
+            label="Vote for 2 options"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls/${pollId}/vote`, {
+                option_ids: [optionIds[0], optionIds[1]],
+              })
+            }
+          />
+          <TestButton
+            label="Verify multi-vote counts"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+          <TestButton
+            label="❌ Multi-vote on single-vote poll (expect 409)"
+            onRun={async () => {
+              // create a single-vote poll first
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Single only?",
+                poll_type: "single",
+                options: [
+                  { name: "Yes", option_type: "custom" },
+                  { name: "No", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const opts = (p.data.options || []).map((o: any) => o.id);
+              return api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: opts, // 2 options on single-vote → should fail
+                },
+              );
+            }}
+          />
+        </Section>
+
+        {/* ── 7  LIST / PAGINATION ────────────────────────────────────── */}
+        <Section
+          title="7 · List & Pagination"
+          description="GET /trips/:tripID/vote-polls?limit=N&cursor=…"
+        >
+          <TestButton
+            label="Seed 3 more polls"
+            onRun={async () => {
+              const results = [];
+              for (let i = 1; i <= 3; i++) {
+                results.push(
+                  await api("POST", `/trips/${tripId}/vote-polls`, {
+                    question: `Pagination poll ${i}`,
+                    poll_type: "single",
+                    options: [
+                      { name: "A", option_type: "custom" },
+                      { name: "B", option_type: "custom" },
+                    ],
+                  }),
+                );
+              }
+              const ok = results.every((r) => r.ok);
+              return {
+                status: ok ? 201 : 400,
+                ok,
+                data: results.map((r) => ({
+                  status: r.status,
+                  id: r.data?.id,
+                })),
+                duration: results.reduce((s, r) => s + r.duration, 0),
+              };
+            }}
+          />
+          <TestButton
+            label="List all (limit=10)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls?limit=10`)}
+          />
+          <TestButton
+            label="Page 1 (limit=2)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls?limit=2`)}
+          />
+          <TestButton
+            label="Page 2 (use cursor from page 1)"
+            onRun={async () => {
+              const page1 = await api(
+                "GET",
+                `/trips/${tripId}/vote-polls?limit=2`,
+              );
+              if (!page1.ok || !page1.data?.next_cursor) {
+                return {
+                  status: 0,
+                  ok: false,
+                  data: "No cursor from page 1",
+                  duration: page1.duration,
+                };
+              }
+              return api(
+                "GET",
+                `/trips/${tripId}/vote-polls?limit=2&cursor=${page1.data.next_cursor}`,
+              );
+            }}
+          />
+          <TestButton
+            label="❌ Invalid cursor (expect 400)"
+            onRun={() =>
+              api(
+                "GET",
+                `/trips/${tripId}/vote-polls?limit=2&cursor=not-a-valid-cursor`,
+              )
+            }
+          />
+        </Section>
+
+        {/* ── 8  DELETE ───────────────────────────────────────────────── */}
+        <Section
+          title="8 · Delete Poll"
+          description="DELETE /trips/:tripID/vote-polls/:pollID"
+        >
+          <TestButton
+            label="Create poll to delete"
+            onRun={async () => {
+              const res = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Delete me",
+                poll_type: "single",
+              });
+              if (res.ok) pollId = res.data.id;
+              return res;
+            }}
+          />
+          <TestButton
+            label="Delete poll (returns deleted poll)"
+            onRun={async () => {
+              const res = await api(
+                "DELETE",
+                `/trips/${tripId}/vote-polls/${pollId}`,
+              );
+              return res;
+            }}
+          />
+          <TestButton
+            label="Verify deleted (expect 404)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/${pollId}`)}
+          />
+        </Section>
+
+        {/* ── 9  DEADLINE ENFORCEMENT ─────────────────────────────────── */}
+        <Section
+          title="9 · Deadline Enforcement"
+          description="❌ Set a past deadline — should be rejected."
+        >
+          <TestButton
+            label="❌ Create poll + set past deadline"
+            onRun={async () => {
+              const create = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Expired poll",
+                name: "Expired poll",
+                poll_type: "single",
+                options: [
+                  { name: "Opt", option_type: "custom" },
+                  { name: "Opt2", option_type: "custom" },
+                ],
+              });
+              if (!create.ok) return create;
+              pollId = create.data.id;
+              optionIds = (create.data.options || []).map((o: any) => o.id);
+              const past = new Date(Date.now() - 60_000).toISOString();
+              return api("PATCH", `/trips/${tripId}/vote-polls/${pollId}`, {
+                deadline: past,
+              });
+            }}
+          />
+        </Section>
+
+        {/* ── 10  EDGE CASES ───────────────────────────────────────────── */}
+        <Section
+          title="10 · Edge Cases"
+          description="Boundary conditions not covered above — invalid IDs, constraint violations, cascading deletes."
+        >
+          <TestButton
+            label="❌ Create poll with invalid poll_type (expect 422)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Bad type",
+                poll_type: "invalid_type",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="❌ Create poll on invalid trip UUID (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/not-a-uuid/vote-polls`, {
+                question: "Bad trip",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="❌ Get poll with invalid UUID (expect 400)"
+            onRun={() => api("GET", `/trips/${tripId}/vote-polls/not-a-uuid`)}
+          />
+          <TestButton
+            label="❌ Add option after votes exist (expect 409)"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Option lock test",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                  { name: "C", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const opts = (p.data.options || []).map((o: any) => o.id);
+              await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [opts[0]],
+                },
+              );
+              return api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/options`,
+                {
+                  name: "Too late",
+                  option_type: "custom",
+                },
+              );
+            }}
+          />
+          <TestButton
+            label="❌ Delete option after votes exist (expect 409)"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Option lock delete test",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                  { name: "C", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const opts = (p.data.options || []).map((o: any) => o.id);
+              await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [opts[0]],
+                },
+              );
+              return api(
+                "DELETE",
+                `/trips/${tripId}/vote-polls/${p.data.id}/options/${opts[2]}`,
+              );
+            }}
+          />
+          <TestButton
+            label="❌ Duplicate option IDs in vote (expect 409)"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Dup vote test",
+                poll_type: "multi",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const firstOpt = p.data.options[0].id;
+              return api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [firstOpt, firstOpt],
+                },
+              );
+            }}
+          />
+          <TestButton
+            label="✅ Re-vote same option is idempotent (expect 200)"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Idempotent test",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const opt = p.data.options[0].id;
+              await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [opt],
+                },
+              );
+              return api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [opt],
+                },
+              );
+            }}
+          />
+          <TestButton
+            label="✅ Update preserves existing votes"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Before update",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              const opt = p.data.options[0].id;
+              await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [opt],
+                },
+              );
+              await api("PATCH", `/trips/${tripId}/vote-polls/${p.data.id}`, {
+                question: "After update",
+              });
+              return api("GET", `/trips/${tripId}/vote-polls/${p.data.id}`);
+            }}
+          />
+          <TestButton
+            label="✅ Delete poll cascades votes (expect 200 → 404)"
+            onRun={async () => {
+              const p = await api("POST", `/trips/${tripId}/vote-polls`, {
+                question: "Cascade test",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              });
+              if (!p.ok) return p;
+              await api(
+                "POST",
+                `/trips/${tripId}/vote-polls/${p.data.id}/vote`,
+                {
+                  option_ids: [p.data.options[0].id],
+                },
+              );
+              const del = await api(
+                "DELETE",
+                `/trips/${tripId}/vote-polls/${p.data.id}`,
+              );
+              const verify = await api(
+                "GET",
+                `/trips/${tripId}/vote-polls/${p.data.id}`,
+              );
+              return {
+                status: del.status === 200 && verify.status === 404 ? 200 : 500,
+                ok: del.status === 200 && verify.status === 404,
+                data: { deleted_poll: del.data, get_after: verify.status },
+                duration: del.duration + verify.duration,
+              };
+            }}
+          />
+        </Section>
+
+        {/* ── 11  END-TO-END FLOW + REALTIME ──────────────────────────── */}
+        <E2ESection />
+
+        {/* ── 12  REALTIME PLAYGROUND ─────────────────────────────────── */}
+        <RealtimePlayground />
+
+        <View style={{ height: 60 }} />
+      </ScrollView>
+    </Screen>
   );
 }
 

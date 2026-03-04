@@ -8,10 +8,13 @@ interface UserContextType {
   userId: string | null;
   isPending: boolean;
   currentUser: CurrentUser | null | undefined;
+  phoneNumber: string | null;
+  pendingTripCode: string | null;
 
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
   refreshCurrentUser: () => Promise<CurrentUser>;
+  setPendingTripCode: (code: string | null) => void;
   logout: () => Promise<void>;
 }
 
@@ -23,12 +26,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const userId = useUserStore((state) => state.userId);
   const isPending = useUserStore((state) => state.isPending);
   const currentUser = useUserStore((state) => state.currentUser);
+  const phoneNumber = useUserStore((state) => state.phoneNumber);
+  const pendingTripCode = useUserStore((state) => state.pendingTripCode);
 
   // Methods
   const logout = useUserStore((state) => state.logout);
   const sendOTP = useUserStore((state) => state.sendOTP);
   const verifyOTP = useUserStore((state) => state.verifyOTP);
   const refreshCurrentUser = useUserStore((state) => state.refreshCurrentUser);
+  const setPendingTripCode = useUserStore((state) => state.setPendingTripCode);
 
   return (
     <UserContext.Provider
@@ -37,10 +43,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         userId,
         isPending,
         currentUser,
+        phoneNumber,
+        pendingTripCode,
         logout,
         sendOTP,
         verifyOTP,
         refreshCurrentUser,
+        setPendingTripCode,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import { getAuthToken } from "@/api/client";
+import { Screen } from "@/design-system";
 import Constants from "expo-constants";
 import React, { useCallback, useState } from "react";
 import {
@@ -247,359 +248,361 @@ const sec = StyleSheet.create({
 
 export default function TestRankPollScreen() {
   return (
-    <ScrollView style={s.root} contentContainerStyle={s.container}>
-      <Text style={s.heading}>Rank Poll API Test Suite</Text>
-      <Text style={s.subheading}>
-        Test ranking polls with Borda count scoring. Each button tests a
-        specific endpoint.
-      </Text>
+    <Screen>
+      <ScrollView style={s.root} contentContainerStyle={s.container}>
+        <Text style={s.heading}>Rank Poll API Test Suite</Text>
+        <Text style={s.subheading}>
+          Test ranking polls with Borda count scoring. Each button tests a
+          specific endpoint.
+        </Text>
 
-      {/* ── 0  SETUP ────────────────────────────────────────────────── */}
-      <Section
-        title="0 · Setup"
-        description="Ensure user exists and create a trip for all tests."
-      >
-        <TestButton label="Ensure User" onRun={async () => ensureUser()} />
-        <TestButton label="Create Trip" onRun={async () => setupTrip()} />
-      </Section>
+        {/* ── 0  SETUP ────────────────────────────────────────────────── */}
+        <Section
+          title="0 · Setup"
+          description="Ensure user exists and create a trip for all tests."
+        >
+          <TestButton label="Ensure User" onRun={async () => ensureUser()} />
+          <TestButton label="Create Trip" onRun={async () => setupTrip()} />
+        </Section>
 
-      {/* ── 1  CREATE RANK POLL ─────────────────────────────────────── */}
-      <Section
-        title="1 · Create Rank Poll"
-        description="POST /trips/:tripID/rank-polls — creates ranking poll with options."
-      >
-        <TestButton
-          label="Create rank poll (4 destinations)"
-          onRun={async () => {
-            const res = await api("POST", `/trips/${tripId}/rank-polls`, {
-              question: "Where should we travel?",
-              poll_type: "rank",
-              options: [
-                { name: "🇫🇷 Paris", option_type: "custom" },
-                { name: "🇯🇵 Tokyo", option_type: "custom" },
-                { name: "🇬🇧 London", option_type: "custom" },
-                { name: "🇦🇺 Sydney", option_type: "custom" },
-              ],
-            });
-            if (res.ok) {
-              pollId = res.data.id;
-              optionIds = (res.data.options || []).map((o: any) => o.id);
+        {/* ── 1  CREATE RANK POLL ─────────────────────────────────────── */}
+        <Section
+          title="1 · Create Rank Poll"
+          description="POST /trips/:tripID/rank-polls — creates ranking poll with options."
+        >
+          <TestButton
+            label="Create rank poll (4 destinations)"
+            onRun={async () => {
+              const res = await api("POST", `/trips/${tripId}/rank-polls`, {
+                question: "Where should we travel?",
+                poll_type: "rank",
+                options: [
+                  { name: "🇫🇷 Paris", option_type: "custom" },
+                  { name: "🇯🇵 Tokyo", option_type: "custom" },
+                  { name: "🇬🇧 London", option_type: "custom" },
+                  { name: "🇦🇺 Sydney", option_type: "custom" },
+                ],
+              });
+              if (res.ok) {
+                pollId = res.data.id;
+                optionIds = (res.data.options || []).map((o: any) => o.id);
+              }
+              return res;
+            }}
+          />
+          <TestButton
+            label="❌ Wrong poll_type 'single' (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls`, {
+                question: "Bad type",
+                poll_type: "single",
+                options: [
+                  { name: "A", option_type: "custom" },
+                  { name: "B", option_type: "custom" },
+                ],
+              })
             }
-            return res;
-          }}
-        />
-        <TestButton
-          label="❌ Wrong poll_type 'single' (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls`, {
-              question: "Bad type",
-              poll_type: "single",
-              options: [
-                { name: "A", option_type: "custom" },
-                { name: "B", option_type: "custom" },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Only 1 option (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls`, {
-              question: "Bad poll",
-              poll_type: "rank",
-              options: [{ name: "Lonely", option_type: "custom" }],
-            })
-          }
-        />
-        <TestButton
-          label="❌ 16 options (expect 400)"
-          onRun={() => {
-            const opts = Array.from({ length: 16 }, (_, i) => ({
-              name: `Opt${i + 1}`,
-              option_type: "custom",
-            }));
-            return api("POST", `/trips/${tripId}/rank-polls`, {
-              question: "Too many",
-              poll_type: "rank",
-              options: opts,
-            });
-          }}
-        />
-      </Section>
+          />
+          <TestButton
+            label="❌ Only 1 option (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls`, {
+                question: "Bad poll",
+                poll_type: "rank",
+                options: [{ name: "Lonely", option_type: "custom" }],
+              })
+            }
+          />
+          <TestButton
+            label="❌ 16 options (expect 400)"
+            onRun={() => {
+              const opts = Array.from({ length: 16 }, (_, i) => ({
+                name: `Opt${i + 1}`,
+                option_type: "custom",
+              }));
+              return api("POST", `/trips/${tripId}/rank-polls`, {
+                question: "Too many",
+                poll_type: "rank",
+                options: opts,
+              });
+            }}
+          />
+        </Section>
 
-      {/* ── 2  GET RESULTS ──────────────────────────────────────────── */}
-      <Section
-        title="2 · Get Results"
-        description="GET /trips/:tripID/rank-polls/:pollId — Borda scores + top 3 + user ranking."
-      >
-        <TestButton
-          label="Get results (before any rankings)"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-      </Section>
+        {/* ── 2  GET RESULTS ──────────────────────────────────────────── */}
+        <Section
+          title="2 · Get Results"
+          description="GET /trips/:tripID/rank-polls/:pollId — Borda scores + top 3 + user ranking."
+        >
+          <TestButton
+            label="Get results (before any rankings)"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+        </Section>
 
-      {/* ── 3  ADD/DELETE OPTIONS ───────────────────────────────────── */}
-      <Section
-        title="3 · Manage Options"
-        description="Add/delete options (only before rankings exist)."
-      >
-        <TestButton
-          label="Add option 'Berlin'"
-          onRun={async () => {
-            const res = await api(
-              "POST",
-              `/trips/${tripId}/rank-polls/${pollId}/options`,
-              { name: "🇩🇪 Berlin", option_type: "custom" },
-            );
-            if (res.ok) optionIds.push(res.data.id);
-            return res;
-          }}
-        />
-        <TestButton
-          label="Verify Berlin added (GET results)"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-      </Section>
+        {/* ── 3  ADD/DELETE OPTIONS ───────────────────────────────────── */}
+        <Section
+          title="3 · Manage Options"
+          description="Add/delete options (only before rankings exist)."
+        >
+          <TestButton
+            label="Add option 'Berlin'"
+            onRun={async () => {
+              const res = await api(
+                "POST",
+                `/trips/${tripId}/rank-polls/${pollId}/options`,
+                { name: "🇩🇪 Berlin", option_type: "custom" },
+              );
+              if (res.ok) optionIds.push(res.data.id);
+              return res;
+            }}
+          />
+          <TestButton
+            label="Verify Berlin added (GET results)"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+        </Section>
 
-      {/* ── 4  SUBMIT RANKINGS ──────────────────────────────────────── */}
-      <Section
-        title="4 · Submit Rankings"
-        description="POST /rank-polls/:pollId/rank — rank all options with explicit positions."
-      >
-        <TestButton
-          label="Submit ranking: Paris(1), Tokyo(2), Berlin(3), London(4), Sydney(5)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[0], rank: 1 }, // Paris
-                { option_id: optionIds[1], rank: 2 }, // Tokyo
-                { option_id: optionIds[4], rank: 3 }, // Berlin
-                { option_id: optionIds[2], rank: 4 }, // London
-                { option_id: optionIds[3], rank: 5 }, // Sydney
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="Get results (should show your ranking + Borda scores)"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-        <TestButton
-          label="Change ranking: Sydney(1), Paris(2), Tokyo(3), London(4), Berlin(5)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[3], rank: 1 }, // Sydney
-                { option_id: optionIds[0], rank: 2 }, // Paris
-                { option_id: optionIds[1], rank: 3 }, // Tokyo
-                { option_id: optionIds[2], rank: 4 }, // London
-                { option_id: optionIds[4], rank: 5 }, // Berlin
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="Verify changed ranking"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-        <TestButton
-          label="❌ Rank only 3 options (expect 400 - must rank all)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[0], rank: 1 },
-                { option_id: optionIds[1], rank: 2 },
-                { option_id: optionIds[2], rank: 3 },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Duplicate option (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[0], rank: 1 },
-                { option_id: optionIds[0], rank: 2 }, // Duplicate!
-                { option_id: optionIds[1], rank: 3 },
-                { option_id: optionIds[2], rank: 4 },
-                { option_id: optionIds[3], rank: 5 },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Duplicate rank (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[0], rank: 1 },
-                { option_id: optionIds[1], rank: 1 }, // Same rank!
-                { option_id: optionIds[2], rank: 2 },
-                { option_id: optionIds[3], rank: 3 },
-                { option_id: optionIds[4], rank: 4 },
-              ],
-            })
-          }
-        />
-        <TestButton
-          label="❌ Gap in ranks (1,2,4,5,6) (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
-              rankings: [
-                { option_id: optionIds[0], rank: 1 },
-                { option_id: optionIds[1], rank: 2 },
-                { option_id: optionIds[2], rank: 4 }, // Skip 3!
-                { option_id: optionIds[3], rank: 5 },
-                { option_id: optionIds[4], rank: 6 },
-              ],
-            })
-          }
-        />
-      </Section>
+        {/* ── 4  SUBMIT RANKINGS ──────────────────────────────────────── */}
+        <Section
+          title="4 · Submit Rankings"
+          description="POST /rank-polls/:pollId/rank — rank all options with explicit positions."
+        >
+          <TestButton
+            label="Submit ranking: Paris(1), Tokyo(2), Berlin(3), London(4), Sydney(5)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[0], rank: 1 }, // Paris
+                  { option_id: optionIds[1], rank: 2 }, // Tokyo
+                  { option_id: optionIds[4], rank: 3 }, // Berlin
+                  { option_id: optionIds[2], rank: 4 }, // London
+                  { option_id: optionIds[3], rank: 5 }, // Sydney
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="Get results (should show your ranking + Borda scores)"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+          <TestButton
+            label="Change ranking: Sydney(1), Paris(2), Tokyo(3), London(4), Berlin(5)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[3], rank: 1 }, // Sydney
+                  { option_id: optionIds[0], rank: 2 }, // Paris
+                  { option_id: optionIds[1], rank: 3 }, // Tokyo
+                  { option_id: optionIds[2], rank: 4 }, // London
+                  { option_id: optionIds[4], rank: 5 }, // Berlin
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="Verify changed ranking"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+          <TestButton
+            label="❌ Rank only 3 options (expect 400 - must rank all)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[0], rank: 1 },
+                  { option_id: optionIds[1], rank: 2 },
+                  { option_id: optionIds[2], rank: 3 },
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="❌ Duplicate option (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[0], rank: 1 },
+                  { option_id: optionIds[0], rank: 2 }, // Duplicate!
+                  { option_id: optionIds[1], rank: 3 },
+                  { option_id: optionIds[2], rank: 4 },
+                  { option_id: optionIds[3], rank: 5 },
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="❌ Duplicate rank (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[0], rank: 1 },
+                  { option_id: optionIds[1], rank: 1 }, // Same rank!
+                  { option_id: optionIds[2], rank: 2 },
+                  { option_id: optionIds[3], rank: 3 },
+                  { option_id: optionIds[4], rank: 4 },
+                ],
+              })
+            }
+          />
+          <TestButton
+            label="❌ Gap in ranks (1,2,4,5,6) (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/rank`, {
+                rankings: [
+                  { option_id: optionIds[0], rank: 1 },
+                  { option_id: optionIds[1], rank: 2 },
+                  { option_id: optionIds[2], rank: 4 }, // Skip 3!
+                  { option_id: optionIds[3], rank: 5 },
+                  { option_id: optionIds[4], rank: 6 },
+                ],
+              })
+            }
+          />
+        </Section>
 
-      {/* ── 5  GET VOTERS ───────────────────────────────────────────── */}
-      <Section
-        title="5 · Voter Status"
-        description="GET /rank-polls/:pollId/voters — who voted vs who didn't."
-      >
-        <TestButton
-          label="Get voter status"
-          onRun={() =>
-            api("GET", `/trips/${tripId}/rank-polls/${pollId}/voters`)
-          }
-        />
-      </Section>
+        {/* ── 5  GET VOTERS ───────────────────────────────────────────── */}
+        <Section
+          title="5 · Voter Status"
+          description="GET /rank-polls/:pollId/voters — who voted vs who didn't."
+        >
+          <TestButton
+            label="Get voter status"
+            onRun={() =>
+              api("GET", `/trips/${tripId}/rank-polls/${pollId}/voters`)
+            }
+          />
+        </Section>
 
-      {/* ── 6  CANNOT MODIFY AFTER RANKINGS ─────────────────────────── */}
-      <Section
-        title="6 · Option Immutability"
-        description="Once rankings exist, options cannot be added/deleted."
-      >
-        <TestButton
-          label="❌ Add option after rankings (expect 400)"
-          onRun={() =>
-            api("POST", `/trips/${tripId}/rank-polls/${pollId}/options`, {
-              name: "Too Late City",
-              option_type: "custom",
-            })
-          }
-        />
-        <TestButton
-          label="❌ Delete option after rankings (expect 400)"
-          onRun={() =>
-            api(
-              "DELETE",
-              `/trips/${tripId}/rank-polls/${pollId}/options/${optionIds[4]}`,
-            )
-          }
-        />
-      </Section>
+        {/* ── 6  CANNOT MODIFY AFTER RANKINGS ─────────────────────────── */}
+        <Section
+          title="6 · Option Immutability"
+          description="Once rankings exist, options cannot be added/deleted."
+        >
+          <TestButton
+            label="❌ Add option after rankings (expect 400)"
+            onRun={() =>
+              api("POST", `/trips/${tripId}/rank-polls/${pollId}/options`, {
+                name: "Too Late City",
+                option_type: "custom",
+              })
+            }
+          />
+          <TestButton
+            label="❌ Delete option after rankings (expect 400)"
+            onRun={() =>
+              api(
+                "DELETE",
+                `/trips/${tripId}/rank-polls/${pollId}/options/${optionIds[4]}`,
+              )
+            }
+          />
+        </Section>
 
-      {/* ── 7  UPDATE POLL ──────────────────────────────────────────── */}
-      <Section
-        title="7 · Update Poll"
-        description="PATCH /rank-polls/:pollId — update question/deadline."
-      >
-        <TestButton
-          label="Update question"
-          onRun={() =>
-            api("PATCH", `/trips/${tripId}/rank-polls/${pollId}`, {
-              question: "Where should we REALLY travel?",
-            })
-          }
-        />
-        <TestButton
-          label="Set future deadline"
-          onRun={() => {
-            const future = new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000,
-            ).toISOString();
-            return api("PATCH", `/trips/${tripId}/rank-polls/${pollId}`, {
-              deadline: future,
-            });
-          }}
-        />
-        <TestButton
-          label="Verify update"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-      </Section>
+        {/* ── 7  UPDATE POLL ──────────────────────────────────────────── */}
+        <Section
+          title="7 · Update Poll"
+          description="PATCH /rank-polls/:pollId — update question/deadline."
+        >
+          <TestButton
+            label="Update question"
+            onRun={() =>
+              api("PATCH", `/trips/${tripId}/rank-polls/${pollId}`, {
+                question: "Where should we REALLY travel?",
+              })
+            }
+          />
+          <TestButton
+            label="Set future deadline"
+            onRun={() => {
+              const future = new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000,
+              ).toISOString();
+              return api("PATCH", `/trips/${tripId}/rank-polls/${pollId}`, {
+                deadline: future,
+              });
+            }}
+          />
+          <TestButton
+            label="Verify update"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+        </Section>
 
-      {/* ── 8  BORDA COUNT DEMO ─────────────────────────────────────── */}
-      <Section
-        title="8 · Borda Count Demo"
-        description="Simulate multiple voters to see Borda scores in action."
-      >
-        <TestButton
-          label="📊 Run Borda Count Demo"
-          onRun={async () => {
-            // Create fresh poll
-            const poll = await api("POST", `/trips/${tripId}/rank-polls`, {
-              question: "🏆 Best City for Food?",
-              poll_type: "rank",
-              options: [
-                { name: "Tokyo", option_type: "custom" },
-                { name: "Paris", option_type: "custom" },
-                { name: "Rome", option_type: "custom" },
-              ],
-            });
-            if (!poll.ok) return poll;
+        {/* ── 8  BORDA COUNT DEMO ─────────────────────────────────────── */}
+        <Section
+          title="8 · Borda Count Demo"
+          description="Simulate multiple voters to see Borda scores in action."
+        >
+          <TestButton
+            label="📊 Run Borda Count Demo"
+            onRun={async () => {
+              // Create fresh poll
+              const poll = await api("POST", `/trips/${tripId}/rank-polls`, {
+                question: "🏆 Best City for Food?",
+                poll_type: "rank",
+                options: [
+                  { name: "Tokyo", option_type: "custom" },
+                  { name: "Paris", option_type: "custom" },
+                  { name: "Rome", option_type: "custom" },
+                ],
+              });
+              if (!poll.ok) return poll;
 
-            const demoId = poll.data.id;
-            const opts = (poll.data.options || []).map((o: any) => o.id);
+              const demoId = poll.data.id;
+              const opts = (poll.data.options || []).map((o: any) => o.id);
 
-            // Simulate 3 voters with different preferences
-            // Voter 1: Tokyo(1), Paris(2), Rome(3) → Tokyo=3pts, Paris=2pts, Rome=1pt
-            await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
-              rankings: [
-                { option_id: opts[0], rank: 1 },
-                { option_id: opts[1], rank: 2 },
-                { option_id: opts[2], rank: 3 },
-              ],
-            });
+              // Simulate 3 voters with different preferences
+              // Voter 1: Tokyo(1), Paris(2), Rome(3) → Tokyo=3pts, Paris=2pts, Rome=1pt
+              await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
+                rankings: [
+                  { option_id: opts[0], rank: 1 },
+                  { option_id: opts[1], rank: 2 },
+                  { option_id: opts[2], rank: 3 },
+                ],
+              });
 
-            // Voter 2: Paris(1), Tokyo(2), Rome(3) → Paris=3pts, Tokyo=2pts, Rome=1pt
-            await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
-              rankings: [
-                { option_id: opts[1], rank: 1 },
-                { option_id: opts[0], rank: 2 },
-                { option_id: opts[2], rank: 3 },
-              ],
-            });
+              // Voter 2: Paris(1), Tokyo(2), Rome(3) → Paris=3pts, Tokyo=2pts, Rome=1pt
+              await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
+                rankings: [
+                  { option_id: opts[1], rank: 1 },
+                  { option_id: opts[0], rank: 2 },
+                  { option_id: opts[2], rank: 3 },
+                ],
+              });
 
-            // Voter 3: Tokyo(1), Rome(2), Paris(3) → Tokyo=3pts, Rome=2pts, Paris=1pt
-            await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
-              rankings: [
-                { option_id: opts[0], rank: 1 },
-                { option_id: opts[2], rank: 2 },
-                { option_id: opts[1], rank: 3 },
-              ],
-            });
+              // Voter 3: Tokyo(1), Rome(2), Paris(3) → Tokyo=3pts, Rome=2pts, Paris=1pt
+              await api("POST", `/trips/${tripId}/rank-polls/${demoId}/rank`, {
+                rankings: [
+                  { option_id: opts[0], rank: 1 },
+                  { option_id: opts[2], rank: 2 },
+                  { option_id: opts[1], rank: 3 },
+                ],
+              });
 
-            // Get results: Tokyo=8pts, Paris=6pts, Rome=4pts
-            return api("GET", `/trips/${tripId}/rank-polls/${demoId}`);
-          }}
-        />
-      </Section>
+              // Get results: Tokyo=8pts, Paris=6pts, Rome=4pts
+              return api("GET", `/trips/${tripId}/rank-polls/${demoId}`);
+            }}
+          />
+        </Section>
 
-      {/* ── 9  DELETE POLL ──────────────────────────────────────────── */}
-      <Section
-        title="9 · Delete Poll"
-        description="DELETE /rank-polls/:pollId — removes poll and all rankings."
-      >
-        <TestButton
-          label="Delete poll"
-          onRun={() => api("DELETE", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-        <TestButton
-          label="Verify deleted (expect 404)"
-          onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
-        />
-      </Section>
+        {/* ── 9  DELETE POLL ──────────────────────────────────────────── */}
+        <Section
+          title="9 · Delete Poll"
+          description="DELETE /rank-polls/:pollId — removes poll and all rankings."
+        >
+          <TestButton
+            label="Delete poll"
+            onRun={() => api("DELETE", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+          <TestButton
+            label="Verify deleted (expect 404)"
+            onRun={() => api("GET", `/trips/${tripId}/rank-polls/${pollId}`)}
+          />
+        </Section>
 
-      <View style={{ height: 60 }} />
-    </ScrollView>
+        <View style={{ height: 60 }} />
+      </ScrollView>
+    </Screen>
   );
 }
 
