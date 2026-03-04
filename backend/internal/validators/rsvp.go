@@ -3,8 +3,6 @@ package validators
 import (
 	"toggo/internal/errs"
 	"toggo/internal/models"
-
-	"github.com/go-playground/validator/v10"
 )
 
 var allowedRSVPStatuses = []models.RSVPStatus{
@@ -27,11 +25,4 @@ func IsAllowedRSVPStatus(status string) bool {
 		}
 	}
 	return false
-}
-
-func registerRSVPStatusValidator(v *validator.Validate) *validator.Validate {
-	registerValidation(v, "status", func(fl validator.FieldLevel) bool {
-		return IsAllowedRSVPStatus(fl.Field().String())
-	})
-	return v
 }

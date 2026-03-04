@@ -18,6 +18,22 @@ func (s RSVPStatus) IsValid() bool {
 	return s == RSVPStatusGoing || s == RSVPStatusMaybe || s == RSVPStatusNotGoing
 }
 
+type RSVPRequestInput struct {
+	TripID     uuid.UUID
+	ActivityID uuid.UUID
+	UserID     uuid.UUID
+	Payload    ActivityRSVPRequestPayload
+}
+
+type RSVPPaginationInput struct {
+	TripID     uuid.UUID
+	ActivityID uuid.UUID
+	UserID     uuid.UUID
+	Limit      int
+	Cursor     string
+	Status     string
+}
+
 type ActivityRSVPRequestPayload struct {
 	Status RSVPStatus `json:"status"`
 }
