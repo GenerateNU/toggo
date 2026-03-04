@@ -82,7 +82,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       };
 
       const onKeyboardHide = () => {
-        if (currentIndex.current === lastSnapIndex && preKeyboardIndex.current >= 0) {
+        if (
+          currentIndex.current === lastSnapIndex &&
+          preKeyboardIndex.current >= 0
+        ) {
           innerRef.current?.snapToIndex(preKeyboardIndex.current);
         }
       };

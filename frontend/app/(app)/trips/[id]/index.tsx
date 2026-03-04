@@ -136,11 +136,7 @@ export default function Trip() {
               <ActivityIndicator size="small" />
             )}
             {inviteLink && (
-              <Box
-                backgroundColor="surfaceCard"
-                padding="sm"
-                borderRadius="sm"
-              >
+              <Box backgroundColor="surfaceCard" padding="sm" borderRadius="sm">
                 <Text
                   variant="xsParagraph"
                   color="textQuaternary"

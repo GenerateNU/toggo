@@ -331,7 +331,6 @@ export default function TestRealtimeScreen() {
           </View>
         </View>
 
-        {/* Create Trip */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Create Trip (with your JWT)</Text>
           <TextInput

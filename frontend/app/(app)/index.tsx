@@ -3,7 +3,14 @@ import { getTrip } from "@/api/trips/useGetTrip";
 import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
-import { BottomSheet, Box, Button, Icon, ImagePicker, Text } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  Icon,
+  ImagePicker,
+  Text,
+} from "@/design-system";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { useCreateTrip } from "@/index";
 import { router, useLocalSearchParams } from "expo-router";
@@ -87,7 +94,11 @@ export default function Home() {
 
   useEffect(() => {
     if (joinedTripName) {
-      triggerToast(`You've been added to ${joinedTripName}!`, "success", joinedTripName);
+      triggerToast(
+        `You've been added to ${joinedTripName}!`,
+        "success",
+        joinedTripName,
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinedTripName]);
@@ -115,7 +126,11 @@ export default function Home() {
             // ignore — fallback to generic name
           }
         }
-        triggerToast(`Profile created & added to ${tripName}!`, "success", tripName);
+        triggerToast(
+          `Profile created & added to ${tripName}!`,
+          "success",
+          tripName,
+        );
       } catch {
         setPendingTripCode(null);
         triggerToast("Profile created!");
@@ -227,11 +242,23 @@ export default function Home() {
           elevation={4}
         >
           <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>
-            <Icon icon={Check} size="xs" color={toastVariant === "error" ? "white" : "textSecondary"} />
-            <Text variant="smParagraph" color={toastVariant === "error" ? "white" : "textSecondary"} style={{ flexShrink: 1 }}>
+            <Icon
+              icon={Check}
+              size="xs"
+              color={toastVariant === "error" ? "white" : "textSecondary"}
+            />
+            <Text
+              variant="smParagraph"
+              color={toastVariant === "error" ? "white" : "textSecondary"}
+              style={{ flexShrink: 1 }}
+            >
               {toastPrefix}
               {toastBold && (
-                <Text variant="smLabel" color={toastVariant === "error" ? "white" : "textSecondary"} style={{ fontWeight: "700" }}>
+                <Text
+                  variant="smLabel"
+                  color={toastVariant === "error" ? "white" : "textSecondary"}
+                  style={{ fontWeight: "700" }}
+                >
                   {toastBold}
                 </Text>
               )}
@@ -247,7 +274,11 @@ export default function Home() {
               }).start(() => setShowToast(false));
             }}
           >
-            <Icon icon={X} size="xs" color={toastVariant === "error" ? "white" : "textSecondary"} />
+            <Icon
+              icon={X}
+              size="xs"
+              color={toastVariant === "error" ? "white" : "textSecondary"}
+            />
           </Pressable>
         </AnimatedBox>
       )}

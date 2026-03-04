@@ -36,7 +36,6 @@ export default function Accounts() {
           </Box>
         </Box>
 
-        {/* Info rows */}
         <Box backgroundColor="white">
           <InfoRow label="Name" value={currentUser?.name} />
           <Box height={1} backgroundColor="borderPrimary" marginLeft="md" />

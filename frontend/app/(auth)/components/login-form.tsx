@@ -66,7 +66,6 @@ export default function PhoneNumberForm() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <Box flex={1} justifyContent="space-between">
-          {/* Top Content */}
           <Box gap="md">
             {error && (
               <Box backgroundColor="error" padding="xs" borderRadius="sm">
@@ -150,7 +149,6 @@ export default function PhoneNumberForm() {
             </Box>
           </Box>
 
-          {/* Bottom Button */}
           <Button
             layout="textOnly"
             label="Continue"

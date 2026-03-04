@@ -224,7 +224,6 @@ export default function OTPVerificationForm() {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <Box flex={1} justifyContent="space-between">
-          {/* TOP */}
           <Box gap="md">
             <Controller
               name="otp"
@@ -254,7 +253,6 @@ export default function OTPVerificationForm() {
             />
           </Box>
 
-          {/* BOTTOM */}
           <Box gap="sm">
             <Button
               layout="textOnly"

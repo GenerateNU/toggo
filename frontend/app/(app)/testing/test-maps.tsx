@@ -88,7 +88,6 @@ export default function TestMapsScreen() {
             Google Maps API Test
           </Text>
 
-          {/* Typeahead Section */}
           <View
             style={{
               marginBottom: 30,
@@ -226,7 +225,6 @@ export default function TestMapsScreen() {
             )}
           </View>
 
-          {/* Place Details Section */}
           <View
             style={{
               marginBottom: 30,
@@ -374,7 +372,6 @@ export default function TestMapsScreen() {
             )}
           </View>
 
-          {/* Info Section */}
           <View
             style={{
               padding: 16,
