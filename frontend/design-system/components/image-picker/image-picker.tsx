@@ -1,5 +1,5 @@
-import { Icon } from "@/design-system";
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
+import { Icon } from "@/design-system/components/icons/icon";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
