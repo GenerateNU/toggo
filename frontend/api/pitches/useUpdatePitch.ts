@@ -34,7 +34,7 @@ export type UpdatePitchMutationKey = ReturnType<typeof updatePitchMutationKey>;
 export async function updatePitch(
   tripID: UpdatePitchPathParams["tripID"],
   pitchID: UpdatePitchPathParams["pitchID"],
-  data?: UpdatePitchMutationRequest,
+  data: UpdatePitchMutationRequest,
   config: Partial<RequestConfig<UpdatePitchMutationRequest>> & {
     client?: Client;
   } = {},
@@ -72,7 +72,7 @@ export function updatePitchMutationOptions<TContext = unknown>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data?: UpdatePitchMutationRequest;
+      data: UpdatePitchMutationRequest;
     },
     TContext
   >({
@@ -98,7 +98,7 @@ export function useUpdatePitch<TContext>(
       {
         tripID: UpdatePitchPathParams["tripID"];
         pitchID: UpdatePitchPathParams["pitchID"];
-        data?: UpdatePitchMutationRequest;
+        data: UpdatePitchMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
@@ -119,7 +119,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data?: UpdatePitchMutationRequest;
+      data: UpdatePitchMutationRequest;
     },
     TContext
   >;
@@ -132,7 +132,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data?: UpdatePitchMutationRequest;
+      data: UpdatePitchMutationRequest;
     },
     TContext
   >(
@@ -150,7 +150,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data?: UpdatePitchMutationRequest;
+      data: UpdatePitchMutationRequest;
     },
     TContext
   >;

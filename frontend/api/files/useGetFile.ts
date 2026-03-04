@@ -72,7 +72,9 @@ export function getFileQueryOptions(
     enabled: !!(imageId && size),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getFile(imageId, size, config);
     },
   });

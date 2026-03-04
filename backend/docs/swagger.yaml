@@ -86,6 +86,39 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.ActivityRSVPAPIResponse:
+    properties:
+      activity_id:
+        type: string
+      created_at:
+        type: string
+      profile_picture_url:
+        type: string
+      status:
+        $ref: '#/definitions/models.RSVPStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.ActivityRSVPRequestPayload:
+    properties:
+      status:
+        $ref: '#/definitions/models.RSVPStatus'
+    type: object
+  models.ActivityRSVPsPageResult:
+    properties:
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+      rsvps:
+        items:
+          $ref: '#/definitions/models.ActivityRSVPAPIResponse'
+        type: array
+    type: object
   models.AddCategoryResponse:
     properties:
       message:
@@ -812,6 +845,16 @@ definitions:
           $ref: '#/definitions/models.VoterInfo'
         type: array
     type: object
+  models.RSVPStatus:
+    enum:
+    - "yes"
+    - maybe
+    - "no"
+    type: string
+    x-enum-varnames:
+    - RSVPStatusGoing
+    - RSVPStatusMaybe
+    - RSVPStatusNotGoing
   models.RankPollAPIResponse:
     properties:
       created_at:
@@ -2537,6 +2580,123 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Add category to activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/rsvp:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to RSVP to a specific activity within a trip.
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: RSVP request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ActivityRSVPRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityRSVPAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: RSVP to activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/rsvps:
+    get:
+      description: Returns paginated RSVPs for a specific activity within a trip,
+        optionally filtered by RSVP status.
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      - description: Filter by RSVP status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityRSVPsPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get activity RSVPs
       tags:
       - activities
   /api/v1/trips/{tripID}/categories:

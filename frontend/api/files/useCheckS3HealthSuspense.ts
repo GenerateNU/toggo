@@ -54,7 +54,9 @@ export function checkS3HealthSuspenseQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return checkS3HealthSuspense(config);
     },
   });

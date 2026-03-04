@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": ["yes", "maybe", "no"],
+  "x-enum-varnames": [
+    "RSVPStatusGoing",
+    "RSVPStatusMaybe",
+    "RSVPStatusNotGoing"
+  ],
+  "x-readme-ref-name": "models.RSVPStatus"
+}

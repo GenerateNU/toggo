@@ -37,7 +37,7 @@ export type UpdateMembershipMutationKey = ReturnType<
 export async function updateMembership(
   tripID: UpdateMembershipPathParams["tripID"],
   userID: UpdateMembershipPathParams["userID"],
-  data?: UpdateMembershipMutationRequest,
+  data: UpdateMembershipMutationRequest,
   config: Partial<RequestConfig<UpdateMembershipMutationRequest>> & {
     client?: Client;
   } = {},
@@ -83,7 +83,7 @@ export function updateMembershipMutationOptions<TContext = unknown>(
     {
       tripID: UpdateMembershipPathParams["tripID"];
       userID: UpdateMembershipPathParams["userID"];
-      data?: UpdateMembershipMutationRequest;
+      data: UpdateMembershipMutationRequest;
     },
     TContext
   >({
@@ -113,7 +113,7 @@ export function useUpdateMembership<TContext>(
       {
         tripID: UpdateMembershipPathParams["tripID"];
         userID: UpdateMembershipPathParams["userID"];
-        data?: UpdateMembershipMutationRequest;
+        data: UpdateMembershipMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
@@ -141,7 +141,7 @@ export function useUpdateMembership<TContext>(
     {
       tripID: UpdateMembershipPathParams["tripID"];
       userID: UpdateMembershipPathParams["userID"];
-      data?: UpdateMembershipMutationRequest;
+      data: UpdateMembershipMutationRequest;
     },
     TContext
   >;
@@ -158,7 +158,7 @@ export function useUpdateMembership<TContext>(
     {
       tripID: UpdateMembershipPathParams["tripID"];
       userID: UpdateMembershipPathParams["userID"];
-      data?: UpdateMembershipMutationRequest;
+      data: UpdateMembershipMutationRequest;
     },
     TContext
   >(
@@ -180,7 +180,7 @@ export function useUpdateMembership<TContext>(
     {
       tripID: UpdateMembershipPathParams["tripID"];
       userID: UpdateMembershipPathParams["userID"];
-      data?: UpdateMembershipMutationRequest;
+      data: UpdateMembershipMutationRequest;
     },
     TContext
   >;

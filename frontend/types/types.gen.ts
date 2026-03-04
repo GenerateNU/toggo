@@ -152,6 +152,70 @@ export type ModelsActivityCursorPageResult = {
   next_cursor?: string;
 };
 
+export const modelsRSVPStatus = {
+  RSVPStatusGoing: "yes",
+  RSVPStatusMaybe: "maybe",
+  RSVPStatusNotGoing: "no",
+} as const;
+
+export type ModelsRSVPStatusEnumKey =
+  (typeof modelsRSVPStatus)[keyof typeof modelsRSVPStatus];
+
+export type ModelsRSVPStatus = ModelsRSVPStatusEnumKey;
+
+export type ModelsActivityRSVPAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  activity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  status?: ModelsRSVPStatus;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsActivityRSVPRequestPayload = {
+  /**
+   * @type string | undefined
+   */
+  status?: ModelsRSVPStatus;
+};
+
+export type ModelsActivityRSVPsPageResult = {
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+  /**
+   * @type array | undefined
+   */
+  rsvps?: ModelsActivityRSVPAPIResponse[];
+};
+
 export type ModelsAddCategoryResponse = {
   /**
    * @type string | undefined
@@ -3221,6 +3285,160 @@ export type RemoveCategoryFromActivityMutation = {
     | RemoveCategoryFromActivity404
     | RemoveCategoryFromActivity422
     | RemoveCategoryFromActivity500;
+};
+
+export type PostApiV1TripsTripidActivitiesActivityidRsvpPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+/**
+ * @description OK
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp200 =
+  ModelsActivityRSVPAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp500 = ErrsAPIError;
+
+/**
+ * @description RSVP request payload
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest =
+  ModelsActivityRSVPRequestPayload;
+
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse =
+  PostApiV1TripsTripidActivitiesActivityidRsvp200;
+
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutation = {
+  Response: PostApiV1TripsTripidActivitiesActivityidRsvp200;
+  Request: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+  PathParams: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams;
+  Errors:
+    | PostApiV1TripsTripidActivitiesActivityidRsvp400
+    | PostApiV1TripsTripidActivitiesActivityidRsvp401
+    | PostApiV1TripsTripidActivitiesActivityidRsvp403
+    | PostApiV1TripsTripidActivitiesActivityidRsvp404
+    | PostApiV1TripsTripidActivitiesActivityidRsvp422
+    | PostApiV1TripsTripidActivitiesActivityidRsvp500;
+};
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+  /**
+   * @description Filter by RSVP status
+   * @type string | undefined
+   */
+  status?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps200 =
+  ModelsActivityRSVPsPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps500 = ErrsAPIError;
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse =
+  GetApiV1TripsTripidActivitiesActivityidRsvps200;
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQuery = {
+  Response: GetApiV1TripsTripidActivitiesActivityidRsvps200;
+  PathParams: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams;
+  QueryParams: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams;
+  Errors:
+    | GetApiV1TripsTripidActivitiesActivityidRsvps400
+    | GetApiV1TripsTripidActivitiesActivityidRsvps401
+    | GetApiV1TripsTripidActivitiesActivityidRsvps403
+    | GetApiV1TripsTripidActivitiesActivityidRsvps404
+    | GetApiV1TripsTripidActivitiesActivityidRsvps422
+    | GetApiV1TripsTripidActivitiesActivityidRsvps500;
 };
 
 export type GetCategoriesByTripIDPathParams = {

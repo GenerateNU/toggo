@@ -85,7 +85,9 @@ export function getPollsByTripIDQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getPollsByTripID(tripID, params, config);
     },
   });
