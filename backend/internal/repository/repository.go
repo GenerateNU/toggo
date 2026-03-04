@@ -24,6 +24,7 @@ type Repository struct {
 	PollRanking      PollRankingRepository
 	TripInvite       TripInviteRepository
 	Search           SearchRepository
+	ActivityRSVP     ActivityRSVPRepository
 	db               *bun.DB
 }
 
@@ -41,7 +42,8 @@ func NewRepository(db *bun.DB) *Repository {
 		Activity:         &activityRepository{db: db},
 		Category:         &categoryRepository{db: db},
 		ActivityCategory: &activityCategoryRepository{db: db},
-		TripInvite:       newTripInviteRepository(db),
+		ActivityRSVP:     &activityRSVPRepository{db: db},
+		TripInvite:       &tripInviteRepository{db: db},
 		Search:           &searchRepository{db: db},
 		db:               db,
 	}
@@ -153,4 +155,9 @@ type SearchRepository interface {
 	SearchTrips(ctx context.Context, userID uuid.UUID, query string, limit, offset int) ([]*models.TripDatabaseResponse, int, error)
 	SearchActivities(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.ActivityDatabaseResponse, int, error)
 	SearchTripMembers(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.MembershipDatabaseResponse, int, error)
+}
+
+type ActivityRSVPRepository interface {
+	UpdateRSVP(ctx context.Context, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error)
+	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) ([]models.ActivityRSVPDatabaseResponse, *string, error)
 }

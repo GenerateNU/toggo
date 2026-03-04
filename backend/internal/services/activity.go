@@ -24,6 +24,10 @@ type ActivityServiceInterface interface {
 	GetActivityCategories(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCategoriesPageResult, error)
 	AddCategoryToActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, categoryName string) error
 	RemoveCategoryFromActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, categoryName string) error
+
+	// RSVP management
+	UpdateActivityRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.ActivityRSVPRequestPayload) (*models.ActivityRSVP, error)
+	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) (*models.ActivityRSVPsPageResult, error)
 }
 
 var _ ActivityServiceInterface = (*ActivityService)(nil)
@@ -385,6 +389,56 @@ func (s *ActivityService) buildActivityPageResult(apiActivities []*models.Activi
 			return nil, err
 		}
 		result.NextCursor = &token
+	}
+
+	return result, nil
+}
+
+func (s *ActivityService) UpdateActivityRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.ActivityRSVPRequestPayload) (*models.ActivityRSVP, error) {
+	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
+		return nil, err
+	}
+
+	return s.ActivityRSVP.UpdateRSVP(ctx, activityID, userID, req.Status)
+}
+
+func (s *ActivityService) GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) (*models.ActivityRSVPsPageResult, error) {
+	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
+		return nil, err
+	}
+
+	rsvps, nextCursor, err := s.ActivityRSVP.GetActivityRSVPs(ctx, tripID, activityID, userID, limit, cursorToken, statusFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, rsvps, func(item models.ActivityRSVPDatabaseResponse) *string {
+		return item.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
+	apiRSVPs := make([]models.ActivityRSVPAPIResponse, 0, len(rsvps))
+	for _, rsvp := range rsvps {
+		var profilePictureURL *string
+		if rsvp.ProfilePictureKey != nil && *rsvp.ProfilePictureKey != "" {
+			if url, exists := fileURLMap[*rsvp.ProfilePictureKey]; exists {
+				profilePictureURL = &url
+			}
+		}
+		apiRSVPs = append(apiRSVPs, models.ActivityRSVPAPIResponse{
+			UserID:            rsvp.UserID,
+			Username:          rsvp.Username,
+			ActivityID:        rsvp.ActivityID,
+			ProfilePictureURL: profilePictureURL,
+			Status:            rsvp.Status,
+			CreatedAt:         rsvp.CreatedAt,
+			UpdatedAt:         rsvp.UpdatedAt,
+		})
+	}
+
+	result := &models.ActivityRSVPsPageResult{
+		RSVPs:      apiRSVPs,
+		Limit:      limit,
+		NextCursor: nextCursor,
 	}
 
 	return result, nil
