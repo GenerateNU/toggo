@@ -20,14 +20,13 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 	ctx context.Context,
 	tripID, activityID, userID uuid.UUID,
 	limit int,
-	cursorToken string,
+	cursorToken time.Time,
 	statusFilter string,
-) ([]models.ActivityRSVPDatabaseResponse, *string, error) {
-
+) ([]models.ActivityRSVPDatabaseResponse, *models.ActivityRSVPDatabaseResponse, error) {
 	var rsvps []models.ActivityRSVPDatabaseResponse
 
 	query := r.db.NewSelect().
-		Table("activity_rsvps AS ar").
+		TableExpr("activity_rsvps AS ar").
 		ColumnExpr(`
 			ar.activity_id,
 			ar.user_id,
@@ -35,12 +34,13 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 			ar.created_at,
 			ar.updated_at,
 			u.username,
-			u.profile_picture_key
+			i.file_key AS profile_picture_key
 		`).
-		Join("JOIN users u ON ar.user_id = u.id").
-		Join("JOIN activities a ON ar.activity_id = a.id").
+		Join("JOIN users u ON u.id = ar.user_id").
+		Join("JOIN trips t ON t.id = ar.trip_id").
+		Join("LEFT JOIN images i ON i.image_id = u.profile_picture").
 		Where("ar.activity_id = ?", activityID).
-		Where("a.trip_id = ?", tripID).
+		Where("t.id = ?", tripID).
 		Order("ar.created_at DESC").
 		Limit(limit)
 
@@ -51,39 +51,43 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 		query.Where("ar.status = ?", statusFilter)
 	}
 
-	if cursorToken != "" {
+	if !cursorToken.IsZero() {
 		query.Where("ar.created_at < ?", cursorToken)
 	}
 
 	err := query.Scan(ctx, &rsvps)
 	if err != nil {
-		fmt.Printf("[ERROR] GetActivityRSVPs query failed: %v\n", err)
 		return nil, nil, err
 	}
 
-	var nextCursor *string
+	var lastRSVP *models.ActivityRSVPDatabaseResponse
 	if len(rsvps) == limit {
 		last := rsvps[len(rsvps)-1]
-		token := last.CreatedAt.Format(time.RFC3339Nano)
-		nextCursor = &token
+		lastRSVP = &last
 	}
 
-	return rsvps, nextCursor, nil
+	return rsvps, lastRSVP, nil
 }
 
-func (r *activityRSVPRepository) UpdateRSVP(ctx context.Context, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error) {
-	rsvp := &models.ActivityRSVP{
-		ActivityID: activityID,
-		UserID:     userID,
-		Status:     status,
-	}
-
-	fmt.Printf("[DEBUG] UpdateRSVP: activityID=%v userID=%v status=%v\n", activityID, userID, status)
-	_, err := r.db.NewInsert().Model(rsvp).Table("activity_rsvps").On("CONFLICT (trip_id, activity_id, user_id) DO UPDATE").Set("status = EXCLUDED.status, updated_at = NOW()").Exec(ctx)
+func (r *activityRSVPRepository) UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error) {
+	query := `
+			INSERT INTO activity_rsvps (trip_id, activity_id, user_id, status)
+			VALUES (?, ?, ?, ?)
+			ON CONFLICT (trip_id, activity_id, user_id)
+			DO UPDATE SET status = EXCLUDED.status, updated_at = NOW()
+			RETURNING trip_id, activity_id, user_id, status, created_at, updated_at
+		`
+	rsvp := new(models.ActivityRSVP)
+	err := r.db.QueryRowContext(ctx, query, tripID, activityID, userID, status).Scan(
+		&rsvp.TripID,
+		&rsvp.ActivityID,
+		&rsvp.UserID,
+		&rsvp.Status,
+		&rsvp.CreatedAt,
+		&rsvp.UpdatedAt,
+	)
 	if err != nil {
-		fmt.Printf("[ERROR] UpdateRSVP upsert failed: %v\n", err)
 		return nil, err
 	}
-
 	return rsvp, nil
 }

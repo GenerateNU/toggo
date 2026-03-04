@@ -14,11 +14,16 @@ const (
 	RSVPStatusNotGoing RSVPStatus = "no"
 )
 
+func (s RSVPStatus) IsValid() bool {
+	return s == RSVPStatusGoing || s == RSVPStatusMaybe || s == RSVPStatusNotGoing
+}
+
 type ActivityRSVPRequestPayload struct {
 	Status RSVPStatus `json:"status"`
 }
 
 type ActivityRSVP struct {
+	TripID     uuid.UUID  `bun:"trip_id,pk,type:uuid" json:"trip_id"`
 	ActivityID uuid.UUID  `bun:"activity_id,pk,type:uuid" json:"activity_id"`
 	UserID     uuid.UUID  `bun:"user_id,pk,type:uuid" json:"user_id"`
 	Status     RSVPStatus `bun:"status" json:"status"`
@@ -30,7 +35,7 @@ type ActivityRSVPAPIResponse struct {
 	UserID            uuid.UUID  `json:"user_id"`
 	Username          string     `json:"username"`
 	ActivityID        uuid.UUID  `json:"activity_id"`
-	ProfilePictureURL *string    `json:"profile_url,omitempty"`
+	ProfilePictureURL *string    `json:"profile_picture_url,omitempty"`
 	Status            RSVPStatus `json:"status"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`

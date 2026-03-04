@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -399,18 +400,40 @@ func (s *ActivityService) UpdateActivityRSVP(ctx context.Context, tripID, activi
 		return nil, err
 	}
 
-	return s.ActivityRSVP.UpdateRSVP(ctx, activityID, userID, req.Status)
+	rsvp, err := s.ActivityRSVP.UpdateRSVP(ctx, tripID, activityID, userID, req.Status)
+	if err != nil {
+		return nil, err
+	}
+	return rsvp, nil
 }
 
 func (s *ActivityService) GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) (*models.ActivityRSVPsPageResult, error) {
+	fmt.Printf("[DEBUG] GetActivityRSVPs (service): tripID=%v activityID=%v userID=%v limit=%d cursorToken=%v statusFilter=%v\n", tripID, activityID, userID, limit, cursorToken, statusFilter)
 	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
 		return nil, err
 	}
 
-	rsvps, nextCursor, err := s.ActivityRSVP.GetActivityRSVPs(ctx, tripID, activityID, userID, limit, cursorToken, statusFilter)
+	var cursor time.Time
+	if cursorToken != "" {
+		parsed, err := pagination.DecodeTimeUUIDCursor(cursorToken)
+		if err != nil {
+			return nil, err
+		}
+		if parsed != nil {
+			cursor = parsed.CreatedAt
+		} else {
+			cursor = time.Time{}
+		}
+	} else {
+		cursor = time.Time{}
+	}
+
+	rsvps, lastRSVP, err := s.ActivityRSVP.GetActivityRSVPs(ctx, tripID, activityID, userID, limit, cursor, statusFilter)
 	if err != nil {
+		fmt.Printf("[ERROR] GetActivityRSVPs (repo) failed: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("[DEBUG] RSVPs fetched: %+v\n", rsvps)
 
 	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, rsvps, func(item models.ActivityRSVPDatabaseResponse) *string {
 		return item.ProfilePictureKey
@@ -433,6 +456,14 @@ func (s *ActivityService) GetActivityRSVPs(ctx context.Context, tripID, activity
 			CreatedAt:         rsvp.CreatedAt,
 			UpdatedAt:         rsvp.UpdatedAt,
 		})
+	}
+
+	var nextCursor *string
+	if lastRSVP != nil {
+		token, err := pagination.EncodeTimeUUIDCursorFromValues(lastRSVP.CreatedAt, lastRSVP.UserID)
+		if err == nil {
+			nextCursor = &token
+		}
 	}
 
 	result := &models.ActivityRSVPsPageResult{

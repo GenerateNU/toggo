@@ -158,6 +158,6 @@ type SearchRepository interface {
 }
 
 type ActivityRSVPRepository interface {
-	UpdateRSVP(ctx context.Context, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error)
-	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) ([]models.ActivityRSVPDatabaseResponse, *string, error)
+	UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error)
+	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken time.Time, statusFilter string) ([]models.ActivityRSVPDatabaseResponse, *models.ActivityRSVPDatabaseResponse, error)
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/base64"
 	"errors"
 	"net/http"
 	"toggo/internal/errs"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type ActivityController struct {
@@ -398,47 +400,18 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 }
 
 func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
-	tripID, err := validators.ValidateID(c.Params("tripID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	// RSVPActivity handles RSVP requests for an activity.
-	// @Summary RSVP for activity
-	// @Description RSVP for an activity with status yes/maybe/no
-	// @Tags activities
-	// @Accept json
-	// @Produce json
-	// @Param tripID path string true "Trip ID"
-	// @Param activityID path string true "Activity ID"
-	// @Param request body models.ActivityRSVPRequestPayload true "RSVP request payload"
-	// @Success 200 {object} models.ActivityRSVP
-	// @Failure 400 {object} errs.APIError
-	// @Failure 401 {object} errs.APIError
-	// @Failure 404 {object} errs.APIError
-	// @Failure 500 {object} errs.APIError
-	// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvps [put]
-	// @ID rsvpActivity
-	activityID, err := validators.ValidateID(c.Params("activityID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	var req models.ActivityRSVPRequestPayload
-	if err := c.BodyParser(&req); err != nil {
-		return errs.InvalidJSON()
-	}
-
-	if err := validators.Validate(ctrl.validator, req); err != nil {
-		return err
-	}
-
-	userID, err := validators.ExtractUserID(c)
+	tripID, activityID, userID, req, err := ctrl.parseRSVPRequest(c)
 	if err != nil {
 		return err
 	}
 
-	rsvp, err := ctrl.activityService.UpdateActivityRSVP(c.Context(), tripID, activityID, userID, req)
+	rsvp, err := ctrl.activityService.UpdateActivityRSVP(
+		c.Context(),
+		tripID,
+		activityID,
+		userID,
+		req,
+	)
 	if err != nil {
 		return err
 	}
@@ -447,51 +420,9 @@ func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
 }
 
 func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
-	tripID, err := validators.ValidateID(c.Params("tripID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	// GetActivityRSVPs retrieves paginated RSVPs for an activity, optionally filtered by status.
-	// @Summary Get RSVPs for activity
-	// @Description Retrieves paginated RSVPs for an activity, optionally filtered by status
-	// @Tags activities
-	// @Produce json
-	// @Param tripID path string true "Trip ID"
-	// @Param activityID path string true "Activity ID"
-	// @Param status query string false "Filter by RSVP status (yes, no, maybe, all)"
-	// @Param limit query int false "Max items per page (default 20, max 100)"
-	// @Param cursor query string false "Opaque cursor returned in next_cursor"
-	// @Success 200 {object} models.ActivityRSVPsPageResult
-	// @Failure 400 {object} errs.APIError
-	// @Failure 401 {object} errs.APIError
-	// @Failure 403 {object} errs.APIError
-	// @Failure 404 {object} errs.APIError
-	// @Failure 500 {object} errs.APIError
-	// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvps [get]
-	// @ID getActivityRSVPs
-	activityID, err := validators.ValidateID(c.Params("activityID"))
-	if err != nil {
-		return errs.InvalidUUID()
-	}
-
-	userID, err := validators.ExtractUserID(c)
+	tripID, activityID, userID, limit, cursorToken, status, err := ctrl.parseRSVPPaginationRequest(c)
 	if err != nil {
 		return err
-	}
-
-	var pagination models.CursorPaginationParams
-	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &pagination); err != nil {
-		return err
-	}
-
-	limit, cursorToken := utilities.ExtractLimitAndCursor(&pagination)
-
-	status := normalizeRSVPStatus(c.Query("status"))
-	if status == nil {
-		return errs.InvalidRequestData(map[string]string{
-			"status": "must be one of: yes, no, maybe, all",
-		})
 	}
 
 	rsvps, err := ctrl.activityService.GetActivityRSVPs(
@@ -501,7 +432,7 @@ func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
 		userID,
 		limit,
 		cursorToken,
-		*status, // empty string means no filter
+		status,
 	)
 	if err != nil {
 		return err
@@ -510,15 +441,89 @@ func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(rsvps)
 }
 
-func normalizeRSVPStatus(raw string) *string {
-	// normalizeRSVPStatus normalizes the RSVP status query parameter.
-	switch raw {
-	case "", "all":
-		s := ""
-		return &s
-	case "yes", "no", "maybe":
-		return &raw
-	default:
-		return nil
+func (ctrl *ActivityController) parseRSVPRequest(c *fiber.Ctx) (
+	tripID uuid.UUID,
+	activityID uuid.UUID,
+	userID uuid.UUID,
+	req models.ActivityRSVPRequestPayload,
+	err error,
+) {
+
+	tripID, err = validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		err = errs.InvalidUUID()
+		return tripID, activityID, userID, req, err
 	}
+
+	activityID, err = validators.ValidateID(c.Params("activityID"))
+	if err != nil {
+		err = errs.InvalidUUID()
+		return tripID, activityID, userID, req, err
+	}
+
+	if err = c.BodyParser(&req); err != nil {
+		err = errs.InvalidJSON()
+		return tripID, activityID, userID, req, err
+	}
+
+	if err = validators.ValidateRSVPStatus(string(req.Status)); err != nil {
+		return tripID, activityID, userID, req, err
+	}
+
+	userID, err = validators.ExtractUserID(c)
+	if err != nil {
+		return tripID, activityID, userID, req, err
+	}
+
+	return tripID, activityID, userID, req, err
+}
+
+func (ctrl *ActivityController) parseRSVPPaginationRequest(
+	c *fiber.Ctx,
+) (
+	tripID uuid.UUID,
+	activityID uuid.UUID,
+	userID uuid.UUID,
+	limit int,
+	cursorToken string,
+	status string,
+	err error,
+) {
+	tripID, err = validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		err = errs.InvalidUUID()
+		return tripID, activityID, userID, limit, cursorToken, status, err
+	}
+
+	activityID, err = validators.ValidateID(c.Params("activityID"))
+	if err != nil {
+		err = errs.InvalidUUID()
+		return tripID, activityID, userID, limit, cursorToken, status, err
+	}
+
+	userID, err = validators.ExtractUserID(c)
+	if err != nil {
+		return tripID, activityID, userID, limit, cursorToken, status, err
+	}
+
+	var pagination models.CursorPaginationParams
+	if err = utilities.ParseAndValidateQueryParams(c, ctrl.validator, &pagination); err != nil {
+		return tripID, activityID, userID, limit, cursorToken, status, err
+	}
+
+	limit, cursorToken = utilities.ExtractLimitAndCursor(&pagination)
+
+	status = c.Query("status")
+	if err = validators.ValidateRSVPStatus(status); err != nil {
+		return tripID, activityID, userID, limit, cursorToken, status, err
+	}
+
+	if cursorToken != "" {
+		if _, err = base64.StdEncoding.DecodeString(cursorToken); err != nil {
+			err = errs.BadRequest(errors.New("invalid cursor format"))
+			return tripID, activityID, userID, limit, cursorToken, status, err
+		}
+	}
+
+	return tripID, activityID, userID, limit, cursorToken, status, err
 }

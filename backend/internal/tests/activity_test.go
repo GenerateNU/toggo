@@ -793,10 +793,11 @@ func TestActivityRSVPs(t *testing.T) {
 					Status: "yes",
 				},
 			}).
-			AssertStatus(http.StatusOK)
+			AssertStatus(http.StatusOK).
+			AssertField("status", "yes")
 	})
 
-	t.Run("member can update RSVP to maybe", func(t *testing.T) {
+	t.Run("member can RSVP maybe", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -807,7 +808,23 @@ func TestActivityRSVPs(t *testing.T) {
 					Status: "maybe",
 				},
 			}).
-			AssertStatus(http.StatusOK)
+			AssertStatus(http.StatusOK).
+			AssertField("status", "maybe")
+	})
+
+	t.Run("member can RSVP not going", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "no",
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("status", "no")
 	})
 
 	t.Run("non-member cannot RSVP", func(t *testing.T) {
@@ -863,113 +880,117 @@ func TestActivityRSVPs(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 		rsvps := resp["rsvps"].([]interface{})
+		fmt.Printf("RSVPs returned: %+v\n", rsvps)
 		require.True(t, len(rsvps) >= 1)
 	})
 }
 
-// func TestActivityRSVPPagination(t *testing.T) {
-// 	app := fakes.GetSharedTestApp()
+func TestActivityRSVPPagination(t *testing.T) {
+	app := fakes.GetSharedTestApp()
 
-// 	owner := createUser(t, app)
-// 	trip := createTrip(t, app, owner)
-// 	activityID := createActivity(t, app, owner, trip, "RSVP Pagination Activity")
+	owner := createUser(t, app)
+	trip := createTrip(t, app, owner)
+	activityID := createActivity(t, app, owner, trip, "RSVP Pagination Activity")
 
-// 	memberIDs := make([]string, 10)
-// 	for i := 0; i < 10; i++ {
-// 		member := createUser(t, app)
-// 		addMember(t, app, owner, member, trip)
-// 		memberIDs[i] = member
-// 		var status string
-// 		switch i % 3 {
-// 		case 0:
-// 			status = string(models.RSVPStatusGoing)
-// 		case 1:
-// 			status = string(models.RSVPStatusMaybe)
-// 		case 2:
-// 			status = string(models.RSVPStatusNotGoing)
-// 		}
-// 		testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
-// 				Method: testkit.PUT,
-// 				UserID: &member,
-// 				Body: models.ActivityRSVPRequestPayload{
-// 					Status: models.RSVPStatus(status),
-// 				},
-// 			}).
-// 			AssertStatus(http.StatusOK)
-// 	}
+	memberIDs := make([]string, 10)
+	for i := 0; i < 10; i++ {
+		member := createUser(t, app)
+		addMember(t, app, owner, member, trip)
+		memberIDs[i] = member
+		var status string
+		switch i % 3 {
+		case 0:
+			status = string(models.RSVPStatusGoing)
+		case 1:
+			status = string(models.RSVPStatusMaybe)
+		case 2:
+			status = string(models.RSVPStatusNotGoing)
+		}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: models.RSVPStatus(status),
+				},
+			}).
+			AssertStatus(http.StatusOK)
+	}
 
-// 	t.Run("pagination works with limit", func(t *testing.T) {
-// 		resp := testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=4", trip, activityID),
-// 				Method: testkit.GET,
-// 				UserID: &owner,
-// 			}).
-// 			AssertStatus(http.StatusOK).
-// 			GetBody()
-// 		rsvps := resp["rsvps"].([]interface{})
-// 		require.Equal(t, 4, len(rsvps))
-// 		nextCursor := resp["next_cursor"]
-// 		require.NotNil(t, nextCursor)
-// 	})
+	t.Run("pagination works with limit", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=4", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps := resp["rsvps"].([]interface{})
+		require.Equal(t, 4, len(rsvps))
+		nextCursor := resp["next_cursor"]
+		require.NotNil(t, nextCursor)
+	})
 
-// 	t.Run("pagination with cursor returns next page", func(t *testing.T) {
-// 		// Get first page
-// 		resp := testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3", trip, activityID),
-// 				Method: testkit.GET,
-// 				UserID: &owner,
-// 			}).
-// 			AssertStatus(http.StatusOK).
-// 			GetBody()
-// 		nextCursor := resp["next_cursor"]
-// 		require.NotNil(t, nextCursor)
+	t.Run("pagination with cursor returns next page", func(t *testing.T) {
+		// Get first page
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		nextCursor := resp["next_cursor"]
+		require.NotNil(t, nextCursor)
 
-// 		// Get next page
-// 		resp2 := testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3&cursor=%s", trip, activityID, nextCursor),
-// 				Method: testkit.GET,
-// 				UserID: &owner,
-// 			}).
-// 			AssertStatus(http.StatusOK).
-// 			GetBody()
-// 		rsvps2 := resp2["rsvps"].([]interface{})
-// 		require.Equal(t, 3, len(rsvps2))
-// 	})
+		// Get next page
+		resp2 := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3&cursor=%s", trip, activityID, nextCursor),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps2, ok := resp2["rsvps"].([]interface{})
+		if !ok {
+			t.Fatalf("Expected resp2['rsvps'] to be []interface{}, got %T. Full response: %#v", resp2["rsvps"], resp2)
+		}
+		require.Equal(t, 3, len(rsvps2))
+	})
 
-// 	t.Run("filter by status returns correct RSVPs", func(t *testing.T) {
-// 		resp := testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?status=%s", trip, activityID, models.RSVPStatusGoing),
-// 				Method: testkit.GET,
-// 				UserID: &owner,
-// 			}).
-// 			AssertStatus(http.StatusOK).
-// 			GetBody()
-// 		rsvps := resp["rsvps"].([]interface{})
-// 		for _, rsvp := range rsvps {
-// 			m := rsvp.(map[string]interface{})
-// 			require.Equal(t, string(models.RSVPStatusGoing), m["status"])
-// 		}
-// 	})
+	t.Run("filter by status returns correct RSVPs", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?status=%s", trip, activityID, models.RSVPStatusGoing),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps := resp["rsvps"].([]interface{})
+		for _, rsvp := range rsvps {
+			m := rsvp.(map[string]interface{})
+			require.Equal(t, string(models.RSVPStatusGoing), m["status"])
+		}
+	})
 
-// 	t.Run("invalid cursor returns 400", func(t *testing.T) {
-// 		testkit.New(t).
-// 			Request(testkit.Request{
-// 				App:    app,
-// 				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?cursor=invalid", trip, activityID),
-// 				Method: testkit.GET,
-// 				UserID: &owner,
-// 			}).
-// 			AssertStatus(http.StatusBadRequest)
-// 	})
-// }
+	t.Run("invalid cursor returns 400", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?cursor=invalid", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+}

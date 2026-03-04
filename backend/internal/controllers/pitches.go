@@ -149,6 +149,12 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/pitches/{pitchID} [patch]
 // @ID           updatePitch
 func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
+	userIDStr, ok := c.Locals("userID").(string)
+	userID, validateErr := validators.ValidateID(userIDStr)
+	if !ok || validateErr != nil {
+		return errs.Unauthorized()
+	}
+
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -166,10 +172,13 @@ func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
 		return err
 	}
 
-	pitch, err := ctrl.pitchService.Update(c.Context(), tripID, pitchID, req)
+	pitch, err := ctrl.pitchService.Update(c.Context(), tripID, pitchID, userID, req)
 	if err != nil {
 		if errs.IsNotFound(err) {
 			return errs.NewAPIError(http.StatusNotFound, err)
+		}
+		if err == errs.Forbidden() {
+			return errs.NewAPIError(http.StatusForbidden, err)
 		}
 		return err
 	}

@@ -110,6 +110,7 @@ func NewValidator() *validator.Validate {
 
 	registerUserValidator(v)
 	registerImageValidator(v)
+	registerRSVPStatusValidator(v)
 
 	return v
 }
