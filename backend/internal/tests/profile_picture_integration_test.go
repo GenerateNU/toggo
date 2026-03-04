@@ -342,3 +342,196 @@ func TestCommentProfilePictureURLFromAPI(t *testing.T) {
 		require.True(t, strings.Contains(rawURL, "http"))
 	})
 }
+
+func TestRSVPProfilePictureURLFromAPI(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	ctx := context.Background()
+
+	// Create user for RSVP
+	userAuthID := fakes.GenerateUUID()
+	userResp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/users",
+			Method: testkit.POST,
+			UserID: &userAuthID,
+			Body: models.CreateUserRequest{
+				Name:        "RSVP User",
+				Username:    fakes.GenerateRandomUsername(),
+				PhoneNumber: fakes.GenerateRandomPhoneNumber(),
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+	userID := userResp["id"].(string)
+
+	t.Run("RSVP without profile picture returns null", func(t *testing.T) {
+		// Create trip
+		tripResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.CreateTripRequest{
+					Name:      "RSVP Pic Trip No Image",
+					BudgetMin: 100,
+					BudgetMax: 500,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		tripID := tripResp["id"].(string)
+
+		// Create activity
+		activityResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(tripID),
+					Name:   "RSVP Activity No Image",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		activityID := activityResp["id"].(string)
+
+		// RSVP to activity
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities/" + activityID + "/rsvp",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "yes",
+				},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Fetch RSVPs
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities/" + activityID + "/rsvps",
+				Method: testkit.GET,
+				UserID: &userAuthID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items, ok := resp["items"].([]interface{})
+		require.True(t, ok, "items field missing or invalid type")
+		require.Greater(t, len(items), 0, "expected at least one RSVP")
+
+		rsvp := items[0].(map[string]interface{})
+		profilePictureURL := rsvp["profile_picture_url"]
+		require.Nil(t, profilePictureURL)
+	})
+
+	t.Run("RSVP with profile picture returns url", func(t *testing.T) {
+		// Create profile picture image for user
+		db := fakes.GetSharedDB()
+		profileImageID := uuid.New()
+		uniqueFileKey := fmt.Sprintf("rsvp_test_%s_%s_small.jpg", t.Name(), uuid.NewString())
+
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: profileImageID,
+				FileKey: uniqueFileKey,
+				Size:    models.ImageSizeSmall,
+				Status:  models.UploadStatusConfirmed,
+			}).
+			Exec(ctx)
+		require.NoError(t, err)
+
+		// Update user with profile picture
+		_, err = db.NewUpdate().
+			Model(&models.User{}).
+			Set("profile_picture = ?", profileImageID).
+			Where("id = ?", userID).
+			Exec(ctx)
+		require.NoError(t, err)
+
+		// Create trip
+		tripResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.CreateTripRequest{
+					Name:      "RSVP Pic Trip With Image",
+					BudgetMin: 100,
+					BudgetMax: 500,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		tripID := tripResp["id"].(string)
+
+		// Create activity
+		activityResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(tripID),
+					Name:   "RSVP Activity With Image",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		activityID := activityResp["id"].(string)
+
+		// RSVP to activity
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities/" + activityID + "/rsvp",
+				Method: testkit.POST,
+				UserID: &userAuthID,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "yes",
+				},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Fetch RSVPs
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/activities/" + activityID + "/rsvps",
+				Method: testkit.GET,
+				UserID: &userAuthID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items, ok := resp["items"].([]interface{})
+		require.True(t, ok, "items field missing or invalid type")
+		require.Greater(t, len(items), 0, "expected at least one RSVP")
+
+		var matched map[string]interface{}
+		for _, item := range items {
+			rsvp := item.(map[string]interface{})
+			if rsvp["user_id"].(string) == userID {
+				matched = rsvp
+				break
+			}
+		}
+
+		require.NotNil(t, matched, "expected to find created RSVP")
+
+		rawURL, ok := matched["profile_picture_url"].(string)
+		require.True(t, ok)
+		require.NotEmpty(t, rawURL)
+		require.Contains(t, rawURL, uniqueFileKey)
+		require.True(t, strings.Contains(rawURL, "http"))
+	})
+}

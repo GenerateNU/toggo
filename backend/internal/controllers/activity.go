@@ -398,7 +398,7 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 }
 
 func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
-	tripId, err := validators.ValidateID(c.Params("tripID"))
+	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -419,7 +419,7 @@ func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
 	// @Failure 500 {object} errs.APIError
 	// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvps [put]
 	// @ID rsvpActivity
-	activityId, err := validators.ValidateID(c.Params("activityID"))
+	activityID, err := validators.ValidateID(c.Params("activityID"))
 	if err != nil {
 		return errs.InvalidUUID()
 	}
@@ -433,12 +433,12 @@ func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
 		return err
 	}
 
-	userId, err := validators.ExtractUserID(c)
+	userID, err := validators.ExtractUserID(c)
 	if err != nil {
 		return err
 	}
 
-	rsvp, err := ctrl.activityService.UpdateActivityRSVP(c.Context(), tripId, activityId, userId, req)
+	rsvp, err := ctrl.activityService.UpdateActivityRSVP(c.Context(), tripID, activityID, userID, req)
 	if err != nil {
 		return err
 	}
