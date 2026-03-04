@@ -163,11 +163,11 @@ export default function Home() {
 
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={["80%"]}
+        snapPoints={["80%", "95%"]}
         disableClose={needsProfile}
       >
         <Box flex={1} padding="lg" gap="lg">
-          <Text variant="xxlHeading" color="textSecondary">
+          <Text variant="mdLabel" color="textSecondary">
             Create a profile
           </Text>
           <Box justifyContent="center" alignItems="center">
