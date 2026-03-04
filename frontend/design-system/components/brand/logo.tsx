@@ -1,4 +1,4 @@
-import { Text } from "@/design-system";
+import { Text } from "@/design-system/primitives/text";
 
 export function Logo() {
   return (
