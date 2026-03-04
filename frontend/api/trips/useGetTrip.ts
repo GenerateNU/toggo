@@ -58,7 +58,9 @@ export function getTripQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getTrip(tripID, config);
     },
   });

@@ -38,7 +38,7 @@ export type UpdateRankPollMutationKey = ReturnType<
 export async function updateRankPoll(
   tripID: UpdateRankPollPathParams["tripID"],
   pollId: UpdateRankPollPathParams["pollId"],
-  data?: UpdateRankPollMutationRequest,
+  data: UpdateRankPollMutationRequest,
   config: Partial<RequestConfig<UpdateRankPollMutationRequest>> & {
     client?: Client;
   } = {},
@@ -86,7 +86,7 @@ export function updateRankPollMutationOptions<TContext = unknown>(
     {
       tripID: UpdateRankPollPathParams["tripID"];
       pollId: UpdateRankPollPathParams["pollId"];
-      data?: UpdateRankPollMutationRequest;
+      data: UpdateRankPollMutationRequest;
     },
     TContext
   >({
@@ -117,7 +117,7 @@ export function useUpdateRankPoll<TContext>(
       {
         tripID: UpdateRankPollPathParams["tripID"];
         pollId: UpdateRankPollPathParams["pollId"];
-        data?: UpdateRankPollMutationRequest;
+        data: UpdateRankPollMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
@@ -146,7 +146,7 @@ export function useUpdateRankPoll<TContext>(
     {
       tripID: UpdateRankPollPathParams["tripID"];
       pollId: UpdateRankPollPathParams["pollId"];
-      data?: UpdateRankPollMutationRequest;
+      data: UpdateRankPollMutationRequest;
     },
     TContext
   >;
@@ -164,7 +164,7 @@ export function useUpdateRankPoll<TContext>(
     {
       tripID: UpdateRankPollPathParams["tripID"];
       pollId: UpdateRankPollPathParams["pollId"];
-      data?: UpdateRankPollMutationRequest;
+      data: UpdateRankPollMutationRequest;
     },
     TContext
   >(
@@ -187,7 +187,7 @@ export function useUpdateRankPoll<TContext>(
     {
       tripID: UpdateRankPollPathParams["tripID"];
       pollId: UpdateRankPollPathParams["pollId"];
-      data?: UpdateRankPollMutationRequest;
+      data: UpdateRankPollMutationRequest;
     },
     TContext
   >;

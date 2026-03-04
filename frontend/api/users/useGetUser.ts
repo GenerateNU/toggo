@@ -58,7 +58,9 @@ export function getUserQueryOptions(
     enabled: !!userID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getUser(userID, config);
     },
   });

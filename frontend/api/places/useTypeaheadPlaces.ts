@@ -67,7 +67,9 @@ export function typeaheadPlacesQueryOptions(
     enabled: !!params,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return typeaheadPlaces(params, config);
     },
   });

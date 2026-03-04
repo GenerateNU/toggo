@@ -94,7 +94,9 @@ export function getActivityCategoriesQueryOptions(
     enabled: !!(tripID && activityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return getActivityCategories(tripID, activityID, params, config);
     },
   });

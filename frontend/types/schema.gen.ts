@@ -4,12 +4,50 @@
  */
 
 import type {
+  AddCategoryToActivity200,
+  AddCategoryToActivity400,
+  AddCategoryToActivity401,
+  AddCategoryToActivity403,
+  AddCategoryToActivity404,
+  AddCategoryToActivity422,
+  AddCategoryToActivity500,
+  AddCategoryToActivityMutationResponse,
+  AddCategoryToActivityPathParams,
+  AddMember201,
+  AddMember400,
+  AddMember401,
+  AddMember422,
+  AddMember500,
+  AddMemberMutationRequest,
+  AddMemberMutationResponse,
+  CheckS3Health200,
+  CheckS3Health503,
+  CheckS3HealthQueryResponse,
+  ConfirmUpload200,
+  ConfirmUpload400,
+  ConfirmUpload404,
+  ConfirmUpload422,
+  ConfirmUpload500,
+  ConfirmUploadMutationRequest,
+  ConfirmUploadMutationResponse,
+  CreateComment201,
+  CreateComment400,
+  CreateComment401,
+  CreateComment404,
+  CreateComment422,
+  CreateComment500,
+  CreateCommentMutationRequest,
+  CreateCommentMutationResponse,
   ErrsAPIError,
   ModelsDateRange,
   ModelsActivity,
   ModelsActivityAPIResponse,
   ModelsActivityCategoriesPageResult,
   ModelsActivityCursorPageResult,
+  ModelsRSVPStatus,
+  ModelsActivityRSVPAPIResponse,
+  ModelsActivityRSVPRequestPayload,
+  ModelsActivityRSVPsPageResult,
   ModelsAddCategoryResponse,
   ModelsAddressComponent,
   ModelsLatLng,
@@ -87,22 +125,13 @@ import type {
   ModelsUploadURLRequest,
   ModelsUploadURLResponse,
   ModelsUser,
-  CreateComment201,
-  CreateComment400,
-  CreateComment401,
-  CreateComment404,
-  CreateComment422,
-  CreateComment500,
-  CreateCommentMutationRequest,
-  CreateCommentMutationResponse,
-  DeleteCommentPathParams,
   DeleteComment204,
   DeleteComment400,
   DeleteComment401,
   DeleteComment404,
   DeleteComment500,
   DeleteCommentMutationResponse,
-  UpdateCommentPathParams,
+  DeleteCommentPathParams,
   UpdateComment200,
   UpdateComment400,
   UpdateComment401,
@@ -111,41 +140,25 @@ import type {
   UpdateComment500,
   UpdateCommentMutationRequest,
   UpdateCommentMutationResponse,
-  ConfirmUpload200,
-  ConfirmUpload400,
-  ConfirmUpload404,
-  ConfirmUpload422,
-  ConfirmUpload500,
-  ConfirmUploadMutationRequest,
-  ConfirmUploadMutationResponse,
-  CheckS3Health200,
-  CheckS3Health503,
-  CheckS3HealthQueryResponse,
+  UpdateCommentPathParams,
   CreateUploadURLs201,
   CreateUploadURLs400,
   CreateUploadURLs422,
   CreateUploadURLs500,
   CreateUploadURLsMutationRequest,
   CreateUploadURLsMutationResponse,
-  GetFileAllSizesPathParams,
   GetFileAllSizes200,
   GetFileAllSizes400,
   GetFileAllSizes404,
   GetFileAllSizes500,
+  GetFileAllSizesPathParams,
   GetFileAllSizesQueryResponse,
-  GetFilePathParams,
   GetFile200,
   GetFile400,
   GetFile404,
   GetFile500,
+  GetFilePathParams,
   GetFileQueryResponse,
-  AddMember201,
-  AddMember400,
-  AddMember401,
-  AddMember422,
-  AddMember500,
-  AddMemberMutationRequest,
-  AddMemberMutationResponse,
   SendNotification200,
   SendNotification400,
   SendNotification422,
@@ -166,47 +179,47 @@ import type {
   GoogleMapsHealth200,
   GoogleMapsHealth500,
   GoogleMapsHealthQueryResponse,
-  TypeaheadPlacesQueryParams,
   TypeaheadPlaces200,
   TypeaheadPlaces400,
   TypeaheadPlaces500,
+  TypeaheadPlacesQueryParams,
   TypeaheadPlacesQueryResponse,
-  SearchTripsQueryParams,
   SearchTrips200,
   SearchTrips400,
   SearchTrips401,
   SearchTrips422,
   SearchTrips500,
+  SearchTripsQueryParams,
   SearchTripsQueryResponse,
-  SearchActivitiesPathParams,
-  SearchActivitiesQueryParams,
   SearchActivities200,
   SearchActivities400,
   SearchActivities401,
   SearchActivities404,
   SearchActivities422,
   SearchActivities500,
+  SearchActivitiesPathParams,
+  SearchActivitiesQueryParams,
   SearchActivitiesQueryResponse,
-  SearchTripMembersPathParams,
-  SearchTripMembersQueryParams,
   SearchTripMembers200,
   SearchTripMembers400,
   SearchTripMembers401,
   SearchTripMembers404,
   SearchTripMembers422,
   SearchTripMembers500,
+  SearchTripMembersPathParams,
+  SearchTripMembersQueryParams,
   SearchTripMembersQueryResponse,
-  JoinTripByInvitePathParams,
   JoinTripByInvite201,
   JoinTripByInvite400,
   JoinTripByInvite401,
   JoinTripByInvite500,
   JoinTripByInviteMutationResponse,
-  GetAllTripsQueryParams,
+  JoinTripByInvitePathParams,
   GetAllTrips200,
   GetAllTrips400,
   GetAllTrips401,
   GetAllTrips500,
+  GetAllTripsQueryParams,
   GetAllTripsQueryResponse,
   CreateTrip201,
   CreateTrip400,
@@ -215,20 +228,19 @@ import type {
   CreateTrip500,
   CreateTripMutationRequest,
   CreateTripMutationResponse,
-  GetTripPathParams,
   GetTrip200,
   GetTrip400,
   GetTrip404,
   GetTrip500,
+  GetTripPathParams,
   GetTripQueryResponse,
-  DeleteTripPathParams,
   DeleteTrip204,
   DeleteTrip400,
   DeleteTrip401,
   DeleteTrip404,
   DeleteTrip500,
   DeleteTripMutationResponse,
-  UpdateTripPathParams,
+  DeleteTripPathParams,
   UpdateTrip200,
   UpdateTrip400,
   UpdateTrip401,
@@ -237,16 +249,16 @@ import type {
   UpdateTrip500,
   UpdateTripMutationRequest,
   UpdateTripMutationResponse,
-  GetActivitiesByTripIDPathParams,
-  GetActivitiesByTripIDQueryParams,
+  UpdateTripPathParams,
   GetActivitiesByTripID200,
   GetActivitiesByTripID400,
   GetActivitiesByTripID401,
   GetActivitiesByTripID403,
   GetActivitiesByTripID404,
   GetActivitiesByTripID500,
+  GetActivitiesByTripIDPathParams,
+  GetActivitiesByTripIDQueryParams,
   GetActivitiesByTripIDQueryResponse,
-  CreateActivityPathParams,
   CreateActivity201,
   CreateActivity400,
   CreateActivity401,
@@ -256,15 +268,15 @@ import type {
   CreateActivity500,
   CreateActivityMutationRequest,
   CreateActivityMutationResponse,
-  GetActivityPathParams,
+  CreateActivityPathParams,
   GetActivity200,
   GetActivity400,
   GetActivity401,
   GetActivity403,
   GetActivity404,
   GetActivity500,
+  GetActivityPathParams,
   GetActivityQueryResponse,
-  UpdateActivityPathParams,
   UpdateActivity200,
   UpdateActivity400,
   UpdateActivity401,
@@ -274,7 +286,7 @@ import type {
   UpdateActivity500,
   UpdateActivityMutationRequest,
   UpdateActivityMutationResponse,
-  DeleteActivityPathParams,
+  UpdateActivityPathParams,
   DeleteActivity204,
   DeleteActivity400,
   DeleteActivity401,
@@ -282,25 +294,16 @@ import type {
   DeleteActivity404,
   DeleteActivity500,
   DeleteActivityMutationResponse,
-  GetActivityCategoriesPathParams,
-  GetActivityCategoriesQueryParams,
+  DeleteActivityPathParams,
   GetActivityCategories200,
   GetActivityCategories400,
   GetActivityCategories401,
   GetActivityCategories403,
   GetActivityCategories404,
   GetActivityCategories500,
+  GetActivityCategoriesPathParams,
+  GetActivityCategoriesQueryParams,
   GetActivityCategoriesQueryResponse,
-  AddCategoryToActivityPathParams,
-  AddCategoryToActivity200,
-  AddCategoryToActivity400,
-  AddCategoryToActivity401,
-  AddCategoryToActivity403,
-  AddCategoryToActivity404,
-  AddCategoryToActivity422,
-  AddCategoryToActivity500,
-  AddCategoryToActivityMutationResponse,
-  RemoveCategoryFromActivityPathParams,
   RemoveCategoryFromActivity204,
   RemoveCategoryFromActivity400,
   RemoveCategoryFromActivity401,
@@ -309,15 +312,35 @@ import type {
   RemoveCategoryFromActivity422,
   RemoveCategoryFromActivity500,
   RemoveCategoryFromActivityMutationResponse,
-  GetCategoriesByTripIDPathParams,
+  RemoveCategoryFromActivityPathParams,
+  PostApiV1TripsTripidActivitiesActivityidRsvp200,
+  PostApiV1TripsTripidActivitiesActivityidRsvp400,
+  PostApiV1TripsTripidActivitiesActivityidRsvp401,
+  PostApiV1TripsTripidActivitiesActivityidRsvp403,
+  PostApiV1TripsTripidActivitiesActivityidRsvp404,
+  PostApiV1TripsTripidActivitiesActivityidRsvp422,
+  PostApiV1TripsTripidActivitiesActivityidRsvp500,
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse,
+  PostApiV1TripsTripidActivitiesActivityidRsvpPathParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvps200,
+  GetApiV1TripsTripidActivitiesActivityidRsvps400,
+  GetApiV1TripsTripidActivitiesActivityidRsvps401,
+  GetApiV1TripsTripidActivitiesActivityidRsvps403,
+  GetApiV1TripsTripidActivitiesActivityidRsvps404,
+  GetApiV1TripsTripidActivitiesActivityidRsvps422,
+  GetApiV1TripsTripidActivitiesActivityidRsvps500,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse,
   GetCategoriesByTripID200,
   GetCategoriesByTripID400,
   GetCategoriesByTripID401,
   GetCategoriesByTripID403,
   GetCategoriesByTripID404,
   GetCategoriesByTripID500,
+  GetCategoriesByTripIDPathParams,
   GetCategoriesByTripIDQueryResponse,
-  CreateTripInvitePathParams,
   CreateTripInvite201,
   CreateTripInvite400,
   CreateTripInvite401,
@@ -326,29 +349,29 @@ import type {
   CreateTripInvite500,
   CreateTripInviteMutationRequest,
   CreateTripInviteMutationResponse,
-  GetTripMembersPathParams,
-  GetTripMembersQueryParams,
+  CreateTripInvitePathParams,
   GetTripMembers200,
   GetTripMembers400,
   GetTripMembers401,
   GetTripMembers404,
   GetTripMembers500,
+  GetTripMembersPathParams,
+  GetTripMembersQueryParams,
   GetTripMembersQueryResponse,
-  GetMembershipPathParams,
   GetMembership200,
   GetMembership400,
   GetMembership401,
   GetMembership404,
   GetMembership500,
+  GetMembershipPathParams,
   GetMembershipQueryResponse,
-  RemoveMemberPathParams,
   RemoveMember204,
   RemoveMember400,
   RemoveMember401,
   RemoveMember404,
   RemoveMember500,
   RemoveMemberMutationResponse,
-  UpdateMembershipPathParams,
+  RemoveMemberPathParams,
   UpdateMembership200,
   UpdateMembership400,
   UpdateMembership401,
@@ -357,28 +380,28 @@ import type {
   UpdateMembership500,
   UpdateMembershipMutationRequest,
   UpdateMembershipMutationResponse,
-  DemoteFromAdminPathParams,
+  UpdateMembershipPathParams,
   DemoteFromAdmin200,
   DemoteFromAdmin400,
   DemoteFromAdmin401,
   DemoteFromAdmin404,
   DemoteFromAdmin500,
   DemoteFromAdminMutationResponse,
-  PromoteToAdminPathParams,
+  DemoteFromAdminPathParams,
   PromoteToAdmin200,
   PromoteToAdmin400,
   PromoteToAdmin401,
   PromoteToAdmin404,
   PromoteToAdmin500,
   PromoteToAdminMutationResponse,
-  ListPitchesPathParams,
-  ListPitchesQueryParams,
+  PromoteToAdminPathParams,
   ListPitches200,
   ListPitches400,
   ListPitches404,
   ListPitches500,
+  ListPitchesPathParams,
+  ListPitchesQueryParams,
   ListPitchesQueryResponse,
-  CreatePitchPathParams,
   CreatePitch201,
   CreatePitch400,
   CreatePitch404,
@@ -386,19 +409,19 @@ import type {
   CreatePitch500,
   CreatePitchMutationRequest,
   CreatePitchMutationResponse,
-  GetPitchPathParams,
+  CreatePitchPathParams,
   GetPitch200,
   GetPitch400,
   GetPitch404,
   GetPitch500,
+  GetPitchPathParams,
   GetPitchQueryResponse,
-  DeletePitchPathParams,
   DeletePitch204,
   DeletePitch400,
   DeletePitch404,
   DeletePitch500,
   DeletePitchMutationResponse,
-  UpdatePitchPathParams,
+  DeletePitchPathParams,
   UpdatePitch200,
   UpdatePitch400,
   UpdatePitch404,
@@ -406,7 +429,7 @@ import type {
   UpdatePitch500,
   UpdatePitchMutationRequest,
   UpdatePitchMutationResponse,
-  CreateRankPollPathParams,
+  UpdatePitchPathParams,
   CreateRankPoll201,
   CreateRankPoll400,
   CreateRankPoll401,
@@ -415,15 +438,15 @@ import type {
   CreateRankPoll500,
   CreateRankPollMutationRequest,
   CreateRankPollMutationResponse,
-  GetRankPollResultsPathParams,
+  CreateRankPollPathParams,
   GetRankPollResults200,
   GetRankPollResults400,
   GetRankPollResults401,
   GetRankPollResults403,
   GetRankPollResults404,
   GetRankPollResults500,
+  GetRankPollResultsPathParams,
   GetRankPollResultsQueryResponse,
-  DeleteRankPollPathParams,
   DeleteRankPoll200,
   DeleteRankPoll400,
   DeleteRankPoll401,
@@ -431,7 +454,7 @@ import type {
   DeleteRankPoll404,
   DeleteRankPoll500,
   DeleteRankPollMutationResponse,
-  UpdateRankPollPathParams,
+  DeleteRankPollPathParams,
   UpdateRankPoll200,
   UpdateRankPoll400,
   UpdateRankPoll401,
@@ -441,7 +464,7 @@ import type {
   UpdateRankPoll500,
   UpdateRankPollMutationRequest,
   UpdateRankPollMutationResponse,
-  AddRankPollOptionPathParams,
+  UpdateRankPollPathParams,
   AddRankPollOption201,
   AddRankPollOption400,
   AddRankPollOption401,
@@ -452,7 +475,7 @@ import type {
   AddRankPollOption500,
   AddRankPollOptionMutationRequest,
   AddRankPollOptionMutationResponse,
-  DeleteRankPollOptionPathParams,
+  AddRankPollOptionPathParams,
   DeleteRankPollOption200,
   DeleteRankPollOption400,
   DeleteRankPollOption401,
@@ -461,7 +484,7 @@ import type {
   DeleteRankPollOption409,
   DeleteRankPollOption500,
   DeleteRankPollOptionMutationResponse,
-  SubmitRankingPathParams,
+  DeleteRankPollOptionPathParams,
   SubmitRanking200,
   SubmitRanking400,
   SubmitRanking401,
@@ -471,23 +494,23 @@ import type {
   SubmitRanking500,
   SubmitRankingMutationRequest,
   SubmitRankingMutationResponse,
-  GetRankPollVotersPathParams,
+  SubmitRankingPathParams,
   GetRankPollVoters200,
   GetRankPollVoters400,
   GetRankPollVoters401,
   GetRankPollVoters403,
   GetRankPollVoters404,
   GetRankPollVoters500,
+  GetRankPollVotersPathParams,
   GetRankPollVotersQueryResponse,
-  GetPollsByTripIDPathParams,
-  GetPollsByTripIDQueryParams,
   GetPollsByTripID200,
   GetPollsByTripID400,
   GetPollsByTripID401,
   GetPollsByTripID403,
   GetPollsByTripID500,
+  GetPollsByTripIDPathParams,
+  GetPollsByTripIDQueryParams,
   GetPollsByTripIDQueryResponse,
-  CreatePollPathParams,
   CreatePoll201,
   CreatePoll400,
   CreatePoll401,
@@ -496,15 +519,15 @@ import type {
   CreatePoll500,
   CreatePollMutationRequest,
   CreatePollMutationResponse,
-  GetPollPathParams,
+  CreatePollPathParams,
   GetPoll200,
   GetPoll400,
   GetPoll401,
   GetPoll403,
   GetPoll404,
   GetPoll500,
+  GetPollPathParams,
   GetPollQueryResponse,
-  DeletePollPathParams,
   DeletePoll200,
   DeletePoll400,
   DeletePoll401,
@@ -512,7 +535,7 @@ import type {
   DeletePoll404,
   DeletePoll500,
   DeletePollMutationResponse,
-  UpdatePollPathParams,
+  DeletePollPathParams,
   UpdatePoll200,
   UpdatePoll400,
   UpdatePoll401,
@@ -522,7 +545,7 @@ import type {
   UpdatePoll500,
   UpdatePollMutationRequest,
   UpdatePollMutationResponse,
-  AddPollOptionPathParams,
+  UpdatePollPathParams,
   AddPollOption201,
   AddPollOption400,
   AddPollOption401,
@@ -533,7 +556,7 @@ import type {
   AddPollOption500,
   AddPollOptionMutationRequest,
   AddPollOptionMutationResponse,
-  DeletePollOptionPathParams,
+  AddPollOptionPathParams,
   DeletePollOption200,
   DeletePollOption400,
   DeletePollOption401,
@@ -542,7 +565,7 @@ import type {
   DeletePollOption409,
   DeletePollOption500,
   DeletePollOptionMutationResponse,
-  CastVotePathParams,
+  DeletePollOptionPathParams,
   CastVote200,
   CastVote400,
   CastVote401,
@@ -552,14 +575,15 @@ import type {
   CastVote500,
   CastVoteMutationRequest,
   CastVoteMutationResponse,
-  GetPaginatedCommentsPathParams,
-  GetPaginatedCommentsQueryParams,
+  CastVotePathParams,
   GetPaginatedComments200,
   GetPaginatedComments400,
   GetPaginatedComments401,
   GetPaginatedComments404,
   GetPaginatedComments422,
   GetPaginatedComments500,
+  GetPaginatedCommentsPathParams,
+  GetPaginatedCommentsQueryParams,
   GetPaginatedCommentsQueryResponse,
   CreateUser201,
   CreateUser400,
@@ -572,19 +596,18 @@ import type {
   GetCurrentUser404,
   GetCurrentUser500,
   GetCurrentUserQueryResponse,
-  GetUserPathParams,
   GetUser200,
   GetUser400,
   GetUser404,
   GetUser500,
+  GetUserPathParams,
   GetUserQueryResponse,
-  DeleteUserPathParams,
   DeleteUser204,
   DeleteUser400,
   DeleteUser404,
   DeleteUser500,
   DeleteUserMutationResponse,
-  UpdateUserPathParams,
+  DeleteUserPathParams,
   UpdateUser200,
   UpdateUser400,
   UpdateUser404,
@@ -592,6 +615,7 @@ import type {
   UpdateUser500,
   UpdateUserMutationRequest,
   UpdateUserMutationResponse,
+  UpdateUserPathParams,
   Healthcheck200,
   Healthcheck500,
   HealthcheckQueryResponse,
@@ -654,6 +678,38 @@ export const modelsActivityCursorPageResultSchema = z.object({
   limit: z.optional(z.int()),
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivityCursorPageResult>;
+
+export const modelsRSVPStatusSchema = z.enum([
+  "yes",
+  "maybe",
+  "no",
+]) as unknown as z.ZodType<ModelsRSVPStatus>;
+
+export const modelsActivityRSVPAPIResponseSchema = z.object({
+  activity_id: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  profile_picture_url: z.optional(z.string()),
+  get status() {
+    return modelsRSVPStatusSchema.optional();
+  },
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsActivityRSVPAPIResponse>;
+
+export const modelsActivityRSVPRequestPayloadSchema = z.object({
+  get status() {
+    return modelsRSVPStatusSchema.optional();
+  },
+}) as unknown as z.ZodType<ModelsActivityRSVPRequestPayload>;
+
+export const modelsActivityRSVPsPageResultSchema = z.object({
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+  get rsvps() {
+    return z.array(modelsActivityRSVPAPIResponseSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsActivityRSVPsPageResult>;
 
 export const modelsAddCategoryResponseSchema = z.object({
   message: z.optional(z.string()),
@@ -2840,6 +2896,149 @@ export const removeCategoryFromActivity500Schema = z.lazy(
 export const removeCategoryFromActivityMutationResponseSchema = z.lazy(
   () => removeCategoryFromActivity204Schema,
 ) as unknown as z.ZodType<RemoveCategoryFromActivityMutationResponse>;
+
+export const postApiV1TripsTripidActivitiesActivityidRsvpPathParamsSchema =
+  z.object({
+    tripID: z.string().describe("Trip ID"),
+    activityID: z.string().describe("Activity ID"),
+  }) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpPathParams>;
+
+/**
+ * @description OK
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp200Schema = z.lazy(
+  () => modelsActivityRSVPAPIResponseSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp200>;
+
+/**
+ * @description Bad Request
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp400>;
+
+/**
+ * @description Unauthorized
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp401>;
+
+/**
+ * @description Forbidden
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp403>;
+
+/**
+ * @description Not Found
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp500>;
+
+/**
+ * @description RSVP request payload
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvpMutationRequestSchema =
+  z.lazy(
+    () => modelsActivityRSVPRequestPayloadSchema,
+  ) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest>;
+
+export const postApiV1TripsTripidActivitiesActivityidRsvpMutationResponseSchema =
+  z.lazy(
+    () => postApiV1TripsTripidActivitiesActivityidRsvp200Schema,
+  ) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsPathParamsSchema =
+  z.object({
+    tripID: z.string().describe("Trip ID"),
+    activityID: z.string().describe("Activity ID"),
+  }) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryParamsSchema = z
+  .object({
+    limit: z.optional(
+      z.coerce
+        .number()
+        .int()
+        .describe("Max items per page (default 20, max 100)"),
+    ),
+    cursor: z.optional(
+      z.string().describe("Opaque cursor returned in next_cursor"),
+    ),
+    status: z.optional(z.string().describe("Filter by RSVP status")),
+  })
+  .optional() as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams>;
+
+/**
+ * @description OK
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps200Schema = z.lazy(
+  () => modelsActivityRSVPsPageResultSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps200>;
+
+/**
+ * @description Bad Request
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps401>;
+
+/**
+ * @description Forbidden
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps403>;
+
+/**
+ * @description Not Found
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps500>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryResponseSchema =
+  z.lazy(
+    () => getApiV1TripsTripidActivitiesActivityidRsvps200Schema,
+  ) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse>;
 
 export const getCategoriesByTripIDPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

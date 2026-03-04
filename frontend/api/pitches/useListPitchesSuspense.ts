@@ -74,7 +74,9 @@ export function listPitchesSuspenseQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      config.signal = signal;
+      if (!config.signal) {
+        config.signal = signal;
+      }
       return listPitchesSuspense(tripID, params, config);
     },
   });

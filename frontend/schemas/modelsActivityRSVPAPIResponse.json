@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "activity_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "profile_picture_url": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["yes", "maybe", "no"],
+      "x-enum-varnames": [
+        "RSVPStatusGoing",
+        "RSVPStatusMaybe",
+        "RSVPStatusNotGoing"
+      ],
+      "x-readme-ref-name": "models.RSVPStatus"
+    },
+    "updated_at": { "type": "string" },
+    "user_id": { "type": "string" },
+    "username": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.ActivityRSVPAPIResponse"
+}
