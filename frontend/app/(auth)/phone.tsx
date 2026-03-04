@@ -1,4 +1,4 @@
-import { Box, Text } from "@/design-system";
+import { Box, Logo, Text } from "@/design-system";
 import PhoneNumberForm from "./components/login-form";
 
 export default function PhonePage() {
@@ -9,20 +9,18 @@ export default function PhonePage() {
       justifyContent="space-between"
       padding="lg"
       paddingBottom="xl"
+      gap="xs"
     >
-      <Box gap="xs" paddingTop="xl">
-        <Text variant="logoXxl" color="textSecondary">
-          TOGGO
-        </Text>
-        <Text variant="xxlHeading" color="textSecondary" marginTop="lg">
+      <Box gap="xs">
+        <Box width="auto" justifyContent="center" alignItems="center">
+          <Logo />
+        </Box>
+        <Text variant="mdLabel" color="textSecondary">
           Enter your phone number
         </Text>
-        <Text variant="mdParagraph" color="textQuaternary">
-          We'll send you a verification code.
-        </Text>
       </Box>
-
-      <Box flex={1} justifyContent="center">
+      
+      <Box flex={1} gap="sm">
         <PhoneNumberForm />
       </Box>
     </Box>

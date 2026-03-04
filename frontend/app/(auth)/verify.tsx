@@ -1,4 +1,4 @@
-import { Box, Text } from "@/design-system";
+import { Box, Logo, Text } from "@/design-system";
 import { useLocalSearchParams } from "expo-router";
 import OTPVerificationForm from "./components/verify-form";
 
@@ -11,17 +11,17 @@ export default function VerifyPage() {
       backgroundColor="white"
       justifyContent="space-between"
       padding="lg"
-      paddingBottom="xl"
+      gap="sm"
     >
-      <Box gap="xs" paddingTop="xl">
-        <Text variant="logoXxl" color="textSecondary">
-          TOGGO
-        </Text>
-        <Text variant="xxlHeading" color="textSecondary" marginTop="lg">
+      <Box gap="xs">
+        <Box width="auto" justifyContent="center" alignItems="center">
+          <Logo />
+        </Box>
+        <Text variant="mdLabel" color="textSecondary">
           Enter Verification Code
         </Text>
         {phone && (
-          <Text variant="mdParagraph" color="textQuaternary">
+          <Text variant="smParagraph" color="black">
             We have sent the code to {phone}
           </Text>
         )}

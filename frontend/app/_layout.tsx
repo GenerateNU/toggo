@@ -58,21 +58,21 @@ export default function RootLayout() {
     );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <StatusBar style="auto" />
-        <ThemeProvider theme={theme}>
-          <QueryClientProvider client={queryClient}>
-            <UserProvider>
-              <NotificationProvider>
-                <PortalProvider>
-                  <Slot />
-                </PortalProvider>
-              </NotificationProvider>
-            </UserProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  );
+  <GestureHandlerRootView style={{ flex: 1 }}>
+    <SafeAreaProvider>
+          <ThemeProvider theme={theme}>
+            <QueryClientProvider client={queryClient}>
+              <UserProvider>
+                <NotificationProvider>
+                  <PortalProvider>
+                    <StatusBar style="auto" />
+                    <Slot />
+                  </PortalProvider>
+                </NotificationProvider>
+              </UserProvider>
+            </QueryClientProvider>
+          </ThemeProvider>
+    </SafeAreaProvider>
+  </GestureHandlerRootView>
+);
 }

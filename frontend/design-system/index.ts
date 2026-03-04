@@ -11,6 +11,9 @@ export { Button } from "./components/buttons/button";
 // ─── Avatars ──────────────────────────────────────────────────────────────────
 export { Avatar } from "./components/avatars/avatar";
 
+// ─── Icons ───────────────────────────────────────────────────────────────────
+export { Icon } from "./components/icons/icon";
+
 // ─── High Order ───────────────────────────────────────────────────────────────
 export { Resource as ResourceView } from "./components/high-order/resource-view";
 
@@ -34,5 +37,11 @@ export { default as BottomSheet } from "./components/bottom-sheet/bottom-sheet";
 export { ImagePicker } from "./components/image-picker/image-picker";
 export type {
   ImagePickerProps,
-  ImagePickerVariant,
+  ImagePickerVariant
 } from "./components/image-picker/image-picker";
+
+// ─── Brand ──────────────────────────────────────────────────────────────────────
+export { Illustration } from "./components/brand/illustration";
+export { Logo } from "./components/brand/logo";
+export { SplashScreen } from "./components/brand/splash-screen";
+

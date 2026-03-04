@@ -27,7 +27,6 @@ export default function CompleteProfilePage() {
           onChange={(uri) => setProfilePhoto(uri)}
           placeholder="Add photo"
         />
-
         <Box width="100%">
           <CompleteProfileForm profilePhotoUri={profilePhoto} />
         </Box>

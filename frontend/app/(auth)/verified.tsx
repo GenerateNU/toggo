@@ -1,4 +1,4 @@
-import { Box, Text } from "@/design-system";
+import { Box, Illustration, Text } from "@/design-system";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 
@@ -19,20 +19,17 @@ export default function VerifiedPage() {
       justifyContent="center"
       alignItems="center"
       padding="xl"
-      gap="xl"
     >
-      <Box width={180} height={160} justifyContent="center" alignItems="center">
-        <Text variant="xxlHeading" color="textSecondary">
-          ✈️
-        </Text>
+      <Box width="auto" justifyContent="center" alignItems="center">
+        <Illustration />
       </Box>
 
-      <Box alignItems="center" gap="sm">
-        <Text variant="xxlHeading" color="textSecondary" textAlign="center">
+      <Box alignItems="center">
+        <Text variant="lgHeading" color="textSecondary" textAlign="center">
           You've been verified
         </Text>
         <Text variant="mdParagraph" color="textQuaternary" textAlign="center">
-          Plan or join a trip now !
+          Plan or join a trip now!
         </Text>
       </Box>
     </Box>

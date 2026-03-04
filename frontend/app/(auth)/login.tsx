@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@/design-system";
+import { Box, Button, Illustration, Logo } from "@/design-system";
 import { useRouter } from "expo-router";
 
 export default function LoginPage() {
@@ -12,14 +12,12 @@ export default function LoginPage() {
       padding="lg"
       paddingBottom="xl"
     >
-      <Box alignItems="center" paddingTop="xl">
-        <Text variant="logoXxl" color="textSecondary">
-          TOGGO
-        </Text>
+      <Box width="auto" justifyContent="center" alignItems="center">
+        <Logo />
       </Box>
-
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <Text variant="xxlHeading">🚌</Text>
+      
+      <Box width="auto" justifyContent="center" alignItems="center">
+        <Illustration />
       </Box>
 
       <Button
