@@ -117,7 +117,7 @@ type ActivityAPIResponse struct {
 	ProposerUsername   string                  `json:"proposer_username"`
 	ProposerPictureURL *string                 `json:"proposer_picture_url,omitempty"`
 	CategoryNames      []string                `json:"category_names"`
-	ImageURLs          []ActivityImageResponse `json:"image_ids,omitempty"`
+	Images             []ActivityImageResponse `json:"image_ids,omitempty"`
 }
 
 type ActivityImageResponse struct {

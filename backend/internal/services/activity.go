@@ -361,7 +361,7 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 	}
 
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
-	apiResp.ImageURLs = imageResponses
+	apiResp.Images = imageResponses
 	return apiResp, nil
 }
 
@@ -386,7 +386,7 @@ func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDa
 			}
 		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
-		apiResp.ImageURLs = imageResponses
+		apiResp.Images = imageResponses
 		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities
