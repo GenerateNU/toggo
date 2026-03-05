@@ -62,10 +62,8 @@ func (s *ActivityService) verifyActivityBelongsToTrip(ctx context.Context, tripI
 }
 
 func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateActivityRequest, userID uuid.UUID) (*models.ActivityAPIResponse, error) {
-	// Use transaction to create activity and categories atomically
 	var createdActivity *models.Activity
 	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		// Create activity
 		activity := &models.Activity{
 			TripID:       req.TripID,
 			ProposedBy:   &userID,
@@ -78,57 +76,24 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 			UpdatedAt:    time.Now(),
 		}
 
-		_, err := tx.NewInsert().
-			Model(activity).
-			Returning("*").
-			Exec(ctx)
+		// Create activity
+		var err error
+		createdActivity, err = s.Activity.CreateActivityTx(ctx, tx, activity)
 		if err != nil {
 			return err
 		}
-		createdActivity = activity
 
-		// If categories provided, deduplicate, create them and link to activity
+		// Add categories using ActivityCategory repository, transactionally
 		if len(req.CategoryNames) > 0 {
-			// Deduplicate category names
-			seen := make(map[string]bool, len(req.CategoryNames))
-			uniqueNames := make([]string, 0, len(req.CategoryNames))
-			for _, name := range req.CategoryNames {
-				if !seen[name] {
-					seen[name] = true
-					uniqueNames = append(uniqueNames, name)
-				}
-			}
-
-			// Batch create categories (idempotent - won't fail on duplicates)
-			now := time.Now()
-			categories := make([]models.Category, len(uniqueNames))
-			for i, name := range uniqueNames {
-				categories[i] = models.Category{
-					TripID:    req.TripID,
-					Name:      name,
-					CreatedAt: now,
-					UpdatedAt: now,
-				}
-			}
-			_, err = tx.NewInsert().
-				Model(&categories).
-				On("CONFLICT (trip_id, name) DO NOTHING").
-				Exec(ctx)
+			err = s.ActivityCategory.AddCategoriesToActivityTx(ctx, tx, createdActivity.ID, createdActivity.TripID, req.CategoryNames)
 			if err != nil {
 				return err
 			}
+		}
 
-			// Link categories to activity
-			activityCategories := make([]models.ActivityCategory, len(uniqueNames))
-			for i, name := range uniqueNames {
-				activityCategories[i] = models.ActivityCategory{
-					ActivityID:   activity.ID,
-					TripID:       req.TripID,
-					CategoryName: name,
-					CreatedAt:    now,
-				}
-			}
-			_, err = tx.NewInsert().Model(&activityCategories).Exec(ctx)
+		// Add images
+		if len(req.ImageIDs) > 0 {
+			err = s.Activity.AddImagesTx(ctx, tx, createdActivity.ID, req.ImageIDs)
 			if err != nil {
 				return err
 			}
@@ -191,13 +156,11 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 }
 
 func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error) {
-	// Verify activity belongs to trip and check proposer permissions
 	activity, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Only admins or the proposer can update
 	isAdmin, err := s.Membership.IsAdmin(ctx, tripID, userID)
 	if err != nil {
 		return nil, err
@@ -208,17 +171,34 @@ func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID
 		return nil, errs.Forbidden()
 	}
 
-	return s.Activity.Update(ctx, activityID, &req)
+	var updated *models.Activity
+	err = s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var err error
+		updated, err = s.Activity.Update(ctx, activityID, &req)
+		if err != nil {
+			return err
+		}
+		// Replace images for activity transactionally
+		if req.ImageIDs != nil {
+			err = s.Activity.ReplaceImagesTx(ctx, tx, activityID, *req.ImageIDs)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
 
 func (s *ActivityService) DeleteActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) error {
-	// Verify activity belongs to trip and check proposer permissions
 	activity, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID)
 	if err != nil {
 		return err
 	}
 
-	// Admin check is not covered by middleware - only admins or the proposer can delete
 	isAdmin, err := s.Membership.IsAdmin(ctx, activity.TripID, userID)
 	if err != nil {
 		return err
@@ -229,7 +209,15 @@ func (s *ActivityService) DeleteActivity(ctx context.Context, tripID, activityID
 		return errs.Forbidden()
 	}
 
-	return s.Activity.Delete(ctx, activityID)
+	return s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		// Remove images transactionally
+		err := s.Activity.ReplaceImagesTx(ctx, tx, activityID, []uuid.UUID{})
+		if err != nil {
+			return err
+		}
+		// Delete activity
+		return s.Activity.Delete(ctx, activityID)
+	})
 }
 
 // GetActivityCategories retrieves categories for an activity with pagination
@@ -360,7 +348,21 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		}
 	}
 
-	return mapToAPIResponse(activity, proposerPictureURL), nil
+	// Fetch presigned URLs for activity images
+	var imageResponses []models.ActivityImageResponse
+	for _, imageID := range activity.ImageKeys {
+		fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeLarge)
+		if err == nil {
+			imageResponses = append(imageResponses, models.ActivityImageResponse{
+				ImageID:  imageID,
+				ImageURL: fileResp.URL,
+			})
+		}
+	}
+
+	apiResp := mapToAPIResponse(activity, proposerPictureURL)
+	apiResp.ImageURLs = imageResponses
+	return apiResp, nil
 }
 
 func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
@@ -372,7 +374,20 @@ func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDa
 				proposerPictureURL = &url
 			}
 		}
-		apiActivities = append(apiActivities, mapToAPIResponse(activity, proposerPictureURL))
+		// Fetch presigned URLs for activity images
+		var imageResponses []models.ActivityImageResponse
+		for _, imageID := range activity.ImageKeys {
+			fileResp, err := s.fileService.GetFile(context.Background(), imageID, models.ImageSizeLarge)
+			if err == nil {
+				imageResponses = append(imageResponses, models.ActivityImageResponse{
+					ImageID:  imageID,
+					ImageURL: fileResp.URL,
+				})
+			}
+		}
+		apiResp := mapToAPIResponse(activity, proposerPictureURL)
+		apiResp.ImageURLs = imageResponses
+		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities
 }

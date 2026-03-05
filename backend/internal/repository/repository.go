@@ -133,6 +133,11 @@ type ActivityRepository interface {
 	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
 	Delete(ctx context.Context, activityID uuid.UUID) error
+	CreateActivityTx(ctx context.Context, tx bun.Tx, activity *models.Activity) (*models.Activity, error)
+	AddCategoriesTx(ctx context.Context, tx bun.Tx, activityID, tripID uuid.UUID, categoryNames []string) error
+	AddImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
+	ReplaceImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
+	RemoveImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
 }
 
 type CategoryRepository interface {
@@ -145,6 +150,7 @@ type CategoryRepository interface {
 
 type ActivityCategoryRepository interface {
 	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
+	AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID, tripID uuid.UUID, categoryNames []string) error
 	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
 	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
 	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)

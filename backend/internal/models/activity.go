@@ -49,6 +49,7 @@ type CreateActivityRequest struct {
 	MediaURL      *string      `validate:"omitempty,url" json:"media_url"`
 	Description   *string      `validate:"omitempty" json:"description"`
 	Dates         *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"`
+	ImageIDs      []uuid.UUID  `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // UpdateActivityRequest for updating an existing activity
@@ -58,6 +59,7 @@ type UpdateActivityRequest struct {
 	MediaURL     *string      `validate:"omitempty,url" json:"media_url"`
 	Description  *string      `validate:"omitempty" json:"description"`
 	Dates        *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"` // Max 20 date ranges
+	ImageIDs     *[]uuid.UUID `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // AddCategoryToActivityRequest for adding a category to an activity
@@ -98,26 +100,40 @@ type ActivityDatabaseResponse struct {
 	ProposerPictureID  *uuid.UUID   `json:"proposer_picture_id,omitempty"`
 	ProposerPictureKey *string      `bun:"proposer_picture_key" json:"-"`
 	CategoryNames      []string     `json:"category_names"`
+	ImageKeys          []uuid.UUID  `bun:"image_keys" json:"-"`
 }
 
-// ActivityAPIResponse is returned to the frontend
 type ActivityAPIResponse struct {
-	ID                 uuid.UUID    `json:"id"`
-	TripID             uuid.UUID    `json:"trip_id"`
-	ProposedBy         *uuid.UUID   `json:"proposed_by,omitempty"`
-	Name               string       `json:"name"`
-	ThumbnailURL       *string      `json:"thumbnail_url,omitempty"`
-	MediaURL           *string      `json:"media_url,omitempty"`
-	Description        *string      `json:"description,omitempty"`
-	Dates              *[]DateRange `json:"dates,omitempty"`
-	CreatedAt          time.Time    `json:"created_at"`
-	UpdatedAt          time.Time    `json:"updated_at"`
-	ProposerUsername   string       `json:"proposer_username"`
-	ProposerPictureURL *string      `json:"proposer_picture_url,omitempty"`
-	CategoryNames      []string     `json:"category_names"`
+	ID                 uuid.UUID               `json:"id"`
+	TripID             uuid.UUID               `json:"trip_id"`
+	ProposedBy         *uuid.UUID              `json:"proposed_by,omitempty"`
+	Name               string                  `json:"name"`
+	ThumbnailURL       *string                 `json:"thumbnail_url,omitempty"`
+	MediaURL           *string                 `json:"media_url,omitempty"`
+	Description        *string                 `json:"description,omitempty"`
+	Dates              *[]DateRange            `json:"dates,omitempty"`
+	CreatedAt          time.Time               `json:"created_at"`
+	UpdatedAt          time.Time               `json:"updated_at"`
+	ProposerUsername   string                  `json:"proposer_username"`
+	ProposerPictureURL *string                 `json:"proposer_picture_url,omitempty"`
+	CategoryNames      []string                `json:"category_names"`
+	ImageURLs          []ActivityImageResponse `json:"image_ids,omitempty"`
+}
+
+type ActivityImageResponse struct {
+	ImageURL string    `json:"image_url"`
+	ImageID  uuid.UUID `json:"image_id"`
 }
 
 // AddCategoryResponse represents the response for adding a category to an activity
 type AddCategoryResponse struct {
 	Message string `json:"message" example:"Category added successfully"`
+}
+
+const MaxActivityImages = 5
+
+type ActivityImage struct {
+	ActivityID uuid.UUID `bun:"activity_id,pk,type:uuid,notnull"`
+	ImageID    uuid.UUID `bun:"image_id,pk,type:uuid,notnull"`
+	CreatedAt  time.Time `bun:"created_at,nullzero,default:now()"`
 }

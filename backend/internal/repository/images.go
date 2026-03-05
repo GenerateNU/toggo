@@ -18,6 +18,72 @@ type imageRepository struct {
 	db *bun.DB
 }
 
+// CreateImagesWithIDs creates confirmed image records for provided image IDs and file keys
+func (r *imageRepository) CreateImagesWithIDs(ctx context.Context, imageIDs []uuid.UUID, fileKeys []string, sizes []models.ImageSize) ([]*models.Image, error) {
+	if len(imageIDs) != len(fileKeys) {
+		return nil, errs.BadRequest(errors.New("image IDs and file keys length mismatch"))
+	}
+	images := make([]*models.Image, 0, len(imageIDs)*len(sizes))
+	now := time.Now()
+	for i, imageID := range imageIDs {
+		for _, size := range sizes {
+			images = append(images, &models.Image{
+				ImageID:     imageID,
+				Size:        size,
+				FileKey:     buildSizedFileKey(fileKeys[i], size),
+				Status:      models.UploadStatusConfirmed,
+				CreatedAt:   now,
+				ConfirmedAt: &now,
+			})
+		}
+	}
+	_, err := r.db.NewInsert().Table("images").Model(&images).Exec(ctx)
+	if err != nil {
+		return nil, errs.BadRequest(errors.New("image IDs and file keys length mismatch"))
+	}
+	return images, nil
+}
+
+// UpdateImageByID updates file key and status for an image by image ID and size
+func (r *imageRepository) UpdateImageByID(ctx context.Context, imageID uuid.UUID, size models.ImageSize, fileKey string, status models.UploadStatus) error {
+	now := time.Now()
+	_, err := r.db.NewUpdate().
+		Table("images").
+		Model((*models.Image)(nil)).
+		Set("file_key = ?", fileKey).
+		Set("status = ?", status).
+		Set("confirmed_at = ?", now).
+		Where("image_id = ? AND size = ?", imageID, size).
+		Exec(ctx)
+	return err
+}
+
+// DeleteImagesIfNone deletes all images for provided image IDs if the slice is empty
+func (r *imageRepository) DeleteImagesIfNone(ctx context.Context, imageIDs []uuid.UUID) error {
+	if len(imageIDs) == 0 {
+		// Delete all images
+		_, err := r.db.NewDelete().Table("images").Model((*models.Image)(nil)).Exec(ctx)
+		return err
+	}
+	return nil
+}
+
+// ImagesExist checks if all provided image IDs exist in the images table
+func (r *imageRepository) ImagesExist(ctx context.Context, imageIDs []uuid.UUID) (bool, error) {
+	if len(imageIDs) == 0 {
+		return true, nil
+	}
+	count, err := r.db.NewSelect().
+		Table("images").
+		Model((*models.Image)(nil)).
+		Where("image_id IN (?)", bun.In(imageIDs)).
+		Count(ctx)
+	if err != nil {
+		return false, err
+	}
+	return count == len(imageIDs), nil
+}
+
 // CreatePendingImages creates image records with pending status for all sizes
 // Returns the created images or error if creation fails
 func (r *imageRepository) CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error) {
