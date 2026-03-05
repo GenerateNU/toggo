@@ -30,6 +30,10 @@ type imageRepository struct {
 	db *bun.DB
 }
 
+func NewImageRepository(db *bun.DB) ImageRepository {
+	return &imageRepository{db: db}
+}
+
 // CreatePendingImages creates image records with pending status for all sizes
 // Returns the created images or error if creation fails
 func (r *imageRepository) CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error) {

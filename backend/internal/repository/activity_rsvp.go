@@ -20,6 +20,10 @@ type activityRSVPRepository struct {
 	db *bun.DB
 }
 
+func NewActivityRSVPRepository(db *bun.DB) ActivityRSVPRepository {
+	return &activityRSVPRepository{db: db}
+}
+
 func (r *activityRSVPRepository) GetActivityRSVPs(
 	ctx context.Context,
 	tripID, activityID, userID uuid.UUID,

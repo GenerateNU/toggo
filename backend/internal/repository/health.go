@@ -17,6 +17,10 @@ type healthRepository struct {
 	db *bun.DB
 }
 
+func NewHealthepository(db *bun.DB) HealthRepository {
+	return &healthRepository{db: db}
+}
+
 func (r *healthRepository) HealthCheck(ctx context.Context) (string, error) {
 	if err := r.db.PingContext(ctx); err != nil {
 		return "unhealthy", fmt.Errorf("database ping failed: %w", err)

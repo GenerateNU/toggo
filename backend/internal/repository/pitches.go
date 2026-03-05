@@ -25,6 +25,10 @@ type pitchRepository struct {
 	db *bun.DB
 }
 
+func NewPitchRepository(db *bun.DB) PitchRepository {
+	return &pitchRepository{db: db}
+}
+
 // Create inserts a new trip pitch and returns it (with ID and timestamps set).
 func (r *pitchRepository) Create(ctx context.Context, pitch *models.TripPitch) (*models.TripPitch, error) {
 	_, err := r.db.NewInsert().

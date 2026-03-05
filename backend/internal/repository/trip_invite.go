@@ -23,6 +23,10 @@ type tripInviteRepository struct {
 	db *bun.DB
 }
 
+func NewTripInviteRepository(db *bun.DB) TripInviteRepository {
+	return &tripInviteRepository{db: db}
+}
+
 // Create inserts a new trip invite.
 func (r *tripInviteRepository) Create(ctx context.Context, invite *models.TripInvite) (*models.TripInvite, error) {
 	_, err := r.db.NewInsert().

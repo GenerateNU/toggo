@@ -21,6 +21,10 @@ type commentRepository struct {
 	db *bun.DB
 }
 
+func NewCommentRepository(db *bun.DB) CommentRepository {
+	return &commentRepository{db: db}
+}
+
 func (r *commentRepository) Create(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
 	_, err := r.db.NewInsert().
 		Model(comment).

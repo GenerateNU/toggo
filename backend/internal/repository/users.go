@@ -27,6 +27,10 @@ type userRepository struct {
 	db *bun.DB
 }
 
+func NewUserRepository(db *bun.DB) UserRepository {
+	return &userRepository{db: db}
+}
+
 func (r *userRepository) Create(ctx context.Context, req *models.User) (*models.User, error) {
 	_, err := r.db.NewInsert().
 		Model(req).
