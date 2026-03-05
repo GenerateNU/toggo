@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -422,7 +423,7 @@ func (s *ActivityService) GetActivityRSVPs(
 
 	cursor, err := pagination.DecodeTimeCursor(cursorToken)
 	if err != nil {
-		return nil, err
+		return nil, errs.BadRequest(errors.New("invalid cursor format"))
 	}
 
 	rsvps, lastCreatedAt, err := s.ActivityRSVP.GetActivityRSVPs(

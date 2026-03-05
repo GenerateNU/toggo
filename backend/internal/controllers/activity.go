@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/base64"
 	"errors"
 	"net/http"
 	"toggo/internal/errs"
@@ -543,12 +542,6 @@ func (ctrl *ActivityController) parseRSVPPaginationRequest(
 	}
 
 	limit, cursor := utilities.ExtractLimitAndCursor(&pagination)
-
-	if cursor != "" {
-		if _, err := base64.StdEncoding.DecodeString(cursor); err != nil {
-			return nil, errs.BadRequest(errors.New("invalid cursor format"))
-		}
-	}
 
 	status := c.Query("status")
 	if status != "" {
