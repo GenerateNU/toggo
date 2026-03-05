@@ -12,7 +12,7 @@ import (
 
 // PollRepository defines the interface for poll-related database operations.
 type PollRepository interface {
-	CreatePoll(ctx context.Context, poll *models.Poll, options []models.PollOption) (*models.Poll, error)
+	CreatePoll(ctx context.Context, tx bun.Tx, poll *models.Poll, options []models.PollOption) (*models.Poll, error)
 	FindPollByID(ctx context.Context, pollID uuid.UUID) (*models.Poll, error)
 	FindPollMetaByID(ctx context.Context, pollID uuid.UUID) (*models.Poll, error)
 	CountOptions(ctx context.Context, pollID uuid.UUID) (int, error)
@@ -42,7 +42,7 @@ func NewPollRepository(db *bun.DB) PollRepository {
 // ---------------------------------------------------------------------------
 
 // CreatePoll inserts a poll and its initial options in a single transaction.
-func (r *pollRepository) CreatePoll(ctx context.Context, poll *models.Poll, options []models.PollOption) (*models.Poll, error) {
+func (r *pollRepository) CreatePoll(ctx context.Context, tx bun.Tx, poll *models.Poll, options []models.PollOption) (*models.Poll, error) {
 	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		if _, err := tx.NewInsert().Model(poll).Returning("*").Exec(ctx, poll); err != nil {
 			return err

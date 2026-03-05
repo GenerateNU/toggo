@@ -76,6 +76,7 @@ type CreatePollRequest struct {
 	ShouldNotifyMembers bool                      `json:"should_notify_members"`
 	IsAnonymous         bool                      `json:"is_anonymous"`
 	Options             []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
+	Categories          *[]string                 `json:"categories,omitempty"`
 }
 
 // CreatePollOptionRequest is the payload for adding an option to an existing poll.

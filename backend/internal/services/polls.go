@@ -13,6 +13,7 @@ import (
 	"toggo/internal/utilities/pagination"
 
 	"github.com/google/uuid"
+	"github.com/uptrace/bun"
 )
 
 type PollServiceInterface interface {
@@ -85,7 +86,19 @@ func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, 
 		}
 	}
 
-	created, err := s.repository.Poll.CreatePoll(ctx, poll, options)
+	var created *models.Poll
+	err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var err error
+		created, err = s.repository.Poll.CreatePoll(ctx, tx, poll, options)
+		if err != nil {
+			return err
+		}
+		_, err = s.repository.Poll.ReplaceCategoriesForPoll(ctx, tx, tripID, created.ID, req.Categories)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
