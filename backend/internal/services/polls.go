@@ -373,14 +373,16 @@ func (s *PollService) toAPIResponse(poll *models.Poll, summary *models.PollVoteS
 	}
 
 	return &models.PollAPIResponse{
-		ID:        poll.ID,
-		TripID:    poll.TripID,
-		CreatedBy: poll.CreatedBy,
-		Question:  poll.Question,
-		PollType:  poll.PollType,
-		CreatedAt: poll.CreatedAt,
-		Deadline:  poll.Deadline,
-		Options:   options,
+		ID:                  poll.ID,
+		TripID:              poll.TripID,
+		CreatedBy:           poll.CreatedBy,
+		Question:            poll.Question,
+		PollType:            poll.PollType,
+		CreatedAt:           poll.CreatedAt,
+		Deadline:            poll.Deadline,
+		IsAnonymous:         poll.IsAnonymous,
+		ShouldNotifyMembers: poll.ShouldNotifyMembers,
+		Options:             options,
 	}
 }
 

@@ -204,6 +204,44 @@ func TestPollCreate(t *testing.T) {
 		}
 	})
 
+	t.Run("create, update, get anonymity and should notify members", func(t *testing.T) {
+		// create a poll
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		req := defaultPollRequest()
+		req.IsAnonymous = true
+		req.ShouldNotifyMembers = false
+		resp := createPoll(t, app, owner, tripID, req)
+		require.Equal(t, true, resp["is_anonymous"])
+		require.Equal(t, false, resp["should_notify_members"])
+		pollID := resp["id"].(string)
+
+		// update a poll
+		isAnonymous := false
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollRequest{
+					IsAnonymous: &isAnonymous,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("is_anonymous", false)
+
+		// get poll
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("is_anonymous", false)
+	})
+
 	t.Run("creates multi-choice poll", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		resp := createPoll(t, app, owner, tripID, multiPollRequest())

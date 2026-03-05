@@ -94,14 +94,16 @@ type CastVoteRequest struct {
 
 // PollAPIResponse is the external representation of a poll with vote data.
 type PollAPIResponse struct {
-	ID        uuid.UUID               `json:"id"`
-	TripID    uuid.UUID               `json:"trip_id"`
-	CreatedBy uuid.UUID               `json:"created_by"`
-	Question  string                  `json:"question"`
-	PollType  PollType                `json:"poll_type"`
-	CreatedAt time.Time               `json:"created_at"`
-	Deadline  *time.Time              `json:"deadline,omitempty"`
-	Options   []PollOptionAPIResponse `json:"options"`
+	ID                  uuid.UUID               `json:"id"`
+	TripID              uuid.UUID               `json:"trip_id"`
+	CreatedBy           uuid.UUID               `json:"created_by"`
+	Question            string                  `json:"question"`
+	PollType            PollType                `json:"poll_type"`
+	CreatedAt           time.Time               `json:"created_at"`
+	Deadline            *time.Time              `json:"deadline,omitempty"`
+	IsAnonymous         bool                    `json:"is_anonymous"`
+	ShouldNotifyMembers bool                    `json:"should_notify_members"`
+	Options             []PollOptionAPIResponse `json:"options"`
 }
 
 // PollOptionAPIResponse is an option enriched with its vote count and whether the requesting user voted for it.

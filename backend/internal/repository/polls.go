@@ -178,6 +178,7 @@ func (r *pollRepository) UpdatePoll(ctx context.Context, pollID uuid.UUID, req *
 		Model(&options).
 		Where("poll_id = ?", pollID).
 		Scan(ctx)
+
 	if err != nil {
 		return nil, err
 	}
