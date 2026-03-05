@@ -13,6 +13,14 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type UserRepository interface {
+	Create(ctx context.Context, user *models.User) (*models.User, error)
+	Find(ctx context.Context, id uuid.UUID) (*models.User, error)
+	Update(ctx context.Context, id uuid.UUID, user *models.UpdateUserRequest) (*models.User, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error)
+}
+
 var _ UserRepository = (*userRepository)(nil)
 
 type userRepository struct {

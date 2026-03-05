@@ -7,6 +7,10 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type HealthRepository interface {
+	HealthCheck(ctx context.Context) (string, error)
+}
+
 var _ HealthRepository = (*healthRepository)(nil)
 
 type healthRepository struct {

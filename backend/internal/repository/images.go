@@ -12,6 +12,18 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type ImageRepository interface {
+	CreatePendingImages(ctx context.Context, imageID uuid.UUID, fileKey string, sizes []models.ImageSize) ([]*models.Image, error)
+	ConfirmUpload(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	ConfirmAllUploads(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	MarkFailed(ctx context.Context, imageID uuid.UUID, size models.ImageSize) error
+	FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	FindByIDAndSize(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
+	DeleteByID(ctx context.Context, imageID uuid.UUID) error
+	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
+}
+
 var _ ImageRepository = (*imageRepository)(nil)
 
 type imageRepository struct {

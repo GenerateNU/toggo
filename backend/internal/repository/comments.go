@@ -10,6 +10,13 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type CommentRepository interface {
+	Create(ctx context.Context, comment *models.Comment) (*models.Comment, error)
+	Update(ctx context.Context, id uuid.UUID, userID uuid.UUID, content string) (*models.Comment, error)
+	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
+}
+
 type commentRepository struct {
 	db *bun.DB
 }

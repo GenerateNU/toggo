@@ -11,6 +11,17 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type ActivityRepository interface {
+	Create(ctx context.Context, activity *models.Activity) (*models.Activity, error)
+	Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	FindByCategoryName(ctx context.Context, tripID uuid.UUID, categoryName string, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
+	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
+	Delete(ctx context.Context, activityID uuid.UUID) error
+}
+
 var _ ActivityRepository = (*activityRepository)(nil)
 
 type activityRepository struct {

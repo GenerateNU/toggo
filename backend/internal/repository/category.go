@@ -10,6 +10,14 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type CategoryRepository interface {
+	Create(ctx context.Context, category *models.Category) (*models.Category, error)
+	Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error)
+	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
+	Delete(ctx context.Context, tripID uuid.UUID, name string) error
+}
+
 var _ CategoryRepository = (*categoryRepository)(nil)
 
 type categoryRepository struct {
