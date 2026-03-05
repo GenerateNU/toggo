@@ -64,12 +64,14 @@ func (s *PollService) CreatePoll(ctx context.Context, tripID, userID uuid.UUID, 
 	}
 
 	poll := &models.Poll{
-		ID:        uuid.New(),
-		TripID:    tripID,
-		CreatedBy: userID,
-		Question:  req.Question,
-		PollType:  req.PollType,
-		Deadline:  req.Deadline,
+		ID:                  uuid.New(),
+		TripID:              tripID,
+		CreatedBy:           userID,
+		Question:            req.Question,
+		PollType:            req.PollType,
+		Deadline:            req.Deadline,
+		IsAnonymous:         req.IsAnonymous,
+		ShouldNotifyMembers: req.ShouldNotifyMembers,
 	}
 
 	options := make([]models.PollOption, len(req.Options))
@@ -151,7 +153,7 @@ func (s *PollService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.
 // UpdatePoll updates poll metadata. Only the poll creator can update, and
 // updates are blocked once the deadline has passed.
 func (s *PollService) UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollRequest) (*models.PollAPIResponse, error) {
-	if req.Question == nil && req.Deadline == nil {
+	if req.Question == nil && req.Deadline == nil && req.IsAnonymous == nil {
 		return nil, errs.BadRequest(errors.New("at least one field must be provided"))
 	}
 

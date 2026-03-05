@@ -10,7 +10,7 @@ CREATE TABLE poll_categories (
     FOREIGN KEY (trip_id, category_name) REFERENCES categories(trip_id, name) ON DELETE CASCADE
 );
 
-ALTER TABLE polls ADD COLUMN IF NOT EXISTS notify BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE polls ADD COLUMN IF NOT EXISTS should_notify_members BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE polls ADD COLUMN IF NOT EXISTS is_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Indexes for common queries
@@ -30,6 +30,6 @@ DROP INDEX IF EXISTS idx_poll_categories_category_name;
 DROP TABLE IF EXISTS poll_categories;
 
 -- Remove added columns from polls table
-ALTER TABLE polls DROP COLUMN IF EXISTS notify;
+ALTER TABLE polls DROP COLUMN IF EXISTS should_notify_members;
 ALTER TABLE polls DROP COLUMN IF EXISTS is_anonymous;
 -- +goose StatementEnd

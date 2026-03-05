@@ -24,13 +24,15 @@ const (
 
 // Poll represents a voting poll attached to a trip.
 type Poll struct {
-	ID        uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
-	TripID    uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
-	CreatedBy uuid.UUID  `bun:"created_by,type:uuid,notnull" json:"created_by"`
-	Question  string     `bun:"question,notnull" json:"question"`
-	PollType  PollType   `bun:"poll_type,notnull" json:"poll_type"`
-	CreatedAt time.Time  `bun:"created_at,nullzero,default:now()" json:"created_at"`
-	Deadline  *time.Time `bun:"deadline,nullzero" json:"deadline,omitempty"`
+	ID                  uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
+	TripID              uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
+	CreatedBy           uuid.UUID  `bun:"created_by,type:uuid,notnull" json:"created_by"`
+	Question            string     `bun:"question,notnull" json:"question"`
+	PollType            PollType   `bun:"poll_type,notnull" json:"poll_type"`
+	CreatedAt           time.Time  `bun:"created_at,nullzero,default:now()" json:"created_at"`
+	Deadline            *time.Time `bun:"deadline,nullzero" json:"deadline,omitempty"`
+	ShouldNotifyMembers bool       `bun:"should_notify_members,notnull,default:false" json:"should_notify_members"`
+	IsAnonymous         bool       `bun:"is_anonymous,notnull,default:false" json:"is_anonymous"`
 
 	// Relations
 	Options []PollOption `bun:"rel:has-many,join:id=poll_id" json:"options,omitempty"`
@@ -61,16 +63,19 @@ type PollVote struct {
 
 // UpdatePollRequest is a partial-update payload; at least one field must be non-nil.
 type UpdatePollRequest struct {
-	Question *string    `json:"question"`
-	Deadline *time.Time `json:"deadline"`
+	Question    *string    `json:"question"`
+	Deadline    *time.Time `json:"deadline"`
+	IsAnonymous *bool      `json:"is_anonymous"`
 }
 
 // CreatePollRequest is the payload for creating a new poll with optional initial options.
 type CreatePollRequest struct {
-	Question string                    `json:"question" validate:"required"`
-	PollType PollType                  `json:"poll_type" validate:"required,oneof=single multi rank"`
-	Deadline *time.Time                `json:"deadline,omitempty"`
-	Options  []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
+	Question            string                    `json:"question" validate:"required"`
+	PollType            PollType                  `json:"poll_type" validate:"required,oneof=single multi rank"`
+	Deadline            *time.Time                `json:"deadline,omitempty"`
+	ShouldNotifyMembers bool                      `json:"should_notify_members"`
+	IsAnonymous         bool                      `json:"is_anonymous"`
+	Options             []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
 }
 
 // CreatePollOptionRequest is the payload for adding an option to an existing poll.

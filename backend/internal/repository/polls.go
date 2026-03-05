@@ -161,6 +161,9 @@ func (r *pollRepository) UpdatePoll(ctx context.Context, pollID uuid.UUID, req *
 	if req.Deadline != nil {
 		q = q.Set("deadline = ?", *req.Deadline)
 	}
+	if req.IsAnonymous != nil {
+		q = q.Set("is_anonymous = ?", *req.IsAnonymous)
+	}
 
 	result, err := q.Exec(ctx, poll)
 	if err != nil {
