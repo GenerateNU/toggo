@@ -3,12 +3,10 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 	"toggo/internal/constants"
 	"toggo/internal/errs"
 	"toggo/internal/models"
-	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -16,66 +14,56 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type PollServiceInterface interface {
-	PublishEvent(ctx context.Context, topic, tripID string, data interface{})
-	ValidateDeadline(deadline *time.Time) error
-	ValidatePollMinMaxOptions(options []models.CreatePollOptionRequest) error
-	CreatePollWithTx(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, []string, error)
-	BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll
-	BuildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption
-	UpdatePollTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error)
+type PollVotingServiceInterface interface {
+	CreatePoll(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.PollAPIResponse, error)
+	GetPoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error)
+	GetPollsByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.PollCursorPageResult, error)
+	UpdatePoll(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.PollAPIResponse, error)
+	DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error)
+	AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error)
+	DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error)
+	CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error)
 }
 
-var _ PollServiceInterface = (*PollService)(nil)
+var _ PollVotingServiceInterface = (*PollVotingService)(nil)
 
-type PollService struct {
-	repository *repository.Repository
-	publisher  realtime.EventPublisher
+type PollVotingService struct {
+	repository  *repository.Repository
+	pollService PollServiceInterface
 }
 
-// NewPollService creates a poll service with the given repository and event publisher.
-func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
-	return &PollService{
-		repository: repo,
-		publisher:  publisher,
+// NewPollVotingService creates a poll voting service with the given repository and event publisher.
+func NewPollVotingService(repo *repository.Repository, pollService PollServiceInterface) PollVotingServiceInterface {
+	return &PollVotingService{
+		repository:  repo,
+		pollService: pollService,
 	}
 }
 
 // CreatePoll validates options, falls back to default "Yes"/"No" when none are
 // provided, and inserts the poll + options in a single transaction.
-func (s *PollService) CreatePoll(
+func (s *PollVotingService) CreatePoll(
 	ctx context.Context,
 	tripID, userID uuid.UUID,
 	req models.CreatePollRequest,
 ) (*models.PollAPIResponse, error) {
-	if err := s.ValidateDeadline(req.Deadline); err != nil {
+	if err := s.pollService.ValidateDeadline(req.Deadline); err != nil {
 		return nil, err
 	}
 	if len(req.Options) == 0 {
 		req.Options = s.defaultToYesNoPollOptions()
 	}
-	if err := s.ValidatePollMinMaxOptions(req.Options); err != nil {
+	if err := s.pollService.ValidatePollMinMaxOptions(req.Options); err != nil {
 		return nil, err
 	}
 
-	poll := s.BuildPollEntity(tripID, userID, &req)
-	pollOptions := s.BuildOptionEntities(poll.ID, &req)
-	pollCategories := req.Categories
-
-	var created *models.Poll
-	var categoryNames []string
-	if err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		var err error
-		created, categoryNames, err = s.CreatePollTx(
-			ctx,
-			tx,
-			tripID,
-			poll,
-			pollOptions,
-			pollCategories,
-		)
-		return err
-	}); err != nil {
+	created, categoryNames, err := s.pollService.CreatePollWithTx(
+		ctx,
+		tripID,
+		userID,
+		req,
+	)
+	if err != nil {
 		return nil, err
 	}
 
@@ -88,7 +76,139 @@ func (s *PollService) CreatePoll(
 		categoryNames,
 	)
 
-	s.PublishEvent(ctx, "poll.created", tripID.String(), resp)
+	s.pollService.PublishEvent(ctx, "poll.created", tripID.String(), resp)
+
+	return resp, nil
+}
+
+// GetPoll returns a single poll with vote counts and the requesting user's vote state.
+func (s *PollVotingService) GetPoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error) {
+	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+	if poll.TripID != tripID {
+		return nil, errs.ErrNotFound
+	}
+
+	summary, err := s.repository.PollVoting.GetPollVotes(ctx, pollID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	categoryNames, err := s.repository.PollCategory.GetPollCategories(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.toAPIResponse(poll, summary, categoryNames), nil
+}
+
+// GetPollsByTripID returns a cursor-paginated list of polls for a trip, each
+// enriched with vote counts and the requesting user's vote state.
+func (s *PollVotingService) GetPollsByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.PollCursorPageResult, error) {
+	cursor, err := pagination.ParseCursor(cursorToken)
+	if err != nil {
+		return nil, err
+	}
+
+	polls, nextCursor, err := s.repository.Poll.FindPollsByTripIDWithCursor(ctx, tripID, limit, cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	// Collect poll IDs and fetch all vote summaries in one batch.
+	pollIDs := make([]uuid.UUID, len(polls))
+	for i, p := range polls {
+		pollIDs[i] = p.ID
+	}
+
+	summaries, err := s.repository.PollVoting.GetPollsVotes(ctx, pollIDs, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	apiPolls := make([]*models.PollAPIResponse, len(polls))
+	for i, poll := range polls {
+		apiPolls[i] = s.toAPIResponse(poll, summaries[poll.ID])
+	}
+
+	return s.buildPollPageResult(apiPolls, nextCursor, limit)
+}
+
+// UpdatePoll updates poll metadata. Only the poll creator can update, and
+// updates are blocked once the deadline has passed.
+func (s *PollVotingService) UpdatePoll(
+	ctx context.Context,
+	tripID, pollID, userID uuid.UUID,
+	req models.UpdatePollWithCategoriesRequest,
+) (*models.PollAPIResponse, error) {
+
+	if err := s.validateUpdatePollRequest(tripID, userID, pollID, req); err != nil {
+		return nil, err
+	}
+
+	var updated *models.Poll
+	var categoryNames []string
+
+	err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var err error
+		updated, categoryNames, err = s.updatePollTx(
+			ctx,
+			tx,
+			tripID,
+			pollID,
+			req,
+		)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	summary, err := s.repository.PollVoting.GetPollVotes(ctx, pollID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := s.toAPIResponse(updated, summary, categoryNames)
+
+	s.pollService.PublishEvent(ctx, "poll.updated", tripID.String(), resp)
+
+	return resp, nil
+}
+
+// DeletePoll removes a poll. Only the poll creator or a trip admin can delete.
+func (s *PollVotingService) DeletePoll(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollAPIResponse, error) {
+	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+	if poll.TripID != tripID {
+		return nil, errs.ErrNotFound
+	}
+
+	if poll.CreatedBy != userID {
+		isAdmin, err := s.repository.Membership.IsAdmin(ctx, tripID, userID)
+		if err != nil {
+			return nil, err
+		}
+		if !isAdmin {
+			return nil, errs.Forbidden()
+		}
+	}
+
+	summary, err := s.repository.PollVoting.GetPollVotes(ctx, pollID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := s.repository.Poll.DeletePoll(ctx, pollID); err != nil {
+		return nil, err
+	}
+
+	resp := s.toAPIResponse(poll, summary)
+	s.pollService.PublishEvent(ctx, "poll.deleted", tripID.String(), resp)
 
 	return resp, nil
 }
@@ -96,7 +216,7 @@ func (s *PollService) CreatePoll(
 // AddOption adds an option to a poll. Only the poll creator can add options.
 // Blocked after the deadline has passed or after any votes have been cast
 // (enforced at the repository level).
-func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
+func (s *PollVotingService) AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
@@ -131,7 +251,7 @@ func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid
 // DeleteOption removes an option from a poll. Only the poll creator can delete
 // options. Rejected if it would leave fewer than 2 options or if any votes
 // already exist on the poll.
-func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error) {
+func (s *PollVotingService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error) {
 	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
 	if err != nil {
 		return nil, err
@@ -156,7 +276,7 @@ func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID
 
 // CastVote replaces all of a user's existing votes on a poll with the new
 // selection. Sending an empty OptionIDs slice removes all votes.
-func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error) {
+func (s *PollVotingService) CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error) {
 	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
 	if err != nil {
 		return nil, err
@@ -214,7 +334,7 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 	if len(req.OptionIDs) == 0 {
 		topic = "poll.vote_removed"
 	}
-	s.PublishEvent(ctx, topic, tripID.String(), resp)
+	s.pollService.PublishEvent(ctx, topic, tripID.String(), resp)
 
 	return resp, nil
 }
@@ -223,7 +343,7 @@ func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.
 // Helpers
 // ---------------------------------------------------------------------------
 // toAPIResponse converts a Poll model and its vote summary into a PollAPIResponse.
-func (s *PollService) toAPIResponse(
+func (s *PollVotingService) toAPIResponse(
 	poll *models.Poll,
 	summary *models.PollVoteSummary,
 	categoryNames ...[]string,
@@ -264,7 +384,7 @@ func (s *PollService) toAPIResponse(
 }
 
 // buildPollPageResult wraps a slice of poll responses into a cursor-paginated result.
-func (s *PollService) buildPollPageResult(apiPolls []*models.PollAPIResponse, nextCursor *models.PollCursor, limit int) (*models.PollCursorPageResult, error) {
+func (s *PollVotingService) buildPollPageResult(apiPolls []*models.PollAPIResponse, nextCursor *models.PollCursor, limit int) (*models.PollCursorPageResult, error) {
 	result := &models.PollCursorPageResult{
 		Items: apiPolls,
 		Limit: limit,
@@ -279,39 +399,7 @@ func (s *PollService) buildPollPageResult(apiPolls []*models.PollAPIResponse, ne
 	return result, nil
 }
 
-// publishEvent publishes a realtime event; failures are logged but never block the caller.
-func (s *PollService) PublishEvent(ctx context.Context, topic, tripID string, data interface{}) {
-	if s.publisher == nil {
-		return
-	}
-	event, err := realtime.NewEvent(topic, tripID, data)
-	if err != nil {
-		log.Printf("Failed to create %s event: %v", topic, err)
-		return
-	}
-	if err := s.publisher.Publish(ctx, event); err != nil {
-		log.Printf("Failed to publish %s event: %v", topic, err)
-	}
-}
-
-func (s *PollService) ValidateDeadline(deadline *time.Time) error {
-	if deadline != nil && time.Now().UTC().After(*deadline) {
-		return errs.BadRequest(errors.New("deadline must be in the future"))
-	}
-	return nil
-}
-
-func (s *PollService) ValidatePollMinMaxOptions(options []models.CreatePollOptionRequest) error {
-	if len(options) < constants.MinPollOptions {
-		return errs.BadRequest(errors.New("a poll must have at least 2 options"))
-	}
-	if len(options) > constants.MaxPollOptions {
-		return errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
-	}
-	return nil
-}
-
-func (s *PollService) defaultToYesNoPollOptions() []models.CreatePollOptionRequest {
+func (s *PollVotingService) defaultToYesNoPollOptions() []models.CreatePollOptionRequest {
 	return []models.CreatePollOptionRequest{
 		{
 			OptionType: models.OptionTypeCustom,
@@ -324,7 +412,7 @@ func (s *PollService) defaultToYesNoPollOptions() []models.CreatePollOptionReque
 	}
 }
 
-func (s *PollService) BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll {
+func (s *PollVotingService) buildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll {
 	return &models.Poll{
 		ID:                  uuid.New(),
 		TripID:              tripID,
@@ -337,7 +425,7 @@ func (s *PollService) BuildPollEntity(tripID, userID uuid.UUID, req *models.Crea
 	}
 }
 
-func (s *PollService) BuildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption {
+func (s *PollVotingService) buildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption {
 	options := make([]models.PollOption, len(req.Options))
 	for i, opt := range req.Options {
 		options[i] = models.PollOption{
@@ -352,7 +440,7 @@ func (s *PollService) BuildOptionEntities(pollID uuid.UUID, req *models.CreatePo
 	return options
 }
 
-func (s *PollService) CreatePollTx(
+func (s *PollVotingService) createPollTx(
 	ctx context.Context,
 	tx bun.Tx,
 	tripID uuid.UUID,
@@ -360,6 +448,7 @@ func (s *PollService) CreatePollTx(
 	options []models.PollOption,
 	categories []string,
 ) (*models.Poll, []string, error) {
+
 	created, err := s.repository.Poll.CreatePoll(ctx, tx, poll, options)
 	if err != nil {
 		return nil, nil, err
@@ -379,7 +468,7 @@ func (s *PollService) CreatePollTx(
 	return created, categoryNames, nil
 }
 
-func (s *PollService) validateUpdatePollRequest(
+func (s *PollVotingService) validateUpdatePollRequest(
 	tripID, userID uuid.UUID,
 	pollID uuid.UUID,
 	req models.UpdatePollWithCategoriesRequest,
@@ -415,7 +504,7 @@ func (s *PollService) validateUpdatePollRequest(
 	return nil
 }
 
-func (s *PollService) UpdatePollTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error) {
+func (s *PollVotingService) updatePollTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error) {
 	var (
 		updated       *models.Poll
 		categoryNames []string
@@ -469,7 +558,7 @@ func (s *PollService) UpdatePollTx(ctx context.Context, tx bun.Tx, tripID, pollI
 	return updated, categoryNames, nil
 }
 
-func (s *PollService) updatePollCategories(
+func (s *PollVotingService) updatePollCategories(
 	ctx context.Context,
 	tx bun.Tx,
 	tripID, pollID uuid.UUID,
@@ -485,38 +574,4 @@ func (s *PollService) updatePollCategories(
 		)
 	}
 	return s.repository.PollCategory.GetPollCategories(ctx, pollID)
-}
-
-func (s *PollService) CreatePollWithTx(
-	ctx context.Context,
-	tripID, userID uuid.UUID,
-	req models.CreatePollRequest,
-) (*models.Poll, []string, error) {
-
-	poll := s.BuildPollEntity(tripID, userID, &req)
-
-	pollOptions := s.BuildOptionEntities(poll.ID, &req)
-	pollCategories := req.Categories
-
-	var created *models.Poll
-	var categoryNames []string
-
-	err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		var err error
-		created, categoryNames, err = s.CreatePollTx(
-			ctx,
-			tx,
-			tripID,
-			poll,
-			pollOptions,
-			pollCategories,
-		)
-		return err
-	})
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return created, categoryNames, nil
 }

@@ -174,6 +174,123 @@ func TestRankPollCreate(t *testing.T) {
 		require.Len(t, options, 3)
 	})
 
+	t.Run("create, update, get anonymity and should notify members", func(t *testing.T) {
+		// create a poll
+		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		req := defaultRankPollRequest()
+		req.IsAnonymous = true
+		req.ShouldNotifyMembers = false
+		resp := createRankPoll(t, app, owner, tripID, req)
+		require.Equal(t, true, resp["is_anonymous"])
+		require.Equal(t, false, resp["should_notify_members"])
+		pollID := resp["id"].(string)
+
+		// update a poll
+		isAnonymous := false
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singleRankPollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollRequest{
+					IsAnonymous: &isAnonymous,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("is_anonymous", false)
+	})
+
+	t.Run("creates poll with categories", func(t *testing.T) {
+		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		req := defaultRankPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createRankPoll(t, app, owner, tripID, req)
+		fmt.Println("[resp categories]", resp["categories"])
+
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+	})
+
+	t.Run("update polls with categories", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		req := defaultRankPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createRankPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		newCategories := []string{"food", "attraction"}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singleRankPollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories: &newCategories,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", newCategories)
+	})
+
+	t.Run("update polls with nil categories, shouldn't change", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		req := defaultRankPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createRankPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		isAnonymous := true
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singleRankPollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories:  nil,
+					IsAnonymous: &isAnonymous,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", selectedCategories)
+	})
+
+	t.Run("update polls with no categories, should delete all", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupRankPollTestEnv(t, app)
+		req := defaultRankPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createRankPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		noCategories := []string{}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singleRankPollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories: &noCategories,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", nil)
+	})
+
 	t.Run("non-member cannot create rank poll", func(t *testing.T) {
 		_, _, nonMember, tripID := setupRankPollTestEnv(t, app)
 		testkit.New(t).

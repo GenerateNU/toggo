@@ -10,6 +10,7 @@ import (
 
 type PollCategoryRepository interface {
 	ReplaceCategoriesForPoll(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, categories *[]string) ([]string, error)
+	GetPollCategories(ctx context.Context, pollID uuid.UUID) ([]string, error)
 }
 
 var _ PollCategoryRepository = (*pollCategoryRepository)(nil)
@@ -22,19 +23,83 @@ func NewPollCategoryRepository(db *bun.DB) PollCategoryRepository {
 	return &pollCategoryRepository{db: db}
 }
 
-func (r *pollCategoryRepository) ReplaceCategoriesForPoll(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, categories *[]string) ([]string, error) {
+func (r *pollCategoryRepository) ReplaceCategoriesForPoll(
+	ctx context.Context,
+	tx bun.Tx,
+	tripID uuid.UUID,
+	pollID uuid.UUID,
+	categories *[]string,
+) ([]string, error) {
+
+	if categories == nil {
+		res := make([]string, 0)
+
+		err := tx.NewRaw(`
+		SELECT category_name
+		FROM poll_categories
+		WHERE poll_id = ?
+	`, pollID).Scan(ctx, &res)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	}
+
+	if len(*categories) == 0 {
+		_, err := tx.NewDelete().
+			Table("poll_categories").
+			Where("poll_id = ?", pollID).
+			Exec(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return []string{}, nil
+	}
+
+	_, err := tx.NewDelete().
+		Table("poll_categories").
+		Where("poll_id = ?", pollID).
+		Where("category_name NOT IN (?)", bun.In(*categories)).
+		Exec(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.NewRaw(`
+		INSERT INTO poll_categories (poll_id, trip_id, category_name)
+		SELECT ?, ?, c.name
+		FROM unnest(?::text[]) AS u(name)
+		JOIN categories c
+			ON c.trip_id = ?
+			AND c.name = u.name
+		ON CONFLICT (poll_id, category_name) DO NOTHING
+	`, pollID, tripID, pq.Array(*categories), tripID).Exec(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var res []string
+	err = tx.NewRaw(`
+		SELECT category_name
+		FROM poll_categories
+		WHERE poll_id = ?
+	`, pollID).Scan(ctx, &res)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (r *pollCategoryRepository) GetPollCategories(ctx context.Context, pollID uuid.UUID) ([]string, error) {
 	var names []string
-	query := `
-        WITH ins AS (
-            INSERT INTO poll_categories (poll_id, category_name)
-            SELECT $1, c
-            FROM unnest(CASE WHEN $2 IS NULL OR array_length($2, 1) = 0 THEN ARRAY[]::text[] ELSE $2 END) AS c
-            ON CONFLICT (poll_id, category_name) DO NOTHING
-        )
-        SELECT category_name
-        FROM poll_categories
-        WHERE poll_id = $1
-    `
-	err := tx.NewRaw(query, pollID, pq.Array(categories)).Scan(ctx, &names)
+	err := r.db.NewRaw(`
+		SELECT category_name
+		FROM poll_categories
+		WHERE poll_id = ?
+	`, pollID).Scan(ctx, &names)
 	return names, err
 }

@@ -15,12 +15,12 @@ import (
 )
 
 type PollController struct {
-	pollService services.PollServiceInterface
+	pollService services.PollVotingServiceInterface
 	validator   *validator.Validate
 }
 
 // NewPollController creates a poll controller with the given service and validator.
-func NewPollController(pollService services.PollServiceInterface, validator *validator.Validate) *PollController {
+func NewPollController(pollService services.PollVotingServiceInterface, validator *validator.Validate) *PollController {
 	return &PollController{
 		pollService: pollService,
 		validator:   validator,
@@ -147,7 +147,7 @@ func (pc *PollController) GetPoll(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        pollId path string true "Poll ID"
-// @Param        request body models.UpdatePollRequest true "Update poll request"
+// @Param        request body models.UpdatePollWithCategoriesRequest true "Update poll request"
 // @Success      200 {object} models.PollAPIResponse
 // @Failure      400,401,403,404,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId} [patch]
@@ -168,7 +168,7 @@ func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	var req models.UpdatePollRequest
+	var req models.UpdatePollWithCategoriesRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.InvalidJSON()
 	}

@@ -68,6 +68,13 @@ type UpdatePollRequest struct {
 	IsAnonymous *bool      `json:"is_anonymous"`
 }
 
+type UpdatePollWithCategoriesRequest struct {
+	Question    *string    `json:"question"`
+	Deadline    *time.Time `json:"deadline"`
+	IsAnonymous *bool      `json:"is_anonymous"`
+	Categories  *[]string  `json:"categories,omitempty"`
+}
+
 // CreatePollRequest is the payload for creating a new poll with optional initial options.
 type CreatePollRequest struct {
 	Question            string                    `json:"question" validate:"required"`
@@ -76,7 +83,7 @@ type CreatePollRequest struct {
 	ShouldNotifyMembers bool                      `json:"should_notify_members"`
 	IsAnonymous         bool                      `json:"is_anonymous"`
 	Options             []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
-	Categories          *[]string                 `json:"categories,omitempty"`
+	Categories          []string                  `json:"categories,omitempty"`
 }
 
 // CreatePollOptionRequest is the payload for adding an option to an existing poll.
@@ -105,6 +112,7 @@ type PollAPIResponse struct {
 	IsAnonymous         bool                    `json:"is_anonymous"`
 	ShouldNotifyMembers bool                    `json:"should_notify_members"`
 	Options             []PollOptionAPIResponse `json:"options"`
+	Categories          []string                `json:"categories,omitempty"`
 }
 
 // PollOptionAPIResponse is an option enriched with its vote count and whether the requesting user voted for it.

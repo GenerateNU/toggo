@@ -17,6 +17,8 @@ type Repository struct {
 	ActivityCategory ActivityCategoryRepository
 	Poll             PollRepository
 	PollRanking      PollRankingRepository
+	PollVoting       PollVotingRepository
+	PollCategory     PollCategoryRepository
 	TripInvite       TripInviteRepository
 	Search           SearchRepository
 	ActivityRSVP     ActivityRSVPRepository
@@ -32,6 +34,8 @@ func NewRepository(db *bun.DB) *Repository {
 		Trip:             NewTripRepository(db),
 		Poll:             NewPollRepository(db),
 		PollRanking:      NewPollRankingRepository(db),
+		PollVoting:       NewPollVotingRepository(db),
+		PollCategory:     NewPollCategoryRepository(db),
 		Membership:       NewMembershipRepository(db),
 		Pitch:            NewPitchRepository(db),
 		Activity:         NewActivityRepository(db),

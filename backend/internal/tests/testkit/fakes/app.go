@@ -11,6 +11,7 @@ import (
 	"toggo/internal/repository"
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
+	"toggo/internal/services"
 	"toggo/internal/types"
 	utilities "toggo/internal/validators"
 
@@ -95,13 +96,32 @@ func connectAndMigrateDBOrPanic(ctx context.Context, cfg *config.Configuration) 
 }
 
 func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bun.DB) {
-	routeParams := types.RouteParams{
-		Validator: utilities.NewValidator(),
-		ServiceParams: &types.ServiceParams{
-			Repository: repository.NewRepository(db),
-			Config:     cfg,
-		},
+
+	repo := repository.NewRepository(db)
+
+	serviceParams := &types.ServiceParams{
+		Repository: repo,
+		Config:     cfg,
 	}
+
+	serviceParams.FileService = services.NewFileService(services.FileServiceConfig{
+		PresignClient: cfg.AWS.PresignClient,
+		S3Client:      cfg.AWS.S3Client,
+		ImageRepo:     repo.Image,
+		BucketName:    cfg.AWS.BucketName,
+		Region:        cfg.AWS.Region,
+	})
+
+	serviceParams.PollService = services.NewPollService(
+		repo,
+		serviceParams.EventPublisher,
+	)
+
+	routeParams := types.RouteParams{
+		Validator:     utilities.NewValidator(),
+		ServiceParams: serviceParams,
+	}
+
 	middlewares.SetUpMiddlewares(app, cfg)
 	routers.SetUpRoutes(app, routeParams, middlewares.AuthRequired(cfg))
 }

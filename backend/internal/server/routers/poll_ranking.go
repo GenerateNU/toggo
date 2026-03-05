@@ -12,7 +12,7 @@ import (
 func RankPollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
 	rankPollService := services.NewRankPollService(
 		routeParams.ServiceParams.Repository,
-		routeParams.ServiceParams.EventPublisher,
+		routeParams.ServiceParams.PollService,
 	)
 	rankPollController := controllers.NewRankPollController(rankPollService, routeParams.Validator)
 

@@ -242,6 +242,108 @@ func TestPollCreate(t *testing.T) {
 			AssertField("is_anonymous", false)
 	})
 
+	t.Run("creates poll with categories", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		req := defaultPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// get poll by ID
+		pollID := resp["id"].(string)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.GET,
+				UserID: &owner,
+				Body:   defaultPollRequest(),
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", selectedCategories)
+	})
+
+	t.Run("update polls with categories", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		req := defaultPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		newCategories := []string{"food", "attraction"}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories: &newCategories,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", newCategories)
+	})
+
+	t.Run("update polls with nil categories, shouldn't change", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		req := defaultPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		isAnonymous := true
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories:  nil,
+					IsAnonymous: &isAnonymous,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", selectedCategories)
+	})
+
+	t.Run("update polls with no categories, should delete all", func(t *testing.T) {
+		// create poll
+		owner, _, _, tripID := setupPollTestEnv(t, app)
+		req := defaultPollRequest()
+		selectedCategories := []string{"food", "lodging"}
+		req.Categories = selectedCategories
+		resp := createPoll(t, app, owner, tripID, req)
+		require.ElementsMatch(t, selectedCategories, resp["categories"])
+
+		// update poll
+		pollID := resp["id"].(string)
+		noCategories := []string{}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  singlePollRoute(tripID, pollID),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: models.UpdatePollWithCategoriesRequest{
+					Categories: &noCategories,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("categories", nil)
+	})
+
 	t.Run("creates multi-choice poll", func(t *testing.T) {
 		owner, _, _, tripID := setupPollTestEnv(t, app)
 		resp := createPoll(t, app, owner, tripID, multiPollRequest())
