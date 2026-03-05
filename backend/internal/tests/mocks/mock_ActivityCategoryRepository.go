@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
+	"github.com/uptrace/bun"
 )
 
 // NewMockActivityCategoryRepository creates a new instance of MockActivityCategoryRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -105,6 +106,23 @@ func (_c *MockActivityCategoryRepository_AddCategoriesToActivity_Call) Return(er
 func (_c *MockActivityCategoryRepository_AddCategoriesToActivity_Call) RunAndReturn(run func(ctx context.Context, activityID uuid.UUID, tripID uuid.UUID, categoryNames []string) error) *MockActivityCategoryRepository_AddCategoriesToActivity_Call {
 	_c.Call.Return(run)
 	return _c
+}
+
+// AddCategoriesToActivityTx provides a mock function for the type MockActivityCategoryRepository
+func (_mock *MockActivityCategoryRepository) AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, tripID uuid.UUID, categoryNames []string) error {
+	ret := _mock.Called(ctx, &tx, activityID, tripID, categoryNames)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddCategoriesToActivityTx")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *bun.Tx, uuid.UUID, uuid.UUID, []string) error); ok {
+		r0 = returnFunc(ctx, &tx, activityID, tripID, categoryNames)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
 }
 
 // GetCategoriesForActivities provides a mock function for the type MockActivityCategoryRepository
