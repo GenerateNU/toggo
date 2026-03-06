@@ -14,14 +14,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type PollController struct {
+type VotePollController struct {
 	pollService services.PollVotingServiceInterface
 	validator   *validator.Validate
 }
 
-// NewPollController creates a poll controller with the given service and validator.
-func NewPollController(pollService services.PollVotingServiceInterface, validator *validator.Validate) *PollController {
-	return &PollController{
+// NewVotePollController creates a vote poll controller with the given service and validator.
+func NewVotePollController(pollService services.PollVotingServiceInterface, validator *validator.Validate) *VotePollController {
+	return &VotePollController{
 		pollService: pollService,
 		validator:   validator,
 	}
@@ -38,7 +38,7 @@ func NewPollController(pollService services.PollVotingServiceInterface, validato
 // @Failure      400,401,403,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls [post]
 // @ID           createPoll
-func (pc *PollController) CreatePoll(c *fiber.Ctx) error {
+func (pc *VotePollController) CreatePoll(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -58,7 +58,7 @@ func (pc *PollController) CreatePoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	poll, err := pc.pollService.CreatePoll(c.Context(), tripID, userID, req)
+	poll, err := pc.pollService.CreateVotePoll(c.Context(), tripID, userID, req)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (pc *PollController) CreatePoll(c *fiber.Ctx) error {
 // @Failure      400,401,403,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls [get]
 // @ID           getPollsByTripID
-func (pc *PollController) GetPollsByTripID(c *fiber.Ctx) error {
+func (pc *VotePollController) GetPollsByTripID(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -95,7 +95,7 @@ func (pc *PollController) GetPollsByTripID(c *fiber.Ctx) error {
 
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	result, err := pc.pollService.GetPollsByTripID(c.Context(), tripID, userID, limit, cursorToken)
+	result, err := pc.pollService.GetVotePollsByTripID(c.Context(), tripID, userID, limit, cursorToken)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
 			return errs.BadRequest(err)
@@ -116,7 +116,7 @@ func (pc *PollController) GetPollsByTripID(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId} [get]
 // @ID           getPoll
-func (pc *PollController) GetPoll(c *fiber.Ctx) error {
+func (pc *VotePollController) GetPoll(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -132,7 +132,7 @@ func (pc *PollController) GetPoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	poll, err := pc.pollService.GetPoll(c.Context(), tripID, pollID, userID)
+	poll, err := pc.pollService.GetVotePoll(c.Context(), tripID, pollID, userID)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (pc *PollController) GetPoll(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId} [patch]
 // @ID           updatePoll
-func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
+func (pc *VotePollController) UpdatePoll(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -177,7 +177,7 @@ func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	poll, err := pc.pollService.UpdatePoll(c.Context(), tripID, pollID, userID, req)
+	poll, err := pc.pollService.UpdateVotePoll(c.Context(), tripID, pollID, userID, req)
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (pc *PollController) UpdatePoll(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId} [delete]
 // @ID           deletePoll
-func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
+func (pc *VotePollController) DeletePoll(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -211,7 +211,7 @@ func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
 		return err
 	}
 
-	poll, err := pc.pollService.DeletePoll(c.Context(), tripID, pollID, userID)
+	poll, err := pc.pollService.DeleteVotePoll(c.Context(), tripID, pollID, userID)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func (pc *PollController) DeletePoll(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,409,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options [post]
 // @ID           addPollOption
-func (pc *PollController) AddOption(c *fiber.Ctx) error {
+func (pc *VotePollController) AddOption(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -256,7 +256,7 @@ func (pc *PollController) AddOption(c *fiber.Ctx) error {
 		return err
 	}
 
-	option, err := pc.pollService.AddOption(c.Context(), tripID, pollID, userID, req)
+	option, err := pc.pollService.AddVoteOption(c.Context(), tripID, pollID, userID, req)
 	if err != nil {
 		return err
 	}
@@ -275,7 +275,7 @@ func (pc *PollController) AddOption(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,409,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId} [delete]
 // @ID           deletePollOption
-func (pc *PollController) DeleteOption(c *fiber.Ctx) error {
+func (pc *VotePollController) DeleteOption(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()
@@ -296,7 +296,7 @@ func (pc *PollController) DeleteOption(c *fiber.Ctx) error {
 		return err
 	}
 
-	option, err := pc.pollService.DeleteOption(c.Context(), tripID, pollID, optionID, userID)
+	option, err := pc.pollService.DeleteVoteOption(c.Context(), tripID, pollID, optionID, userID)
 	if err != nil {
 		return err
 	}
@@ -316,7 +316,7 @@ func (pc *PollController) DeleteOption(c *fiber.Ctx) error {
 // @Failure      400,401,403,404,422,500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/vote [post]
 // @ID           castVote
-func (pc *PollController) CastVote(c *fiber.Ctx) error {
+func (pc *VotePollController) CastVote(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {
 		return errs.InvalidUUID()

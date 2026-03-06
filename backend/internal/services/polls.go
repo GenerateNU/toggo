@@ -10,20 +10,19 @@ import (
 	"toggo/internal/models"
 	"toggo/internal/realtime"
 	"toggo/internal/repository"
-	"toggo/internal/utilities/pagination"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
 type PollServiceInterface interface {
-	PublishEvent(ctx context.Context, topic, tripID string, data interface{})
+	PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{})
 	ValidateDeadline(deadline *time.Time) error
 	ValidatePollMinMaxOptions(options []models.CreatePollOptionRequest) error
 	CreatePollWithTx(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, []string, error)
 	BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll
 	BuildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption
-	UpdatePollTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error)
+	UpdatePollWithTx(ctx context.Context, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error)
 }
 
 var _ PollServiceInterface = (*PollService)(nil)
@@ -33,7 +32,6 @@ type PollService struct {
 	publisher  realtime.EventPublisher
 }
 
-// NewPollService creates a poll service with the given repository and event publisher.
 func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
 	return &PollService{
 		repository: repo,
@@ -41,246 +39,8 @@ func NewPollService(repo *repository.Repository, publisher realtime.EventPublish
 	}
 }
 
-// CreatePoll validates options, falls back to default "Yes"/"No" when none are
-// provided, and inserts the poll + options in a single transaction.
-func (s *PollService) CreatePoll(
-	ctx context.Context,
-	tripID, userID uuid.UUID,
-	req models.CreatePollRequest,
-) (*models.PollAPIResponse, error) {
-	if err := s.ValidateDeadline(req.Deadline); err != nil {
-		return nil, err
-	}
-	if len(req.Options) == 0 {
-		req.Options = s.defaultToYesNoPollOptions()
-	}
-	if err := s.ValidatePollMinMaxOptions(req.Options); err != nil {
-		return nil, err
-	}
-
-	poll := s.BuildPollEntity(tripID, userID, &req)
-	pollOptions := s.BuildOptionEntities(poll.ID, &req)
-	pollCategories := req.Categories
-
-	var created *models.Poll
-	var categoryNames []string
-	if err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		var err error
-		created, categoryNames, err = s.CreatePollTx(
-			ctx,
-			tx,
-			tripID,
-			poll,
-			pollOptions,
-			pollCategories,
-		)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	resp := s.toAPIResponse(
-		created,
-		&models.PollVoteSummary{
-			OptionVoteCounts: make(map[uuid.UUID]int),
-			UserVotedOptions: make(map[uuid.UUID]bool),
-		},
-		categoryNames,
-	)
-
-	s.PublishEvent(ctx, "poll.created", tripID.String(), resp)
-
-	return resp, nil
-}
-
-// AddOption adds an option to a poll. Only the poll creator can add options.
-// Blocked after the deadline has passed or after any votes have been cast
-// (enforced at the repository level).
-func (s *PollService) AddOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error) {
-	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
-	if err != nil {
-		return nil, err
-	}
-	if meta.TripID != tripID {
-		return nil, errs.ErrNotFound
-	}
-	if meta.CreatedBy != userID {
-		return nil, errs.Forbidden()
-	}
-
-	if meta.IsDeadlinePassed() {
-		return nil, errs.BadRequest(errors.New("cannot add options after the poll deadline has passed"))
-	}
-
-	option := &models.PollOption{
-		ID:         uuid.New(),
-		PollID:     pollID,
-		OptionType: req.OptionType,
-		EntityType: req.EntityType,
-		EntityID:   req.EntityID,
-		Name:       req.Name,
-	}
-
-	result, err := s.repository.Poll.AddOption(ctx, option, constants.MaxPollOptions)
-	if errors.Is(err, errs.ErrMaxOptionsReached) {
-		return nil, errs.BadRequest(errors.New("a poll cannot have more than 15 options"))
-	}
-	return result, err
-}
-
-// DeleteOption removes an option from a poll. Only the poll creator can delete
-// options. Rejected if it would leave fewer than 2 options or if any votes
-// already exist on the poll.
-func (s *PollService) DeleteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error) {
-	meta, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
-	if err != nil {
-		return nil, err
-	}
-	if meta.TripID != tripID {
-		return nil, errs.ErrNotFound
-	}
-	if meta.CreatedBy != userID {
-		return nil, errs.Forbidden()
-	}
-
-	if meta.IsDeadlinePassed() {
-		return nil, errs.BadRequest(errors.New("cannot delete options after the poll deadline has passed"))
-	}
-
-	result, err := s.repository.Poll.DeleteOption(ctx, pollID, optionID, constants.MinPollOptions)
-	if errors.Is(err, errs.ErrMinOptionsRequired) {
-		return nil, errs.BadRequest(errors.New("a poll must have at least 2 options"))
-	}
-	return result, err
-}
-
-// CastVote replaces all of a user's existing votes on a poll with the new
-// selection. Sending an empty OptionIDs slice removes all votes.
-func (s *PollService) CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error) {
-	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
-	if err != nil {
-		return nil, err
-	}
-	if poll.TripID != tripID {
-		return nil, errs.ErrNotFound
-	}
-
-	if poll.IsDeadlinePassed() {
-		return nil, errs.BadRequest(errors.New("cannot vote after the poll deadline has passed"))
-	}
-
-	if poll.PollType == models.PollTypeSingle && len(req.OptionIDs) > 1 {
-		return nil, errs.BadRequest(errors.New("single-choice polls allow only one vote"))
-	}
-
-	optionSet := make(map[uuid.UUID]bool)
-	for _, opt := range poll.Options {
-		optionSet[opt.ID] = true
-	}
-	seen := make(map[uuid.UUID]bool, len(req.OptionIDs))
-	for _, optionID := range req.OptionIDs {
-		if !optionSet[optionID] {
-			return nil, errs.BadRequest(errors.New("option does not belong to this poll"))
-		}
-		if seen[optionID] {
-			return nil, errs.BadRequest(errors.New("duplicate option IDs are not allowed"))
-		}
-		seen[optionID] = true
-	}
-
-	votes := make([]models.PollVote, len(req.OptionIDs))
-	for i, optionID := range req.OptionIDs {
-		votes[i] = models.PollVote{
-			PollID:   pollID,
-			OptionID: optionID,
-			UserID:   userID,
-		}
-	}
-
-	_, err = s.repository.PollVoting.CastVote(ctx, pollID, userID, votes)
-	if err != nil {
-		return nil, err
-	}
-
-	summary, err := s.repository.PollVoting.GetPollVotes(ctx, pollID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := s.toAPIResponse(poll, summary)
-
-	// Empty OptionIDs means the user is clearing their votes.
-	topic := "poll.vote_added"
-	if len(req.OptionIDs) == 0 {
-		topic = "poll.vote_removed"
-	}
-	s.PublishEvent(ctx, topic, tripID.String(), resp)
-
-	return resp, nil
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-// toAPIResponse converts a Poll model and its vote summary into a PollAPIResponse.
-func (s *PollService) toAPIResponse(
-	poll *models.Poll,
-	summary *models.PollVoteSummary,
-	categoryNames ...[]string,
-) *models.PollAPIResponse {
-	options := make([]models.PollOptionAPIResponse, len(poll.Options))
-	for i, opt := range poll.Options {
-		options[i] = models.PollOptionAPIResponse{
-			ID:         opt.ID,
-			OptionType: opt.OptionType,
-			EntityType: opt.EntityType,
-			EntityID:   opt.EntityID,
-			Name:       opt.Name,
-			VoteCount:  summary.OptionVoteCounts[opt.ID],
-			Voted:      summary.UserVotedOptions[opt.ID],
-		}
-	}
-
-	var categories []string
-	if len(categoryNames) > 0 && categoryNames[0] != nil {
-		categories = categoryNames[0]
-	} else {
-		categories = []string{}
-	}
-
-	return &models.PollAPIResponse{
-		ID:                  poll.ID,
-		TripID:              poll.TripID,
-		CreatedBy:           poll.CreatedBy,
-		Question:            poll.Question,
-		PollType:            poll.PollType,
-		CreatedAt:           poll.CreatedAt,
-		Deadline:            poll.Deadline,
-		IsAnonymous:         poll.IsAnonymous,
-		ShouldNotifyMembers: poll.ShouldNotifyMembers,
-		Options:             options,
-		Categories:          categories,
-	}
-}
-
-// buildPollPageResult wraps a slice of poll responses into a cursor-paginated result.
-func (s *PollService) buildPollPageResult(apiPolls []*models.PollAPIResponse, nextCursor *models.PollCursor, limit int) (*models.PollCursorPageResult, error) {
-	result := &models.PollCursorPageResult{
-		Items: apiPolls,
-		Limit: limit,
-	}
-	if nextCursor != nil {
-		token, err := pagination.EncodeTimeUUIDCursor(*nextCursor)
-		if err != nil {
-			return nil, err
-		}
-		result.NextCursor = &token
-	}
-	return result, nil
-}
-
 // publishEvent publishes a realtime event; failures are logged but never block the caller.
-func (s *PollService) PublishEvent(ctx context.Context, topic, tripID string, data interface{}) {
+func (s *PollService) PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{}) {
 	if s.publisher == nil {
 		return
 	}
@@ -311,19 +71,6 @@ func (s *PollService) ValidatePollMinMaxOptions(options []models.CreatePollOptio
 	return nil
 }
 
-func (s *PollService) defaultToYesNoPollOptions() []models.CreatePollOptionRequest {
-	return []models.CreatePollOptionRequest{
-		{
-			OptionType: models.OptionTypeCustom,
-			Name:       "Yes",
-		},
-		{
-			OptionType: models.OptionTypeCustom,
-			Name:       "No",
-		},
-	}
-}
-
 func (s *PollService) BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll {
 	return &models.Poll{
 		ID:                  uuid.New(),
@@ -352,7 +99,7 @@ func (s *PollService) BuildOptionEntities(pollID uuid.UUID, req *models.CreatePo
 	return options
 }
 
-func (s *PollService) CreatePollTx(
+func (s *PollService) createPollTx(
 	ctx context.Context,
 	tx bun.Tx,
 	tripID uuid.UUID,
@@ -379,114 +126,6 @@ func (s *PollService) CreatePollTx(
 	return created, categoryNames, nil
 }
 
-func (s *PollService) validateUpdatePollRequest(
-	tripID, userID uuid.UUID,
-	pollID uuid.UUID,
-	req models.UpdatePollWithCategoriesRequest,
-) error {
-	if req.Question == nil &&
-		req.Deadline == nil &&
-		req.IsAnonymous == nil &&
-		req.Categories == nil {
-		return errs.BadRequest(errors.New("at least one field must be provided"))
-	}
-
-	poll, err := s.repository.Poll.FindPollByID(context.Background(), pollID)
-	if err != nil {
-		return err
-	}
-
-	if poll.TripID != tripID {
-		return errs.ErrNotFound
-	}
-
-	if poll.CreatedBy != userID {
-		return errs.Forbidden()
-	}
-
-	if poll.IsDeadlinePassed() {
-		return errs.BadRequest(errors.New("cannot update poll after the deadline has passed"))
-	}
-
-	if req.Deadline != nil && time.Now().UTC().After(*req.Deadline) {
-		return errs.BadRequest(errors.New("deadline must be in the future"))
-	}
-
-	return nil
-}
-
-func (s *PollService) UpdatePollTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error) {
-	var (
-		updated       *models.Poll
-		categoryNames []string
-		err           error
-	)
-
-	updated, err = s.repository.Poll.FindPollByID(ctx, pollID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// update poll fields only if they are provided in the request; otherwise keep existing values
-	if req.Question != nil ||
-		req.Deadline != nil ||
-		req.IsAnonymous != nil {
-
-		updated, err = s.repository.Poll.UpdatePoll(
-			ctx,
-			tx,
-			pollID,
-			&models.UpdatePollRequest{
-				Question:    req.Question,
-				Deadline:    req.Deadline,
-				IsAnonymous: req.IsAnonymous,
-			},
-		)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// update categories to link with poll
-	var categories []string
-	if req.Categories != nil {
-		categories = *req.Categories
-	} else {
-		categories = nil
-	}
-
-	categoryNames, err = s.updatePollCategories(
-		ctx,
-		tx,
-		tripID,
-		pollID,
-		categories,
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return updated, categoryNames, nil
-}
-
-func (s *PollService) updatePollCategories(
-	ctx context.Context,
-	tx bun.Tx,
-	tripID, pollID uuid.UUID,
-	categories []string,
-) ([]string, error) {
-	if categories != nil {
-		return s.repository.PollCategory.ReplaceCategoriesForPoll(
-			ctx,
-			tx,
-			tripID,
-			pollID,
-			&categories,
-		)
-	}
-	return s.repository.PollCategory.GetPollCategories(ctx, pollID)
-}
-
 func (s *PollService) CreatePollWithTx(
 	ctx context.Context,
 	tripID, userID uuid.UUID,
@@ -503,7 +142,7 @@ func (s *PollService) CreatePollWithTx(
 
 	err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		var err error
-		created, categoryNames, err = s.CreatePollTx(
+		created, categoryNames, err = s.createPollTx(
 			ctx,
 			tx,
 			tripID,
@@ -519,4 +158,85 @@ func (s *PollService) CreatePollWithTx(
 	}
 
 	return created, categoryNames, nil
+}
+
+func (s *PollService) UpdatePollWithTx(
+	ctx context.Context,
+	tripID, pollID uuid.UUID,
+	req models.UpdatePollWithCategoriesRequest,
+) (*models.Poll, []string, error) {
+
+	var (
+		updated       *models.Poll
+		categoryNames []string
+	)
+
+	err := s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var err error
+		// Update poll fields if present
+		if req.Question != nil ||
+			req.Deadline != nil ||
+			req.IsAnonymous != nil {
+
+			updated, err = s.repository.Poll.UpdatePoll(
+				ctx,
+				tx,
+				pollID,
+				&models.UpdatePollRequest{
+					Question:    req.Question,
+					Deadline:    req.Deadline,
+					IsAnonymous: req.IsAnonymous,
+				},
+			)
+
+			if err != nil {
+				return err
+			}
+
+		} else {
+			updated, err = s.repository.Poll.FindPollByID(ctx, pollID)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Categories logic
+		categoryNames, err = s.resolveCategoryUpdate(
+			ctx,
+			tx,
+			tripID,
+			pollID,
+			req.Categories,
+		)
+
+		return err
+	})
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return updated, categoryNames, nil
+}
+
+func (s *PollService) resolveCategoryUpdate(
+	ctx context.Context,
+	tx bun.Tx,
+	tripID, pollID uuid.UUID,
+	categories *[]string,
+) ([]string, error) {
+
+	if categories == nil {
+		return s.repository.PollCategory.GetPollCategories(ctx, pollID)
+	}
+
+	values := *categories
+
+	return s.repository.PollCategory.ReplaceCategoriesForPoll(
+		ctx,
+		tx,
+		tripID,
+		pollID,
+		&values,
+	)
 }

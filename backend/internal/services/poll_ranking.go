@@ -9,10 +9,10 @@ import (
 	"toggo/internal/constants"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 
 	"github.com/google/uuid"
-	"github.com/uptrace/bun"
 )
 
 type RankPollServiceInterface interface {
@@ -60,7 +60,7 @@ func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, 
 	}
 
 	resp := s.toRankPollAPIResponse(created, categoryNames)
-	s.pollService.PublishEvent(ctx, "poll.created", tripID.String(), resp)
+	s.pollService.PublishEvent(ctx, realtime.EventTopicPollCreated, tripID.String(), resp)
 
 	return resp, nil
 }
@@ -87,69 +87,13 @@ func (s *RankPollService) UpdateRankPoll(ctx context.Context, tripID uuid.UUID, 
 		return nil, errs.BadRequest(errors.New("at least one field must be provided"))
 	}
 
-	var updated *models.Poll
-	var categoryNames []string
-
-	err = s.repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-
-		var err error
-
-		// ✅ Update poll fields ONLY if they exist
-		if req.Question != nil ||
-			req.Deadline != nil ||
-			req.IsAnonymous != nil {
-
-			pollReq := &models.UpdatePollRequest{
-				Question:    req.Question,
-				Deadline:    req.Deadline,
-				IsAnonymous: req.IsAnonymous,
-			}
-
-			updated, err = s.repository.Poll.UpdatePoll(
-				ctx,
-				tx,
-				pollID,
-				pollReq,
-			)
-			if err != nil {
-				return err
-			}
-
-		} else {
-			updated, err = s.repository.Poll.FindPollByID(ctx, pollID)
-			if err != nil {
-				return err
-			}
-		}
-
-		// ✅ Update categories only if provided
-		if req.Categories != nil {
-			categoryNames, err = s.repository.PollCategory.ReplaceCategoriesForPoll(
-				ctx,
-				tx,
-				tripID,
-				pollID,
-				req.Categories,
-			)
-			if err != nil {
-				return err
-			}
-		} else {
-			categoryNames, err = s.repository.PollCategory.GetPollCategories(ctx, pollID)
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-
+	updated, categoryNames, err := s.pollService.UpdatePollWithTx(ctx, tripID, pollID, req)
 	if err != nil {
 		return nil, err
 	}
 
 	resp := s.toRankPollAPIResponse(updated, categoryNames)
-	s.pollService.PublishEvent(ctx, "poll.updated", tripID.String(), resp)
+	s.pollService.PublishEvent(ctx, realtime.EventTopicPollUpdated, tripID.String(), resp)
 	return resp, nil
 }
 
@@ -251,7 +195,7 @@ func (s *RankPollService) SubmitRanking(ctx context.Context, tripID uuid.UUID, p
 
 	results, totalVoters := s.getResultsForEvent(ctx, pollID)
 
-	s.pollService.PublishEvent(ctx, "poll.ranking_submitted", tripID.String(), map[string]interface{}{
+	s.pollService.PublishEvent(ctx, realtime.EventTopicPollRankingSubmitted, tripID.String(), map[string]interface{}{
 		"poll_id":      pollID.String(),
 		"user_id":      userID.String(),
 		"total_voters": totalVoters,
@@ -358,7 +302,7 @@ func (s *RankPollService) DeleteRankPoll(ctx context.Context, tripID uuid.UUID, 
 	}
 
 	resp := s.toRankPollAPIResponse(deleted)
-	s.pollService.PublishEvent(ctx, "poll.deleted", tripID.String(), resp)
+	s.pollService.PublishEvent(ctx, realtime.EventTopicPollDeleted, tripID.String(), resp)
 
 	return resp, nil
 }
