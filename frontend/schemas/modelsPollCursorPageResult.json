@@ -6,10 +6,12 @@
       "items": {
         "type": "object",
         "properties": {
+          "categories": { "type": "array", "items": { "type": "string" } },
           "created_at": { "type": "string" },
           "created_by": { "type": "string" },
           "deadline": { "type": "string" },
           "id": { "type": "string" },
+          "is_anonymous": { "type": "boolean" },
           "options": {
             "type": "array",
             "items": {
@@ -42,6 +44,7 @@
             "x-readme-ref-name": "models.PollType"
           },
           "question": { "type": "string" },
+          "should_notify_members": { "type": "boolean" },
           "trip_id": { "type": "string" }
         },
         "x-readme-ref-name": "models.PollAPIResponse"

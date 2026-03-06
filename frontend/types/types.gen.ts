@@ -613,9 +613,17 @@ export type ModelsPollType = ModelsPollTypeEnumKey;
 
 export type ModelsCreatePollRequest = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   deadline?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
   /**
    * @type array | undefined
    */
@@ -625,6 +633,10 @@ export type ModelsCreatePollRequest = {
    * @type string
    */
   question: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
 };
 
 export type ModelsCreateTripInviteRequest = {
@@ -1152,6 +1164,10 @@ export type ModelsPollOptionAPIResponse = {
 
 export type ModelsPollAPIResponse = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   created_at?: string;
@@ -1168,6 +1184,10 @@ export type ModelsPollAPIResponse = {
    */
   id?: string;
   /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
+  /**
    * @type array | undefined
    */
   options?: ModelsPollOptionAPIResponse[];
@@ -1179,6 +1199,10 @@ export type ModelsPollAPIResponse = {
    * @type string | undefined
    */
   question?: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
   /**
    * @type string | undefined
    */
@@ -1236,6 +1260,10 @@ export type ModelsPollVotersResponse = {
 
 export type ModelsRankPollAPIResponse = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   created_at?: string;
@@ -1252,6 +1280,10 @@ export type ModelsRankPollAPIResponse = {
    */
   id?: string;
   /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
+  /**
    * @type array | undefined
    */
   options?: ModelsPollOptionAPIResponse[];
@@ -1263,6 +1295,10 @@ export type ModelsRankPollAPIResponse = {
    * @type string | undefined
    */
   question?: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
   /**
    * @type string | undefined
    */
@@ -1671,11 +1707,19 @@ export type ModelsUpdatePitchRequest = {
   title?: string;
 };
 
-export type ModelsUpdatePollRequest = {
+export type ModelsUpdatePollWithCategoriesRequest = {
+  /**
+   * @type array | undefined
+   */
+  categories?: string[];
   /**
    * @type string | undefined
    */
   deadline?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
   /**
    * @type string | undefined
    */
@@ -4321,7 +4365,8 @@ export type UpdateRankPoll500 = ErrsAPIError;
 /**
  * @description Update rank poll request
  */
-export type UpdateRankPollMutationRequest = ModelsUpdatePollRequest;
+export type UpdateRankPollMutationRequest =
+  ModelsUpdatePollWithCategoriesRequest;
 
 export type UpdateRankPollMutationResponse = UpdateRankPoll200;
 
@@ -4879,7 +4924,7 @@ export type UpdatePoll500 = ErrsAPIError;
 /**
  * @description Update poll request
  */
-export type UpdatePollMutationRequest = ModelsUpdatePollRequest;
+export type UpdatePollMutationRequest = ModelsUpdatePollWithCategoriesRequest;
 
 export type UpdatePollMutationResponse = UpdatePoll200;
 
