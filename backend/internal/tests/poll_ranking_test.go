@@ -207,8 +207,6 @@ func TestRankPollCreate(t *testing.T) {
 		selectedCategories := []string{"food", "lodging"}
 		req.Categories = selectedCategories
 		resp := createRankPoll(t, app, owner, tripID, req)
-		fmt.Println("[resp categories]", resp["categories"])
-
 		require.ElementsMatch(t, selectedCategories, resp["categories"])
 	})
 

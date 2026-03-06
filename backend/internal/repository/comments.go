@@ -17,6 +17,8 @@ type CommentRepository interface {
 	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
 }
 
+var _ CommentRepository = (*commentRepository)(nil)
+
 type commentRepository struct {
 	db *bun.DB
 }
