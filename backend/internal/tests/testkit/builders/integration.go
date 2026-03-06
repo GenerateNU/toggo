@@ -142,7 +142,31 @@ func (tb *IntegrationTestBuilder) AssertFieldExists(field string) *IntegrationTe
 }
 
 func (tb *IntegrationTestBuilder) AssertField(field string, expected any) *IntegrationTestBuilder {
-	assert.Equal(tb.t, expected, tb.body[field])
+	actual := tb.body[field]
+
+	switch exp := expected.(type) {
+
+	case []string:
+		act, ok := actual.([]any)
+		if !ok {
+			assert.Equal(tb.t, expected, actual)
+			return tb
+		}
+
+		converted := make([]string, len(act))
+		for i, v := range act {
+			converted[i] = v.(string)
+		}
+
+		assert.Equal(tb.t, exp, converted)
+		return tb
+
+	case []any:
+		assert.ElementsMatch(tb.t, exp, actual)
+		return tb
+	}
+
+	assert.Equal(tb.t, expected, actual)
 	return tb
 }
 

@@ -9,10 +9,19 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type ActivityRSVPRepository interface {
+	UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error)
+	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken time.Time, statusFilter string) ([]models.ActivityRSVPDatabaseResponse, time.Time, error)
+}
+
 var _ ActivityRSVPRepository = (*activityRSVPRepository)(nil)
 
 type activityRSVPRepository struct {
 	db *bun.DB
+}
+
+func NewActivityRSVPRepository(db *bun.DB) ActivityRSVPRepository {
+	return &activityRSVPRepository{db: db}
 }
 
 func (r *activityRSVPRepository) GetActivityRSVPs(

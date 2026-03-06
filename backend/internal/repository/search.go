@@ -10,6 +10,12 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type SearchRepository interface {
+	SearchTrips(ctx context.Context, userID uuid.UUID, query string, limit, offset int) ([]*models.TripDatabaseResponse, int, error)
+	SearchActivities(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.ActivityDatabaseResponse, int, error)
+	SearchTripMembers(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.MembershipDatabaseResponse, int, error)
+}
+
 var _ SearchRepository = (*searchRepository)(nil)
 
 type searchRepository struct {

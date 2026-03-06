@@ -2,7 +2,9 @@
   "type": "object",
   "required": ["poll_type", "question"],
   "properties": {
+    "categories": { "type": "array", "items": { "type": "string" } },
     "deadline": { "type": "string" },
+    "is_anonymous": { "type": "boolean" },
     "options": {
       "type": "array",
       "items": {
@@ -42,7 +44,8 @@
         }
       ]
     },
-    "question": { "type": "string" }
+    "question": { "type": "string" },
+    "should_notify_members": { "type": "boolean" }
   },
   "x-readme-ref-name": "models.CreatePollRequest"
 }

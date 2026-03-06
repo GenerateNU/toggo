@@ -11,6 +11,20 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type MembershipRepository interface {
+	Create(ctx context.Context, membership *models.Membership) (*models.Membership, error)
+	Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error)
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
+	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
+	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
+	CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error)
+	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
+	Delete(ctx context.Context, userID, tripID uuid.UUID) error
+}
+
 var _ MembershipRepository = (*membershipRepository)(nil)
 
 type membershipRepository struct {
