@@ -8,6 +8,7 @@ import (
 	"toggo/internal/repository"
 	"toggo/internal/server/middlewares"
 	"toggo/internal/server/routers"
+	"toggo/internal/services"
 	"toggo/internal/types"
 	"toggo/internal/validators"
 
@@ -40,6 +41,7 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 			Repository:     repository,
 			Config:         config,
 			EventPublisher: publisher,
+			PollService:    services.NewPollService(repository, publisher),
 		},
 	}
 
