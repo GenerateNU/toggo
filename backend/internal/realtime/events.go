@@ -15,14 +15,14 @@ type Event struct {
 }
 
 // NewEvent creates a new event with the given topic, trip ID, and data payload.
-func NewEvent(topic string, tripID string, data interface{}) (*Event, error) {
+func NewEvent(topic EventTopic, tripID string, data interface{}) (*Event, error) {
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Event{
-		Topic:     topic,
+		Topic:     string(topic),
 		TripID:    tripID,
 		Data:      dataBytes,
 		Timestamp: time.Now().UTC(),

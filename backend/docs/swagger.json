@@ -3103,7 +3103,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePollRequest"
+                            "$ref": "#/definitions/models.UpdatePollWithCategoriesRequest"
                         }
                     }
                 ],
@@ -3778,7 +3778,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePollRequest"
+                            "$ref": "#/definitions/models.UpdatePollWithCategoriesRequest"
                         }
                     }
                 ],
@@ -4978,8 +4978,17 @@
                 "question"
             ],
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "deadline": {
                     "type": "string"
+                },
+                "is_anonymous": {
+                    "type": "boolean"
                 },
                 "options": {
                     "type": "array",
@@ -5001,6 +5010,9 @@
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 }
             }
         },
@@ -5603,6 +5615,12 @@
         "models.PollAPIResponse": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5615,6 +5633,9 @@
                 "id": {
                     "type": "string"
                 },
+                "is_anonymous": {
+                    "type": "boolean"
+                },
                 "options": {
                     "type": "array",
                     "items": {
@@ -5626,6 +5647,9 @@
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 },
                 "trip_id": {
                     "type": "string"
@@ -5724,6 +5748,12 @@
         "models.RankPollAPIResponse": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5736,6 +5766,9 @@
                 "id": {
                     "type": "string"
                 },
+                "is_anonymous": {
+                    "type": "boolean"
+                },
                 "options": {
                     "type": "array",
                     "items": {
@@ -5747,6 +5780,9 @@
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 },
                 "trip_id": {
                     "type": "string"
@@ -6150,11 +6186,20 @@
                 }
             }
         },
-        "models.UpdatePollRequest": {
+        "models.UpdatePollWithCategoriesRequest": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "deadline": {
                     "type": "string"
+                },
+                "is_anonymous": {
+                    "type": "boolean"
                 },
                 "question": {
                     "type": "string"

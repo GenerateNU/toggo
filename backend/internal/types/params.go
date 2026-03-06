@@ -19,4 +19,5 @@ type ServiceParams struct {
 	Config         *config.Configuration
 	EventPublisher realtime.EventPublisher
 	FileService    services.FileServiceInterface
+	PollService    services.PollServiceInterface
 }

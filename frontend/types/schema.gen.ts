@@ -119,7 +119,7 @@ import type {
   ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
   ModelsUpdatePitchRequest,
-  ModelsUpdatePollRequest,
+  ModelsUpdatePollWithCategoriesRequest,
   ModelsUpdateTripRequest,
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
@@ -886,7 +886,9 @@ export const modelsPollTypeSchema = z.enum([
 ]) as unknown as z.ZodType<ModelsPollType>;
 
 export const modelsCreatePollRequestSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   deadline: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsCreatePollOptionRequestSchema).optional();
   },
@@ -894,6 +896,7 @@ export const modelsCreatePollRequestSchema = z.object({
     return modelsPollTypeSchema;
   },
   question: z.string(),
+  should_notify_members: z.optional(z.boolean()),
 }) as unknown as z.ZodType<ModelsCreatePollRequest>;
 
 export const modelsCreateTripInviteRequestSchema = z.object({
@@ -1163,10 +1166,12 @@ export const modelsPollOptionAPIResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsPollOptionAPIResponse>;
 
 export const modelsPollAPIResponseSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
   created_by: z.optional(z.string()),
   deadline: z.optional(z.string()),
   id: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsPollOptionAPIResponseSchema).optional();
   },
@@ -1174,6 +1179,7 @@ export const modelsPollAPIResponseSchema = z.object({
     return modelsPollTypeSchema.optional();
   },
   question: z.optional(z.string()),
+  should_notify_members: z.optional(z.boolean()),
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPollAPIResponse>;
 
@@ -1201,10 +1207,12 @@ export const modelsPollVotersResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsPollVotersResponse>;
 
 export const modelsRankPollAPIResponseSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
   created_by: z.optional(z.string()),
   deadline: z.optional(z.string()),
   id: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsPollOptionAPIResponseSchema).optional();
   },
@@ -1212,6 +1220,7 @@ export const modelsRankPollAPIResponseSchema = z.object({
     return modelsPollTypeSchema.optional();
   },
   question: z.optional(z.string()),
+  should_notify_members: z.optional(z.boolean()),
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsRankPollAPIResponse>;
 
@@ -1385,10 +1394,12 @@ export const modelsUpdatePitchRequestSchema = z.object({
   title: z.optional(z.string().min(1)),
 }) as unknown as z.ZodType<ModelsUpdatePitchRequest>;
 
-export const modelsUpdatePollRequestSchema = z.object({
+export const modelsUpdatePollWithCategoriesRequestSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   deadline: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   question: z.optional(z.string()),
-}) as unknown as z.ZodType<ModelsUpdatePollRequest>;
+}) as unknown as z.ZodType<ModelsUpdatePollWithCategoriesRequest>;
 
 export const modelsUpdateTripRequestSchema = z.object({
   budget_max: z.optional(z.int().min(0)),
@@ -3878,7 +3889,7 @@ export const updateRankPoll500Schema = z.lazy(
  * @description Update rank poll request
  */
 export const updateRankPollMutationRequestSchema = z.lazy(
-  () => modelsUpdatePollRequestSchema,
+  () => modelsUpdatePollWithCategoriesRequestSchema,
 ) as unknown as z.ZodType<UpdateRankPollMutationRequest>;
 
 export const updateRankPollMutationResponseSchema = z.lazy(
@@ -4406,7 +4417,7 @@ export const updatePoll500Schema = z.lazy(
  * @description Update poll request
  */
 export const updatePollMutationRequestSchema = z.lazy(
-  () => modelsUpdatePollRequestSchema,
+  () => modelsUpdatePollWithCategoriesRequestSchema,
 ) as unknown as z.ZodType<UpdatePollMutationRequest>;
 
 export const updatePollMutationResponseSchema = z.lazy(

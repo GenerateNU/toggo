@@ -3109,7 +3109,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePollRequest"
+                            "$ref": "#/definitions/models.UpdatePollWithCategoriesRequest"
                         }
                     }
                 ],
@@ -3784,7 +3784,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdatePollRequest"
+                            "$ref": "#/definitions/models.UpdatePollWithCategoriesRequest"
                         }
                     }
                 ],
@@ -4984,8 +4984,17 @@ const docTemplate = `{
                 "question"
             ],
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "deadline": {
                     "type": "string"
+                },
+                "is_anonymous": {
+                    "type": "boolean"
                 },
                 "options": {
                     "type": "array",
@@ -5007,6 +5016,9 @@ const docTemplate = `{
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 }
             }
         },
@@ -5609,6 +5621,12 @@ const docTemplate = `{
         "models.PollAPIResponse": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5621,6 +5639,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_anonymous": {
+                    "type": "boolean"
+                },
                 "options": {
                     "type": "array",
                     "items": {
@@ -5632,6 +5653,9 @@ const docTemplate = `{
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 },
                 "trip_id": {
                     "type": "string"
@@ -5730,6 +5754,12 @@ const docTemplate = `{
         "models.RankPollAPIResponse": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5742,6 +5772,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_anonymous": {
+                    "type": "boolean"
+                },
                 "options": {
                     "type": "array",
                     "items": {
@@ -5753,6 +5786,9 @@ const docTemplate = `{
                 },
                 "question": {
                     "type": "string"
+                },
+                "should_notify_members": {
+                    "type": "boolean"
                 },
                 "trip_id": {
                     "type": "string"
@@ -6156,11 +6192,20 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdatePollRequest": {
+        "models.UpdatePollWithCategoriesRequest": {
             "type": "object",
             "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "deadline": {
                     "type": "string"
+                },
+                "is_anonymous": {
+                    "type": "boolean"
                 },
                 "question": {
                     "type": "string"

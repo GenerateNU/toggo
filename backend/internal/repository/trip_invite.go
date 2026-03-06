@@ -11,10 +11,20 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type TripInviteRepository interface {
+	Create(ctx context.Context, invite *models.TripInvite) (*models.TripInvite, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*models.TripInvite, error)
+	FindByCode(ctx context.Context, code string) (*models.TripInvite, error)
+}
+
 var _ TripInviteRepository = (*tripInviteRepository)(nil)
 
 type tripInviteRepository struct {
 	db *bun.DB
+}
+
+func NewTripInviteRepository(db *bun.DB) TripInviteRepository {
+	return &tripInviteRepository{db: db}
 }
 
 // Create inserts a new trip invite.
