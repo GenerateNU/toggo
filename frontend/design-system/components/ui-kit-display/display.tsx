@@ -2,6 +2,7 @@ import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
+import DateRangePicker from "@/design-system/primitives/date-picker";
 import { Text } from "@/design-system/primitives/text";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
@@ -101,6 +102,8 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
+  const [pickerVisible, setPickerVisible] = useState(false);
+
   return (
     <Box gap="lg">
       <Box gap="xs">
@@ -327,6 +330,22 @@ export default function UIKit() {
           label="Secondary loading"
           variant="Secondary"
           loading
+        />
+      </Section>
+
+      <Section title="Date Range Picker">
+        <Button
+          layout="textOnly"
+          label="Open Date Picker"
+          variant="Secondary"
+          onPress={() => setPickerVisible(true)}
+        />
+        <DateRangePicker
+          visible={pickerVisible}
+          onClose={() => setPickerVisible(false)}
+          onSave={(range) => console.log(range)}
+          minDate={new Date()}
+          monthsToShow={12}
         />
       </Section>
     </Box>
