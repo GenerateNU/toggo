@@ -16,6 +16,8 @@ type ActivityRepository interface {
 	Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error)
 	FindByTripID(ctx context.Context, tripID uuid.UUID, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
 	FindByCategoryName(ctx context.Context, tripID uuid.UUID, categoryName string, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	FindByTimeOfDay(ctx context.Context, tripID uuid.UUID, timeOfDay models.ActivityTimeOfDay, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
+	FindByCategoryAndTimeOfDay(ctx context.Context, tripID uuid.UUID, categoryName string, timeOfDay models.ActivityTimeOfDay, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
 	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
 	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
@@ -109,6 +111,52 @@ func (r *activityRepository) FindByCategoryName(
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
 }
 
+func (r *activityRepository) FindByTimeOfDay(
+	ctx context.Context,
+	tripID uuid.UUID,
+	timeOfDay models.ActivityTimeOfDay,
+	cursor *models.ActivityCursor,
+	limit int,
+) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error) {
+	query := r.db.NewSelect().
+		TableExpr("activities AS a").
+		ColumnExpr("a.*").
+		ColumnExpr("u.username AS proposer_username").
+		ColumnExpr("u.profile_picture AS proposer_picture_id").
+		ColumnExpr("img.file_key AS proposer_picture_key").
+		Join("JOIN users AS u ON u.id = a.proposed_by").
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("a.trip_id = ?", tripID).
+		Where("a.time_of_day = ?", timeOfDay).
+		OrderExpr("a.created_at DESC, a.id DESC")
+
+	return r.executePaginatedQuery(ctx, query, cursor, limit)
+}
+
+func (r *activityRepository) FindByCategoryAndTimeOfDay(
+	ctx context.Context,
+	tripID uuid.UUID,
+	categoryName string,
+	timeOfDay models.ActivityTimeOfDay,
+	cursor *models.ActivityCursor,
+	limit int,
+) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error) {
+	query := r.db.NewSelect().
+		TableExpr("activities AS a").
+		ColumnExpr("a.*").
+		ColumnExpr("u.username AS proposer_username").
+		ColumnExpr("u.profile_picture AS proposer_picture_id").
+		ColumnExpr("img.file_key AS proposer_picture_key").
+		Join("JOIN users AS u ON u.id = a.proposed_by").
+		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").
+		Where("a.trip_id = ? AND ac.category_name = ?", tripID, categoryName).
+		Where("a.time_of_day = ?", timeOfDay).
+		OrderExpr("a.created_at DESC, a.id DESC")
+
+	return r.executePaginatedQuery(ctx, query, cursor, limit)
+}
+
 // Exists checks if an activity exists
 func (r *activityRepository) Exists(ctx context.Context, activityID uuid.UUID) (bool, error) {
 	count, err := r.db.NewSelect().
@@ -139,6 +187,10 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 
 	if req.Name != nil {
 		updateQuery = updateQuery.Set("name = ?", *req.Name)
+	}
+
+	if req.TimeOfDay != nil {
+		updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
 	}
 
 	if req.ThumbnailURL != nil {
