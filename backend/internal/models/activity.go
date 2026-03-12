@@ -12,6 +12,15 @@ const (
 	MaxDateRangesPerActivity = 20
 )
 
+type ActivityTimeOfDay string
+
+const (
+	ActivityTimeOfDayMorning   ActivityTimeOfDay = "morning"
+	ActivityTimeOfDayAfternoon ActivityTimeOfDay = "afternoon"
+	ActivityTimeOfDayEvening   ActivityTimeOfDay = "evening"
+	ActivityTimeOfDayNight     ActivityTimeOfDay = "night"
+)
+
 // DateRange represents a start and end date
 type DateRange struct {
 	Start string `json:"start" example:"2024-01-01" format:"date"` // ISO 8601 date format (YYYY-MM-DD)
@@ -24,6 +33,7 @@ type Activity struct {
 	TripID       uuid.UUID    `bun:"trip_id,type:uuid" json:"trip_id"`
 	ProposedBy   *uuid.UUID   `bun:"proposed_by,type:uuid" json:"proposed_by,omitempty"`
 	Name         string       `bun:"name" json:"name"`
+	TimeOfDay    *ActivityTimeOfDay `bun:"time_of_day,type:activity_time_of_day" json:"time_of_day,omitempty"`
 	ThumbnailURL *string      `bun:"thumbnail_url" json:"thumbnail_url,omitempty"`
 	MediaURL     *string      `bun:"media_url" json:"media_url,omitempty"`
 	Description  *string      `bun:"description" json:"description,omitempty"`
@@ -45,6 +55,7 @@ type CreateActivityRequest struct {
 	TripID        uuid.UUID    `validate:"omitempty,uuid" json:"trip_id,omitempty"`
 	CategoryNames []string     `validate:"omitempty,max=10,dive,min=1,max=255" json:"category_names"`
 	Name          string       `validate:"required,min=1,max=255" json:"name"`
+	TimeOfDay     *ActivityTimeOfDay `validate:"omitempty,oneof=morning afternoon evening night" json:"time_of_day"`
 	ThumbnailURL  *string      `validate:"omitempty,url" json:"thumbnail_url"`
 	MediaURL      *string      `validate:"omitempty,url" json:"media_url"`
 	Description   *string      `validate:"omitempty" json:"description"`
@@ -54,6 +65,7 @@ type CreateActivityRequest struct {
 // UpdateActivityRequest for updating an existing activity
 type UpdateActivityRequest struct {
 	Name         *string      `validate:"omitempty,min=1,max=255" json:"name"`
+	TimeOfDay    *ActivityTimeOfDay `validate:"omitempty,oneof=morning afternoon evening night" json:"time_of_day"`
 	ThumbnailURL *string      `validate:"omitempty,url" json:"thumbnail_url"`
 	MediaURL     *string      `validate:"omitempty,url" json:"media_url"`
 	Description  *string      `validate:"omitempty" json:"description"`
@@ -88,6 +100,7 @@ type ActivityDatabaseResponse struct {
 	TripID             uuid.UUID    `json:"trip_id"`
 	ProposedBy         *uuid.UUID   `json:"proposed_by,omitempty"`
 	Name               string       `json:"name"`
+	TimeOfDay          *ActivityTimeOfDay `bun:"time_of_day" json:"time_of_day,omitempty"`
 	ThumbnailURL       *string      `json:"thumbnail_url,omitempty"`
 	MediaURL           *string      `json:"media_url,omitempty"`
 	Description        *string      `json:"description,omitempty"`
@@ -106,6 +119,7 @@ type ActivityAPIResponse struct {
 	TripID             uuid.UUID    `json:"trip_id"`
 	ProposedBy         *uuid.UUID   `json:"proposed_by,omitempty"`
 	Name               string       `json:"name"`
+	TimeOfDay          *ActivityTimeOfDay `json:"time_of_day,omitempty"`
 	ThumbnailURL       *string      `json:"thumbnail_url,omitempty"`
 	MediaURL           *string      `json:"media_url,omitempty"`
 	Description        *string      `json:"description,omitempty"`
