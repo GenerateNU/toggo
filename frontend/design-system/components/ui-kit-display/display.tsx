@@ -17,9 +17,14 @@ import {
   Typography,
   TypographyVariant,
 } from "@/design-system/tokens/typography";
-import { ArrowRight, Mail, Star } from "lucide-react-native";
+import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { Animated, Easing, TouchableOpacity } from "react-native";
+import { Animated, Easing, View, TouchableOpacity, Pressable } from "react-native";
+import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
+import Toggle from "../buttons/toggle";
+import TextField from "@/design-system/components/inputs/text-field";
+import RadioGroup from "../buttons/radio";
+import { ToastProvider, useToast } from "@/design-system/primitives/toast-manager";
 
 function Section({
   title,
@@ -102,6 +107,17 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
+  return (
+    <ToastProvider>
+      <UIKitContent />
+    </ToastProvider>
+  );
+}
+
+function UIKitContent() {
+  const toast = useToast();
+
+  // ─── Datepicker Group ────────────────────────────────────────────────
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState<DateRange>({
     start: null,
@@ -110,8 +126,6 @@ export default function UIKit() {
 
   const handleSave = (range: DateRange) => {
     setSelectedRange(range);
-
-    // Use the dates however you need:
     console.log("Start:", range.start);
     console.log("End:", range.end);
   };
@@ -119,6 +133,33 @@ export default function UIKit() {
   const formatDate = (d: Date | null) =>
     d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
+  // ─── Radio Group ────────────────────────────────────────────────
+  const [driver, setDriver] = useState<string | null>(null);
+
+  // ─── Checkbox Group ────────────────────────────────────────────────
+  const [activities, setActivities] = useState<string[]>([]);
+
+  // ─── Single Checkbox ───────────────────────────────────────────────
+  const [agreed, setAgreed] = useState(false);
+
+  // ─── Toggles ───────────────────────────────────────────────────────
+  const [textBlasts, setTextBlasts] = useState(true);
+  const [votingReminders, setVotingReminders] = useState(false);
+  const [finalized, setFinalized] = useState(true);
+
+  // ─── Text Fields ───────────────────────────────────────────────────
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  const validatePhone = (text: string) => {
+    const digits = text.replace(/\D/g, "");
+    setPhone(text);
+    setPhoneError(
+      digits.length > 0 && digits.length !== 10
+        ? "Phone number must be 10 digits"
+        : ""
+    );
+  };
 
   return (
     <Box gap="lg">
@@ -347,6 +388,118 @@ export default function UIKit() {
           variant="Secondary"
           loading
         />
+      </Section>
+
+      <Section title="Checkbox, Radio & Toggle">
+        <RadioGroup
+          label="Who should drive the rental car?"
+          options={[
+            { label: "Amogh", value: "amogh" },
+            { label: "Afnan", value: "afnan" },
+            { label: "Olivia", value: "olivia" },
+            { label: "Mai", value: "mai" },
+          ]}
+          value={driver}
+          onChange={setDriver}
+        />
+
+        <CheckboxGroup
+          label="What should we do on Tuesday?"
+          options={[
+            { label: "Surfing lessons", value: "surfing" },
+            { label: "Nice long hike", value: "hike" },
+            { label: "Trivia at local bar", value: "trivia" },
+            { label: "Visit another part of the island", value: "visit" },
+          ]}
+          value={activities}
+          onChange={setActivities}
+        />
+
+        <Checkbox
+          label="I agree to the terms and conditions"
+          checked={agreed}
+          onChange={setAgreed}
+        />
+
+        <View style={{ gap: 4 }}>
+          <Toggle label="Text blasts" value={textBlasts} onChange={setTextBlasts} />
+          <Toggle label="Voting reminders" value={votingReminders} onChange={setVotingReminders} />
+          <Toggle label="Finalized decisions" value={finalized} onChange={setFinalized} />
+        </View>
+      </Section>
+
+      <Section title="Text Field">
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value={phone}
+          onChangeText={validatePhone}
+          error={phoneError}
+          keyboardType="phone-pad"
+          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+        />
+
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value=""
+          onChangeText={() => {}}
+          disabled
+          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+        />
+      </Section>
+
+      <Section title="Toast">
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => toast.show({ message: "Housing option saved" })}
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With close</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Trip created!",
+                action: { label: "Share", onPress: () => console.log("shared") },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With action</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Housing option saved",
+                action: { label: "Undo", onPress: () => console.log("undo") },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With undo</Text>
+          </Pressable>
+        </View>
       </Section>
 
       <Section title="Date Range Picker">
