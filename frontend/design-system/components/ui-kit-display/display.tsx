@@ -18,13 +18,15 @@ import {
   TypographyVariant,
 } from "@/design-system/tokens/typography";
 import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Animated, Easing, View, TouchableOpacity, Pressable } from "react-native";
 import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
 import Toggle from "../buttons/toggle";
 import TextField from "@/design-system/components/inputs/text-field";
 import RadioGroup from "../buttons/radio";
 import { ToastProvider, useToast } from "@/design-system/primitives/toast-manager";
+import CommentSection from "@/design-system/components/comments/comment-section";
+import { CommentData } from "@/design-system/components/comments/comment";
 
 function Section({
   title,
@@ -160,6 +162,113 @@ function UIKitContent() {
         : ""
     );
   };
+
+  // ─── Comments ──────────────────────────────────────────────────────
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [comments, setComments] = useState<CommentData[]>([
+    {
+      id: "1",
+      authorName: "Aahil",
+      authorSeed: "aahil",
+      body: "This place looks niceeeeee. good find 🤩",
+      timestamp: "2h",
+      reactions: [],
+    },
+    {
+      id: "2",
+      authorName: "Mai",
+      authorSeed: "mai",
+      body: "This place looks small ash 😅 what's the square footage?",
+      timestamp: "1h",
+      reactions: [],
+    },
+    {
+      id: "3",
+      authorName: "Cole",
+      authorSeed: "cole",
+      body: "Ermmmm I think 1200...",
+      timestamp: "25m",
+      reactions: [
+        { emoji: "😂", count: 2, reactedByMe: false },
+        { emoji: "🍊", count: 1, reactedByMe: false },
+      ],
+    },
+    {
+      id: "4",
+      authorName: "Mai",
+      authorSeed: "mai",
+      body: "Bro what\nWe have 8 people there's no way we'll fit...",
+      timestamp: "24m",
+      reactions: [{ emoji: "😂", count: 22, reactedByMe: true }],
+    },
+    {
+      id: "5",
+      authorName: "Aahil",
+      authorSeed: "aahil",
+      body: "Wait but i checked the link and it has couches tbh at this price i'd sleep on the floor",
+      timestamp: "20m",
+      reactions: [],
+    },
+    {
+      id: "6",
+      authorName: "Neha",
+      authorSeed: "neha",
+      body: "lmfao that's all you",
+      timestamp: "16m",
+      reactions: [{ emoji: "😭", count: 1, reactedByMe: true }],
+    },
+    {
+      id: "7",
+      authorName: "Bart",
+      authorSeed: "bart",
+      body: "Hi I'm Bart",
+      timestamp: "3m",
+      reactions: [],
+    },
+    {
+      id: "8",
+      authorName: "Amogh",
+      authorSeed: "amogh",
+      body: "Bart stfu",
+      timestamp: "2m",
+      reactions: [{ emoji: "😂", count: 4, reactedByMe: false }],
+    },
+  ]);
+
+  const handleSubmitComment = useCallback((comment: CommentData) => {
+    setComments((prev) => [...prev, comment]);
+  }, []);
+
+  const handleReact = useCallback((commentId: string, emoji: string) => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id !== commentId) return c;
+        const existing = c.reactions.find((r) => r.emoji === emoji);
+        let updated;
+        if (existing) {
+          if (existing.reactedByMe) {
+            updated =
+              existing.count <= 1
+                ? c.reactions.filter((r) => r.emoji !== emoji)
+                : c.reactions.map((r) =>
+                    r.emoji === emoji
+                      ? { ...r, count: r.count - 1, reactedByMe: false }
+                      : r
+                  );
+          } else {
+            updated = c.reactions.map((r) =>
+              r.emoji === emoji
+                ? { ...r, count: r.count + 1, reactedByMe: true }
+                : r
+            );
+          }
+        } else {
+          updated = [...c.reactions, { emoji, count: 1, reactedByMe: true }];
+        }
+        return { ...c, reactions: updated };
+      })
+    );
+  }, []);
 
   return (
     <Box gap="lg">
@@ -518,6 +627,25 @@ function UIKitContent() {
           onSave={handleSave}
           initialRange={selectedRange}
           monthsToShow={12}
+        />
+      </Section>
+
+      <Section title="Comments & Reactions">
+        <Button
+          layout="textOnly"
+          label="Open Comments"
+          variant="Secondary"
+          onPress={() => setCommentsVisible(true)}
+        />
+        <CommentSection
+          visible={commentsVisible}
+          onClose={() => setCommentsVisible(false)}
+          comments={comments}
+          currentUserId="bart"
+          currentUserName="Bart"
+          currentUserSeed="bart"
+          onSubmitComment={handleSubmitComment}
+          onReact={handleReact}
         />
       </Section>
     </Box>
