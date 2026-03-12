@@ -1295,7 +1295,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/activities": {
             "get": {
-                "description": "Retrieves paginated activities for a trip, optionally filtered by category",
+                "description": "Retrieves paginated activities for a trip, optionally filtered by category and time of day",
                 "produces": [
                     "application/json"
                 ],
@@ -1316,6 +1316,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by category name",
                         "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by time of day (morning, afternoon, evening, night)",
+                        "name": "time_of_day",
                         "in": "query"
                     },
                     {
