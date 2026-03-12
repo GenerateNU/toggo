@@ -112,11 +112,12 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 }
 
 // @Summary      Get activities by trip
-// @Description  Retrieves paginated activities for a trip, optionally filtered by category
+// @Description  Retrieves paginated activities for a trip, optionally filtered by category and time of day
 // @Tags         activities
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        category query string false "Filter by category name"
+// @Param        time_of_day query string false "Filter by time of day (morning, afternoon, evening, night)"
 // @Param        limit query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.ActivityCursorPageResult
@@ -145,11 +146,28 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	// If category query param is provided, filter by category
-	var result *models.ActivityCursorPageResult
 	categoryName := c.Query("category")
-	if categoryName != "" {
+	timeOfDay := c.Query("time_of_day")
+	if err := validators.ValidateActivityTimeOfDay(timeOfDay); err != nil {
+		return err
+	}
+
+	// Apply optional filters
+	var result *models.ActivityCursorPageResult
+	if categoryName != "" && timeOfDay != "" {
+		result, err = ctrl.activityService.GetActivitiesByCategoryAndTimeOfDay(
+			c.Context(),
+			tripID,
+			userID,
+			categoryName,
+			models.ActivityTimeOfDay(timeOfDay),
+			limit,
+			cursorToken,
+		)
+	} else if categoryName != "" {
 		result, err = ctrl.activityService.GetActivitiesByCategory(c.Context(), tripID, userID, categoryName, limit, cursorToken)
+	} else if timeOfDay != "" {
+		result, err = ctrl.activityService.GetActivitiesByTimeOfDay(c.Context(), tripID, userID, models.ActivityTimeOfDay(timeOfDay), limit, cursorToken)
 	} else {
 		result, err = ctrl.activityService.GetActivitiesByTripID(c.Context(), tripID, userID, limit, cursorToken)
 	}
