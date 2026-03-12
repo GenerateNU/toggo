@@ -2,14 +2,15 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-    Dimensions,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
 } from "react-native";
+import { X } from "lucide-react-native";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
 import { Layout } from "../tokens/layout";
@@ -63,8 +64,9 @@ const formatShortDate = (d: Date | null) =>
 // ─── Dimensions ──────────────────────────────────────────────────────────────
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const GRID_PADDING = Layout.spacing.sm; // horizontal padding around the grid
+const GRID_PADDING = Layout.spacing.sm;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - GRID_PADDING * 2) / 7);
+const CIRCLE_SIZE = CELL_SIZE - 8;
 
 // ─── Day Cell ────────────────────────────────────────────────────────────────
 
@@ -74,6 +76,7 @@ type DayCellProps = {
   isStart: boolean;
   isEnd: boolean;
   isInRange: boolean;
+  isSingleSelect: boolean;
   isDisabled: boolean;
   onPress: (date: Date) => void;
 };
@@ -85,21 +88,23 @@ const DayCell = React.memo(
     isStart,
     isEnd,
     isInRange,
+    isSingleSelect,
     isDisabled,
     onPress,
   }: DayCellProps) => {
     const isEndpoint = isStart || isEnd;
-    const isSingle = isStart && isEnd;
     const today = isToday(date);
+
+    // Hide the range band entirely when only a single date is selected
+    const showRangeBand = !isSingleSelect && (isInRange || isStart || isEnd);
 
     return (
       <Pressable
         onPress={() => !isDisabled && onPress(date)}
         style={styles.dayOuter}
       >
-        {/* Range band — the coloured rectangle behind the circle that visually
-            connects the start day to the end day. */}
-        {!isSingle && (isInRange || isStart || isEnd) && (
+        {/* Range band */}
+        {showRangeBand && (
           <Box
             style={[
               styles.rangeBand,
@@ -109,7 +114,7 @@ const DayCell = React.memo(
           />
         )}
 
-        {/* Day circle / pill */}
+        {/* Day circle */}
         <Box
           style={[
             styles.dayCircle,
@@ -150,6 +155,11 @@ const MonthGrid = React.memo(
   ({ year, month, range, minDate, onDayPress }: MonthGridProps) => {
     const { firstDay, daysInMonth } = getMonthData(year, month);
 
+    // Determine if only a single date is selected (no distinct end)
+    const isSingleSelect =
+      !!range.start &&
+      (!range.end || isSameDay(range.start, range.end));
+
     const weeks = useMemo(() => {
       const rows: (number | null)[][] = [];
       let row: (number | null)[] = Array(firstDay).fill(null);
@@ -189,7 +199,10 @@ const MonthGrid = React.memo(
                   isStart={!!start && isSameDay(date, start)}
                   isEnd={!!end && isSameDay(date, end)}
                   isInRange={!!start && !!end && isBetween(date, start, end)}
-                  isDisabled={!!minDate && date < minDate && !isSameDay(date, minDate)}
+                  isSingleSelect={isSingleSelect}
+                  isDisabled={
+                    !!minDate && date < minDate && !isSameDay(date, minDate)
+                  }
                   onPress={onDayPress}
                 />
               );
@@ -214,8 +227,8 @@ export default function DateRangePicker({
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
 
-  // Simple top inset for the status bar (pageSheet already avoids the home indicator).
-  const topInset = Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
+  const topInset =
+    Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
 
   const months = useMemo(() => {
     const now = new Date();
@@ -225,16 +238,57 @@ export default function DateRangePicker({
     });
   }, [monthsToShow]);
 
+  // ─── Updated selection logic ─────────────────────────────────────────
+  //
+  // End date is NEVER null after a selection (only via Clear button).
+  // 1. Nothing selected → single-day range
+  // 2. Single-day range (start === end):
+  //    - tap same day     → no-op
+  //    - tap before       → single-day range on new date
+  //    - tap after        → extend end
+  // 3. Distinct range:
+  //    - tap on start/end → collapse to single-day range
+  //    - tap before start → single-day range on new date
+  //    - tap after end    → move end
+  //    - tap between      → collapse to single-day range on new date
   const handleDayPress = useCallback((date: Date) => {
     setRange((prev) => {
-      if (!prev.start || prev.end) return { start: date, end: null };
-      if (date < prev.start) return { start: date, end: null };
-      if (isSameDay(date, prev.start)) return { start: date, end: date };
-      return { start: prev.start, end: date };
+      const { start, end } = prev;
+
+      // Case 1: nothing selected
+      if (!start) {
+        return { start: date, end: date };
+      }
+
+      // Case 2: single-day range (start === end)
+      if (start && end && isSameDay(start, end)) {
+        if (isSameDay(date, start)) {
+          // Re-tapping the same day — do nothing
+          return prev;
+        }
+        if (date < start) {
+          return { start: date, end: date };
+        }
+        return { start, end: date };
+      }
+
+      // Case 3: both start and end are selected (distinct range)
+      if ((start && isSameDay(date, start)) || (end && isSameDay(date, end))) {
+        return { start: date, end: date };
+      }
+      if (date < start) {
+        return { start: date, end };
+      }
+      if (end && date > end) {
+        return { start, end: date };
+      }
+      // date is between start and end → collapse to single-day range
+      return { start: date, end: date };
     });
   }, []);
 
   const handleClear = () => setRange({ start: null, end: null });
+
   const handleSave = () => {
     onSave(range);
     onClose();
@@ -254,21 +308,15 @@ export default function DateRangePicker({
           <Box
             flexDirection="row"
             alignItems="center"
-            justifyContent="space-between"
+            justifyContent="center"
+            padding="xs"
           >
-            <Pressable onPress={onClose} hitSlop={12}>
-              <Text variant="smLabel" color="textQuaternary">
-                Cancel
-              </Text>
+            <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
+              <X size={20} color={ColorPalette.textQuaternary} />
             </Pressable>
             <Text variant="mdHeading" color="textSecondary">
               Select dates
             </Text>
-            <Pressable onPress={handleClear} hitSlop={12}>
-              <Text variant="smLabel" color="textQuaternary">
-                Clear
-              </Text>
-            </Pressable>
           </Box>
 
           {/* Selection summary pill */}
@@ -278,7 +326,9 @@ export default function DateRangePicker({
             justifyContent="center"
             style={styles.summaryRow}
           >
-            <Box style={[styles.summaryPill, hasRange && styles.summaryPillActive]}>
+            <Box
+              style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
+            >
               <Text
                 variant="smLabel"
                 style={{
@@ -318,10 +368,7 @@ export default function DateRangePicker({
         </Box>
 
         {/* ─── Weekday labels ───────────────────────────────────────── */}
-        <Box
-          flexDirection="row"
-          style={styles.weekdayRow}
-        >
+        <Box flexDirection="row" style={styles.weekdayRow}>
           {DAYS.map((d, i) => (
             <Box key={i} style={styles.weekdayCell}>
               <Text variant="xsLabel" color="textQuaternary">
@@ -351,21 +398,44 @@ export default function DateRangePicker({
 
         {/* ─── Footer ───────────────────────────────────────────────── */}
         <Box style={[styles.footer, { paddingBottom: Layout.spacing.md }]}>
-          <Pressable
-            onPress={handleSave}
-            style={({ pressed }) => [
-              styles.saveButton,
-              pressed && styles.saveButtonPressed,
-              !hasRange && styles.saveButtonDisabled,
-            ]}
-            disabled={!hasRange}
-          >
-            <Text variant="mdLabel" style={{ color: ColorPalette.white }}>
-              {hasRange
-                ? `Save · ${formatShortDate(range.start)} – ${formatShortDate(range.end)}`
-                : "Select dates"}
-            </Text>
-          </Pressable>
+          <Box flexDirection="row" style={styles.footerButtons}>
+            {/* Clear button */}
+            <Pressable
+              onPress={handleClear}
+              style={({ pressed }) => [
+                styles.clearButton,
+                pressed && styles.clearButtonPressed,
+                !hasRange && styles.clearButtonDisabled,
+              ]}
+              disabled={!hasRange}
+            >
+              <Text
+                variant="mdLabel"
+                style={{
+                  color: hasRange
+                    ? ColorPalette.textSecondary
+                    : ColorPalette.textDisabled,
+                }}
+              >
+                Clear
+              </Text>
+            </Pressable>
+
+            {/* Save button — always shows "Save Dates" */}
+            <Pressable
+              onPress={handleSave}
+              style={({ pressed }) => [
+                styles.saveButton,
+                pressed && styles.saveButtonPressed,
+                !hasRange && styles.saveButtonDisabled,
+              ]}
+              disabled={!hasRange}
+            >
+              <Text variant="mdLabel" style={{ color: ColorPalette.white }}>
+                Save Dates
+              </Text>
+            </Pressable>
+          </Box>
         </Box>
       </Box>
     </Modal>
@@ -374,7 +444,7 @@ export default function DateRangePicker({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.secondaryBackground; // subtle grey band
+const RANGE_TINT = ColorPalette.secondaryBackground;
 
 const styles = StyleSheet.create({
   /* Sheet */
@@ -390,6 +460,10 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: ColorPalette.borderPrimary,
+  },
+  closeButton: {
+    position: "absolute",
+    left: 0,
   },
 
   /* Selection summary */
@@ -442,7 +516,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  /* Day outer wrapper — every cell in the 7-col grid has this */
+  /* Day outer wrapper */
   dayOuter: {
     width: CELL_SIZE,
     height: CELL_SIZE,
@@ -450,38 +524,44 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  /* Range band — full-height colour strip behind the circle */
+  /* Range band */
   rangeBand: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: RANGE_TINT,
+    height: "75%",
+    top: "12.5%",
   },
   rangeBandStart: {
     left: "50%",
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
+    height: "75%",
+    top: "12.5%",
   },
   rangeBandEnd: {
     right: "50%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
+    height: "75%",
+    top: "12.5%",
   },
 
-  /* Day circle */
+  /* Day circle — now fully circular */
   dayCircle: {
-    width: CELL_SIZE - 8,
-    height: CELL_SIZE - 8,
-    borderRadius: CornerRadius.sm,
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
     alignItems: "center",
     justifyContent: "center",
   },
   dayCircleSelected: {
     backgroundColor: ColorPalette.black,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CIRCLE_SIZE / 2,
   },
   dayCircleToday: {
     borderWidth: 1,
     borderColor: ColorPalette.borderPrimary,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CIRCLE_SIZE / 2,
   },
 
   /* Footer */
@@ -492,7 +572,28 @@ const styles = StyleSheet.create({
     borderTopColor: ColorPalette.borderPrimary,
     backgroundColor: ColorPalette.white,
   },
+  footerButtons: {
+    gap: 10,
+    flexDirection: "row",
+  },
+  clearButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: CornerRadius.md,
+    borderWidth: 1,
+    borderColor: ColorPalette.borderPrimary,
+    backgroundColor: ColorPalette.white,
+  },
+  clearButtonPressed: {
+    opacity: 0.85,
+  },
+  clearButtonDisabled: {
+    borderColor: ColorPalette.borderSecondary,
+  },
   saveButton: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,

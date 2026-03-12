@@ -2,7 +2,7 @@ import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
-import DateRangePicker from "@/design-system/primitives/date-picker";
+import DateRangePicker, { DateRange } from "@/design-system/primitives/date-picker";
 import { Text } from "@/design-system/primitives/text";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
@@ -103,6 +103,22 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 
 export default function UIKit() {
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+
+  const handleSave = (range: DateRange) => {
+    setSelectedRange(range);
+
+    // Use the dates however you need:
+    console.log("Start:", range.start);
+    console.log("End:", range.end);
+  };
+
+  const formatDate = (d: Date | null) =>
+    d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
 
   return (
     <Box gap="lg">
@@ -340,11 +356,14 @@ export default function UIKit() {
           variant="Secondary"
           onPress={() => setPickerVisible(true)}
         />
+        <Text variant="mdLabel">
+          Selected Dates: {formatDate(selectedRange.start)} → {formatDate(selectedRange.end)}
+        </Text>
         <DateRangePicker
           visible={pickerVisible}
           onClose={() => setPickerVisible(false)}
-          onSave={(range) => console.log(range)}
-          minDate={new Date()}
+          onSave={handleSave}
+          initialRange={selectedRange}
           monthsToShow={12}
         />
       </Section>
