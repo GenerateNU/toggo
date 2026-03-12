@@ -25,7 +25,7 @@ type PitchServiceInterface interface {
 	Create(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePitchRequest) (*models.CreatePitchResponse, error)
 	GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (*models.PitchAPIResponse, error)
 	List(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.PitchCursorPageResult, error)
-	Update(ctx context.Context, tripID, pitchID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error)
+	Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error)
 	Delete(ctx context.Context, tripID, pitchID uuid.UUID) error
 }
 
@@ -182,7 +182,14 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 }
 
 // Update updates pitch metadata (title, description, duration) and returns the updated pitch with presigned audio URL.
-func (s *PitchService) Update(ctx context.Context, tripID, pitchID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error) {
+func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error) {
+	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if pitch.UserID != userID {
+		return nil, errs.Forbidden()
+	}
 	updated, err := s.pitchRepo.Update(ctx, pitchID, tripID, &req)
 	if err != nil {
 		return nil, err

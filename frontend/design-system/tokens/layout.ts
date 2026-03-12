@@ -4,6 +4,7 @@ export const Layout = {
   },
 
   spacing: {
+    xxs: 4,
     xs: 8,
     sm: 16,
     md: 24,

@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type ActivityController struct {
@@ -395,4 +396,166 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(http.StatusNoContent)
+}
+
+// RSVPActivity handles RSVP requests for an activity.
+// @Summary RSVP to activity
+// @Description Allows a user to RSVP to a specific activity within a trip.
+// @Tags activities
+// @Accept json
+// @Produce json
+// @Param tripID path string true "Trip ID"
+// @Param activityID path string true "Activity ID"
+// @Param request body models.ActivityRSVPRequestPayload true "RSVP request payload"
+// @Success 200 {object} models.ActivityRSVPAPIResponse
+// @Failure 400 {object} errs.APIError
+// @Failure 401 {object} errs.APIError
+// @Failure 403 {object} errs.APIError
+// @Failure 404 {object} errs.APIError
+// @Failure 422 {object} errs.APIError
+// @Failure 500 {object} errs.APIError
+// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvp [post]
+func (ctrl *ActivityController) RSVPActivity(c *fiber.Ctx) error {
+	input, err := ctrl.parseRSVPRequest(c)
+	if err != nil {
+		return err
+	}
+
+	rsvp, err := ctrl.activityService.UpdateActivityRSVP(
+		c.Context(),
+		input.TripID,
+		input.ActivityID,
+		input.UserID,
+		input.Payload,
+	)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(rsvp)
+}
+
+// GetActivityRSVPs retrieves RSVPs for an activity with pagination and optional status filtering.
+// @Summary Get activity RSVPs
+// @Description Returns paginated RSVPs for a specific activity within a trip, optionally filtered by RSVP status.
+// @Tags activities
+// @Produce json
+// @Param tripID path string true "Trip ID"
+// @Param activityID path string true "Activity ID"
+// @Param limit query int false "Max items per page (default 20, max 100)"
+// @Param cursor query string false "Opaque cursor returned in next_cursor"
+// @Param status query string false "Filter by RSVP status"
+// @Success 200 {object} models.ActivityRSVPsPageResult
+// @Failure 400 {object} errs.APIError
+// @Failure 401 {object} errs.APIError
+// @Failure 403 {object} errs.APIError
+// @Failure 404 {object} errs.APIError
+// @Failure 422 {object} errs.APIError
+// @Failure 500 {object} errs.APIError
+// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvps [get]
+func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
+	input, err := ctrl.parseRSVPPaginationRequest(c)
+	if err != nil {
+		return err
+	}
+
+	rsvps, err := ctrl.activityService.GetActivityRSVPs(
+		c.Context(),
+		input.TripID,
+		input.ActivityID,
+		input.UserID,
+		input.Limit,
+		input.Cursor,
+		input.Status,
+	)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(rsvps)
+}
+
+func (ctrl *ActivityController) parseTripAndActivityIDs(
+	c *fiber.Ctx,
+) (uuid.UUID, uuid.UUID, error) {
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return uuid.Nil, uuid.Nil, errs.InvalidUUID()
+	}
+
+	activityID, err := validators.ValidateID(c.Params("activityID"))
+	if err != nil {
+		return uuid.Nil, uuid.Nil, errs.InvalidUUID()
+	}
+
+	return tripID, activityID, nil
+}
+
+func (ctrl *ActivityController) parseRSVPRequest(
+	c *fiber.Ctx,
+) (*models.RSVPRequestInput, error) {
+	tripID, activityID, err := ctrl.parseTripAndActivityIDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var payload models.ActivityRSVPRequestPayload
+	if err := c.BodyParser(&payload); err != nil {
+		return nil, errs.InvalidJSON()
+	}
+
+	if err := validators.ValidateRSVPStatus(string(payload.Status)); err != nil {
+		return nil, err
+	}
+
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.RSVPRequestInput{
+		TripID:     tripID,
+		ActivityID: activityID,
+		UserID:     userID,
+		Payload:    payload,
+	}, nil
+}
+
+func (ctrl *ActivityController) parseRSVPPaginationRequest(
+	c *fiber.Ctx,
+) (*models.RSVPPaginationInput, error) {
+
+	tripID, activityID, err := ctrl.parseTripAndActivityIDs(c)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var pagination models.CursorPaginationParams
+	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &pagination); err != nil {
+		return nil, err
+	}
+
+	limit, cursor := utilities.ExtractLimitAndCursor(&pagination)
+
+	status := c.Query("status")
+	if status != "" {
+		if err := validators.ValidateRSVPStatus(status); err != nil {
+			return nil, err
+		}
+	}
+
+	return &models.RSVPPaginationInput{
+		TripID:     tripID,
+		ActivityID: activityID,
+		UserID:     userID,
+		Limit:      limit,
+		Cursor:     cursor,
+		Status:     status,
+	}, nil
 }

@@ -30,6 +30,8 @@ import { CommentData } from "@/design-system/components/comments/comment";
 import Divider from "@/design-system/primitives/divider";
 import ProgressBarCurved from "../status/progress-bar-curved";
 import Comments from "../comments/example-comments.json"
+import SkeletonCircle from "../skeleton/circle";
+import SkeletonRect from "../skeleton/rectangle";
 
 function Section({
   title,
@@ -240,6 +242,20 @@ function UIKitContent() {
           <Text variant="xsLabel" color="textQuaternary">3 of 5 complete</Text>
           <ProgressBarCurved percent={60} />
         </View>
+       </Section>
+      <Section title="Skeleton">
+        <Text variant="xsLabel" color="textSecondary">
+          shapes
+        </Text>
+        <Row label="rect">
+          <SkeletonRect width="half" height="md" />
+        </Row>
+        <Row label="square">
+          <SkeletonRect size="xl" />
+        </Row>
+        <Row label="circle">
+          <SkeletonCircle size="xl" />
+        </Row>
       </Section>
 
       <Section title="Color">

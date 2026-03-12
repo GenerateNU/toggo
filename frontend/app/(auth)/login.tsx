@@ -1,13 +1,33 @@
-import { Box, Text } from "@/design-system";
-import PhoneNumberForm from "./components/login-form";
+import { Box, Button, Illustration, Logo, Screen } from "@/design-system";
+import { useRouter } from "expo-router";
 
-export default function PhoneNumberPage() {
+export default function LoginPage() {
+  const router = useRouter();
+
   return (
-    <Box backgroundColor="white" flex={1} justifyContent="center" padding="lg">
-      <Text variant="smDisplay" mb="lg">
-        Continue with phone
-      </Text>
-      <PhoneNumberForm />
-    </Box>
+    <Screen>
+      <Box
+        flex={1}
+        backgroundColor="white"
+        justifyContent="space-between"
+        padding="lg"
+        paddingBottom="xl"
+      >
+        <Box width="auto" justifyContent="center" alignItems="center">
+          <Logo />
+        </Box>
+
+        <Box width="auto" justifyContent="center" alignItems="center">
+          <Illustration />
+        </Box>
+
+        <Button
+          layout="textOnly"
+          label="Log in or create an account"
+          variant="Primary"
+          onPress={() => router.push("/(auth)/phone")}
+        />
+      </Box>
+    </Screen>
   );
 }

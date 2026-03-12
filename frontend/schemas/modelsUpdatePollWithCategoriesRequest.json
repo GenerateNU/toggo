@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "categories": { "type": "array", "items": { "type": "string" } },
+    "deadline": { "type": "string" },
+    "is_anonymous": { "type": "boolean" },
+    "question": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.UpdatePollWithCategoriesRequest"
+}

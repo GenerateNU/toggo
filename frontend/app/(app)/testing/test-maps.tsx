@@ -2,6 +2,7 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
+import { Screen } from "@/design-system";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -80,307 +81,316 @@ export default function TestMapsScreen() {
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
-          Google Maps API Test
-        </Text>
-
-        {/* Typeahead Section */}
-        <View
-          style={{
-            marginBottom: 30,
-            padding: 16,
-            backgroundColor: "#f5f5f5",
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-            1. Typeahead Search
-          </Text>
-          <Text style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-            GET /api/v1/search/places/typeahead
+    <Screen>
+      <ScrollView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <View style={{ padding: 16 }}>
+          <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
+            Google Maps API Test
           </Text>
 
-          <TextInput
+          <View
             style={{
-              borderWidth: 1,
-              borderColor: "#ddd",
-              borderRadius: 6,
-              padding: 12,
-              marginBottom: 12,
-              backgroundColor: "#fff",
-              fontSize: 16,
+              marginBottom: 30,
+              padding: 16,
+              backgroundColor: "#f5f5f5",
+              borderRadius: 8,
             }}
-            placeholder="Search for a place (e.g., Eiffel Tower)"
-            value={typeaheadQuery}
-            onChangeText={setTypeaheadQuery}
-            autoCapitalize="none"
-          />
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#007AFF",
-              padding: 14,
-              borderRadius: 6,
-              alignItems: "center",
-            }}
-            onPress={handleTypeaheadSearch}
-            disabled={typeaheadLoading}
           >
-            {typeaheadLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}>
-                Search
-              </Text>
-            )}
-          </TouchableOpacity>
+            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+              1. Typeahead Search
+            </Text>
+            <Text style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
+              GET /api/v1/search/places/typeahead
+            </Text>
 
-          {typeaheadError && (
-            <View
+            <TextInput
               style={{
-                marginTop: 12,
-                padding: 12,
-                backgroundColor: "#fee",
-                borderRadius: 6,
-              }}
-            >
-              <Text style={{ color: "#c00" }}>{typeaheadError}</Text>
-            </View>
-          )}
-
-          {typeaheadResult && (
-            <View
-              style={{
-                marginTop: 12,
-                padding: 12,
-                backgroundColor: "#fff",
-                borderRadius: 6,
                 borderWidth: 1,
                 borderColor: "#ddd",
+                borderRadius: 6,
+                padding: 12,
+                marginBottom: 12,
+                backgroundColor: "#fff",
+                fontSize: 16,
               }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  marginBottom: 8,
-                  color: "#333",
-                }}
-              >
-                Response:
-              </Text>
-              <ScrollView
-                horizontal
-                style={{ maxHeight: 300 }}
-                nestedScrollEnabled
-              >
-                <Text
-                  style={{
-                    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-                    fontSize: 12,
-                    color: "#333",
-                  }}
-                >
-                  {JSON.stringify(typeaheadResult, null, 2)}
-                </Text>
-              </ScrollView>
+              placeholder="Search for a place (e.g., Eiffel Tower)"
+              value={typeaheadQuery}
+              onChangeText={setTypeaheadQuery}
+              autoCapitalize="none"
+            />
 
-              {typeaheadResult.predictions?.length > 0 && (
-                <View style={{ marginTop: 12 }}>
-                  <Text
-                    style={{ fontSize: 14, fontWeight: "600", marginBottom: 8 }}
-                  >
-                    Quick Actions:
-                  </Text>
-                  {typeaheadResult.predictions.map((pred: any, idx: number) => (
-                    <TouchableOpacity
-                      key={idx}
-                      style={{
-                        padding: 10,
-                        backgroundColor: "#e8f4ff",
-                        borderRadius: 6,
-                        marginBottom: 6,
-                      }}
-                      onPress={() => selectTypeaheadResult(pred.place_id)}
-                    >
-                      <Text style={{ fontSize: 12, color: "#007AFF" }}>
-                        Use "{pred.main_text}" in details below
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#007AFF",
+                padding: 14,
+                borderRadius: 6,
+                alignItems: "center",
+              }}
+              onPress={handleTypeaheadSearch}
+              disabled={typeaheadLoading}
+            >
+              {typeaheadLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text
+                  style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}
+                >
+                  Search
+                </Text>
               )}
-            </View>
-          )}
-        </View>
+            </TouchableOpacity>
 
-        {/* Place Details Section */}
-        <View
-          style={{
-            marginBottom: 30,
-            padding: 16,
-            backgroundColor: "#f5f5f5",
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-            2. Get Place Details
-          </Text>
-          <Text style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-            POST /api/v1/search/places/details
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "500",
-              marginBottom: 8,
-              color: "#333",
-            }}
-          >
-            Option A: Use place_id (from typeahead)
-          </Text>
-          <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: "#ddd",
-              borderRadius: 6,
-              padding: 12,
-              marginBottom: 12,
-              backgroundColor: "#fff",
-              fontSize: 14,
-            }}
-            placeholder="Place ID (e.g., ChIJLU7jZClu5kcR4PcOOO6p3I0)"
-            value={detailsPlaceId}
-            onChangeText={(text) => {
-              setDetailsPlaceId(text);
-              if (text) setDetailsInput("");
-            }}
-            autoCapitalize="none"
-          />
-
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "500",
-              marginBottom: 8,
-              color: "#333",
-            }}
-          >
-            Option B: Direct text search
-          </Text>
-          <TextInput
-            style={{
-              borderWidth: 1,
-              borderColor: "#ddd",
-              borderRadius: 6,
-              padding: 12,
-              marginBottom: 12,
-              backgroundColor: "#fff",
-              fontSize: 14,
-            }}
-            placeholder="Search text (e.g., Eiffel Tower)"
-            value={detailsInput}
-            onChangeText={(text) => {
-              setDetailsInput(text);
-              if (text) setDetailsPlaceId("");
-            }}
-            autoCapitalize="none"
-          />
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#34C759",
-              padding: 14,
-              borderRadius: 6,
-              alignItems: "center",
-            }}
-            onPress={handleGetDetails}
-            disabled={detailsLoading}
-          >
-            {detailsLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}>
-                Get Details
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {detailsError && (
-            <View
-              style={{
-                marginTop: 12,
-                padding: 12,
-                backgroundColor: "#fee",
-                borderRadius: 6,
-              }}
-            >
-              <Text style={{ color: "#c00" }}>{detailsError}</Text>
-            </View>
-          )}
-
-          {detailsResult && (
-            <View
-              style={{
-                marginTop: 12,
-                padding: 12,
-                backgroundColor: "#fff",
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: "#ddd",
-              }}
-            >
-              <Text
+            {typeaheadError && (
+              <View
                 style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  marginBottom: 8,
-                  color: "#333",
+                  marginTop: 12,
+                  padding: 12,
+                  backgroundColor: "#fee",
+                  borderRadius: 6,
                 }}
               >
-                Response:
-              </Text>
-              <ScrollView
-                horizontal
-                style={{ maxHeight: 400 }}
-                nestedScrollEnabled
+                <Text style={{ color: "#c00" }}>{typeaheadError}</Text>
+              </View>
+            )}
+
+            {typeaheadResult && (
+              <View
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  backgroundColor: "#fff",
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#ddd",
+                }}
               >
                 <Text
                   style={{
-                    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-                    fontSize: 12,
+                    fontSize: 14,
+                    fontWeight: "600",
+                    marginBottom: 8,
                     color: "#333",
                   }}
                 >
-                  {JSON.stringify(detailsResult, null, 2)}
+                  Response:
                 </Text>
-              </ScrollView>
-            </View>
-          )}
-        </View>
+                <ScrollView
+                  horizontal
+                  style={{ maxHeight: 300 }}
+                  nestedScrollEnabled
+                >
+                  <Text
+                    style={{
+                      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                      fontSize: 12,
+                      color: "#333",
+                    }}
+                  >
+                    {JSON.stringify(typeaheadResult, null, 2)}
+                  </Text>
+                </ScrollView>
 
-        {/* Info Section */}
-        <View
-          style={{
-            padding: 16,
-            backgroundColor: "#fff3cd",
-            borderRadius: 8,
-            marginBottom: 20,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
-            💡 How to use:
-          </Text>
-          <Text style={{ fontSize: 13, lineHeight: 20 }}>
-            1. Use Typeahead to search and get predictions{"\n"}
-            2. Click "Use in details" or manually enter place_id/text{"\n"}
-            3. Get full details with coordinates, photos, ratings, etc.
-          </Text>
+                {typeaheadResult.predictions?.length > 0 && (
+                  <View style={{ marginTop: 12 }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "600",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Quick Actions:
+                    </Text>
+                    {typeaheadResult.predictions.map(
+                      (pred: any, idx: number) => (
+                        <TouchableOpacity
+                          key={idx}
+                          style={{
+                            padding: 10,
+                            backgroundColor: "#e8f4ff",
+                            borderRadius: 6,
+                            marginBottom: 6,
+                          }}
+                          onPress={() => selectTypeaheadResult(pred.place_id)}
+                        >
+                          <Text style={{ fontSize: 12, color: "#007AFF" }}>
+                            Use "{pred.main_text}" in details below
+                          </Text>
+                        </TouchableOpacity>
+                      ),
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+
+          <View
+            style={{
+              marginBottom: 30,
+              padding: 16,
+              backgroundColor: "#f5f5f5",
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+              2. Get Place Details
+            </Text>
+            <Text style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
+              POST /api/v1/search/places/details
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "500",
+                marginBottom: 8,
+                color: "#333",
+              }}
+            >
+              Option A: Use place_id (from typeahead)
+            </Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: "#ddd",
+                borderRadius: 6,
+                padding: 12,
+                marginBottom: 12,
+                backgroundColor: "#fff",
+                fontSize: 14,
+              }}
+              placeholder="Place ID (e.g., ChIJLU7jZClu5kcR4PcOOO6p3I0)"
+              value={detailsPlaceId}
+              onChangeText={(text) => {
+                setDetailsPlaceId(text);
+                if (text) setDetailsInput("");
+              }}
+              autoCapitalize="none"
+            />
+
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "500",
+                marginBottom: 8,
+                color: "#333",
+              }}
+            >
+              Option B: Direct text search
+            </Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: "#ddd",
+                borderRadius: 6,
+                padding: 12,
+                marginBottom: 12,
+                backgroundColor: "#fff",
+                fontSize: 14,
+              }}
+              placeholder="Search text (e.g., Eiffel Tower)"
+              value={detailsInput}
+              onChangeText={(text) => {
+                setDetailsInput(text);
+                if (text) setDetailsPlaceId("");
+              }}
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#34C759",
+                padding: 14,
+                borderRadius: 6,
+                alignItems: "center",
+              }}
+              onPress={handleGetDetails}
+              disabled={detailsLoading}
+            >
+              {detailsLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text
+                  style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}
+                >
+                  Get Details
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {detailsError && (
+              <View
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  backgroundColor: "#fee",
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#c00" }}>{detailsError}</Text>
+              </View>
+            )}
+
+            {detailsResult && (
+              <View
+                style={{
+                  marginTop: 12,
+                  padding: 12,
+                  backgroundColor: "#fff",
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#ddd",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    marginBottom: 8,
+                    color: "#333",
+                  }}
+                >
+                  Response:
+                </Text>
+                <ScrollView
+                  horizontal
+                  style={{ maxHeight: 400 }}
+                  nestedScrollEnabled
+                >
+                  <Text
+                    style={{
+                      fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+                      fontSize: 12,
+                      color: "#333",
+                    }}
+                  >
+                    {JSON.stringify(detailsResult, null, 2)}
+                  </Text>
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
+          <View
+            style={{
+              padding: 16,
+              backgroundColor: "#fff3cd",
+              borderRadius: 8,
+              marginBottom: 20,
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: "600", marginBottom: 8 }}>
+              💡 How to use:
+            </Text>
+            <Text style={{ fontSize: 13, lineHeight: 20 }}>
+              1. Use Typeahead to search and get predictions{"\n"}
+              2. Click "Use in details" or manually enter place_id/text{"\n"}
+              3. Get full details with coordinates, photos, ratings, etc.
+            </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }

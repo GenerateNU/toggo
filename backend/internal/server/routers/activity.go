@@ -37,5 +37,10 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	activityCategoryGroup.Put("/:categoryName", activityController.AddCategoryToActivity)
 	activityCategoryGroup.Delete("/:categoryName", activityController.RemoveCategoryFromActivity)
 
+	// /api/v1/trips/:tripID/activities/:activityID/rsvps
+	activityRSVPGroup := tripActivityIDGroup.Group("/rsvps")
+	activityRSVPGroup.Get("", activityController.GetActivityRSVPs)
+	activityRSVPGroup.Put("", activityController.RSVPActivity)
+
 	return tripActivityGroup
 }

@@ -44,6 +44,10 @@ import type {
   ModelsActivityAPIResponse,
   ModelsActivityCategoriesPageResult,
   ModelsActivityCursorPageResult,
+  ModelsRSVPStatus,
+  ModelsActivityRSVPAPIResponse,
+  ModelsActivityRSVPRequestPayload,
+  ModelsActivityRSVPsPageResult,
   ModelsAddCategoryResponse,
   ModelsAddressComponent,
   ModelsLatLng,
@@ -115,7 +119,7 @@ import type {
   ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
   ModelsUpdatePitchRequest,
-  ModelsUpdatePollRequest,
+  ModelsUpdatePollWithCategoriesRequest,
   ModelsUpdateTripRequest,
   ModelsUpdateUserRequest,
   ModelsUploadURLRequest,
@@ -309,6 +313,26 @@ import type {
   RemoveCategoryFromActivity500,
   RemoveCategoryFromActivityMutationResponse,
   RemoveCategoryFromActivityPathParams,
+  PostApiV1TripsTripidActivitiesActivityidRsvp200,
+  PostApiV1TripsTripidActivitiesActivityidRsvp400,
+  PostApiV1TripsTripidActivitiesActivityidRsvp401,
+  PostApiV1TripsTripidActivitiesActivityidRsvp403,
+  PostApiV1TripsTripidActivitiesActivityidRsvp404,
+  PostApiV1TripsTripidActivitiesActivityidRsvp422,
+  PostApiV1TripsTripidActivitiesActivityidRsvp500,
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse,
+  PostApiV1TripsTripidActivitiesActivityidRsvpPathParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvps200,
+  GetApiV1TripsTripidActivitiesActivityidRsvps400,
+  GetApiV1TripsTripidActivitiesActivityidRsvps401,
+  GetApiV1TripsTripidActivitiesActivityidRsvps403,
+  GetApiV1TripsTripidActivitiesActivityidRsvps404,
+  GetApiV1TripsTripidActivitiesActivityidRsvps422,
+  GetApiV1TripsTripidActivitiesActivityidRsvps500,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
+  GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse,
   GetCategoriesByTripID200,
   GetCategoriesByTripID400,
   GetCategoriesByTripID401,
@@ -655,6 +679,38 @@ export const modelsActivityCursorPageResultSchema = z.object({
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivityCursorPageResult>;
 
+export const modelsRSVPStatusSchema = z.enum([
+  "yes",
+  "maybe",
+  "no",
+]) as unknown as z.ZodType<ModelsRSVPStatus>;
+
+export const modelsActivityRSVPAPIResponseSchema = z.object({
+  activity_id: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  profile_picture_url: z.optional(z.string()),
+  get status() {
+    return modelsRSVPStatusSchema.optional();
+  },
+  updated_at: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsActivityRSVPAPIResponse>;
+
+export const modelsActivityRSVPRequestPayloadSchema = z.object({
+  get status() {
+    return modelsRSVPStatusSchema.optional();
+  },
+}) as unknown as z.ZodType<ModelsActivityRSVPRequestPayload>;
+
+export const modelsActivityRSVPsPageResultSchema = z.object({
+  limit: z.optional(z.int()),
+  next_cursor: z.optional(z.string()),
+  get rsvps() {
+    return z.array(modelsActivityRSVPAPIResponseSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsActivityRSVPsPageResult>;
+
 export const modelsAddCategoryResponseSchema = z.object({
   message: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsAddCategoryResponse>;
@@ -830,7 +886,9 @@ export const modelsPollTypeSchema = z.enum([
 ]) as unknown as z.ZodType<ModelsPollType>;
 
 export const modelsCreatePollRequestSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   deadline: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsCreatePollOptionRequestSchema).optional();
   },
@@ -838,6 +896,7 @@ export const modelsCreatePollRequestSchema = z.object({
     return modelsPollTypeSchema;
   },
   question: z.string(),
+  should_notify_members: z.optional(z.boolean()),
 }) as unknown as z.ZodType<ModelsCreatePollRequest>;
 
 export const modelsCreateTripInviteRequestSchema = z.object({
@@ -1107,10 +1166,12 @@ export const modelsPollOptionAPIResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsPollOptionAPIResponse>;
 
 export const modelsPollAPIResponseSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
   created_by: z.optional(z.string()),
   deadline: z.optional(z.string()),
   id: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsPollOptionAPIResponseSchema).optional();
   },
@@ -1118,6 +1179,7 @@ export const modelsPollAPIResponseSchema = z.object({
     return modelsPollTypeSchema.optional();
   },
   question: z.optional(z.string()),
+  should_notify_members: z.optional(z.boolean()),
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPollAPIResponse>;
 
@@ -1145,10 +1207,12 @@ export const modelsPollVotersResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsPollVotersResponse>;
 
 export const modelsRankPollAPIResponseSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
   created_by: z.optional(z.string()),
   deadline: z.optional(z.string()),
   id: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   get options() {
     return z.array(modelsPollOptionAPIResponseSchema).optional();
   },
@@ -1156,6 +1220,7 @@ export const modelsRankPollAPIResponseSchema = z.object({
     return modelsPollTypeSchema.optional();
   },
   question: z.optional(z.string()),
+  should_notify_members: z.optional(z.boolean()),
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsRankPollAPIResponse>;
 
@@ -1329,10 +1394,12 @@ export const modelsUpdatePitchRequestSchema = z.object({
   title: z.optional(z.string().min(1)),
 }) as unknown as z.ZodType<ModelsUpdatePitchRequest>;
 
-export const modelsUpdatePollRequestSchema = z.object({
+export const modelsUpdatePollWithCategoriesRequestSchema = z.object({
+  categories: z.optional(z.array(z.string())),
   deadline: z.optional(z.string()),
+  is_anonymous: z.optional(z.boolean()),
   question: z.optional(z.string()),
-}) as unknown as z.ZodType<ModelsUpdatePollRequest>;
+}) as unknown as z.ZodType<ModelsUpdatePollWithCategoriesRequest>;
 
 export const modelsUpdateTripRequestSchema = z.object({
   budget_max: z.optional(z.int().min(0)),
@@ -2841,6 +2908,149 @@ export const removeCategoryFromActivityMutationResponseSchema = z.lazy(
   () => removeCategoryFromActivity204Schema,
 ) as unknown as z.ZodType<RemoveCategoryFromActivityMutationResponse>;
 
+export const postApiV1TripsTripidActivitiesActivityidRsvpPathParamsSchema =
+  z.object({
+    tripID: z.string().describe("Trip ID"),
+    activityID: z.string().describe("Activity ID"),
+  }) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpPathParams>;
+
+/**
+ * @description OK
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp200Schema = z.lazy(
+  () => modelsActivityRSVPAPIResponseSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp200>;
+
+/**
+ * @description Bad Request
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp400>;
+
+/**
+ * @description Unauthorized
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp401>;
+
+/**
+ * @description Forbidden
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp403>;
+
+/**
+ * @description Not Found
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvp500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvp500>;
+
+/**
+ * @description RSVP request payload
+ */
+export const postApiV1TripsTripidActivitiesActivityidRsvpMutationRequestSchema =
+  z.lazy(
+    () => modelsActivityRSVPRequestPayloadSchema,
+  ) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest>;
+
+export const postApiV1TripsTripidActivitiesActivityidRsvpMutationResponseSchema =
+  z.lazy(
+    () => postApiV1TripsTripidActivitiesActivityidRsvp200Schema,
+  ) as unknown as z.ZodType<PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsPathParamsSchema =
+  z.object({
+    tripID: z.string().describe("Trip ID"),
+    activityID: z.string().describe("Activity ID"),
+  }) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryParamsSchema = z
+  .object({
+    limit: z.optional(
+      z.coerce
+        .number()
+        .int()
+        .describe("Max items per page (default 20, max 100)"),
+    ),
+    cursor: z.optional(
+      z.string().describe("Opaque cursor returned in next_cursor"),
+    ),
+    status: z.optional(z.string().describe("Filter by RSVP status")),
+  })
+  .optional() as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams>;
+
+/**
+ * @description OK
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps200Schema = z.lazy(
+  () => modelsActivityRSVPsPageResultSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps200>;
+
+/**
+ * @description Bad Request
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps401>;
+
+/**
+ * @description Forbidden
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps403>;
+
+/**
+ * @description Not Found
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getApiV1TripsTripidActivitiesActivityidRsvps500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvps500>;
+
+export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryResponseSchema =
+  z.lazy(
+    () => getApiV1TripsTripidActivitiesActivityidRsvps200Schema,
+  ) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse>;
+
 export const getCategoriesByTripIDPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
 }) as unknown as z.ZodType<GetCategoriesByTripIDPathParams>;
@@ -3679,7 +3889,7 @@ export const updateRankPoll500Schema = z.lazy(
  * @description Update rank poll request
  */
 export const updateRankPollMutationRequestSchema = z.lazy(
-  () => modelsUpdatePollRequestSchema,
+  () => modelsUpdatePollWithCategoriesRequestSchema,
 ) as unknown as z.ZodType<UpdateRankPollMutationRequest>;
 
 export const updateRankPollMutationResponseSchema = z.lazy(
@@ -4207,7 +4417,7 @@ export const updatePoll500Schema = z.lazy(
  * @description Update poll request
  */
 export const updatePollMutationRequestSchema = z.lazy(
-  () => modelsUpdatePollRequestSchema,
+  () => modelsUpdatePollWithCategoriesRequestSchema,
 ) as unknown as z.ZodType<UpdatePollMutationRequest>;
 
 export const updatePollMutationResponseSchema = z.lazy(
