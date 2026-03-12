@@ -29,12 +29,16 @@ export default function Toggle({
   disabled = false,
 }: ToggleProps) {
   // Separate animated values so the thumb can use the native driver
-  const thumbAnim = useMemo(() => new Animated.Value(value ? 1 : 0), [value]);
-  const colorAnim = useMemo(() => new Animated.Value(value ? 1 : 0), [value]);
+
+  // these eslinters have to be disabled for the animations to work
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const thumbAnim = useMemo(() => new Animated.Value(value ? 1 : 0), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const colorAnim = useMemo(() => new Animated.Value(value ? 1 : 0), []);
 
   useEffect(() => {
     Animated.parallel([
-      // Thumb position — native driver for smooth 60fps
+      // Thumb position
       Animated.spring(thumbAnim, {
         toValue: value ? 1 : 0,
         useNativeDriver: true,
@@ -42,7 +46,7 @@ export default function Toggle({
         stiffness: 140,
         mass: 0.8,
       }),
-      // Track color — must use JS driver
+      // Track color
       Animated.timing(colorAnim, {
         toValue: value ? 1 : 0,
         duration: 300,
