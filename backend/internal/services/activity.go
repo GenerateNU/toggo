@@ -18,6 +18,8 @@ type ActivityServiceInterface interface {
 	GetActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) (*models.ActivityAPIResponse, error)
 	GetActivitiesByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
+	GetActivitiesByTimeOfDay(ctx context.Context, tripID, userID uuid.UUID, timeOfDay models.ActivityTimeOfDay, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
+	GetActivitiesByCategoryAndTimeOfDay(ctx context.Context, tripID, userID uuid.UUID, categoryName string, timeOfDay models.ActivityTimeOfDay, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error)
 	DeleteActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) error
 
@@ -71,6 +73,7 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 			TripID:       req.TripID,
 			ProposedBy:   &userID,
 			Name:         req.Name,
+			TimeOfDay:    req.TimeOfDay,
 			ThumbnailURL: req.ThumbnailURL,
 			MediaURL:     req.MediaURL,
 			Description:  req.Description,
@@ -184,6 +187,34 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 	}
 
 	activities, nextCursor, err := s.Activity.FindByCategoryName(ctx, tripID, categoryName, cursor, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
+}
+
+func (s *ActivityService) GetActivitiesByTimeOfDay(ctx context.Context, tripID, userID uuid.UUID, timeOfDay models.ActivityTimeOfDay, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
+	cursor, err := pagination.ParseCursor(cursorToken)
+	if err != nil {
+		return nil, err
+	}
+
+	activities, nextCursor, err := s.Activity.FindByTimeOfDay(ctx, tripID, timeOfDay, cursor, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
+}
+
+func (s *ActivityService) GetActivitiesByCategoryAndTimeOfDay(ctx context.Context, tripID, userID uuid.UUID, categoryName string, timeOfDay models.ActivityTimeOfDay, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
+	cursor, err := pagination.ParseCursor(cursorToken)
+	if err != nil {
+		return nil, err
+	}
+
+	activities, nextCursor, err := s.Activity.FindByCategoryAndTimeOfDay(ctx, tripID, categoryName, timeOfDay, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +371,7 @@ func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPicture
 		TripID:             activity.TripID,
 		ProposedBy:         activity.ProposedBy,
 		Name:               activity.Name,
+		TimeOfDay:          activity.TimeOfDay,
 		ThumbnailURL:       activity.ThumbnailURL,
 		MediaURL:           activity.MediaURL,
 		Description:        activity.Description,

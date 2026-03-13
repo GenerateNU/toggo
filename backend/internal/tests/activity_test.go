@@ -18,6 +18,10 @@ import (
 =========================*/
 
 func createActivity(t *testing.T, app *fiber.App, userID, tripID, name string) string {
+	return createActivityWithTimeOfDay(t, app, userID, tripID, name, nil)
+}
+
+func createActivityWithTimeOfDay(t *testing.T, app *fiber.App, userID, tripID, name string, timeOfDay *models.ActivityTimeOfDay) string {
 	resp := testkit.New(t).
 		Request(testkit.Request{
 			App:    app,
@@ -27,6 +31,7 @@ func createActivity(t *testing.T, app *fiber.App, userID, tripID, name string) s
 			Body: models.CreateActivityRequest{
 				TripID: uuid.MustParse(tripID),
 				Name:   name,
+				TimeOfDay: timeOfDay,
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -115,6 +120,54 @@ func TestActivityLifecycle(t *testing.T) {
 
 		items := resp["items"].([]interface{})
 		require.True(t, len(items) >= 3, "Should have at least 3 activities")
+	})
+
+	t.Run("list trip activities filtered by time_of_day", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		morning := models.ActivityTimeOfDayMorning
+		afternoon := models.ActivityTimeOfDayAfternoon
+
+		createActivityWithTimeOfDay(t, app, owner, trip, "Morning Activity 1", &morning)
+		createActivityWithTimeOfDay(t, app, owner, trip, "Afternoon Activity 1", &afternoon)
+		createActivityWithTimeOfDay(t, app, owner, trip, "Morning Activity 2", &morning)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities?time_of_day=%s", trip, morning),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 2, len(items))
+		for _, item := range items {
+			activity := item.(map[string]interface{})
+			require.Equal(t, string(morning), activity["time_of_day"])
+		}
+	})
+
+	t.Run("invalid time_of_day filter returns 422", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		createActivity(t, app, owner, trip, "Activity 1")
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities?time_of_day=invalid", trip),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
 	})
 
 	t.Run("update activity", func(t *testing.T) {
