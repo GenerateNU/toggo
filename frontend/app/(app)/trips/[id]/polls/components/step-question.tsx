@@ -42,7 +42,9 @@ export default function StepQuestion({
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isYesNo = pollType === "yesno";
-  const placeholders = isYesNo ? PLACEHOLDER_QUESTIONS_YESNO : PLACEHOLDER_QUESTIONS_DEFAULT;
+  const placeholders = isYesNo
+    ? PLACEHOLDER_QUESTIONS_YESNO
+    : PLACEHOLDER_QUESTIONS_DEFAULT;
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
@@ -83,65 +85,74 @@ export default function StepQuestion({
         autoCapitalize="sentences"
       />
 
-      {!isYesNo && <Box gap="xs">
-        <Text variant="xsLabel" color="textQuaternary">
-          Options
-        </Text>
+      {!isYesNo && (
+        <Box gap="xs">
+          <Text variant="xsLabel" color="textQuaternary">
+            Options
+          </Text>
 
-        <Box gap="sm">
-          {displayOptions.map((opt, i) => (
-            <Box key={i} flexDirection="row" alignItems="center" gap="xs">
-              <Box
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  backgroundColor: ColorPalette.secondaryBackground,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text variant="xsLabel" color="textSecondary">
-                  {i + 1}
-                </Text>
-              </Box>
-
-              <Box flex={1}>
-                <TextField
-                  value={opt}
-                  onChangeText={(v) => updateOption(i, v)}
-                  placeholder={`Option ${i + 1}`}
-                />
-              </Box>
-
-              {!isYesNo && options.length > 2 && (
-                <Pressable onPress={() => removeOption(i)} style={{ padding: 4 }}>
-                  <X size={16} color={ColorPalette.textSecondary} />
-                </Pressable>
-              )}
-            </Box>
-          ))}
-
-          {options.length < 15 && (
-            <DashedBorderBox dashLength={12} dashGap={6} borderRadius="md">
-              <Pressable onPress={addOption}>
+          <Box gap="sm">
+            {displayOptions.map((opt, i) => (
+              <Box key={i} flexDirection="row" alignItems="center" gap="xs">
                 <Box
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap="xs"
-                  style={{ height: 48 }}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 12,
+                    backgroundColor: ColorPalette.secondaryBackground,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <Plus size={14} color={ColorPalette.textQuaternary} />
-                  <Text variant="smParagraph" color="textQuaternary" numberOfLines={1}>
-                    Add option
+                  <Text variant="xsLabel" color="textSecondary">
+                    {i + 1}
                   </Text>
                 </Box>
-              </Pressable>
-            </DashedBorderBox>
-          )}
+
+                <Box flex={1}>
+                  <TextField
+                    value={opt}
+                    onChangeText={(v) => updateOption(i, v)}
+                    placeholder={`Option ${i + 1}`}
+                  />
+                </Box>
+
+                {!isYesNo && options.length > 2 && (
+                  <Pressable
+                    onPress={() => removeOption(i)}
+                    style={{ padding: 4 }}
+                  >
+                    <X size={16} color={ColorPalette.textSecondary} />
+                  </Pressable>
+                )}
+              </Box>
+            ))}
+
+            {options.length < 15 && (
+              <DashedBorderBox dashLength={12} dashGap={6} borderRadius="md">
+                <Pressable onPress={addOption}>
+                  <Box
+                    flexDirection="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    gap="xs"
+                    style={{ height: 48 }}
+                  >
+                    <Plus size={14} color={ColorPalette.textQuaternary} />
+                    <Text
+                      variant="smParagraph"
+                      color="textQuaternary"
+                      numberOfLines={1}
+                    >
+                      Add option
+                    </Text>
+                  </Box>
+                </Pressable>
+              </DashedBorderBox>
+            )}
+          </Box>
         </Box>
-      </Box>}
+      )}
     </Box>
   );
 }

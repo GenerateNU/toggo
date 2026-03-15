@@ -1,7 +1,8 @@
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
-import { Box, Button, Screen, Text } from "@/design-system";
+import { Box, Button, Screen, Text, useToast } from "@/design-system";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
+import { CheckCircle, X } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { ActivityIndicator, Share } from "react-native";
 import CreatePollSheet, {
@@ -15,11 +16,14 @@ export default function Trip() {
   const createInviteMutation = useCreateTripInvite();
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
+  const toast = useToast();
 
   const handleInvite = async () => {
     try {
+      // TODO: update data field for actual flow
       const invite = await createInviteMutation.mutateAsync({
         tripID: tripID!,
+        data: {},
       });
       const code = invite.code;
       if (!code) return;
@@ -41,7 +45,18 @@ export default function Trip() {
   return (
     <Screen>
       <Box flex={1} backgroundColor="surfaceBackground">
-        <CreatePollSheet ref={createPollSheetRef} tripID={tripID!} />
+        <CreatePollSheet
+          ref={createPollSheetRef}
+          tripID={tripID!}
+          onCreated={() =>
+            toast.show({
+              title: "Poll Sent!",
+              subtitle: "Your trip will get notification to vote",
+              icon: CheckCircle,
+              rightIcon: X,
+            })
+          }
+        />
         <Box
           padding="lg"
           paddingTop="xl"

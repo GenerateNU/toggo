@@ -1,9 +1,68 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import {
+  BedDouble,
+  Bike,
+  Car,
+  Compass,
+  Flame,
+  Gem,
+  Globe,
+  Landmark,
+  Mountain,
+  Music,
+  ShoppingBag,
+  Star,
+  Sun,
+  Ticket,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react-native";
 import React from "react";
+import { View } from "react-native";
 import { PollType } from "./step-poll-type";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  attraction: Landmark,
+  entertainment: Ticket,
+  food: UtensilsCrossed,
+  lodging: BedDouble,
+  transportation: Car,
+};
+
+const RANDOM_ICON_POOL: LucideIcon[] = [
+  Compass,
+  Mountain,
+  Globe,
+  Sun,
+  Music,
+  ShoppingBag,
+  Gem,
+  Star,
+  Bike,
+  Flame,
+];
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++)
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function getCategoryIcon(name: string): LucideIcon {
+  return (
+    CATEGORY_ICONS[name.toLowerCase()] ??
+    RANDOM_ICON_POOL[hashStr(name) % RANDOM_ICON_POOL.length]!
+  );
+}
+
+function toPascalCase(str: string) {
+  return str
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
 
 const POLL_TYPE_LABELS: Record<PollType, string> = {
   single: "Single Choice",
@@ -11,8 +70,6 @@ const POLL_TYPE_LABELS: Record<PollType, string> = {
   rank: "Ranked Choice",
   yesno: "Yes / No",
 };
-
-// ─── Component ───────────────────────────────────────────────────────────────
 
 interface StepReviewProps {
   pollType: PollType;
@@ -31,61 +88,102 @@ export default function StepReview({
   deadline,
   isAnonymous,
 }: StepReviewProps) {
+  const firstCat = categories[0];
+  const extraCount = categories.length - 1;
+
   return (
     <Box gap="md">
-      <Text variant="smLabel" color="textQuaternary">
+      <Text variant="xsLabel" color="textQuaternary">
         Review
       </Text>
 
-      <Box backgroundColor="surfaceCard" borderRadius="md" padding="md" gap="md">
-        {/* Type + category tags row */}
-        <Box flexDirection="row" alignItems="center" justifyContent="space-between">
-          <Box flexDirection="row" flexWrap="wrap" gap="xs" flex={1}>
-            {categories.length > 0
-              ? categories.map((cat) => (
-                  <Box
-                    key={cat}
-                    paddingHorizontal="xs"
-                    paddingVertical="xxs"
-                    borderRadius="xs"
-                    backgroundColor="secondaryBackground"
-                  >
-                    <Text variant="xsLabel" color="textSecondary">
-                      {cat}
-                    </Text>
-                  </Box>
-                ))
-              : null}
+      <Box
+        borderRadius="md"
+        padding="md"
+        gap="md"
+        style={{ borderWidth: 1, borderColor: ColorPalette.borderPrimary }}
+      >
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box flexDirection="row" alignItems="center" gap="xs">
+            {firstCat && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  borderColor: ColorPalette.borderPrimary,
+                }}
+              >
+                {React.createElement(getCategoryIcon(firstCat), {
+                  size: 13,
+                  color: ColorPalette.textSecondary,
+                })}
+                <Text variant="xsLabel" color="textSecondary">
+                  {toPascalCase(firstCat)}
+                </Text>
+              </View>
+            )}
+            {extraCount > 0 && (
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  borderColor: ColorPalette.borderPrimary,
+                }}
+              >
+                <Text variant="xsLabel" color="textQuaternary">
+                  +{extraCount}
+                </Text>
+              </View>
+            )}
           </Box>
-          <Text variant="xsLabel" color="textQuaternary">
-            {POLL_TYPE_LABELS[pollType]}
-          </Text>
+
+          <View
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 9999,
+              borderWidth: 1,
+              borderColor: ColorPalette.borderPrimary,
+            }}
+          >
+            <Text variant="xsLabel" color="textSecondary">
+              {POLL_TYPE_LABELS[pollType]}
+            </Text>
+          </View>
         </Box>
 
-        {/* Question */}
-        <Text variant="mdLabel" color="textSecondary">
+        <Text variant="mdHeading" color="textSecondary">
           {question}
         </Text>
 
-        {/* Options */}
-        <Box gap="xs">
+        <Box gap="sm">
           {options.map((opt, i) => (
             <Box key={i} flexDirection="row" alignItems="center" gap="sm">
-              <Box
+              <View
                 style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: ColorPalette.borderPrimary,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: ColorPalette.secondaryBackground,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Text variant="xsLabel" color="textSecondary">
+                <Text variant="smLabel" color="textSecondary">
                   {i + 1}
                 </Text>
-              </Box>
+              </View>
               <Text variant="smParagraph" color="textSecondary">
                 {opt}
               </Text>
@@ -93,7 +191,6 @@ export default function StepReview({
           ))}
         </Box>
 
-        {/* Meta info */}
         {(deadline || isAnonymous) && (
           <Box gap="xxs">
             {deadline && (
@@ -104,6 +201,8 @@ export default function StepReview({
                   day: "numeric",
                   year: "numeric",
                 })}
+                {(deadline.getHours() !== 0 || deadline.getMinutes() !== 0) &&
+                  ` at ${deadline.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}`}
               </Text>
             )}
             {isAnonymous && (

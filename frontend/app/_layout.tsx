@@ -1,6 +1,6 @@
 import { NotificationProvider } from "@/contexts/notification";
 import { UserProvider } from "@/contexts/user";
-import { theme } from "@/design-system";
+import { theme, ToastProvider } from "@/design-system";
 import { PortalProvider } from "@gorhom/portal";
 import { ThemeProvider } from "@shopify/restyle";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -66,7 +66,9 @@ export default function RootLayout() {
               <NotificationProvider>
                 <PortalProvider>
                   <StatusBar style="auto" />
-                  <Slot />
+                  <ToastProvider>
+                    <Slot />
+                  </ToastProvider>
                 </PortalProvider>
               </NotificationProvider>
             </UserProvider>

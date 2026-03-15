@@ -1,6 +1,6 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import { Check, X } from "lucide-react-native";
+import { type LucideIcon } from "lucide-react-native";
 import React, {
   createContext,
   useCallback,
@@ -23,9 +23,11 @@ type ToastAction = {
 };
 
 type ToastConfig = {
-  message: string;
+  title: string;
+  subtitle?: string;
+  icon?: LucideIcon;
+  rightIcon?: LucideIcon;
   action?: ToastAction;
-  showClose?: boolean;
   duration?: number;
 };
 
@@ -72,7 +74,10 @@ type ToastItemProps = {
 
 const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
   const slideDirection = position === "top" ? -1 : 1;
-  const translateY = useMemo(() => new Animated.Value(80 * slideDirection), [slideDirection]);
+  const translateY = useMemo(
+    () => new Animated.Value(80 * slideDirection),
+    [slideDirection],
+  );
   const enterOpacity = useMemo(() => new Animated.Value(0), []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -120,8 +125,6 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
   const positionStyle =
     position === "top" ? { top: offset } : { bottom: offset };
 
-  const showClose = entry.showClose !== false;
-
   return (
     <Animated.View
       style={[
@@ -134,18 +137,30 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
       ]}
     >
       <Box style={styles.toast}>
-        <Box style={styles.checkCircle}>
-          <Check size={16} color={ColorPalette.textSecondary} strokeWidth={2.5} />
-        </Box>
+        {entry.icon && (
+          <Box style={styles.iconCircle}>
+            {React.createElement(entry.icon, {
+              size: 14,
+              color: ColorPalette.textSecondary,
+              strokeWidth: 2.5,
+            })}
+          </Box>
+        )}
 
-        <Text
-          variant="smLabel"
-          color="textSecondary"
-          style={styles.message}
-          numberOfLines={2}
-        >
-          {entry.message}
-        </Text>
+        <Box style={styles.message}>
+          <Text variant="smLabel" color="textSecondary" numberOfLines={1}>
+            {entry.title}
+          </Text>
+          {entry.subtitle && (
+            <Text
+              variant="xsParagraph"
+              color="textQuaternary"
+              numberOfLines={2}
+            >
+              {entry.subtitle}
+            </Text>
+          )}
+        </Box>
 
         {entry.action && (
           <Pressable
@@ -161,9 +176,12 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
           </Pressable>
         )}
 
-        {showClose && !entry.action && (
+        {entry.rightIcon && !entry.action && (
           <Pressable onPress={hide} hitSlop={8} style={styles.closeButton}>
-            <X size={18} color={ColorPalette.textQuaternary} />
+            {React.createElement(entry.rightIcon, {
+              size: 18,
+              color: ColorPalette.textQuaternary,
+            })}
           </Pressable>
         )}
       </Box>
@@ -235,7 +253,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  checkCircle: {
+  iconCircle: {
     width: 24,
     height: 24,
     alignItems: "center",

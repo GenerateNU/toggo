@@ -26,6 +26,7 @@ export type DateRangePickerProps = {
   initialRange?: DateRange;
   monthsToShow?: number;
   minDate?: Date;
+  variant?: "single" | "range";
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -157,8 +158,7 @@ const MonthGrid = React.memo(
 
     // Determine if only a single date is selected (no distinct end)
     const isSingleSelect =
-      !!range.start &&
-      (!range.end || isSameDay(range.start, range.end));
+      !!range.start && (!range.end || isSameDay(range.start, range.end));
 
     const weeks = useMemo(() => {
       const rows: (number | null)[][] = [];
@@ -179,7 +179,11 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text variant="smHeading" color="textSecondary" style={styles.monthLabel}>
+        <Text
+          variant="smHeading"
+          color="textSecondary"
+          style={styles.monthLabel}
+        >
           {formatMonth(year, month)}
         </Text>
 
@@ -224,6 +228,7 @@ export default function DateRangePicker({
   initialRange = { start: null, end: null },
   monthsToShow = 12,
   minDate,
+  variant = "range",
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
 
@@ -251,41 +256,50 @@ export default function DateRangePicker({
   //    - tap before start → single-day range on new date
   //    - tap after end    → move end
   //    - tap between      → collapse to single-day range on new date
-  const handleDayPress = useCallback((date: Date) => {
-    setRange((prev) => {
-      const { start, end } = prev;
-
-      // Case 1: nothing selected
-      if (!start) {
-        return { start: date, end: date };
+  const handleDayPress = useCallback(
+    (date: Date) => {
+      if (variant === "single") {
+        setRange({ start: date, end: date });
+        return;
       }
 
-      // Case 2: single-day range (start === end)
-      if (start && end && isSameDay(start, end)) {
-        if (isSameDay(date, start)) {
-          // Re-tapping the same day — do nothing
-          return prev;
-        }
-        if (date < start) {
+      setRange((prev) => {
+        const { start, end } = prev;
+
+        // Case 1: nothing selected
+        if (!start) {
           return { start: date, end: date };
         }
-        return { start, end: date };
-      }
 
-      // Case 3: both start and end are selected (distinct range)
-      if ((start && isSameDay(date, start)) || (end && isSameDay(date, end))) {
+        // Case 2: single-day range (start === end)
+        if (start && end && isSameDay(start, end)) {
+          if (isSameDay(date, start)) {
+            return prev;
+          }
+          if (date < start) {
+            return { start: date, end: date };
+          }
+          return { start, end: date };
+        }
+
+        // Case 3: both start and end are selected (distinct range)
+        if (
+          (start && isSameDay(date, start)) ||
+          (end && isSameDay(date, end))
+        ) {
+          return { start: date, end: date };
+        }
+        if (date < start) {
+          return { start: date, end };
+        }
+        if (end && date > end) {
+          return { start, end: date };
+        }
         return { start: date, end: date };
-      }
-      if (date < start) {
-        return { start: date, end };
-      }
-      if (end && date > end) {
-        return { start, end: date };
-      }
-      // date is between start and end → collapse to single-day range
-      return { start: date, end: date };
-    });
-  }, []);
+      });
+    },
+    [variant],
+  );
 
   const handleClear = () => setRange({ start: null, end: null });
 
@@ -311,11 +325,15 @@ export default function DateRangePicker({
             justifyContent="center"
             padding="xs"
           >
-            <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
+            <Pressable
+              onPress={onClose}
+              hitSlop={12}
+              style={styles.closeButton}
+            >
               <X size={20} color={ColorPalette.textQuaternary} />
             </Pressable>
             <Text variant="mdHeading" color="textSecondary">
-              Select dates
+              {variant === "single" ? "Select date" : "Select dates"}
             </Text>
           </Box>
 
@@ -340,30 +358,34 @@ export default function DateRangePicker({
                 {formatShortDate(range.start)}
               </Text>
             </Box>
-            <Text
-              variant="xsLabel"
-              color="textQuaternary"
-              style={styles.summaryArrow}
-            >
-              →
-            </Text>
-            <Box
-              style={[
-                styles.summaryPill,
-                !!range.end && styles.summaryPillActive,
-              ]}
-            >
-              <Text
-                variant="smLabel"
-                style={{
-                  color: range.end
-                    ? ColorPalette.textSecondary
-                    : ColorPalette.textQuaternary,
-                }}
-              >
-                {formatShortDate(range.end)}
-              </Text>
-            </Box>
+            {variant === "range" && (
+              <>
+                <Text
+                  variant="xsLabel"
+                  color="textQuaternary"
+                  style={styles.summaryArrow}
+                >
+                  →
+                </Text>
+                <Box
+                  style={[
+                    styles.summaryPill,
+                    !!range.end && styles.summaryPillActive,
+                  ]}
+                >
+                  <Text
+                    variant="smLabel"
+                    style={{
+                      color: range.end
+                        ? ColorPalette.textSecondary
+                        : ColorPalette.textQuaternary,
+                    }}
+                  >
+                    {formatShortDate(range.end)}
+                  </Text>
+                </Box>
+              </>
+            )}
           </Box>
         </Box>
 

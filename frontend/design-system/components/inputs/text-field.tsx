@@ -52,7 +52,11 @@ export default function TextField({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="xsLabel" color={focused ? "textSecondary" : "textQuaternary"} style={styles.label}>
+        <Text
+          variant="xsLabel"
+          color={focused ? "textSecondary" : "textQuaternary"}
+          style={styles.label}
+        >
           {label}
         </Text>
       )}
@@ -69,15 +73,25 @@ export default function TextField({
           style={[
             styles.input,
             disabled && styles.inputDisabled,
-            { color: disabled ? ColorPalette.textDisabled : ColorPalette.textSecondary },
+            {
+              color: disabled
+                ? ColorPalette.textDisabled
+                : ColorPalette.textSecondary,
+            },
           ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={ColorPalette.textQuaternary}
           editable={!disabled}
-          onFocus={() => { setFocused(true); onFocus?.(); }}
-          onBlur={() => { setFocused(false); onBlur?.(); }}
+          onFocus={() => {
+            setFocused(true);
+            onFocus?.();
+          }}
+          onBlur={() => {
+            setFocused(false);
+            onBlur?.();
+          }}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           secureTextEntry={secureTextEntry}

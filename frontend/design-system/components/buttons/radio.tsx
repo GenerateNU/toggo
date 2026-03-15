@@ -51,7 +51,11 @@ export default function RadioGroup<T extends string = string>({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="smHeading" color="textSecondary" style={styles.groupLabel}>
+        <Text
+          variant="smHeading"
+          color="textSecondary"
+          style={styles.groupLabel}
+        >
           {label}
         </Text>
       )}

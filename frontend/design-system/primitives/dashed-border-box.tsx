@@ -38,7 +38,11 @@ export default function DashedBorderBox({
   };
 
   return (
-    <View onLayout={handleLayout} style={[{ position: "relative" }, style]} {...rest}>
+    <View
+      onLayout={handleLayout}
+      style={[{ position: "relative" }, style]}
+      {...rest}
+    >
       {size.width > 0 && (
         <Svg
           width={size.width}

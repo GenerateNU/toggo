@@ -82,12 +82,22 @@ export default function CommentSection({
 
     onSubmitComment(newComment);
     setInputText("");
-  }, [inputText, onSubmitComment, currentUserId, currentUserName, currentUserAvatar, currentUserSeed]);
+  }, [
+    inputText,
+    onSubmitComment,
+    currentUserId,
+    currentUserName,
+    currentUserAvatar,
+    currentUserSeed,
+  ]);
 
-  const handleOpenPicker = useCallback((commentId: string, y: number, x: number) => {
-    setPickerAnchor({ y, x });
-    setActivePickerId(commentId);
-  }, []);
+  const handleOpenPicker = useCallback(
+    (commentId: string, y: number, x: number) => {
+      setPickerAnchor({ y, x });
+      setActivePickerId(commentId);
+    },
+    [],
+  );
 
   const handleClosePicker = useCallback(() => {
     setActivePickerId(null);
@@ -104,7 +114,13 @@ export default function CommentSection({
         onReact={onReact}
       />
     ),
-    [onReact, activePickerId, pickerAnchor, handleOpenPicker, handleClosePicker],
+    [
+      onReact,
+      activePickerId,
+      pickerAnchor,
+      handleOpenPicker,
+      handleClosePicker,
+    ],
   );
 
   const keyExtractor = useCallback((item: CommentData) => item.id, []);
