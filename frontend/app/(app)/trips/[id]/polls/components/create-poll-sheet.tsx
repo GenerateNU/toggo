@@ -178,7 +178,7 @@ const CreatePollSheet = forwardRef<CreatePollSheetMethods, CreatePollSheetProps>
     };
 
     const navButtons = (
-      <Box flexDirection="row" gap="xs" paddingHorizontal="lg" paddingVertical="sm" paddingBottom="xl">
+      <Box flexDirection="row" gap="xs" paddingHorizontal="lg" paddingVertical="sm" paddingBottom="xl" backgroundColor="white">
         {step > 0 && (
           <Box flex={1}>
             <Button
