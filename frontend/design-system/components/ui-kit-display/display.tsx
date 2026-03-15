@@ -2,6 +2,7 @@ import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
+import DateRangePicker, { DateRange } from "@/design-system/primitives/date-picker";
 import { Text } from "@/design-system/primitives/text";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
@@ -16,9 +17,19 @@ import {
   Typography,
   TypographyVariant,
 } from "@/design-system/tokens/typography";
-import { ArrowRight, Mail, Star } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { Animated, Easing, TouchableOpacity } from "react-native";
+import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import { Animated, Easing, View, TouchableOpacity, Pressable } from "react-native";
+import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
+import Toggle from "../buttons/toggle";
+import TextField from "@/design-system/components/inputs/text-field";
+import RadioGroup from "../buttons/radio";
+import { useToast } from "@/design-system/primitives/toast-manager";
+import CommentSection from "@/design-system/components/comments/comment-section";
+import { CommentData } from "@/design-system/components/comments/comment";
+import Divider from "@/design-system/primitives/divider";
+import ProgressBarCurved from "../status/progress-bar-curved";
+import Comments from "../comments/example-comments.json"
 import SkeletonCircle from "../skeleton/circle";
 import SkeletonRect from "../skeleton/rectangle";
 
@@ -103,6 +114,100 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
+  const toast = useToast();
+
+// ─── Progress Bar Group ────────────────────────────────────────────────
+  const [currentPercent, setCurrentPercent] = useState(0);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setCurrentPercent(65); // Set to a valid percent value, e.g., 65
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // ─── Datepicker Group ────────────────────────────────────────────────
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+
+  const handleSave = (range: DateRange) => {
+    setSelectedRange(range);
+    console.log("Start:", range.start);
+    console.log("End:", range.end);
+  };
+
+  const formatDate = (d: Date | null) =>
+    d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+
+  // ─── Radio Group ────────────────────────────────────────────────
+  const [driver, setDriver] = useState<string | null>(null);
+
+  // ─── Checkbox Group ────────────────────────────────────────────────
+  const [activities, setActivities] = useState<string[]>([]);
+
+  // ─── Single Checkbox ───────────────────────────────────────────────
+  const [agreed, setAgreed] = useState(false);
+
+  // ─── Toggles ───────────────────────────────────────────────────────
+  const [textBlasts, setTextBlasts] = useState(true);
+  const [votingReminders, setVotingReminders] = useState(false);
+  const [finalized, setFinalized] = useState(true);
+
+  // ─── Text Fields ───────────────────────────────────────────────────
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  const validatePhone = (text: string) => {
+    const digits = text.replace(/\D/g, "");
+    setPhone(text);
+    setPhoneError(
+      digits.length > 0 && digits.length !== 10
+        ? "Phone number must be 10 digits"
+        : ""
+    );
+  };
+
+  // ─── Comments ──────────────────────────────────────────────────────
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [comments, setComments] = useState<CommentData[]>(Comments);
+
+  const handleSubmitComment = useCallback((comment: CommentData) => {
+    setComments((prev) => [...prev, comment]);
+  }, []);
+
+  const handleReact = useCallback((commentId: string, emoji: string) => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id !== commentId) return c;
+        const existing = c.reactions.find((r) => r.emoji === emoji);
+        let updated;
+        if (existing) {
+          if (existing.reactedByMe) {
+            updated =
+              existing.count <= 1
+                ? c.reactions.filter((r) => r.emoji !== emoji)
+                : c.reactions.map((r) =>
+                    r.emoji === emoji
+                      ? { ...r, count: r.count - 1, reactedByMe: false }
+                      : r
+                  );
+          } else {
+            updated = c.reactions.map((r) =>
+              r.emoji === emoji
+                ? { ...r, count: r.count + 1, reactedByMe: true }
+                : r
+            );
+          }
+        } else {
+          updated = [...c.reactions, { emoji, count: 1, reactedByMe: true }];
+        }
+        return { ...c, reactions: updated };
+      })
+    );
+  }, []);
+
   return (
     <Box gap="lg">
       <Box gap="xs">
@@ -113,6 +218,23 @@ export default function UIKit() {
         </Text>
       </Box>
 
+      <Section title="Progress Bar">
+        {/* Basic usage */}
+        <ProgressBarCurved percent={currentPercent} />
+
+        {/* Taller bar with custom colors */}
+        <ProgressBarCurved
+          percent={40}
+          fillColor="#FF6B6B"
+          trackColor="#FFE0E0"
+        />
+
+        {/* Full width with label */}
+        <View style={{ gap: 4 }}>
+          <Text variant="xsLabel" color="textQuaternary">3 of 5 complete</Text>
+          <ProgressBarCurved percent={60} />
+        </View>
+       </Section>
       <Section title="Skeleton">
         <Text variant="xsLabel" color="textSecondary">
           shapes
@@ -344,6 +466,162 @@ export default function UIKit() {
           label="Secondary loading"
           variant="Secondary"
           loading
+        />
+      </Section>
+
+      <Section title="Checkbox, Radio & Toggle">
+        <RadioGroup
+          label="Who should drive the rental car?"
+          options={[
+            { label: "Amogh", value: "amogh" },
+            { label: "Afnan", value: "afnan" },
+            { label: "Olivia", value: "olivia" },
+            { label: "Mai", value: "mai" },
+          ]}
+          value={driver}
+          onChange={setDriver}
+        />
+
+        <CheckboxGroup
+          label="What should we do on Tuesday?"
+          options={[
+            { label: "Surfing lessons", value: "surfing" },
+            { label: "Nice long hike", value: "hike" },
+            { label: "Trivia at local bar", value: "trivia" },
+            { label: "Visit another part of the island", value: "visit" },
+          ]}
+          value={activities}
+          onChange={setActivities}
+        />
+
+        <Checkbox
+          label="I agree to the terms and conditions"
+          checked={agreed}
+          onChange={setAgreed}
+        />
+
+        <View style={{ gap: 4 }}>
+          <Toggle label="Text blasts" value={textBlasts} onChange={setTextBlasts} />
+          <Toggle label="Voting reminders" value={votingReminders} onChange={setVotingReminders} />
+          <Toggle label="Finalized decisions" value={finalized} onChange={setFinalized} />
+        </View>
+      </Section>
+
+      <Section title="Text Field">
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value={phone}
+          onChangeText={validatePhone}
+          error={phoneError}
+          keyboardType="phone-pad"
+          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+        />
+
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value=""
+          onChangeText={() => {}}
+          disabled
+          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+        />
+      </Section>
+
+      <Section title="Toast">
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => toast.show({ message: "Housing option saved" })}
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With close</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Trip created!",
+                action: { label: "Share", onPress: () => console.log("shared") },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With action</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Housing option saved",
+                action: { label: "Undo", onPress: () => console.log("undo") },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With undo</Text>
+          </Pressable>
+        </View>
+      </Section>
+
+      <Section title="Date Range Picker">
+        <Button
+          layout="textOnly"
+          label="Open Date Picker"
+          variant="Secondary"
+          onPress={() => setPickerVisible(true)}
+        />
+        <Text variant="mdLabel">
+          Selected Dates: {formatDate(selectedRange.start)} → {formatDate(selectedRange.end)}
+        </Text>
+        <DateRangePicker
+          visible={pickerVisible}
+          onClose={() => setPickerVisible(false)}
+          onSave={handleSave}
+          initialRange={selectedRange}
+          monthsToShow={12}
+        />
+      </Section>
+
+      <Section title="Dividers">    
+        <Divider width={1}/>
+        <Text>some content</Text>
+        <Divider color={ColorPalette.brandPrimary} width={3} />
+      </Section>
+
+      <Section title="Comments & Reactions">
+        <Button
+          layout="textOnly"
+          label="Open Comments"
+          variant="Secondary"
+          onPress={() => setCommentsVisible(true)}
+        />
+        <CommentSection
+          visible={commentsVisible}
+          onClose={() => setCommentsVisible(false)}
+          comments={comments}
+          currentUserId="bart"
+          currentUserName="Bart"
+          currentUserSeed="bart"
+          onSubmitComment={handleSubmitComment}
+          onReact={handleReact}
         />
       </Section>
     </Box>
