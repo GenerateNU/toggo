@@ -31,6 +31,7 @@ type ToastConfig = {
 
 type ToastEntry = ToastConfig & {
   id: number;
+  dismissing?: boolean;
 };
 
 type ToastPosition = "top" | "bottom";
@@ -65,20 +66,23 @@ const EDGE_INSET = 60;
 
 type ToastItemProps = {
   entry: ToastEntry;
-  index: number;
+  visibleIndex: number;
   position: ToastPosition;
-  onDismiss: (id: number) => void;
+  onStartDismiss: (id: number) => void;
+  onCompleteDismiss: (id: number) => void;
 };
 
-const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
+const ToastItem = ({ entry, visibleIndex, position, onStartDismiss, onCompleteDismiss }: ToastItemProps) => {
   const slideDirection = position === "top" ? -1 : 1;
-  const translateY = useMemo(() => new Animated.Value(80 * slideDirection), [slideDirection]);
+  const slideY = useMemo(() => new Animated.Value(80 * slideDirection), [slideDirection]);
+  const positionY = useMemo(() => new Animated.Value(0), []);
   const enterOpacity = useMemo(() => new Animated.Value(0), []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hide = useCallback(() => {
+    onStartDismiss(entry.id);
     Animated.parallel([
-      Animated.timing(translateY, {
+      Animated.timing(slideY, {
         toValue: 80 * slideDirection,
         duration: 250,
         useNativeDriver: true,
@@ -88,12 +92,15 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start(() => onDismiss(entry.id));
-  }, [translateY, enterOpacity, onDismiss, entry.id, slideDirection]);
+    ]).start(() => onCompleteDismiss(entry.id));
+  }, [slideY, enterOpacity, onStartDismiss, onCompleteDismiss, entry.id, slideDirection]);
 
   useEffect(() => {
+    // Don't animate in if already dismissing
+    if (entry.dismissing) return;
+
     Animated.parallel([
-      Animated.spring(translateY, {
+      Animated.spring(slideY, {
         toValue: 0,
         useNativeDriver: true,
         damping: 20,
@@ -114,11 +121,24 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [entry.duration, hide, translateY, enterOpacity]);
+  }, [entry.duration, entry.dismissing, hide, slideY, enterOpacity]);
 
-  const offset = EDGE_INSET + index * (TOAST_HEIGHT + TOAST_GAP);
-  const positionStyle =
-    position === "top" ? { top: offset } : { bottom: offset };
+  // Animate position when visibleIndex changes
+  useEffect(() => {
+    const targetOffset = visibleIndex * (TOAST_HEIGHT + TOAST_GAP);
+    // For bottom position, move UP (negative), for top position, move DOWN (positive)
+    const adjustedOffset = position === "bottom" ? -targetOffset : targetOffset;
+    Animated.spring(positionY, {
+      toValue: adjustedOffset,
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 300,
+    }).start();
+  }, [visibleIndex, positionY, position]);
+
+  // Use fixed positioning and combine both translateY values
+  const fixedPosition = position === "top" ? { top: EDGE_INSET } : { bottom: EDGE_INSET };
+  const combinedTranslateY = Animated.add(slideY, positionY);
 
   const showClose = entry.showClose !== false;
 
@@ -126,9 +146,9 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
     <Animated.View
       style={[
         styles.toastContainer,
-        positionStyle,
+        fixedPosition,
         {
-          transform: [{ translateY }],
+          transform: [{ translateY: combinedTranslateY }],
           opacity: enterOpacity,
         },
       ]}
@@ -184,10 +204,18 @@ export function ToastProvider({
 
   const show = useCallback((config: ToastConfig) => {
     const id = nextId++;
-    setQueue((prev) => [...prev, { ...config, id }]);
+    setQueue((prev) => {
+      const newQueue = [{ ...config, id }, ...prev];
+      // Limit queue to maxVisible items
+      return newQueue.slice(0, maxVisible);
+    });
+  }, [maxVisible]);
+
+  const startDismiss = useCallback((id: number) => {
+    setQueue((prev) => prev.map((t) => (t.id === id ? { ...t, dismissing: true } : t)));
   }, []);
 
-  const dismiss = useCallback((id: number) => {
+  const completeDismiss = useCallback((id: number) => {
     setQueue((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
@@ -199,15 +227,25 @@ export function ToastProvider({
     <ToastContext.Provider value={contextValue}>
       {children}
 
-      {visibleToasts.map((entry, i) => (
-        <ToastItem
-          key={entry.id}
-          entry={entry}
-          index={i}
-          position={position}
-          onDismiss={dismiss}
-        />
-      ))}
+      <Box style={styles.overlay}>
+        {visibleToasts.map((entry, i) => {
+          // Calculate visible index (excluding dismissing toasts before this one)
+          const visibleIndex = visibleToasts
+            .slice(0, i)
+            .filter((t) => !t.dismissing).length;
+
+          return (
+            <ToastItem
+              key={entry.id}
+              entry={entry}
+              visibleIndex={visibleIndex}
+              position={position}
+              onStartDismiss={startDismiss}
+              onCompleteDismiss={completeDismiss}
+            />
+          );
+        })}
+      </Box>
     </ToastContext.Provider>
   );
 }
@@ -215,11 +253,19 @@ export function ToastProvider({
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: "box-none" as const,
+    zIndex: 9999,
+  },
   toastContainer: {
     position: "absolute",
     left: Layout.spacing.md,
     right: Layout.spacing.md,
-    zIndex: 9999,
   },
   toast: {
     flexDirection: "row",

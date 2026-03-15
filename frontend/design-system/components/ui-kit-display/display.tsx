@@ -24,7 +24,7 @@ import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
 import Toggle from "../buttons/toggle";
 import TextField from "@/design-system/components/inputs/text-field";
 import RadioGroup from "../buttons/radio";
-import { ToastProvider, useToast } from "@/design-system/primitives/toast-manager";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { CommentData } from "@/design-system/components/comments/comment";
 import Divider from "@/design-system/primitives/divider";
@@ -114,14 +114,6 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
-  return (
-    <ToastProvider>
-      <UIKitContent />
-    </ToastProvider>
-  );
-}
-
-function UIKitContent() {
   const toast = useToast();
 
 // ─── Progress Bar Group ────────────────────────────────────────────────
