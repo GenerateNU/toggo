@@ -1,5 +1,7 @@
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetFooter,
+  BottomSheetFooterProps,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
@@ -7,14 +9,14 @@ import { Portal } from "@gorhom/portal";
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
-import { Keyboard, Platform } from "react-native";
+import { Keyboard } from "react-native";
 
 interface BottomSheetModalProps {
   children: React.ReactNode;
+  footer?: React.ReactNode;
   snapPoints?: (string | number)[];
   initialIndex?: number;
   onClose?: () => void;
@@ -29,6 +31,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
     {
       onChange,
       children,
+      footer,
       snapPoints = ["80%", "95%"],
       initialIndex = -1,
       onClose,
@@ -38,9 +41,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
   ) => {
     const innerRef = useRef<BottomSheet>(null);
     const currentIndex = useRef(initialIndex);
-    const preKeyboardIndex = useRef(initialIndex);
 
-    // Forward ref methods to the inner BottomSheet via lazy proxy
     useImperativeHandle(ref, () => ({
       snapToIndex: (...args: Parameters<BottomSheetMethods["snapToIndex"]>) =>
         innerRef.current?.snapToIndex(...args),
@@ -57,7 +58,6 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
         innerRef.current?.forceClose(...args),
     }));
 
-    // Track current snap index
     const handleChange = useCallback(
       (index: number) => {
         currentIndex.current = index;
@@ -65,39 +65,6 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       },
       [onChange],
     );
-
-    // Manually snap up on keyboard show, restore on hide
-    useEffect(() => {
-      const lastSnapIndex = snapPoints.length - 1;
-      const showEvent =
-        Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-      const hideEvent =
-        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-      const onKeyboardShow = () => {
-        if (currentIndex.current >= 0 && currentIndex.current < lastSnapIndex) {
-          preKeyboardIndex.current = currentIndex.current;
-          innerRef.current?.snapToIndex(lastSnapIndex);
-        }
-      };
-
-      const onKeyboardHide = () => {
-        if (
-          currentIndex.current === lastSnapIndex &&
-          preKeyboardIndex.current >= 0
-        ) {
-          innerRef.current?.snapToIndex(preKeyboardIndex.current);
-        }
-      };
-
-      const showSub = Keyboard.addListener(showEvent, onKeyboardShow);
-      const hideSub = Keyboard.addListener(hideEvent, onKeyboardHide);
-
-      return () => {
-        showSub.remove();
-        hideSub.remove();
-      };
-    }, [snapPoints]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -109,6 +76,16 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
         />
       ),
       [disableClose],
+    );
+
+    const renderFooter = useCallback(
+      (props: BottomSheetFooterProps) =>
+        footer ? (
+          <BottomSheetFooter {...props} bottomInset={0}>
+            {footer}
+          </BottomSheetFooter>
+        ) : null,
+      [footer],
     );
 
     const handleClose = useCallback(() => {
@@ -124,6 +101,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           snapPoints={snapPoints}
           onChange={handleChange}
           backdropComponent={renderBackdrop}
+          footerComponent={footer ? renderFooter : undefined}
           enableDynamicSizing={false}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={!disableClose}
@@ -132,9 +110,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
         >
           <BottomSheetScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              paddingBottom: 40,
-            }}
+            contentContainerStyle={{ paddingBottom: footer ? 100 : 40 }}
           >
             {children}
           </BottomSheetScrollView>

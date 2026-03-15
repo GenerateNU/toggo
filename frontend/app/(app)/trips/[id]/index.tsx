@@ -2,8 +2,11 @@ import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { Box, Button, Screen, Text } from "@/design-system";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ActivityIndicator, Share } from "react-native";
+import CreatePollSheet, {
+  CreatePollSheetMethods,
+} from "./polls/components/create-poll-sheet";
 
 const DUMMY_ID = "dummy-entity-001";
 
@@ -11,6 +14,7 @@ export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const createInviteMutation = useCreateTripInvite();
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
   const handleInvite = async () => {
     try {
@@ -37,6 +41,7 @@ export default function Trip() {
   return (
     <Screen>
       <Box flex={1} backgroundColor="surfaceBackground">
+        <CreatePollSheet ref={createPollSheetRef} tripID={tripID!} />
         <Box
           padding="lg"
           paddingTop="xl"
@@ -113,7 +118,7 @@ export default function Trip() {
               layout="textOnly"
               label="New Poll"
               variant="Secondary"
-              onPress={() => router.push(`/trips/${tripID}/polls/creation`)}
+              onPress={() => createPollSheetRef.current?.open()}
             />
           </Box>
 

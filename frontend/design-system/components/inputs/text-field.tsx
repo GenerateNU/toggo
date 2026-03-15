@@ -1,10 +1,10 @@
+import { ColorPalette } from "@/design-system//tokens/color";
+import { CornerRadius } from "@/design-system//tokens/corner-radius";
+import { Layout } from "@/design-system//tokens/layout";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
-import { ColorPalette } from "@/design-system//tokens/color";
-import { CornerRadius } from "@/design-system//tokens/corner-radius";
-import { Layout } from "@/design-system//tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,8 @@ export type TextFieldProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"];
   secureTextEntry?: boolean;
   maxLength?: number;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -36,6 +38,8 @@ export default function TextField({
   autoCapitalize = "none",
   secureTextEntry,
   maxLength,
+  onFocus,
+  onBlur,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
 
@@ -48,7 +52,7 @@ export default function TextField({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="smLabel" color="textSecondary" style={styles.label}>
+        <Text variant="xsLabel" color={focused ? "textSecondary" : "textQuaternary"} style={styles.label}>
           {label}
         </Text>
       )}
@@ -72,8 +76,8 @@ export default function TextField({
           placeholder={placeholder}
           placeholderTextColor={ColorPalette.textQuaternary}
           editable={!disabled}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={() => { setFocused(true); onFocus?.(); }}
+          onBlur={() => { setFocused(false); onBlur?.(); }}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           secureTextEntry={secureTextEntry}
@@ -104,8 +108,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
+    borderStyle: "solid",
     borderColor: ColorPalette.borderPrimary,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     minHeight: 48,
@@ -122,7 +127,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     paddingVertical: 12,
   },
   inputDisabled: {
