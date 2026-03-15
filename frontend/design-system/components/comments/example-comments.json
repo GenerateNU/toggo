@@ -1,0 +1,69 @@
+[
+  {
+    "id": "1",
+    "authorName": "Aahil",
+    "authorSeed": "aahil",
+    "body": "This place looks niceeeeee. good find 🤩",
+    "timestamp": "2h",
+    "reactions": []
+  },
+  {
+    "id": "2",
+    "authorName": "Mai",
+    "authorSeed": "mai",
+    "body": "This place looks small ash 😅 what's the square footage?",
+    "timestamp": "1h",
+    "reactions": []
+  },
+  {
+    "id": "3",
+    "authorName": "Cole",
+    "authorSeed": "cole",
+    "body": "Ermmmm I think 1200...",
+    "timestamp": "25m",
+    "reactions": [
+      { "emoji": "😂", "count": 2, "reactedByMe": false },
+      { "emoji": "🍊", "count": 1, "reactedByMe": false }
+    ]
+  },
+  {
+    "id": "4",
+    "authorName": "Mai",
+    "authorSeed": "mai",
+    "body": "Bro what\nWe have 8 people there's no way we'll fit...",
+    "timestamp": "24m",
+    "reactions": [{ "emoji": "😂", "count": 22, "reactedByMe": true }]
+  },
+  {
+    "id": "5",
+    "authorName": "Aahil",
+    "authorSeed": "aahil",
+    "body": "Wait but i checked the link and it has couches tbh at this price i'd sleep on the floor",
+    "timestamp": "20m",
+    "reactions": []
+  },
+  {
+    "id": "6",
+    "authorName": "Neha",
+    "authorSeed": "neha",
+    "body": "lmfao that's all you",
+    "timestamp": "16m",
+    "reactions": [{ "emoji": "😭", "count": 1, "reactedByMe": true }]
+  },
+  {
+    "id": "7",
+    "authorName": "Bart",
+    "authorSeed": "bart",
+    "body": "Hi I'm Bart",
+    "timestamp": "3m",
+    "reactions": []
+  },
+  {
+    "id": "8",
+    "authorName": "Amogh",
+    "authorSeed": "amogh",
+    "body": "Bart stfu",
+    "timestamp": "2m",
+    "reactions": [{ "emoji": "😂", "count": 4, "reactedByMe": false }]
+  }
+]

@@ -1,4 +1,5 @@
 export const FontSize = {
+  xxs: 10,
   xs: 12,
   sm: 14,
   md: 16,
@@ -84,6 +85,7 @@ export const Typography = {
   mdParagraph: createTypography({ size: "md", family: "regular" }),
   smParagraph: createTypography({ size: "sm", family: "regular" }),
   xsParagraph: createTypography({ size: "xs", family: "regular" }),
+  xxsParagraph: createTypography({ size: "xxs", family: "regular" }),
 
   // Logo
   logoXxl: createTypography({ size: "xxl", family: "logo", letterSpacing: -1 }),
