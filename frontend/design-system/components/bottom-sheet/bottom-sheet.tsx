@@ -7,12 +7,16 @@ import BottomSheet, {
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Portal } from "@gorhom/portal";
 import React, {
+  createContext,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
-import { Keyboard } from "react-native";
+import { Keyboard, Platform } from "react-native";
+
+export const InsideBottomSheetContext = createContext(false);
 
 interface BottomSheetModalProps {
   children: React.ReactNode;
@@ -60,11 +64,24 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
 
     const handleChange = useCallback(
       (index: number) => {
-        currentIndex.current = index;
+        if (index >= -1 && index <= snapPoints.length - 1) {
+          currentIndex.current = index;
+        }
         onChange?.(index);
       },
-      [onChange],
+      [onChange, snapPoints],
     );
+
+    useEffect(() => {
+      const event =
+        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+      const subscription = Keyboard.addListener(event, () => {
+        if (currentIndex.current >= 0) {
+          innerRef.current?.snapToIndex(currentIndex.current);
+        }
+      });
+      return () => subscription.remove();
+    }, []);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -112,7 +129,9 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: footer ? 100 : 40 }}
           >
-            {children}
+            <InsideBottomSheetContext.Provider value={true}>
+              {children}
+            </InsideBottomSheetContext.Provider>
           </BottomSheetScrollView>
         </BottomSheet>
       </Portal>

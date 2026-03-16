@@ -19,7 +19,6 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import React from "react";
-import { View } from "react-native";
 import { PollType } from "./step-poll-type";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -110,16 +109,16 @@ export default function StepReview({
         >
           <Box flexDirection="row" alignItems="center" gap="xs">
             {firstCat && (
-              <View
+              <Box
+                flexDirection="row"
+                alignItems="center"
+                borderRadius="full"
+                borderColor="borderPrimary"
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
+                  borderWidth: 1,
                   gap: 5,
                   paddingHorizontal: 12,
                   paddingVertical: 6,
-                  borderRadius: 9999,
-                  borderWidth: 1,
-                  borderColor: ColorPalette.borderPrimary,
                 }}
               >
                 {React.createElement(getCategoryIcon(firstCat), {
@@ -129,38 +128,38 @@ export default function StepReview({
                 <Text variant="xsLabel" color="textSecondary">
                   {toPascalCase(firstCat)}
                 </Text>
-              </View>
+              </Box>
             )}
             {extraCount > 0 && (
-              <View
+              <Box
+                borderRadius="full"
+                borderColor="borderPrimary"
                 style={{
+                  borderWidth: 1,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
-                  borderRadius: 9999,
-                  borderWidth: 1,
-                  borderColor: ColorPalette.borderPrimary,
                 }}
               >
                 <Text variant="xsLabel" color="textQuaternary">
                   +{extraCount}
                 </Text>
-              </View>
+              </Box>
             )}
           </Box>
 
-          <View
+          <Box
+            borderRadius="full"
+            borderColor="borderPrimary"
             style={{
+              borderWidth: 1,
               paddingHorizontal: 12,
               paddingVertical: 6,
-              borderRadius: 9999,
-              borderWidth: 1,
-              borderColor: ColorPalette.borderPrimary,
             }}
           >
             <Text variant="xsLabel" color="textSecondary">
               {POLL_TYPE_LABELS[pollType]}
             </Text>
-          </View>
+          </Box>
         </Box>
 
         <Text variant="mdHeading" color="textSecondary">
@@ -170,20 +169,17 @@ export default function StepReview({
         <Box gap="sm">
           {options.map((opt, i) => (
             <Box key={i} flexDirection="row" alignItems="center" gap="sm">
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: ColorPalette.secondaryBackground,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <Box
+                backgroundColor="secondaryBackground"
+                borderRadius="lg"
+                alignItems="center"
+                justifyContent="center"
+                style={{ width: 32, height: 32 }}
               >
                 <Text variant="smLabel" color="textSecondary">
                   {i + 1}
                 </Text>
-              </View>
+              </Box>
               <Text variant="smParagraph" color="textSecondary">
                 {opt}
               </Text>

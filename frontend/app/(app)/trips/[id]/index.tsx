@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { CheckCircle, X } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { ActivityIndicator, Share } from "react-native";
+import CreateFAB from "./components/create-fab";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "./polls/components/create-poll-sheet";
@@ -112,32 +113,6 @@ export default function Trip() {
           </Box>
 
           <Text variant="smLabel" color="textQuaternary" marginTop="sm">
-            CREATE
-          </Text>
-          <Box gap="sm">
-            <Button
-              layout="textOnly"
-              label="New Activity"
-              variant="Secondary"
-              onPress={() =>
-                router.push(`/trips/${tripID}/activities/creation`)
-              }
-            />
-            <Button
-              layout="textOnly"
-              label="New Pitch"
-              variant="Secondary"
-              onPress={() => router.push(`/trips/${tripID}/pitches/creation`)}
-            />
-            <Button
-              layout="textOnly"
-              label="New Poll"
-              variant="Secondary"
-              onPress={() => createPollSheetRef.current?.open()}
-            />
-          </Box>
-
-          <Text variant="smLabel" color="textQuaternary" marginTop="sm">
             INVITE
           </Text>
           <Box gap="sm">
@@ -168,6 +143,10 @@ export default function Trip() {
             )}
           </Box>
         </Box>
+        <CreateFAB
+          tripID={tripID!}
+          onCreatePoll={() => createPollSheetRef.current?.open()}
+        />
       </Box>
     </Screen>
   );

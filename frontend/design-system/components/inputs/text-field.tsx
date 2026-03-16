@@ -1,9 +1,11 @@
+import { InsideBottomSheetContext } from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system//tokens/color";
 import { CornerRadius } from "@/design-system//tokens/corner-radius";
 import { Layout } from "@/design-system//tokens/layout";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import React, { useState } from "react";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import React, { useContext, useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -42,6 +44,8 @@ export default function TextField({
   onBlur,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
+  const isInsideBottomSheet = useContext(InsideBottomSheetContext);
+  const InputComponent = isInsideBottomSheet ? BottomSheetTextInput : TextInput;
 
   const borderColor = error
     ? ERROR_COLOR
@@ -69,7 +73,7 @@ export default function TextField({
         ]}
       >
         {leftIcon && <Box style={styles.iconWrapper}>{leftIcon}</Box>}
-        <TextInput
+        <InputComponent
           style={[
             styles.input,
             disabled && styles.inputDisabled,
