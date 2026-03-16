@@ -2,7 +2,9 @@ import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
-import DateRangePicker, { DateRange } from "@/design-system/primitives/date-picker";
+import DateRangePicker, {
+  DateRange,
+} from "@/design-system/primitives/date-picker";
 import { Text } from "@/design-system/primitives/text";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
@@ -19,7 +21,13 @@ import {
 } from "@/design-system/tokens/typography";
 import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
 import { useMemo, useState, useCallback, useEffect } from "react";
-import { Animated, Easing, View, TouchableOpacity, Pressable } from "react-native";
+import {
+  Animated,
+  Easing,
+  View,
+  TouchableOpacity,
+  Pressable,
+} from "react-native";
 import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
 import Toggle from "../buttons/toggle";
 import TextField from "@/design-system/components/inputs/text-field";
@@ -29,7 +37,7 @@ import CommentSection from "@/design-system/components/comments/comment-section"
 import { CommentData } from "@/design-system/components/comments/comment";
 import Divider from "@/design-system/primitives/divider";
 import ProgressBarCurved from "../status/progress-bar-curved";
-import Comments from "../comments/example-comments.json"
+import Comments from "../comments/example-comments.json";
 import SkeletonCircle from "../skeleton/circle";
 import SkeletonRect from "../skeleton/rectangle";
 
@@ -116,7 +124,7 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 export default function UIKit() {
   const toast = useToast();
 
-// ─── Progress Bar Group ────────────────────────────────────────────────
+  // ─── Progress Bar Group ────────────────────────────────────────────────
   const [currentPercent, setCurrentPercent] = useState(0);
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -139,7 +147,13 @@ export default function UIKit() {
   };
 
   const formatDate = (d: Date | null) =>
-    d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+    d
+      ? d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "—";
 
   // ─── Radio Group ────────────────────────────────────────────────
   const [driver, setDriver] = useState<string | null>(null);
@@ -165,7 +179,7 @@ export default function UIKit() {
     setPhoneError(
       digits.length > 0 && digits.length !== 10
         ? "Phone number must be 10 digits"
-        : ""
+        : "",
     );
   };
 
@@ -191,20 +205,20 @@ export default function UIKit() {
                 : c.reactions.map((r) =>
                     r.emoji === emoji
                       ? { ...r, count: r.count - 1, reactedByMe: false }
-                      : r
+                      : r,
                   );
           } else {
             updated = c.reactions.map((r) =>
               r.emoji === emoji
                 ? { ...r, count: r.count + 1, reactedByMe: true }
-                : r
+                : r,
             );
           }
         } else {
           updated = [...c.reactions, { emoji, count: 1, reactedByMe: true }];
         }
         return { ...c, reactions: updated };
-      })
+      }),
     );
   }, []);
 
@@ -231,10 +245,12 @@ export default function UIKit() {
 
         {/* Full width with label */}
         <View style={{ gap: 4 }}>
-          <Text variant="xsLabel" color="textQuaternary">3 of 5 complete</Text>
+          <Text variant="xsLabel" color="textQuaternary">
+            3 of 5 complete
+          </Text>
           <ProgressBarCurved percent={60} />
         </View>
-       </Section>
+      </Section>
       <Section title="Skeleton">
         <Text variant="xsLabel" color="textSecondary">
           shapes
@@ -501,9 +517,21 @@ export default function UIKit() {
         />
 
         <View style={{ gap: 4 }}>
-          <Toggle label="Text blasts" value={textBlasts} onChange={setTextBlasts} />
-          <Toggle label="Voting reminders" value={votingReminders} onChange={setVotingReminders} />
-          <Toggle label="Finalized decisions" value={finalized} onChange={setFinalized} />
+          <Toggle
+            label="Text blasts"
+            value={textBlasts}
+            onChange={setTextBlasts}
+          />
+          <Toggle
+            label="Voting reminders"
+            value={votingReminders}
+            onChange={setVotingReminders}
+          />
+          <Toggle
+            label="Finalized decisions"
+            value={finalized}
+            onChange={setFinalized}
+          />
         </View>
       </Section>
 
@@ -547,7 +575,10 @@ export default function UIKit() {
             onPress={() =>
               toast.show({
                 message: "Trip created!",
-                action: { label: "Share", onPress: () => console.log("shared") },
+                action: {
+                  label: "Share",
+                  onPress: () => console.log("shared"),
+                },
               })
             }
             style={{
@@ -589,7 +620,8 @@ export default function UIKit() {
           onPress={() => setPickerVisible(true)}
         />
         <Text variant="mdLabel">
-          Selected Dates: {formatDate(selectedRange.start)} → {formatDate(selectedRange.end)}
+          Selected Dates: {formatDate(selectedRange.start)} →{" "}
+          {formatDate(selectedRange.end)}
         </Text>
         <DateRangePicker
           visible={pickerVisible}
@@ -600,8 +632,8 @@ export default function UIKit() {
         />
       </Section>
 
-      <Section title="Dividers">    
-        <Divider width={1}/>
+      <Section title="Dividers">
+        <Divider width={1} />
         <Text>some content</Text>
         <Divider color={ColorPalette.brandPrimary} width={3} />
       </Section>

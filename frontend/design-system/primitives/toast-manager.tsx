@@ -72,9 +72,18 @@ type ToastItemProps = {
   onCompleteDismiss: (id: number) => void;
 };
 
-const ToastItem = ({ entry, visibleIndex, position, onStartDismiss, onCompleteDismiss }: ToastItemProps) => {
+const ToastItem = ({
+  entry,
+  visibleIndex,
+  position,
+  onStartDismiss,
+  onCompleteDismiss,
+}: ToastItemProps) => {
   const slideDirection = position === "top" ? -1 : 1;
-  const slideY = useMemo(() => new Animated.Value(80 * slideDirection), [slideDirection]);
+  const slideY = useMemo(
+    () => new Animated.Value(80 * slideDirection),
+    [slideDirection],
+  );
   const positionY = useMemo(() => new Animated.Value(0), []);
   const enterOpacity = useMemo(() => new Animated.Value(0), []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,7 +102,14 @@ const ToastItem = ({ entry, visibleIndex, position, onStartDismiss, onCompleteDi
         useNativeDriver: true,
       }),
     ]).start(() => onCompleteDismiss(entry.id));
-  }, [slideY, enterOpacity, onStartDismiss, onCompleteDismiss, entry.id, slideDirection]);
+  }, [
+    slideY,
+    enterOpacity,
+    onStartDismiss,
+    onCompleteDismiss,
+    entry.id,
+    slideDirection,
+  ]);
 
   useEffect(() => {
     // Don't animate in if already dismissing
@@ -137,7 +153,8 @@ const ToastItem = ({ entry, visibleIndex, position, onStartDismiss, onCompleteDi
   }, [visibleIndex, positionY, position]);
 
   // Use fixed positioning and combine both translateY values
-  const fixedPosition = position === "top" ? { top: EDGE_INSET } : { bottom: EDGE_INSET };
+  const fixedPosition =
+    position === "top" ? { top: EDGE_INSET } : { bottom: EDGE_INSET };
   const combinedTranslateY = Animated.add(slideY, positionY);
 
   const showClose = entry.showClose !== false;
@@ -155,7 +172,11 @@ const ToastItem = ({ entry, visibleIndex, position, onStartDismiss, onCompleteDi
     >
       <Box style={styles.toast}>
         <Box style={styles.checkCircle}>
-          <Check size={16} color={ColorPalette.textSecondary} strokeWidth={2.5} />
+          <Check
+            size={16}
+            color={ColorPalette.textSecondary}
+            strokeWidth={2.5}
+          />
         </Box>
 
         <Text
@@ -202,17 +223,22 @@ export function ToastProvider({
 }: ToastProviderProps) {
   const [queue, setQueue] = useState<ToastEntry[]>([]);
 
-  const show = useCallback((config: ToastConfig) => {
-    const id = nextId++;
-    setQueue((prev) => {
-      const newQueue = [{ ...config, id }, ...prev];
-      // Limit queue to maxVisible items
-      return newQueue.slice(0, maxVisible);
-    });
-  }, [maxVisible]);
+  const show = useCallback(
+    (config: ToastConfig) => {
+      const id = nextId++;
+      setQueue((prev) => {
+        const newQueue = [{ ...config, id }, ...prev];
+        // Limit queue to maxVisible items
+        return newQueue.slice(0, maxVisible);
+      });
+    },
+    [maxVisible],
+  );
 
   const startDismiss = useCallback((id: number) => {
-    setQueue((prev) => prev.map((t) => (t.id === id ? { ...t, dismissing: true } : t)));
+    setQueue((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, dismissing: true } : t)),
+    );
   }, []);
 
   const completeDismiss = useCallback((id: number) => {

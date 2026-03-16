@@ -72,7 +72,13 @@ export default function ProgressBarCurved({
   const cy = size / 2;
   const radius = (size - strokeWidth) / 2;
 
-  const trackPath = describeArc(cx, cy, radius, ARC_START, ARC_START + ARC_SWEEP);
+  const trackPath = describeArc(
+    cx,
+    cy,
+    radius,
+    ARC_START,
+    ARC_START + ARC_SWEEP,
+  );
 
   const [fillPath, setFillPath] = useState("");
   const [animatedValue] = useState(() => new Animated.Value(0));
@@ -106,7 +112,12 @@ export default function ProgressBarCurved({
   }, [clampedPercent, duration, animatedValue]);
 
   return (
-    <View style={[{ width: size, height: size, transform: [{ rotate: "90deg" }] }, style]}>
+    <View
+      style={[
+        { width: size, height: size, transform: [{ rotate: "90deg" }] },
+        style,
+      ]}
+    >
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {/* Track */}
         <Path

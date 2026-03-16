@@ -65,7 +65,11 @@ export default function TextField({
           style={[
             styles.input,
             disabled && styles.inputDisabled,
-            { color: disabled ? ColorPalette.textDisabled : ColorPalette.textSecondary },
+            {
+              color: disabled
+                ? ColorPalette.textDisabled
+                : ColorPalette.textSecondary,
+            },
           ]}
           value={value}
           onChangeText={onChangeText}

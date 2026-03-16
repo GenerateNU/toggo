@@ -82,14 +82,15 @@ export default function Toast({
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { transform: [{ translateY }], opacity },
-      ]}
+      style={[styles.container, { transform: [{ translateY }], opacity }]}
     >
       <Box style={styles.toast}>
         <Box style={styles.checkCircle}>
-          <Check size={16} color={ColorPalette.textSecondary} strokeWidth={2.5} />
+          <Check
+            size={16}
+            color={ColorPalette.textSecondary}
+            strokeWidth={2.5}
+          />
         </Box>
 
         <Text

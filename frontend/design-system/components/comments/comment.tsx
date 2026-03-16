@@ -110,7 +110,11 @@ export default function Comment({
           <Box style={styles.content}>
             {/* Header */}
             <Box flexDirection="row" alignItems="center" gap="xs">
-              <Text variant="smLabel" color="textSecondary" style={styles.authorName}>
+              <Text
+                variant="smLabel"
+                color="textSecondary"
+                style={styles.authorName}
+              >
                 {comment.authorName}
               </Text>
               <Text variant="xsLabel" color="textQuaternary">

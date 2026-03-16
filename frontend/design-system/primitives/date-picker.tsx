@@ -157,8 +157,7 @@ const MonthGrid = React.memo(
 
     // Determine if only a single date is selected (no distinct end)
     const isSingleSelect =
-      !!range.start &&
-      (!range.end || isSameDay(range.start, range.end));
+      !!range.start && (!range.end || isSameDay(range.start, range.end));
 
     const weeks = useMemo(() => {
       const rows: (number | null)[][] = [];
@@ -179,7 +178,11 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text variant="smHeading" color="textSecondary" style={styles.monthLabel}>
+        <Text
+          variant="smHeading"
+          color="textSecondary"
+          style={styles.monthLabel}
+        >
           {formatMonth(year, month)}
         </Text>
 
@@ -311,7 +314,11 @@ export default function DateRangePicker({
             justifyContent="center"
             padding="xs"
           >
-            <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
+            <Pressable
+              onPress={onClose}
+              hitSlop={12}
+              style={styles.closeButton}
+            >
               <X size={20} color={ColorPalette.textQuaternary} />
             </Pressable>
             <Text variant="mdHeading" color="textSecondary">
