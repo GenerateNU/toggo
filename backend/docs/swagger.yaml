@@ -477,6 +477,20 @@ definitions:
       lng:
         type: number
     type: object
+  models.LinkType:
+    enum:
+    - airbnb
+    - booking_com
+    - tiktok
+    - instagram
+    - generic
+    type: string
+    x-enum-varnames:
+    - LinkTypeAirbnb
+    - LinkTypeBookingCom
+    - LinkTypeTikTok
+    - LinkTypeInstagram
+    - LinkTypeGeneric
   models.MatchedSubstring:
     properties:
       length:
@@ -608,6 +622,32 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ParseLinkRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  models.ParsedActivityData:
+    properties:
+      category_suggestions:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      source_type:
+        $ref: '#/definitions/models.LinkType'
+      source_url:
+        type: string
+      thumbnail_url:
         type: string
     type: object
   models.Period:
@@ -2727,6 +2767,56 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get activity RSVPs
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/parse-link:
+    post:
+      consumes:
+      - application/json
+      description: Fetches a URL and extracts structured activity fields (name, description,
+        thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram,
+        and generic travel blog URLs.
+      operationId: parseActivityLink
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: URL to parse
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParseLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParsedActivityData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Parse link into activity data
       tags:
       - activities
   /api/v1/trips/{tripID}/categories:
