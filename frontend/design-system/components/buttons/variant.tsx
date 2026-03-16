@@ -161,6 +161,17 @@ export const ButtonVariants = {
     borderColor: "borderPrimary",
     contentColor: "textQuaternary",
   },
+  IconCircular: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "md",
+    paddingHorizontal: "sm",
+    width: "auto",
+    backgroundColor: "iconPrimaryBackground",
+    borderRadius: "full",
+    borderWidth: "none",
+    contentColor: "textPrimary",
+  },
 } as const satisfies Record<string, ButtonVariantStyle>;
 
 export type ButtonVariant = keyof typeof ButtonVariants;
@@ -204,6 +215,10 @@ export const DisabledVariantStyle: Record<
   },
   Dashed: {
     backgroundColor: "transparent",
+    contentColor: "textDisabled",
+  },
+  IconCircular: {
+    backgroundColor: "disabledBackground",
     contentColor: "textDisabled",
   },
 };

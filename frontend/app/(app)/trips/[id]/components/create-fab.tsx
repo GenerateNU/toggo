@@ -1,10 +1,8 @@
-import { Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { Elevation } from "@/design-system/tokens/elevation";
+import { Box, Button } from "@/design-system";
 import { router } from "expo-router";
 import { BarChart2, Lightbulb, MapPin, Plus } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -13,12 +11,22 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+const AnimatedBox = Animated.createAnimatedComponent(Box);
+
 interface CreateFABProps {
   tripID: string;
   onCreatePoll: () => void;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
+
+const ABSOLUTE_FILL = {
+  position: "absolute" as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+};
 
 export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
   const [open, setOpen] = useState(false);
@@ -40,17 +48,13 @@ export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
     action();
   };
 
-  // Overlay
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: interpolate(progress.value, [0, 1], [0, 1]),
   }));
 
-  // FAB icon rotation: + rotates 45deg → ×
   const fabIconStyle = useAnimatedStyle(() => ({
     transform: [
-      {
-        rotate: `${interpolate(progress.value, [0, 1], [0, 45])}deg`,
-      },
+      { rotate: `${interpolate(progress.value, [0, 1], [0, 45])}deg` },
     ],
   }));
 
@@ -85,84 +89,45 @@ export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
   ];
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
-      {/* Dimmed overlay */}
-      <Animated.View
-        style={[StyleSheet.absoluteFillObject, styles.overlay, overlayStyle]}
+    <Box style={ABSOLUTE_FILL} pointerEvents="box-none">
+      <AnimatedBox
+        style={[ABSOLUTE_FILL, overlayStyle]}
+        backgroundColor="surfaceOverlay"
         pointerEvents={open ? "auto" : "none"}
       >
-        <Pressable style={StyleSheet.absoluteFillObject} onPress={close} />
-      </Animated.View>
+        <Pressable style={ABSOLUTE_FILL} onPress={close} />
+      </AnimatedBox>
 
-      {/* Items + FAB */}
-      <View style={styles.fabArea} pointerEvents="box-none">
+      <Box
+        position="absolute"
+        bottom={32}
+        right={24}
+        alignItems="flex-end"
+        gap="sm"
+        pointerEvents="box-none"
+      >
         {actions.map((action) => (
-          <Animated.View key={action.label} style={itemStyle}>
-            <Pressable
+          <AnimatedBox key={action.label} style={itemStyle}>
+            <Button
+              layout="leadingIcon"
+              label={action.label}
+              leftIcon={action.icon}
               onPress={() => handleAction(action.onPress)}
-              style={styles.item}
-            >
-              <Text variant="smLabel" color="textSecondary">
-                {action.label}
-              </Text>
-              <View style={styles.itemIcon}>
-                <action.icon
-                  size={16}
-                  color={ColorPalette.white}
-                  strokeWidth={2}
-                />
-              </View>
-            </Pressable>
-          </Animated.View>
+            />
+          </AnimatedBox>
         ))}
 
-        {/* FAB button */}
-        <Pressable onPress={toggle} style={styles.fab}>
-          <Animated.View style={fabIconStyle}>
-            <Plus size={24} color={ColorPalette.white} strokeWidth={2.5} />
-          </Animated.View>
-        </Pressable>
-      </View>
-    </View>
+        <AnimatedBox style={fabIconStyle}>
+          <Button
+            layout="iconOnly"
+            icon={Plus}
+            accessibilityLabel="Open create menu"
+            variant="IconCircular"
+            size="large"
+            onPress={toggle}
+          />
+        </AnimatedBox>
+      </Box>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    backgroundColor: ColorPalette.surfaceOverlay,
-  },
-  fabArea: {
-    position: "absolute",
-    bottom: 32,
-    right: 24,
-    alignItems: "flex-end",
-    gap: 12,
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: ColorPalette.black,
-    alignItems: "center",
-    justifyContent: "center",
-    ...Elevation.lg,
-  },
-  item: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: ColorPalette.white,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 100,
-    ...Elevation.md,
-  },
-  itemIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: ColorPalette.black,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
