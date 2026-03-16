@@ -1,8 +1,9 @@
 import { useCreatePoll } from "@/api/polls/useCreatePoll";
 import { useCreateRankPoll } from "@/api/polls/useCreateRankPoll";
 import { BottomSheet, Box, Button, Text } from "@/design-system";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { X } from "lucide-react-native";
+import { AlertTriangle, X } from "lucide-react-native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import StepPollType, { PollType } from "./step-poll-type";
@@ -49,6 +50,7 @@ const CreatePollSheet = forwardRef<
 
   const createPollMutation = useCreatePoll();
   const createRankPollMutation = useCreateRankPoll();
+  const toast = useToast();
 
   useImperativeHandle(ref, () => ({
     open: () => {
@@ -153,6 +155,11 @@ const CreatePollSheet = forwardRef<
       onCreated?.();
     } catch (e) {
       console.error("Failed to create poll:", e);
+      toast.show({
+        title: "Failed to create poll",
+        subtitle: "Please try again later",
+        icon: AlertTriangle,
+      });
     }
   };
 

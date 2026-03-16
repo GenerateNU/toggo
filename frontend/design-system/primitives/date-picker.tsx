@@ -272,7 +272,7 @@ export default function DateRangePicker({
         }
 
         // Case 2: single-day range (start === end)
-        if (start && end && isSameDay(start, end)) {
+        if (end && isSameDay(start, end)) {
           if (isSameDay(date, start)) {
             return prev;
           }
@@ -283,10 +283,7 @@ export default function DateRangePicker({
         }
 
         // Case 3: both start and end are selected (distinct range)
-        if (
-          (start && isSameDay(date, start)) ||
-          (end && isSameDay(date, end))
-        ) {
+        if (isSameDay(date, start) || (end && isSameDay(date, end))) {
           return { start: date, end: date };
         }
         if (date < start) {
