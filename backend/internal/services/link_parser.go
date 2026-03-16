@@ -101,7 +101,7 @@ func (s *LinkParserService) parseTikTokLink(ctx context.Context, rawURL string, 
 		fmt.Println("parse-link: TikTok oEmbed request failed, falling back to scrape", "err", err)
 		return s.parseScrapedLink(ctx, rawURL, linkType, []string{"video"}, false, browserUserAgent)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("parse-link: TikTok oEmbed failed, falling back to scrape", "status", resp.StatusCode)
@@ -249,7 +249,7 @@ func (s *LinkParserService) parseScrapedLink(ctx context.Context, rawURL string,
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch URL: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	fmt.Println("parse-link: fetched URL",
 		"url", rawURL,
@@ -481,5 +481,5 @@ func metaTagAttrs(attrs []html.Attribute) (property, name, content string) {
 			content = a.Val
 		}
 	}
-	return
+	return property, name, content
 }
