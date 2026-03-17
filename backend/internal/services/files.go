@@ -332,7 +332,7 @@ func (f *FileService) GetFilesByImageIDs(ctx context.Context, imageIDs []uuid.UU
 			Key:    aws.String(image.FileKey),
 		}, s3.WithPresignExpires(f.urlExpiration))
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("failed to generate download URL for image %s: %w", image.ImageID, err)
 		}
 		urlMap[image.ImageID] = presignedURL.URL
 	}

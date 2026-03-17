@@ -317,7 +317,10 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 		return item.ProposerPictureKey
 	}, models.ImageSizeSmall)
 
-	apiActivities := s.convertToAPIActivities(ctx, activities, fileURLMap)
+	apiActivities, err := s.convertToAPIActivities(ctx, activities, fileURLMap)
+	if err != nil {
+		return nil, err
+	}
 
 	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
 }
@@ -353,19 +356,21 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		}
 	}
 
-	imageResponses := buildImageResponses(activity.ImageKeys, nil)
-	if len(activity.ImageKeys) > 0 {
-		urlMap, _ := s.fileService.GetFilesByImageIDs(ctx, activity.ImageKeys, models.ImageSizeMedium)
-		imageResponses = buildImageResponses(activity.ImageKeys, urlMap)
+	imageURLMap, err := s.fileService.GetFilesByImageIDs(ctx, activity.ImageKeys, models.ImageSizeMedium)
+	if err != nil {
+		return nil, err
 	}
 
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
-	apiResp.Images = imageResponses
+	apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
 	return apiResp, nil
 }
 
-func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
-	imageURLMap := s.batchFetchImageURLs(ctx, activities)
+func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) ([]*models.ActivityAPIResponse, error) {
+	imageURLMap, err := s.batchFetchImageURLs(ctx, activities)
+	if err != nil {
+		return nil, err
+	}
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -378,10 +383,10 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
 		apiActivities = append(apiActivities, apiResp)
 	}
-	return apiActivities
+	return apiActivities, nil
 }
 
-func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) map[uuid.UUID]string {
+func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) (map[uuid.UUID]string, error) {
 	imageIDSet := make(map[uuid.UUID]struct{})
 	for _, activity := range activities {
 		for _, id := range activity.ImageKeys {
@@ -389,17 +394,13 @@ func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []
 		}
 	}
 	if len(imageIDSet) == 0 {
-		return nil
+		return nil, nil
 	}
 	imageIDs := make([]uuid.UUID, 0, len(imageIDSet))
 	for id := range imageIDSet {
 		imageIDs = append(imageIDs, id)
 	}
-	urlMap, err := s.fileService.GetFilesByImageIDs(ctx, imageIDs, models.ImageSizeMedium)
-	if err != nil {
-		return nil
-	}
-	return urlMap
+	return s.fileService.GetFilesByImageIDs(ctx, imageIDs, models.ImageSizeMedium)
 }
 
 func buildImageResponses(imageKeys []uuid.UUID, urlMap map[uuid.UUID]string) []models.ActivityImageResponse {
