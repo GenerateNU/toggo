@@ -47,6 +47,10 @@ definitions:
         type: string
       id:
         type: string
+      image_ids:
+        items:
+          $ref: '#/definitions/models.ActivityImageResponse'
+        type: array
       media_url:
         type: string
       name:
@@ -84,6 +88,13 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ActivityImageResponse:
+    properties:
+      image_id:
+        type: string
+      image_url:
         type: string
     type: object
   models.ActivityRSVPAPIResponse:
@@ -247,6 +258,11 @@ definitions:
         type: array
       description:
         type: string
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       media_url:
         type: string
       name:
@@ -1129,6 +1145,11 @@ definitions:
         type: array
       description:
         type: string
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       media_url:
         type: string
       name:

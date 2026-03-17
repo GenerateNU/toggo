@@ -4516,6 +4516,12 @@
                 "id": {
                     "type": "string"
                 },
+                "image_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityImageResponse"
+                    }
+                },
                 "media_url": {
                     "type": "string"
                 },
@@ -4572,6 +4578,17 @@
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 }
             }
@@ -4826,6 +4843,13 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "media_url": {
                     "type": "string"
@@ -6128,6 +6152,13 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "media_url": {
                     "type": "string"

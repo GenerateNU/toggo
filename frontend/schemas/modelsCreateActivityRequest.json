@@ -30,6 +30,11 @@
       }
     },
     "description": { "type": "string" },
+    "image_ids": {
+      "type": "array",
+      "maxItems": 5,
+      "items": { "type": "string" }
+    },
     "media_url": { "type": "string" },
     "name": { "type": "string", "maxLength": 255, "minLength": 1 },
     "thumbnail_url": { "type": "string" },

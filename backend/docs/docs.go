@@ -4522,6 +4522,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "image_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityImageResponse"
+                    }
+                },
                 "media_url": {
                     "type": "string"
                 },
@@ -4578,6 +4584,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 }
             }
@@ -4832,6 +4849,13 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "media_url": {
                     "type": "string"
@@ -6134,6 +6158,13 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "media_url": {
                     "type": "string"

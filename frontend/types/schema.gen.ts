@@ -41,6 +41,7 @@ import type {
   ErrsAPIError,
   ModelsDateRange,
   ModelsActivity,
+  ModelsActivityImageResponse,
   ModelsActivityAPIResponse,
   ModelsActivityCategoriesPageResult,
   ModelsActivityCursorPageResult,
@@ -647,6 +648,11 @@ export const modelsActivitySchema = z.object({
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivity>;
 
+export const modelsActivityImageResponseSchema = z.object({
+  image_id: z.optional(z.string()),
+  image_url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsActivityImageResponse>;
+
 export const modelsActivityAPIResponseSchema = z.object({
   category_names: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
@@ -655,6 +661,9 @@ export const modelsActivityAPIResponseSchema = z.object({
   },
   description: z.optional(z.string()),
   id: z.optional(z.string()),
+  get image_ids() {
+    return z.array(modelsActivityImageResponseSchema).optional();
+  },
   media_url: z.optional(z.string()),
   name: z.optional(z.string()),
   proposed_by: z.optional(z.string()),
@@ -815,6 +824,7 @@ export const modelsCreateActivityRequestSchema = z.object({
     return z.array(modelsDateRangeSchema).max(20).optional();
   },
   description: z.optional(z.string()),
+  image_ids: z.optional(z.array(z.string()).max(5)),
   media_url: z.optional(z.string()),
   name: z.string().min(1).max(255),
   thumbnail_url: z.optional(z.string()),
@@ -1373,6 +1383,7 @@ export const modelsUpdateActivityRequestSchema = z.object({
       .optional();
   },
   description: z.optional(z.string()),
+  image_ids: z.optional(z.array(z.string()).max(5)),
   media_url: z.optional(z.string()),
   name: z.optional(z.string().min(1).max(255)),
   thumbnail_url: z.optional(z.string()),

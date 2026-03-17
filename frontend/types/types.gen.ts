@@ -67,6 +67,17 @@ export type ModelsActivity = {
   updated_at?: string;
 };
 
+export type ModelsActivityImageResponse = {
+  /**
+   * @type string | undefined
+   */
+  image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  image_url?: string;
+};
+
 export type ModelsActivityAPIResponse = {
   /**
    * @type array | undefined
@@ -88,6 +99,10 @@ export type ModelsActivityAPIResponse = {
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: ModelsActivityImageResponse[];
   /**
    * @type string | undefined
    */
@@ -436,6 +451,10 @@ export type ModelsCreateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
   /**
    * @type string | undefined
    */
@@ -1649,6 +1668,10 @@ export type ModelsUpdateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
   /**
    * @type string | undefined
    */

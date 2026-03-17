@@ -31,6 +31,17 @@
           },
           "description": { "type": "string" },
           "id": { "type": "string" },
+          "image_ids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "image_id": { "type": "string" },
+                "image_url": { "type": "string" }
+              },
+              "x-readme-ref-name": "models.ActivityImageResponse"
+            }
+          },
           "media_url": { "type": "string" },
           "name": { "type": "string" },
           "proposed_by": { "type": "string" },
