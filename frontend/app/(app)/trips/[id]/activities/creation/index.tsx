@@ -1,6 +1,7 @@
 import { useCreateActivity } from "@/api/activities";
-import { useUploadImage } from "@/api/files/custom";
+import { useDeleteImage, useUploadImage } from "@/api/files/custom";
 import { Box, Button, Screen, Text } from "@/design-system";
+import { ColorPalette } from "@/design-system/tokens/color";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -23,6 +24,7 @@ export default function CreateActivity() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const uploadImageMutation = useUploadImage();
+  const deleteImageMutation = useDeleteImage();
   const createActivityMutation = useCreateActivity();
 
   const pickImage = async () => {
@@ -60,14 +62,16 @@ export default function CreateActivity() {
 
     setIsSubmitting(true);
 
+    const uploadedImageIds: string[] = [];
+
     try {
-      const imageIds = await Promise.all(
-        imageUris.map((uri) =>
-          uploadImageMutation
-            .mutateAsync({ uri, sizes: ["medium"] })
-            .then((res) => res.imageId),
-        ),
-      );
+      for (const uri of imageUris) {
+        const res = await uploadImageMutation.mutateAsync({
+          uri,
+          sizes: ["medium"],
+        });
+        uploadedImageIds.push(res.imageId);
+      }
 
       const activity = await createActivityMutation.mutateAsync({
         tripID,
@@ -75,15 +79,18 @@ export default function CreateActivity() {
           trip_id: tripID,
           name: name.trim(),
           description: description.trim() || undefined,
-          image_ids: imageIds,
+          image_ids: uploadedImageIds,
         },
       });
 
       router.replace(
         `/trips/${tripID}/activities/${activity.id}?tripID=${tripID}`,
       );
-    } catch (err: any) {
-      Alert.alert("Error", err?.message ?? "Failed to create activity.");
+    } catch {
+      await Promise.allSettled(
+        uploadedImageIds.map((id) => deleteImageMutation.mutateAsync(id)),
+      );
+      Alert.alert("Error", "Failed to create activity. Please try again.");
       setIsSubmitting(false);
     }
   };
@@ -122,8 +129,8 @@ export default function CreateActivity() {
                   value={name}
                   onChangeText={setName}
                   placeholder="Activity name"
-                  placeholderTextColor="#999"
-                  style={{ fontSize: 15, color: "#000" }}
+                  placeholderTextColor={ColorPalette.textQuaternary}
+                  style={{ fontSize: 15, color: ColorPalette.textSecondary }}
                 />
               </Box>
             </Box>
@@ -143,12 +150,12 @@ export default function CreateActivity() {
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Optional description"
-                  placeholderTextColor="#999"
+                  placeholderTextColor={ColorPalette.textQuaternary}
                   multiline
                   numberOfLines={3}
                   style={{
                     fontSize: 15,
-                    color: "#000",
+                    color: ColorPalette.textSecondary,
                     minHeight: 72,
                     textAlignVertical: "top",
                   }}
@@ -179,7 +186,7 @@ export default function CreateActivity() {
                         width: 20,
                         height: 20,
                         borderRadius: 10,
-                        backgroundColor: "#333",
+                        backgroundColor: ColorPalette.primaryBackground,
                         justifyContent: "center",
                         alignItems: "center",
                       }}

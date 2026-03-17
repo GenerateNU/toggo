@@ -24,5 +24,8 @@ func FileRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	fileGroup.Get("/:imageId/:size", fileController.GetFile)
 	fileGroup.Get("/:imageId", fileController.GetFileAllSizes)
 
+	// Delete image
+	fileGroup.Delete("/:imageId", fileController.DeleteImage)
+
 	return fileGroup
 }

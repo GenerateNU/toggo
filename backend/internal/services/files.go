@@ -20,6 +20,7 @@ type FileServiceInterface interface {
 	GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error)
 	GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)
 	GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error)
+	DeleteImage(ctx context.Context, imageID uuid.UUID) error
 }
 
 var _ FileServiceInterface = (*FileService)(nil)
@@ -291,6 +292,23 @@ func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByK
 // findPendingImages is a helper to find images including pending ones (for confirmation flow)
 func (f *FileService) findPendingImages(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error) {
 	return f.imageRepo.FindByIDIncludingPending(ctx, imageID)
+}
+
+// DeleteImage removes all size variants of an image from the database and S3
+func (f *FileService) DeleteImage(ctx context.Context, imageID uuid.UUID) error {
+	images, err := f.imageRepo.FindByID(ctx, imageID)
+	if err != nil {
+		return err
+	}
+
+	for _, image := range images {
+		_, _ = f.s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: aws.String(f.bucketName),
+			Key:    aws.String(image.FileKey),
+		})
+	}
+
+	return f.imageRepo.DeleteByID(ctx, imageID)
 }
 
 // buildSizedKey constructs the S3 key for a specific size variant

@@ -32,8 +32,17 @@
           "description": { "type": "string" },
           "estimated_price": { "type": "number" },
           "id": { "type": "string" },
-          "image_id": { "type": "string" },
-          "image_url": { "type": "string" },
+          "image_ids": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "image_id": { "type": "string" },
+                "image_url": { "type": "string" }
+              },
+              "x-readme-ref-name": "models.ActivityImageResponse"
+            }
+          },
           "location_lat": { "type": "number" },
           "location_lng": { "type": "number" },
           "location_name": { "type": "string" },

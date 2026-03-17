@@ -41,6 +41,10 @@ export const Avatar: React.FC<AvatarProps> = ({
   const { coreSize } = useTheme<Theme>();
   const [imageError, setImageError] = React.useState(false);
 
+  React.useEffect(() => {
+    setImageError(false);
+  }, [profilePhoto]);
+
   const size = coreSize[variant as CoreSizeKey];
   const { background, icon: iconColor } = getDeterministicColors(seed);
 

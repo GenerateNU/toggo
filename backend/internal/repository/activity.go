@@ -20,6 +20,7 @@ type ActivityRepository interface {
 	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
 	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
+	UpdateTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
 	Delete(ctx context.Context, activityID uuid.UUID) error
 	AddImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
 	ReplaceImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
@@ -210,6 +211,52 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 		return nil, err
 	}
 
+	return updatedActivity, nil
+}
+
+// UpdateTx modifies an activity within the provided transaction
+func (r *activityRepository) UpdateTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error) {
+	updateQuery := tx.NewUpdate().
+		Model(&models.Activity{}).
+		Where("id = ?", activityID).
+		Set("updated_at = ?", time.Now())
+
+	if req.Name != nil {
+		updateQuery = updateQuery.Set("name = ?", *req.Name)
+	}
+	if req.ThumbnailURL != nil {
+		updateQuery = updateQuery.Set("thumbnail_url = ?", *req.ThumbnailURL)
+	}
+	if req.MediaURL != nil {
+		updateQuery = updateQuery.Set("media_url = ?", *req.MediaURL)
+	}
+	if req.Description != nil {
+		updateQuery = updateQuery.Set("description = ?", *req.Description)
+	}
+	if req.Dates != nil {
+		updateQuery = updateQuery.Set("dates = ?", *req.Dates)
+	}
+	if req.LocationName != nil {
+		updateQuery = updateQuery.Set("location_name = ?", *req.LocationName)
+	}
+	if req.LocationLat != nil {
+		updateQuery = updateQuery.Set("location_lat = ?", *req.LocationLat)
+	}
+	if req.LocationLng != nil {
+		updateQuery = updateQuery.Set("location_lng = ?", *req.LocationLng)
+	}
+	if req.EstimatedPrice != nil {
+		updateQuery = updateQuery.Set("estimated_price = ?", *req.EstimatedPrice)
+	}
+
+	updatedActivity := &models.Activity{}
+	err := updateQuery.Returning("*").Scan(ctx, updatedActivity)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errs.ErrNotFound
+		}
+		return nil, err
+	}
 	return updatedActivity, nil
 }
 

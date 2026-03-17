@@ -83,6 +83,17 @@ export type ModelsActivity = {
   updated_at?: string;
 };
 
+export type ModelsActivityImageResponse = {
+  /**
+   * @type string | undefined
+   */
+  image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  image_url?: string;
+};
+
 export type ModelsActivityAPIResponse = {
   /**
    * @type array | undefined
@@ -111,7 +122,7 @@ export type ModelsActivityAPIResponse = {
   /**
    * @type array | undefined
    */
-  image_ids?: { image_id?: string; image_url?: string }[];
+  image_ids?: ModelsActivityImageResponse[];
   /**
    * @type number | undefined
    */
@@ -2242,6 +2253,42 @@ export type GetFileAllSizesQuery = {
   Response: GetFileAllSizes200;
   PathParams: GetFileAllSizesPathParams;
   Errors: GetFileAllSizes400 | GetFileAllSizes404 | GetFileAllSizes500;
+};
+
+export type DeleteImagePathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteImage204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteImage400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteImage404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteImage500 = ErrsAPIError;
+
+export type DeleteImageMutationResponse = DeleteImage204;
+
+export type DeleteImageMutation = {
+  Response: DeleteImage204;
+  PathParams: DeleteImagePathParams;
+  Errors: DeleteImage400 | DeleteImage404 | DeleteImage500;
 };
 
 export type GetFilePathParams = {

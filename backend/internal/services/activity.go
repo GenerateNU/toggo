@@ -183,11 +183,10 @@ func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID
 
 	err = s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		var err error
-		_, err = s.Activity.Update(ctx, activityID, &req)
+		_, err = s.Activity.UpdateTx(ctx, tx, activityID, &req)
 		if err != nil {
 			return err
 		}
-		// Replace images for activity transactionally
 		if req.ImageIDs != nil {
 			err = s.Activity.ReplaceImagesTx(ctx, tx, activityID, *req.ImageIDs)
 			if err != nil {
@@ -318,7 +317,7 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 		return item.ProposerPictureKey
 	}, models.ImageSizeSmall)
 
-	apiActivities := s.convertToAPIActivities(activities, fileURLMap)
+	apiActivities := s.convertToAPIActivities(ctx, activities, fileURLMap)
 
 	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
 }
@@ -355,15 +354,13 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 	}
 
 	// Fetch presigned URLs for activity images
-	var imageResponses []models.ActivityImageResponse
+	imageResponses := make([]models.ActivityImageResponse, 0, len(activity.ImageKeys))
 	for _, imageID := range activity.ImageKeys {
-		fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium)
-		if err == nil {
-			imageResponses = append(imageResponses, models.ActivityImageResponse{
-				ImageID:  imageID,
-				ImageURL: fileResp.URL,
-			})
+		img := models.ActivityImageResponse{ImageID: imageID}
+		if fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium); err == nil {
+			img.ImageURL = fileResp.URL
 		}
+		imageResponses = append(imageResponses, img)
 	}
 
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
@@ -371,7 +368,7 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 	return apiResp, nil
 }
 
-func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
+func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -381,15 +378,13 @@ func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDa
 			}
 		}
 		// Fetch presigned URLs for activity images
-		var imageResponses []models.ActivityImageResponse
+		imageResponses := make([]models.ActivityImageResponse, 0, len(activity.ImageKeys))
 		for _, imageID := range activity.ImageKeys {
-			fileResp, err := s.fileService.GetFile(context.Background(), imageID, models.ImageSizeMedium)
-			if err == nil {
-				imageResponses = append(imageResponses, models.ActivityImageResponse{
-					ImageID:  imageID,
-					ImageURL: fileResp.URL,
-				})
+			img := models.ActivityImageResponse{ImageID: imageID}
+			if fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium); err == nil {
+				img.ImageURL = fileResp.URL
 			}
+			imageResponses = append(imageResponses, img)
 		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
 		apiResp.Images = imageResponses

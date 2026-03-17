@@ -1,5 +1,6 @@
 import { useGetActivity } from "@/api/activities";
 import { Box, Screen, Text } from "@/design-system";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { useLocalSearchParams } from "expo-router";
 import { Image, ScrollView } from "react-native";
 
@@ -13,7 +14,9 @@ export default function ActivityDetail() {
     data: activity,
     isLoading,
     isError,
-  } = useGetActivity(tripID, activityID);
+  } = useGetActivity(tripID ?? "", activityID, {
+    query: { enabled: !!(tripID && activityID) },
+  });
 
   return (
     <Screen>
@@ -83,7 +86,11 @@ export default function ActivityDetail() {
                         <Image
                           key={img.image_id ?? i}
                           source={{ uri: img.image_url }}
-                          style={{ width: 120, height: 120, borderRadius: 8 }}
+                          style={{
+                            width: 120,
+                            height: 120,
+                            borderRadius: CornerRadius.sm,
+                          }}
                           resizeMode="cover"
                         />
                       ) : null,

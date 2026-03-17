@@ -41,6 +41,7 @@ import type {
   ErrsAPIError,
   ModelsDateRange,
   ModelsActivity,
+  ModelsActivityImageResponse,
   ModelsActivityAPIResponse,
   ModelsActivityCategoriesPageResult,
   ModelsActivityCursorPageResult,
@@ -153,6 +154,12 @@ import type {
   GetFileAllSizes500,
   GetFileAllSizesPathParams,
   GetFileAllSizesQueryResponse,
+  DeleteImage204,
+  DeleteImage400,
+  DeleteImage404,
+  DeleteImage500,
+  DeleteImageMutationResponse,
+  DeleteImagePathParams,
   GetFile200,
   GetFile400,
   GetFile404,
@@ -667,6 +674,11 @@ export const modelsActivitySchema = z.object({
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivity>;
 
+export const modelsActivityImageResponseSchema = z.object({
+  image_id: z.optional(z.string()),
+  image_url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsActivityImageResponse>;
+
 export const modelsActivityAPIResponseSchema = z.object({
   category_names: z.optional(z.array(z.string())),
   created_at: z.optional(z.string()),
@@ -676,8 +688,9 @@ export const modelsActivityAPIResponseSchema = z.object({
   description: z.optional(z.string()),
   estimated_price: z.optional(z.number()),
   id: z.optional(z.string()),
-  image_id: z.optional(z.string()),
-  image_url: z.optional(z.string()),
+  get image_ids() {
+    return z.array(modelsActivityImageResponseSchema).optional();
+  },
   location_lat: z.optional(z.number()),
   location_lng: z.optional(z.number()),
   location_name: z.optional(z.string()),
@@ -1774,6 +1787,41 @@ export const getFileAllSizes500Schema = z.lazy(
 export const getFileAllSizesQueryResponseSchema = z.lazy(
   () => getFileAllSizes200Schema,
 ) as unknown as z.ZodType<GetFileAllSizesQueryResponse>;
+
+export const deleteImagePathParamsSchema = z.object({
+  imageId: z.string().describe("Image ID (UUID)"),
+}) as unknown as z.ZodType<DeleteImagePathParams>;
+
+/**
+ * @description No Content
+ */
+export const deleteImage204Schema =
+  z.any() as unknown as z.ZodType<DeleteImage204>;
+
+/**
+ * @description Bad Request
+ */
+export const deleteImage400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteImage400>;
+
+/**
+ * @description Not Found
+ */
+export const deleteImage404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteImage404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deleteImage500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteImage500>;
+
+export const deleteImageMutationResponseSchema = z.lazy(
+  () => deleteImage204Schema,
+) as unknown as z.ZodType<DeleteImageMutationResponse>;
 
 export const getFilePathParamsSchema = z.object({
   imageId: z.string().describe("Image ID (UUID)"),
