@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionLabel: {
-    color: "#2563EB",
+    color: ColorPalette.info,
     fontWeight: "600",
   },
   closeButton: {
