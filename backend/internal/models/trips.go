@@ -22,7 +22,7 @@ type CreateTripRequest struct {
 	BudgetMin    int        `json:"budget_min" validate:"required,gte=0"`
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
-	Currency     string     `json:"currency" validate:"omitempty,len=3"`
+	Currency     string     `json:"currency" validate:"omitempty,iso4217"`
 }
 
 type UpdateTripRequest struct {
@@ -30,7 +30,7 @@ type UpdateTripRequest struct {
 	BudgetMin    *int       `json:"budget_min" validate:"omitempty,gte=0"`
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
-	Currency     *string    `json:"currency" validate:"omitempty,len=3"`
+	Currency     *string    `json:"currency" validate:"omitempty,iso4217"`
 }
 
 // TripPageResult holds an offset-paginated list of trips and metadata.

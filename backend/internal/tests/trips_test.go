@@ -486,6 +486,23 @@ func TestTripCurrency(t *testing.T) {
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
 	})
+
+	t.Run("non-ISO 3-char currency code is rejected", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreateTripRequest{
+					Name:      "Bad Currency Trip",
+					BudgetMin: 100,
+					BudgetMax: 1000,
+					Currency:  "ABC", // 3 chars but not a valid ISO 4217 code
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
 }
 
 func TestTripValidation(t *testing.T) {
