@@ -1,6 +1,6 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Modal,
@@ -230,6 +230,14 @@ export default function DateRangePicker({
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
 
+  // Clear the selection when the modal opens
+  useEffect(() => {
+    if (visible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRange({ start: null, end: null });
+    }
+  }, [visible]);
+
   const topInset =
     Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
 
@@ -259,35 +267,35 @@ export default function DateRangePicker({
       const { start, end } = prev;
 
       // Case 1: nothing selected
-      if (!start) {
-        return { start: date, end: date };
-      }
+    if (!start) {
+      return { start: date, end: date };
+    }
 
-      // Case 2: single-day range (start === end)
-      if (start && end && isSameDay(start, end)) {
-        if (isSameDay(date, start)) {
-          // Re-tapping the same day — do nothing
-          return prev;
-        }
-        if (date < start) {
-          return { start: date, end: date };
-        }
-        return { start, end: date };
-      }
-
-      // Case 3: both start and end are selected (distinct range)
-      if ((start && isSameDay(date, start)) || (end && isSameDay(date, end))) {
-        return { start: date, end: date };
+    // Case 2: single-day range (start === end)
+    if (end && isSameDay(start, end)) {
+      if (isSameDay(date, start)) {
+        // Re-tapping the same day — do nothing
+        return prev;
       }
       if (date < start) {
         return { start: date, end: date };
       }
-      if (end && date > end) {
-        return { start, end: date };
-      }
-      // date is between start and end → collapse to single-day range
+      return { start, end: date };
+    }
+
+    // Case 3: both start and end are selected (distinct range)
+    if (isSameDay(date, start) || (end && isSameDay(date, end))) {
       return { start: date, end: date };
-    });
+    }
+    if (date < start) {
+      return { start: date, end: date };
+    }
+    if (end && date > end) {
+      return { start, end: date };
+    }
+    // date is between start and end → collapse to single-day range
+    return { start: date, end: date };
+  });
   }, []);
 
   const handleClear = () => setRange({ start: null, end: null });

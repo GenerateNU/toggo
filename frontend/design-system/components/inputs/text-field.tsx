@@ -2,9 +2,9 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
-import { ColorPalette } from "@/design-system//tokens/color";
-import { CornerRadius } from "@/design-system//tokens/corner-radius";
-import { Layout } from "@/design-system//tokens/layout";
+import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -40,7 +40,7 @@ export default function TextField({
   const [focused, setFocused] = useState(false);
 
   const borderColor = error
-    ? ERROR_COLOR
+    ? ColorPalette.error
     : focused
       ? ColorPalette.black
       : ColorPalette.borderPrimary;
@@ -95,8 +95,6 @@ export default function TextField({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const ERROR_COLOR = "#DC2626";
-
 const styles = StyleSheet.create({
   container: {
     gap: 4,
@@ -133,7 +131,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   error: {
-    color: ERROR_COLOR,
+    color: ColorPalette.error,
     marginTop: 4,
   },
 });

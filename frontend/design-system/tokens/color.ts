@@ -45,6 +45,7 @@ export const ColorPalette = {
   error: "#FF3B30",
   warning: "#FF9500",
   info: "#007AFF",
+  progressFill: "#4ECBA0",
 } as const;
 
 export type ColorName = keyof typeof ColorPalette;

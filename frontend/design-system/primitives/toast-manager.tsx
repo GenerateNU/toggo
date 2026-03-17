@@ -1,6 +1,4 @@
 import { Box } from "@/design-system/primitives/box";
-import { Text } from "@/design-system/primitives/text";
-import { Check, X } from "lucide-react-native";
 import React, {
   createContext,
   useCallback,
@@ -10,10 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Animated, Pressable, StyleSheet } from "react-native";
-import { ColorPalette } from "../tokens/color";
-import { CornerRadius } from "../tokens/corner-radius";
+import { Animated, StyleSheet } from "react-native";
 import { Layout } from "../tokens/layout";
+import Toast from "./toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -170,51 +167,17 @@ const ToastItem = ({
         },
       ]}
     >
-      <Box style={styles.toast}>
-        <Box style={styles.checkCircle}>
-          <Check
-            size={16}
-            color={ColorPalette.textSecondary}
-            strokeWidth={2.5}
-          />
-        </Box>
-
-        <Text
-          variant="smLabel"
-          color="textSecondary"
-          style={styles.message}
-          numberOfLines={2}
-        >
-          {entry.message}
-        </Text>
-
-        {entry.action && (
-          <Pressable
-            onPress={() => {
-              entry.action!.onPress();
-              hide();
-            }}
-            hitSlop={8}
-          >
-            <Text variant="smLabel" style={styles.actionLabel}>
-              {entry.action.label}
-            </Text>
-          </Pressable>
-        )}
-
-        {showClose && !entry.action && (
-          <Pressable onPress={hide} hitSlop={8} style={styles.closeButton}>
-            <X size={18} color={ColorPalette.textQuaternary} />
-          </Pressable>
-        )}
-      </Box>
+      <Toast
+        message={entry.message}
+        action={entry.action}
+        showClose={showClose}
+        onClose={hide}
+      />
     </Animated.View>
   );
 };
 
 // ─── Provider ────────────────────────────────────────────────────────────────
-
-let nextId = 0;
 
 export function ToastProvider({
   children,
@@ -222,11 +185,12 @@ export function ToastProvider({
   maxVisible = 3,
 }: ToastProviderProps) {
   const [queue, setQueue] = useState<ToastEntry[]>([]);
+  const nextIdRef = useRef<number>(0);
 
   const show = useCallback(
     (config: ToastConfig) => {
       setQueue((prev) => {
-        const id = nextId++;
+        const id = nextIdRef.current++;
         const newQueue = [{ ...config, id }, ...prev];
 
         // If we exceed maxVisible, keep only the most recent maxVisible toasts
@@ -293,35 +257,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: Layout.spacing.md,
     right: Layout.spacing.md,
-  },
-  toast: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
-    shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  checkCircle: {
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  message: {
-    flex: 1,
-  },
-  actionLabel: {
-    color: ColorPalette.info,
-    fontWeight: "600",
-  },
-  closeButton: {
-    padding: 2,
   },
 });
