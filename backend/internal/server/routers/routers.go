@@ -34,6 +34,7 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	FileRoutes(apiV1Group, routeParams)
 	CommentRoutes(apiV1Group, routeParams)
 	ActivityRoutes(apiV1Group, routeParams)
+	TripTabRoutes(apiV1Group, routeParams)
 	CategoryRoutes(apiV1Group, routeParams)
 	VotePollRoutes(apiV1Group, routeParams)
 	RankPollRoutes(apiV1Group, routeParams)

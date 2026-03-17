@@ -20,4 +20,5 @@ type ServiceParams struct {
 	EventPublisher realtime.EventPublisher
 	FileService    services.FileServiceInterface
 	PollService    services.PollServiceInterface
+	TripTabService services.TripTabServiceInterface
 }
