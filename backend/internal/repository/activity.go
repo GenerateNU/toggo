@@ -103,7 +103,9 @@ func (r *activityRepository) FindByCategoryName(
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").
+		Join("JOIN categories AS cat ON cat.trip_id = a.trip_id AND cat.name = ac.category_name").
 		Where("a.trip_id = ? AND ac.category_name = ?", tripID, categoryName).
+		Where("cat.is_hidden = false").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
