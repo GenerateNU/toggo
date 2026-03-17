@@ -157,6 +157,22 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 		updateQuery = updateQuery.Set("dates = ?", *req.Dates)
 	}
 
+	if req.LocationName != nil {
+		updateQuery = updateQuery.Set("location_name = ?", *req.LocationName)
+	}
+
+	if req.LocationLat != nil {
+		updateQuery = updateQuery.Set("location_lat = ?", *req.LocationLat)
+	}
+
+	if req.LocationLng != nil {
+		updateQuery = updateQuery.Set("location_lng = ?", *req.LocationLng)
+	}
+
+	if req.EstimatedPrice != nil {
+		updateQuery = updateQuery.Set("estimated_price = ?", *req.EstimatedPrice)
+	}
+
 	// Atomic update with RETURNING to avoid race conditions
 	updatedActivity := &models.Activity{}
 	err := updateQuery.
