@@ -50,11 +50,29 @@ func TestCategoryVisibility(t *testing.T) {
 		}
 	})
 
-	t.Run("admin sees hidden category with is_hidden flag", func(t *testing.T) {
+	t.Run("admin without include_hidden does not see hidden category", func(t *testing.T) {
 		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
 				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+				Method: testkit.GET,
+				UserID: &admin,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		categories := resp["categories"].([]interface{})
+		for _, cat := range categories {
+			catMap := cat.(map[string]interface{})
+			require.NotEqual(t, "food", catMap["name"], "hidden category should not appear without include_hidden")
+		}
+	})
+
+	t.Run("admin with include_hidden sees hidden category with is_hidden flag", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories?include_hidden=true", trip),
 				Method: testkit.GET,
 				UserID: &admin,
 			}).
@@ -72,7 +90,7 @@ func TestCategoryVisibility(t *testing.T) {
 				require.Equal(t, false, catMap["is_hidden"], "visible category should have is_hidden=false for admin")
 			}
 		}
-		require.True(t, found, "admin should still see hidden category")
+		require.True(t, found, "admin should see hidden category with include_hidden=true")
 	})
 
 	t.Run("admin can show a hidden category", func(t *testing.T) {
@@ -286,5 +304,99 @@ func TestCategoryGetByTripID(t *testing.T) {
 		require.Contains(t, categoryNames, "entertainment")
 		// Verify custom category
 		require.Contains(t, categoryNames, "my-custom-category")
+	})
+}
+
+func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	admin := createUser(t, app)
+	member := createUser(t, app)
+	trip := createTrip(t, app, admin)
+	addMember(t, app, admin, member, trip)
+
+	// Create an activity with a food category
+	createResp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+			Method: testkit.POST,
+			UserID: &admin,
+			Body: models.CreateActivityRequest{
+				TripID:        uuid.MustParse(trip),
+				Name:          "Dinner",
+				CategoryNames: []string{"food", "entertainment"},
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+
+	activityID := createResp["id"].(string)
+
+	// Hide the food category
+	testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  fmt.Sprintf("/api/v1/trips/%s/categories/food/hide", trip),
+			Method: testkit.PUT,
+			UserID: &admin,
+		}).
+		AssertStatus(http.StatusNoContent)
+
+	t.Run("hidden category not returned in activity category list", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/categories", trip, activityID),
+				Method: testkit.GET,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		categories := resp["categories"].([]interface{})
+		for _, cat := range categories {
+			require.NotEqual(t, "food", cat, "hidden category should not appear in activity categories")
+		}
+		require.Contains(t, categories, "entertainment")
+	})
+
+	t.Run("hidden category not returned in activity list", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.GET,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		for _, act := range items {
+			actMap := act.(map[string]interface{})
+			if actMap["name"] == "Dinner" {
+				categoryNames := actMap["category_names"].([]interface{})
+				for _, cat := range categoryNames {
+					require.NotEqual(t, "food", cat, "hidden category should not appear in activity list")
+				}
+				require.Contains(t, categoryNames, "entertainment")
+			}
+		}
+	})
+
+	t.Run("member cannot filter activities by hidden category", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities?category=food", trip),
+				Method: testkit.GET,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Empty(t, items, "filtering by hidden category should return no results")
 	})
 }

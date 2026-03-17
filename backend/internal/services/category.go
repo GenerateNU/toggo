@@ -10,7 +10,7 @@ import (
 )
 
 type CategoryServiceInterface interface {
-	GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID) ([]*models.CategoryAPIResponse, error)
+	GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID, includeHidden bool) ([]*models.CategoryAPIResponse, error)
 	SetCategoryVisibility(ctx context.Context, tripID, userID uuid.UUID, name string, isHidden bool) error
 }
 
@@ -26,7 +26,7 @@ func NewCategoryService(repo *repository.Repository) CategoryServiceInterface {
 	}
 }
 
-func (s *CategoryService) GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID) ([]*models.CategoryAPIResponse, error) {
+func (s *CategoryService) GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID, includeHidden bool) ([]*models.CategoryAPIResponse, error) {
 	_, err := s.Trip.Find(ctx, tripID)
 	if err != nil {
 		return nil, errs.ErrNotFound
@@ -37,7 +37,7 @@ func (s *CategoryService) GetCategoriesByTripID(ctx context.Context, tripID, use
 		return nil, err
 	}
 
-	if isAdmin {
+	if isAdmin && includeHidden {
 		categories, err := s.Category.FindByTripID(ctx, tripID, true)
 		if err != nil {
 			return nil, err
@@ -45,12 +45,14 @@ func (s *CategoryService) GetCategoriesByTripID(ctx context.Context, tripID, use
 		return s.convertToAPICategoriesWithHidden(categories), nil
 	}
 
-	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !isMember {
-		return nil, errs.ErrNotFound
+	if !isAdmin {
+		isMember, err := s.Membership.IsMember(ctx, tripID, userID)
+		if err != nil {
+			return nil, err
+		}
+		if !isMember {
+			return nil, errs.ErrNotFound
+		}
 	}
 
 	categories, err := s.Category.FindByTripID(ctx, tripID, false)

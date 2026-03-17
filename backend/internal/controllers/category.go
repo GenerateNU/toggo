@@ -53,7 +53,9 @@ func (ctrl *CategoryController) GetCategoriesByTripID(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	categories, err := ctrl.categoryService.GetCategoriesByTripID(c.Context(), tripID, userID)
+	includeHidden := c.QueryBool("include_hidden", false)
+
+	categories, err := ctrl.categoryService.GetCategoriesByTripID(c.Context(), tripID, userID, includeHidden)
 	if err != nil {
 		return err
 	}
