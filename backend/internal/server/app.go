@@ -52,6 +52,7 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 			EventPublisher: publisher,
 			FileService:    fileService,
 			PollService:    services.NewPollService(repository, publisher),
+			HTTPClient:     services.DefaultHTTPClient(),
 		},
 	}
 
