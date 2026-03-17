@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -19,6 +21,14 @@ const (
 	crawlerUserAgent    = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
 	httpRequestTimeout  = 10 * time.Second
 	tiktokOEmbedBaseURL = "https://www.tiktok.com/oembed"
+	maxResponseBodySize = 5 * 1024 * 1024 // 5 MB
+)
+
+var (
+	ErrInvalidURL     = errors.New("invalid URL")
+	ErrForbiddenURL   = errors.New("URL points to a private or local address")
+	ErrNetworkFailure = errors.New("failed to reach URL")
+	ErrUpstreamError  = errors.New("upstream server returned an error")
 )
 
 type LinkParserServiceInterface interface {
@@ -31,20 +41,22 @@ type LinkParserService struct {
 	httpClient *http.Client
 }
 
-func NewLinkParserService() LinkParserServiceInterface {
-	return &LinkParserService{
-		httpClient: &http.Client{Timeout: httpRequestTimeout},
-	}
-}
-
 func NewLinkParserServiceWithClient(client *http.Client) LinkParserServiceInterface {
 	return &LinkParserService{httpClient: client}
 }
 
+func DefaultHTTPClient() *http.Client {
+	return &http.Client{Timeout: httpRequestTimeout}
+}
+
 func (s *LinkParserService) ParseLink(ctx context.Context, rawURL string) (*models.ParsedActivityData, error) {
 	parsedURL, err := url.Parse(rawURL)
-	if err != nil {
-		return nil, fmt.Errorf("invalid URL: %w", err)
+	if err != nil || parsedURL.Host == "" || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidURL, rawURL)
+	}
+
+	if isPrivateOrLocalhost(parsedURL.Hostname()) {
+		return nil, ErrForbiddenURL
 	}
 
 	linkType := detectLinkType(parsedURL)
@@ -67,6 +79,21 @@ func (s *LinkParserService) ParseLink(ctx context.Context, rawURL string) (*mode
 		fmt.Println("parse-link: using generic OG scrape strategy")
 		return s.parseScrapedLink(ctx, rawURL, linkType, []string{}, false, browserUserAgent)
 	}
+}
+
+func isPrivateOrLocalhost(host string) bool {
+	if host == "localhost" || strings.HasPrefix(host, "localhost:") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		addrs, err := net.LookupIP(host)
+		if err != nil || len(addrs) == 0 {
+			return false
+		}
+		ip = addrs[0]
+	}
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast()
 }
 
 func detectLinkType(u *url.URL) models.LinkType {
@@ -247,7 +274,7 @@ func (s *LinkParserService) parseScrapedLink(ctx context.Context, rawURL string,
 
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch URL: %w", err)
+		return nil, fmt.Errorf("%w: %w", ErrNetworkFailure, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -259,10 +286,11 @@ func (s *LinkParserService) parseScrapedLink(ctx context.Context, rawURL string,
 	)
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("URL returned HTTP %d", resp.StatusCode)
+		return nil, fmt.Errorf("%w: HTTP %d", ErrUpstreamError, resp.StatusCode)
 	}
 
-	meta := extractPageMetadata(resp.Body, ogOnly)
+	limitedBody := io.LimitReader(resp.Body, maxResponseBodySize)
+	meta := extractPageMetadata(limitedBody, ogOnly)
 
 	fmt.Println("parse-link: extracted metadata",
 		"og_title", meta.ogTitle,

@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -41,11 +42,41 @@ func newLinkParserSvc(transport http.RoundTripper) services.LinkParserServiceInt
 func TestLinkParserService_ParseLink_InvalidURL(t *testing.T) {
 	t.Parallel()
 
-	svc := services.NewLinkParserService()
+	svc := newLinkParserSvc(nil)
 	_, err := svc.ParseLink(context.Background(), "://bad url")
 
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid URL")
+	assert.True(t, errors.Is(err, services.ErrInvalidURL))
+}
+
+func TestLinkParserService_ParseLink_ForbiddenURL(t *testing.T) {
+	t.Parallel()
+
+	svc := newLinkParserSvc(nil)
+
+	for _, raw := range []string{
+		"http://localhost/admin",
+		"http://127.0.0.1/secret",
+		"http://169.254.169.254/latest/meta-data",
+		"http://192.168.1.1/router",
+	} {
+		_, err := svc.ParseLink(context.Background(), raw)
+		require.Error(t, err, "expected error for %s", raw)
+		assert.True(t, errors.Is(err, services.ErrForbiddenURL), "expected ErrForbiddenURL for %s", raw)
+	}
+}
+
+func TestLinkParserService_ParseLink_NetworkFailure(t *testing.T) {
+	t.Parallel()
+
+	svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return nil, errors.New("connection refused")
+	}))
+
+	_, err := svc.ParseLink(context.Background(), "https://example.com/page")
+
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, services.ErrNetworkFailure))
 }
 
 // ---------------------------------------------------------------------------
@@ -109,7 +140,7 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 		assert.Nil(t, result.ThumbnailURL)
 	})
 
-	t.Run("returns error on HTTP 4xx", func(t *testing.T) {
+	t.Run("returns ErrUpstreamError on HTTP 4xx", func(t *testing.T) {
 		t.Parallel()
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "not found", http.StatusNotFound)
@@ -120,6 +151,7 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 		_, err := svc.ParseLink(context.Background(), srv.URL)
 
 		require.Error(t, err)
+		assert.True(t, errors.Is(err, services.ErrUpstreamError))
 		assert.Contains(t, err.Error(), "404")
 	})
 

@@ -504,7 +504,14 @@ func (ctrl *ActivityController) ParseActivityLink(c *fiber.Ctx) error {
 
 	parsed, err := ctrl.linkParserService.ParseLink(c.Context(), req.URL)
 	if err != nil {
-		return errs.BadRequest(err)
+		switch {
+		case errors.Is(err, services.ErrInvalidURL), errors.Is(err, services.ErrForbiddenURL):
+			return errs.BadRequest(err)
+		case errors.Is(err, services.ErrNetworkFailure), errors.Is(err, services.ErrUpstreamError):
+			return errs.NewAPIError(http.StatusBadGateway, err)
+		default:
+			return errs.InternalServerError()
+		}
 	}
 
 	return c.Status(http.StatusOK).JSON(parsed)

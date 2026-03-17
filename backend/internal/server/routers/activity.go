@@ -14,7 +14,7 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.FileService,
 	)
-	linkParserService := services.NewLinkParserService()
+	linkParserService := services.NewLinkParserServiceWithClient(routeParams.ServiceParams.HTTPClient)
 	activityController := controllers.NewActivityController(activityService, linkParserService, routeParams.Validator)
 
 	// /api/v1/trips/:tripID/activities
