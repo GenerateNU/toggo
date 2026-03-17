@@ -35,12 +35,22 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 
 	validator := validators.NewValidator()
 
+	awsCfg := &config.AWS
+	fileService := services.NewFileService(services.FileServiceConfig{
+		PresignClient: awsCfg.PresignClient,
+		S3Client:      awsCfg.S3Client,
+		ImageRepo:     repository.Image,
+		BucketName:    awsCfg.BucketName,
+		Region:        awsCfg.Region,
+	})
+
 	routeParams := types.RouteParams{
 		Validator: validator,
 		ServiceParams: &types.ServiceParams{
 			Repository:     repository,
 			Config:         config,
 			EventPublisher: publisher,
+			FileService:    fileService,
 			PollService:    services.NewPollService(repository, publisher),
 		},
 	}

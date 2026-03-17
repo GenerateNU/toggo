@@ -109,13 +109,9 @@ export type ModelsActivityAPIResponse = {
    */
   id?: string;
   /**
-   * @type string | undefined
+   * @type array | undefined
    */
-  image_id?: string;
-  /**
-   * @type string | undefined
-   */
-  image_url?: string;
+  image_ids?: { image_id?: string; image_url?: string }[];
   /**
    * @type number | undefined
    */

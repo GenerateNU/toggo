@@ -57,7 +57,7 @@ type CreateActivityRequest struct {
 	LocationLat    *float64     `validate:"omitempty,min=-90,max=90" json:"location_lat"`
 	LocationLng    *float64     `validate:"omitempty,min=-180,max=180" json:"location_lng"`
 	EstimatedPrice *float64     `validate:"omitempty,min=0" json:"estimated_price"`
-	ImageIDs      []uuid.UUID  `validate:"omitempty,max=5" json:"image_ids,omitempty"`
+	ImageIDs       []uuid.UUID  `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // UpdateActivityRequest for updating an existing activity
@@ -71,7 +71,7 @@ type UpdateActivityRequest struct {
 	LocationLat    *float64     `validate:"omitempty,min=-90,max=90" json:"location_lat"`
 	LocationLng    *float64     `validate:"omitempty,min=-180,max=180" json:"location_lng"`
 	EstimatedPrice *float64     `validate:"omitempty,min=0" json:"estimated_price"`
-	ImageIDs     *[]uuid.UUID `validate:"omitempty,max=5" json:"image_ids,omitempty"`
+	ImageIDs       *[]uuid.UUID `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // AddCategoryToActivityRequest for adding a category to an activity

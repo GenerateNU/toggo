@@ -146,4 +146,3 @@ func (r *activityCategoryRepository) GetCategoriesForActivities(ctx context.Cont
 	}
 	return result, nil
 }
-

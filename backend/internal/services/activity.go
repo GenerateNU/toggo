@@ -357,7 +357,7 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 	// Fetch presigned URLs for activity images
 	var imageResponses []models.ActivityImageResponse
 	for _, imageID := range activity.ImageKeys {
-		fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeLarge)
+		fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium)
 		if err == nil {
 			imageResponses = append(imageResponses, models.ActivityImageResponse{
 				ImageID:  imageID,
@@ -383,7 +383,7 @@ func (s *ActivityService) convertToAPIActivities(activities []*models.ActivityDa
 		// Fetch presigned URLs for activity images
 		var imageResponses []models.ActivityImageResponse
 		for _, imageID := range activity.ImageKeys {
-			fileResp, err := s.fileService.GetFile(context.Background(), imageID, models.ImageSizeLarge)
+			fileResp, err := s.fileService.GetFile(context.Background(), imageID, models.ImageSizeMedium)
 			if err == nil {
 				imageResponses = append(imageResponses, models.ActivityImageResponse{
 					ImageID:  imageID,
