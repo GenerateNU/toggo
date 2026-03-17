@@ -353,14 +353,10 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		}
 	}
 
-	// Fetch presigned URLs for activity images
-	imageResponses := make([]models.ActivityImageResponse, 0, len(activity.ImageKeys))
-	for _, imageID := range activity.ImageKeys {
-		img := models.ActivityImageResponse{ImageID: imageID}
-		if fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium); err == nil {
-			img.ImageURL = fileResp.URL
-		}
-		imageResponses = append(imageResponses, img)
+	imageResponses := buildImageResponses(activity.ImageKeys, nil)
+	if len(activity.ImageKeys) > 0 {
+		urlMap, _ := s.fileService.GetFilesByImageIDs(ctx, activity.ImageKeys, models.ImageSizeMedium)
+		imageResponses = buildImageResponses(activity.ImageKeys, urlMap)
 	}
 
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
@@ -369,6 +365,7 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 }
 
 func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) []*models.ActivityAPIResponse {
+	imageURLMap := s.batchFetchImageURLs(ctx, activities)
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -377,20 +374,44 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 				proposerPictureURL = &url
 			}
 		}
-		// Fetch presigned URLs for activity images
-		imageResponses := make([]models.ActivityImageResponse, 0, len(activity.ImageKeys))
-		for _, imageID := range activity.ImageKeys {
-			img := models.ActivityImageResponse{ImageID: imageID}
-			if fileResp, err := s.fileService.GetFile(ctx, imageID, models.ImageSizeMedium); err == nil {
-				img.ImageURL = fileResp.URL
-			}
-			imageResponses = append(imageResponses, img)
-		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
-		apiResp.Images = imageResponses
+		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
 		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities
+}
+
+func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) map[uuid.UUID]string {
+	imageIDSet := make(map[uuid.UUID]struct{})
+	for _, activity := range activities {
+		for _, id := range activity.ImageKeys {
+			imageIDSet[id] = struct{}{}
+		}
+	}
+	if len(imageIDSet) == 0 {
+		return nil
+	}
+	imageIDs := make([]uuid.UUID, 0, len(imageIDSet))
+	for id := range imageIDSet {
+		imageIDs = append(imageIDs, id)
+	}
+	urlMap, err := s.fileService.GetFilesByImageIDs(ctx, imageIDs, models.ImageSizeMedium)
+	if err != nil {
+		return nil
+	}
+	return urlMap
+}
+
+func buildImageResponses(imageKeys []uuid.UUID, urlMap map[uuid.UUID]string) []models.ActivityImageResponse {
+	responses := make([]models.ActivityImageResponse, 0, len(imageKeys))
+	for _, imageID := range imageKeys {
+		img := models.ActivityImageResponse{ImageID: imageID}
+		if urlMap != nil {
+			img.ImageURL = urlMap[imageID]
+		}
+		responses = append(responses, img)
+	}
+	return responses
 }
 
 func (s *ActivityService) buildActivityPageResult(apiActivities []*models.ActivityAPIResponse, nextCursor *models.ActivityCursor, limit int) (*models.ActivityCursorPageResult, error) {
