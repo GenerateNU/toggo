@@ -267,35 +267,35 @@ export default function DateRangePicker({
       const { start, end } = prev;
 
       // Case 1: nothing selected
-    if (!start) {
-      return { start: date, end: date };
-    }
+      if (!start) {
+        return { start: date, end: date };
+      }
 
-    // Case 2: single-day range (start === end)
-    if (end && isSameDay(start, end)) {
-      if (isSameDay(date, start)) {
-        // Re-tapping the same day — do nothing
-        return prev;
+      // Case 2: single-day range (start === end)
+      if (end && isSameDay(start, end)) {
+        if (isSameDay(date, start)) {
+          // Re-tapping the same day — do nothing
+          return prev;
+        }
+        if (date < start) {
+          return { start: date, end: date };
+        }
+        return { start, end: date };
+      }
+
+      // Case 3: both start and end are selected (distinct range)
+      if (isSameDay(date, start) || (end && isSameDay(date, end))) {
+        return { start: date, end: date };
       }
       if (date < start) {
         return { start: date, end: date };
       }
-      return { start, end: date };
-    }
-
-    // Case 3: both start and end are selected (distinct range)
-    if (isSameDay(date, start) || (end && isSameDay(date, end))) {
+      if (end && date > end) {
+        return { start, end: date };
+      }
+      // date is between start and end → collapse to single-day range
       return { start: date, end: date };
-    }
-    if (date < start) {
-      return { start: date, end: date };
-    }
-    if (end && date > end) {
-      return { start, end: date };
-    }
-    // date is between start and end → collapse to single-day range
-    return { start: date, end: date };
-  });
+    });
   }, []);
 
   const handleClear = () => setRange({ start: null, end: null });

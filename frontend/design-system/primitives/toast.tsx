@@ -28,11 +28,7 @@ export default function Toast({
   return (
     <Box style={styles.toast}>
       <Box style={styles.checkCircle}>
-        <Check
-          size={16}
-          color={ColorPalette.textSecondary}
-          strokeWidth={2.5}
-        />
+        <Check size={16} color={ColorPalette.textSecondary} strokeWidth={2.5} />
       </Box>
 
       <Text
