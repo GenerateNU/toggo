@@ -772,6 +772,279 @@ func TestActivityPagination(t *testing.T) {
 	})
 }
 
+func TestActivityLocationAndEstimatedPrice(t *testing.T) {
+	t.Run("create activity with location and estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		locationName := "Eiffel Tower, Paris, France"
+		locationLat := 48.858844
+		locationLng := 2.294351
+		estimatedPrice := 29.99
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Eiffel Tower Visit",
+					LocationName:   &locationName,
+					LocationLat:    &locationLat,
+					LocationLng:    &locationLng,
+					EstimatedPrice: &estimatedPrice,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("location_name", locationName).
+			AssertField("location_lat", locationLat).
+			AssertField("location_lng", locationLng).
+			AssertField("estimated_price", estimatedPrice).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Verify fields persist on GET
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("location_name", locationName).
+			AssertField("location_lat", locationLat).
+			AssertField("location_lng", locationLng).
+			AssertField("estimated_price", estimatedPrice)
+	})
+
+	t.Run("create activity without optional fields omits them from response", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "Activity Without Location",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		require.Nil(t, resp["location_name"])
+		require.Nil(t, resp["location_lat"])
+		require.Nil(t, resp["location_lng"])
+		require.Nil(t, resp["estimated_price"])
+	})
+
+	t.Run("update activity location and estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		activityID := createActivity(t, app, owner, trip, "Activity to Update")
+
+		newLocationName := "Louvre Museum, Paris, France"
+		newLocationLat := 48.860294
+		newLocationLng := 2.337789
+		newPrice := 15.50
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					LocationName:   &newLocationName,
+					LocationLat:    &newLocationLat,
+					LocationLng:    &newLocationLng,
+					EstimatedPrice: &newPrice,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("location_name", newLocationName).
+			AssertField("location_lat", newLocationLat).
+			AssertField("location_lng", newLocationLng).
+			AssertField("estimated_price", newPrice)
+	})
+
+	t.Run("location and estimated price appear in list response", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		locationName := "Tokyo Tower, Japan"
+		locationLat := 35.658581
+		locationLng := 139.745438
+		estimatedPrice := 10.00
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Tokyo Tower Visit",
+					LocationName:   &locationName,
+					LocationLat:    &locationLat,
+					LocationLng:    &locationLng,
+					EstimatedPrice: &estimatedPrice,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		activity := items[0].(map[string]interface{})
+		require.Equal(t, locationName, activity["location_name"])
+		require.Equal(t, locationLat, activity["location_lat"])
+		require.Equal(t, locationLng, activity["location_lng"])
+		require.Equal(t, estimatedPrice, activity["estimated_price"])
+	})
+
+	t.Run("supports cents in estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		price := 9.99
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Coffee",
+					EstimatedPrice: &price,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("estimated_price", price)
+	})
+
+	t.Run("negative estimated price is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		negativePrice := -10.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Invalid Price Activity",
+					EstimatedPrice: &negativePrice,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("empty location name is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		emptyName := ""
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:       uuid.MustParse(trip),
+					Name:         "Activity With Empty Location",
+					LocationName: &emptyName,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("latitude out of range is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		invalidLat := 91.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:      uuid.MustParse(trip),
+					Name:        "Invalid Lat Activity",
+					LocationLat: &invalidLat,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("longitude out of range is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		invalidLng := 181.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:      uuid.MustParse(trip),
+					Name:        "Invalid Lng Activity",
+					LocationLng: &invalidLng,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+}
+
 func TestActivityRSVPs(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 

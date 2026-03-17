@@ -69,6 +69,11 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		}
 	}
 
+	currency := req.Currency
+	if currency == "" {
+		currency = "USD"
+	}
+
 	// Create trip
 	trip := &models.Trip{
 		ID:           uuid.New(),
@@ -76,6 +81,7 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		CoverImageID: req.CoverImageID,
 		BudgetMin:    req.BudgetMin,
 		BudgetMax:    req.BudgetMax,
+		Currency:     currency,
 	}
 
 	// Use transaction to ensure trip creation, membership, and default categories are atomic
@@ -190,6 +196,7 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			CoverImageURL: coverImageURL,
 			BudgetMin:     tripData.BudgetMin,
 			BudgetMax:     tripData.BudgetMax,
+			Currency:      tripData.Currency,
 			CreatedAt:     tripData.CreatedAt,
 			UpdatedAt:     tripData.UpdatedAt,
 		})
@@ -273,6 +280,7 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		CoverImageURL: coverImageURL,
 		BudgetMin:     tripData.BudgetMin,
 		BudgetMax:     tripData.BudgetMax,
+		Currency:      tripData.Currency,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil

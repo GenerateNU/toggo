@@ -68,15 +68,19 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		// Create activity
 		activity := &models.Activity{
-			TripID:       req.TripID,
-			ProposedBy:   &userID,
-			Name:         req.Name,
-			ThumbnailURL: req.ThumbnailURL,
-			MediaURL:     req.MediaURL,
-			Description:  req.Description,
-			Dates:        req.Dates,
-			CreatedAt:    time.Now(),
-			UpdatedAt:    time.Now(),
+			TripID:         req.TripID,
+			ProposedBy:     &userID,
+			Name:           req.Name,
+			ThumbnailURL:   req.ThumbnailURL,
+			MediaURL:       req.MediaURL,
+			Description:    req.Description,
+			Dates:          req.Dates,
+			LocationName:   req.LocationName,
+			LocationLat:    req.LocationLat,
+			LocationLng:    req.LocationLng,
+			EstimatedPrice: req.EstimatedPrice,
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
 		}
 
 		_, err := tx.NewInsert().
@@ -344,6 +348,10 @@ func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPicture
 		MediaURL:           activity.MediaURL,
 		Description:        activity.Description,
 		Dates:              activity.Dates,
+		LocationName:       activity.LocationName,
+		LocationLat:        activity.LocationLat,
+		LocationLng:        activity.LocationLng,
+		EstimatedPrice:     activity.EstimatedPrice,
 		CreatedAt:          activity.CreatedAt,
 		UpdatedAt:          activity.UpdatedAt,
 		ProposerUsername:   activity.ProposerUsername,

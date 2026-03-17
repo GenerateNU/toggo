@@ -13,8 +13,9 @@ import (
 type CategoryRepository interface {
 	Create(ctx context.Context, category *models.Category) (*models.Category, error)
 	Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error)
-	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error)
+	FindByTripID(ctx context.Context, tripID uuid.UUID, includeHidden bool) ([]*models.Category, error)
 	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
+	SetHidden(ctx context.Context, tripID uuid.UUID, name string, isHidden bool) error
 	Delete(ctx context.Context, tripID uuid.UUID, name string) error
 }
 
@@ -56,15 +57,19 @@ func (r *categoryRepository) Find(ctx context.Context, tripID uuid.UUID, name st
 	return category, nil
 }
 
-// FindByTripID retrieves all categories for a trip
-func (r *categoryRepository) FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error) {
+// FindByTripID retrieves categories for a trip. Pass includeHidden=true to also return hidden categories (admin use).
+func (r *categoryRepository) FindByTripID(ctx context.Context, tripID uuid.UUID, includeHidden bool) ([]*models.Category, error) {
 	var categories []*models.Category
-	err := r.db.NewSelect().
+	q := r.db.NewSelect().
 		Model(&categories).
 		Where("trip_id = ?", tripID).
-		Order("name ASC").
-		Scan(ctx)
-	if err != nil {
+		Order("name ASC")
+
+	if !includeHidden {
+		q = q.Where("is_hidden = false")
+	}
+
+	if err := q.Scan(ctx); err != nil {
 		return nil, err
 	}
 	return categories, nil
@@ -80,6 +85,16 @@ func (r *categoryRepository) Exists(ctx context.Context, tripID uuid.UUID, name 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// SetHidden sets the is_hidden flag on a category
+func (r *categoryRepository) SetHidden(ctx context.Context, tripID uuid.UUID, name string, isHidden bool) error {
+	_, err := r.db.NewUpdate().
+		Model((*models.Category)(nil)).
+		Set("is_hidden = ?", isHidden).
+		Where("trip_id = ? AND name = ?", tripID, name).
+		Exec(ctx)
+	return err
 }
 
 // Delete removes a category (idempotent)
