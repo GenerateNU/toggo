@@ -117,6 +117,8 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 		serviceParams.EventPublisher,
 	)
 
+	serviceParams.HTTPClient = services.DefaultHTTPClient()
+
 	routeParams := types.RouteParams{
 		Validator:     utilities.NewValidator(),
 		ServiceParams: serviceParams,
