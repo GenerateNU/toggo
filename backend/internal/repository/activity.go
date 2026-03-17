@@ -123,8 +123,11 @@ func (r *activityRepository) FindByCategoryName(
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").
+		Join("JOIN categories AS cat ON cat.trip_id = a.trip_id AND cat.name = ac.category_name").
 		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
-		Where("a.trip_id = ? AND ac.category_name = ?", tripID, categoryName).
+		Where("a.trip_id = ?", tripID).
+		Where("ac.category_name = ?", categoryName).
+		Where("cat.is_hidden = false").
 		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
@@ -177,6 +180,22 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 
 	if req.Dates != nil {
 		updateQuery = updateQuery.Set("dates = ?", *req.Dates)
+	}
+
+	if req.LocationName != nil {
+		updateQuery = updateQuery.Set("location_name = ?", *req.LocationName)
+	}
+
+	if req.LocationLat != nil {
+		updateQuery = updateQuery.Set("location_lat = ?", *req.LocationLat)
+	}
+
+	if req.LocationLng != nil {
+		updateQuery = updateQuery.Set("location_lng = ?", *req.LocationLng)
+	}
+
+	if req.EstimatedPrice != nil {
+		updateQuery = updateQuery.Set("estimated_price = ?", *req.EstimatedPrice)
 	}
 
 	// Atomic update with RETURNING to avoid race conditions

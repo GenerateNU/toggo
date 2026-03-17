@@ -14,6 +14,8 @@ export type { RemoveCategoryFromActivityMutationKey } from "./activities/useRemo
 export type { UpdateActivityMutationKey } from "./activities/useUpdateActivity.ts";
 export type { GetCategoriesByTripIDQueryKey } from "./categories/useGetCategoriesByTripID.ts";
 export type { GetCategoriesByTripIDSuspenseQueryKey } from "./categories/useGetCategoriesByTripIDSuspense.ts";
+export type { HideCategoryMutationKey } from "./categories/useHideCategory.ts";
+export type { ShowCategoryMutationKey } from "./categories/useShowCategory.ts";
 export type { CreateCommentMutationKey } from "./comments/useCreateComment.ts";
 export type { DeleteCommentMutationKey } from "./comments/useDeleteComment.ts";
 export type { GetPaginatedCommentsQueryKey } from "./comments/useGetPaginatedComments.ts";
@@ -158,6 +160,14 @@ export { getCategoriesByTripIDSuspense } from "./categories/useGetCategoriesByTr
 export { getCategoriesByTripIDSuspenseQueryKey } from "./categories/useGetCategoriesByTripIDSuspense.ts";
 export { getCategoriesByTripIDSuspenseQueryOptions } from "./categories/useGetCategoriesByTripIDSuspense.ts";
 export { useGetCategoriesByTripIDSuspense } from "./categories/useGetCategoriesByTripIDSuspense.ts";
+export { hideCategory } from "./categories/useHideCategory.ts";
+export { hideCategoryMutationKey } from "./categories/useHideCategory.ts";
+export { hideCategoryMutationOptions } from "./categories/useHideCategory.ts";
+export { useHideCategory } from "./categories/useHideCategory.ts";
+export { showCategory } from "./categories/useShowCategory.ts";
+export { showCategoryMutationKey } from "./categories/useShowCategory.ts";
+export { showCategoryMutationOptions } from "./categories/useShowCategory.ts";
+export { useShowCategory } from "./categories/useShowCategory.ts";
 export { createComment } from "./comments/useCreateComment.ts";
 export { createCommentMutationKey } from "./comments/useCreateComment.ts";
 export { createCommentMutationOptions } from "./comments/useCreateComment.ts";

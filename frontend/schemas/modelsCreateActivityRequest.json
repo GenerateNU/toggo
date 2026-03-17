@@ -30,11 +30,15 @@
       }
     },
     "description": { "type": "string" },
+    "estimated_price": { "type": "number", "minimum": 0 },
     "image_ids": {
       "type": "array",
       "maxItems": 5,
       "items": { "type": "string" }
     },
+    "location_lat": { "type": "number", "maximum": 90, "minimum": -90 },
+    "location_lng": { "type": "number", "maximum": 180, "minimum": -180 },
+    "location_name": { "type": "string", "maxLength": 500, "minLength": 1 },
     "media_url": { "type": "string" },
     "name": { "type": "string", "maxLength": 255, "minLength": 1 },
     "thumbnail_url": { "type": "string" },

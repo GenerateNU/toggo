@@ -16,7 +16,15 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
+        type: string
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
         type: string
       media_url:
         type: string
@@ -45,12 +53,20 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
         type: string
-      image_ids:
-        items:
-          $ref: '#/definitions/models.ActivityImageResponse'
-        type: array
+      image_id:
+        type: string
+      image_url:
+        type: string
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
+        type: string
       media_url:
         type: string
       name:
@@ -88,13 +104,6 @@ definitions:
       limit:
         type: integer
       next_cursor:
-        type: string
-    type: object
-  models.ActivityImageResponse:
-    properties:
-      image_id:
-        type: string
-      image_url:
         type: string
     type: object
   models.ActivityRSVPAPIResponse:
@@ -167,6 +176,9 @@ definitions:
         type: string
       icon:
         type: string
+      is_hidden:
+        description: only present for admins
+        type: boolean
       name:
         type: string
       trip_id:
@@ -258,11 +270,26 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        minimum: 0
+        type: number
       image_ids:
         items:
           type: string
         maxItems: 5
         type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
+        type: string
       media_url:
         type: string
       name:
@@ -405,6 +432,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -1081,6 +1110,8 @@ definitions:
         type: string
       created_at:
         type: string
+      currency:
+        type: string
       id:
         type: string
       name:
@@ -1097,6 +1128,8 @@ definitions:
       cover_image_url:
         type: string
       created_at:
+        type: string
+      currency:
         type: string
       id:
         type: string
@@ -1138,18 +1171,32 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
-        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
         maxItems: 20
         type: array
       description:
         type: string
+      estimated_price:
+        minimum: 0
+        type: number
       image_ids:
         items:
           type: string
         maxItems: 5
         type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
+        type: string
       media_url:
         type: string
       name:
@@ -1211,6 +1258,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -2788,6 +2837,88 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get categories by trip
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/hide:
+    put:
+      description: Hides a category from all members (admin only)
+      operationId: hideCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Hide category
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/show:
+    put:
+      description: Makes a previously hidden category visible again (admin only)
+      operationId: showCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Show category
       tags:
       - categories
   /api/v1/trips/{tripID}/invites:
