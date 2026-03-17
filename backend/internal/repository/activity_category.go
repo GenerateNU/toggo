@@ -57,18 +57,20 @@ func (r *activityCategoryRepository) RemoveCategoryFromActivity(ctx context.Cont
 	return err
 }
 
-// GetCategoriesForActivity retrieves categories for an activity with pagination
+// GetCategoriesForActivity retrieves visible categories for an activity with pagination
 func (r *activityCategoryRepository) GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error) {
 	query := r.db.NewSelect().
-		Model((*models.ActivityCategory)(nil)).
-		Column("category_name").
-		Where("activity_id = ?", activityID).
-		Order("category_name ASC").
+		TableExpr("activity_categories AS ac").
+		ColumnExpr("ac.category_name").
+		Join("JOIN categories AS c ON c.trip_id = ac.trip_id AND c.name = ac.category_name").
+		Where("ac.activity_id = ?", activityID).
+		Where("c.is_hidden = false").
+		Order("ac.category_name ASC").
 		Limit(limit + 1)
 
 	// Apply cursor if provided
 	if cursor != nil && *cursor != "" {
-		query = query.Where("category_name > ?", *cursor)
+		query = query.Where("ac.category_name > ?", *cursor)
 	}
 
 	var activityCategories []*models.ActivityCategory
@@ -93,7 +95,7 @@ func (r *activityCategoryRepository) GetCategoriesForActivity(ctx context.Contex
 	return categoryNames, nextCursor, nil
 }
 
-// GetCategoriesForActivities retrieves categories for multiple activities (batch)
+// GetCategoriesForActivities retrieves visible categories for multiple activities (batch)
 func (r *activityCategoryRepository) GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
 	if len(activityIDs) == 0 {
 		return make(map[uuid.UUID][]string), nil
@@ -101,10 +103,13 @@ func (r *activityCategoryRepository) GetCategoriesForActivities(ctx context.Cont
 
 	var activityCategories []*models.ActivityCategory
 	err := r.db.NewSelect().
-		Model(&activityCategories).
-		Where("activity_id IN (?)", bun.In(activityIDs)).
-		Order("activity_id ASC", "category_name ASC").
-		Scan(ctx)
+		TableExpr("activity_categories AS ac").
+		ColumnExpr("ac.activity_id, ac.trip_id, ac.category_name").
+		Join("JOIN categories AS c ON c.trip_id = ac.trip_id AND c.name = ac.category_name").
+		Where("ac.activity_id IN (?)", bun.In(activityIDs)).
+		Where("c.is_hidden = false").
+		OrderExpr("ac.activity_id ASC, ac.category_name ASC").
+		Scan(ctx, &activityCategories)
 	if err != nil {
 		return nil, err
 	}
