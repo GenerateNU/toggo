@@ -1,7 +1,7 @@
 import { useGetActivity } from "@/api/activities";
 import { Box, Screen, Text } from "@/design-system";
 import { useLocalSearchParams } from "expo-router";
-import { Image, ScrollView, StyleSheet, View } from "react-native";
+import { Image, ScrollView } from "react-native";
 
 export default function ActivityDetail() {
   const { id: activityID, tripID } = useLocalSearchParams<{
@@ -49,105 +49,107 @@ export default function ActivityDetail() {
         )}
 
         {activity && (
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {activity.description && (
-              <Box
-                backgroundColor="surfaceCard"
-                borderRadius="md"
-                padding="md"
-                gap="xs"
-              >
-                <Text variant="smLabel" color="textQuaternary">
-                  DESCRIPTION
-                </Text>
-                <Text variant="mdParagraph" color="textSecondary">
-                  {activity.description}
-                </Text>
-              </Box>
-            )}
+          <ScrollView>
+            <Box padding="sm" gap="xs">
+              {activity.description && (
+                <Box
+                  backgroundColor="surfaceCard"
+                  borderRadius="md"
+                  padding="md"
+                  gap="xs"
+                >
+                  <Text variant="smLabel" color="textQuaternary">
+                    DESCRIPTION
+                  </Text>
+                  <Text variant="mdParagraph" color="textSecondary">
+                    {activity.description}
+                  </Text>
+                </Box>
+              )}
 
-            {activity.image_ids && activity.image_ids.length > 0 && (
+              {activity.image_ids && activity.image_ids.length > 0 && (
+                <Box
+                  backgroundColor="surfaceCard"
+                  borderRadius="md"
+                  padding="md"
+                  gap="sm"
+                >
+                  <Text variant="smLabel" color="textQuaternary">
+                    IMAGES ({activity.image_ids.length})
+                  </Text>
+                  <Box flexDirection="row" flexWrap="wrap" gap="xs">
+                    {activity.image_ids.map((img, i) =>
+                      img.image_url ? (
+                        <Image
+                          key={img.image_id ?? i}
+                          source={{ uri: img.image_url }}
+                          style={{ width: 120, height: 120, borderRadius: 8 }}
+                          resizeMode="cover"
+                        />
+                      ) : null,
+                    )}
+                  </Box>
+                </Box>
+              )}
+
               <Box
                 backgroundColor="surfaceCard"
                 borderRadius="md"
                 padding="md"
                 gap="sm"
               >
-                <Text variant="smLabel" color="textQuaternary">
-                  IMAGES ({activity.image_ids.length})
-                </Text>
-                <View style={styles.imageGrid}>
-                  {activity.image_ids.map((img, i) =>
-                    img.image_url ? (
-                      <Image
-                        key={img.image_id ?? i}
-                        source={{ uri: img.image_url }}
-                        style={styles.image}
-                        resizeMode="cover"
-                      />
-                    ) : null,
+                <Box gap="xs">
+                  <Text variant="smLabel" color="textQuaternary">
+                    PROPOSED BY
+                  </Text>
+                  <Text variant="mdParagraph" color="textSecondary">
+                    {activity.proposer_username ?? activity.proposed_by ?? "—"}
+                  </Text>
+                </Box>
+
+                {activity.category_names &&
+                  activity.category_names.length > 0 && (
+                    <>
+                      <Box height={1} backgroundColor="borderPrimary" />
+                      <Box gap="xs">
+                        <Text variant="smLabel" color="textQuaternary">
+                          CATEGORIES
+                        </Text>
+                        <Text variant="mdParagraph" color="textSecondary">
+                          {activity.category_names.join(", ")}
+                        </Text>
+                      </Box>
+                    </>
                   )}
-                </View>
-              </Box>
-            )}
 
-            <Box
-              backgroundColor="surfaceCard"
-              borderRadius="md"
-              padding="md"
-              gap="sm"
-            >
-              <Box gap="xs">
-                <Text variant="smLabel" color="textQuaternary">
-                  PROPOSED BY
-                </Text>
-                <Text variant="mdParagraph" color="textSecondary">
-                  {activity.proposer_username ?? activity.proposed_by ?? "—"}
-                </Text>
-              </Box>
-
-              {activity.category_names &&
-                activity.category_names.length > 0 && (
+                {activity.location_name && (
                   <>
                     <Box height={1} backgroundColor="borderPrimary" />
                     <Box gap="xs">
                       <Text variant="smLabel" color="textQuaternary">
-                        CATEGORIES
+                        LOCATION
                       </Text>
                       <Text variant="mdParagraph" color="textSecondary">
-                        {activity.category_names.join(", ")}
+                        {activity.location_name}
                       </Text>
                     </Box>
                   </>
                 )}
 
-              {activity.location_name && (
-                <>
-                  <Box height={1} backgroundColor="borderPrimary" />
-                  <Box gap="xs">
-                    <Text variant="smLabel" color="textQuaternary">
-                      LOCATION
-                    </Text>
-                    <Text variant="mdParagraph" color="textSecondary">
-                      {activity.location_name}
-                    </Text>
-                  </Box>
-                </>
-              )}
-
-              {activity.estimated_price != null && (
-                <>
-                  <Box height={1} backgroundColor="borderPrimary" />
-                  <Box gap="xs">
-                    <Text variant="smLabel" color="textQuaternary">
-                      ESTIMATED PRICE
-                    </Text>
-                    <Text variant="mdParagraph" color="textSecondary">
-                      {activity.estimated_price}
-                    </Text>
-                  </Box>
-                </>
-              )}
+                {activity.estimated_price != null && (
+                  <>
+                    <Box height={1} backgroundColor="borderPrimary" />
+                    <Box gap="xs">
+                      <Text variant="smLabel" color="textQuaternary">
+                        ESTIMATED PRICE
+                      </Text>
+                      <Text variant="mdParagraph" color="textSecondary">
+                        {activity.estimated_price}
+                      </Text>
+                    </Box>
+                  </>
+                )}
+              </Box>
             </Box>
           </ScrollView>
         )}
@@ -155,20 +157,3 @@ export default function ActivityDetail() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContent: {
-    padding: 16,
-    gap: 12,
-  },
-  imageGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 8,
-  },
-});
