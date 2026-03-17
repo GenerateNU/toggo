@@ -277,6 +277,11 @@ export type ModelsCategoryAPIResponse = {
    */
   icon?: string;
   /**
+   * @description only present for admins
+   * @type boolean | undefined
+   */
+  is_hidden?: boolean;
+  /**
    * @type string | undefined
    */
   name?: string;
@@ -3534,6 +3539,118 @@ export type GetCategoriesByTripIDQuery = {
     | GetCategoriesByTripID403
     | GetCategoriesByTripID404
     | GetCategoriesByTripID500;
+};
+
+export type HideCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type HideCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type HideCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type HideCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type HideCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type HideCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type HideCategory500 = ErrsAPIError;
+
+export type HideCategoryMutationResponse = HideCategory204;
+
+export type HideCategoryMutation = {
+  Response: HideCategory204;
+  PathParams: HideCategoryPathParams;
+  Errors:
+    | HideCategory400
+    | HideCategory401
+    | HideCategory403
+    | HideCategory404
+    | HideCategory500;
+};
+
+export type ShowCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ShowCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ShowCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ShowCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ShowCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ShowCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ShowCategory500 = ErrsAPIError;
+
+export type ShowCategoryMutationResponse = ShowCategory204;
+
+export type ShowCategoryMutation = {
+  Response: ShowCategory204;
+  PathParams: ShowCategoryPathParams;
+  Errors:
+    | ShowCategory400
+    | ShowCategory401
+    | ShowCategory403
+    | ShowCategory404
+    | ShowCategory500;
 };
 
 export type CreateTripInvitePathParams = {

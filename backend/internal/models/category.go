@@ -14,6 +14,7 @@ type Category struct {
 	TripID    uuid.UUID `bun:"trip_id,pk,type:uuid" json:"trip_id"`
 	Name      string    `bun:"name,pk" json:"name"`
 	Icon      *string   `bun:"icon" json:"icon,omitempty"`
+	IsHidden  bool      `bun:"is_hidden" json:"is_hidden"`
 	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -30,6 +31,7 @@ type CategoryAPIResponse struct {
 	TripID    uuid.UUID `json:"trip_id"`
 	Name      string    `json:"name"`
 	Icon      *string   `json:"icon,omitempty"`
+	IsHidden  *bool     `json:"is_hidden,omitempty"` // only present for admins
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
