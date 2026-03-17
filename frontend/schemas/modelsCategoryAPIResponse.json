@@ -3,6 +3,10 @@
   "properties": {
     "created_at": { "type": "string" },
     "icon": { "type": "string" },
+    "is_hidden": {
+      "description": "only present for admins",
+      "type": "boolean"
+    },
     "name": { "type": "string" },
     "trip_id": { "type": "string" },
     "updated_at": { "type": "string" }

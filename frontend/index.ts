@@ -14,6 +14,8 @@ export type { RemoveCategoryFromActivityMutationKey } from "./api/activities/use
 export type { UpdateActivityMutationKey } from "./api/activities/useUpdateActivity.ts";
 export type { GetCategoriesByTripIDQueryKey } from "./api/categories/useGetCategoriesByTripID.ts";
 export type { GetCategoriesByTripIDSuspenseQueryKey } from "./api/categories/useGetCategoriesByTripIDSuspense.ts";
+export type { HideCategoryMutationKey } from "./api/categories/useHideCategory.ts";
+export type { ShowCategoryMutationKey } from "./api/categories/useShowCategory.ts";
 export type { CreateCommentMutationKey } from "./api/comments/useCreateComment.ts";
 export type { DeleteCommentMutationKey } from "./api/comments/useDeleteComment.ts";
 export type { GetPaginatedCommentsQueryKey } from "./api/comments/useGetPaginatedComments.ts";
@@ -158,6 +160,14 @@ export { getCategoriesByTripIDSuspense } from "./api/categories/useGetCategories
 export { getCategoriesByTripIDSuspenseQueryKey } from "./api/categories/useGetCategoriesByTripIDSuspense.ts";
 export { getCategoriesByTripIDSuspenseQueryOptions } from "./api/categories/useGetCategoriesByTripIDSuspense.ts";
 export { useGetCategoriesByTripIDSuspense } from "./api/categories/useGetCategoriesByTripIDSuspense.ts";
+export { hideCategory } from "./api/categories/useHideCategory.ts";
+export { hideCategoryMutationKey } from "./api/categories/useHideCategory.ts";
+export { hideCategoryMutationOptions } from "./api/categories/useHideCategory.ts";
+export { useHideCategory } from "./api/categories/useHideCategory.ts";
+export { showCategory } from "./api/categories/useShowCategory.ts";
+export { showCategoryMutationKey } from "./api/categories/useShowCategory.ts";
+export { showCategoryMutationOptions } from "./api/categories/useShowCategory.ts";
+export { useShowCategory } from "./api/categories/useShowCategory.ts";
 export { createComment } from "./api/comments/useCreateComment.ts";
 export { createCommentMutationKey } from "./api/comments/useCreateComment.ts";
 export { createCommentMutationOptions } from "./api/comments/useCreateComment.ts";

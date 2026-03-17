@@ -1,5 +1,7 @@
 export type { GetCategoriesByTripIDQueryKey } from "./useGetCategoriesByTripID.ts";
 export type { GetCategoriesByTripIDSuspenseQueryKey } from "./useGetCategoriesByTripIDSuspense.ts";
+export type { HideCategoryMutationKey } from "./useHideCategory.ts";
+export type { ShowCategoryMutationKey } from "./useShowCategory.ts";
 export { getCategoriesByTripID } from "./useGetCategoriesByTripID.ts";
 export { getCategoriesByTripIDQueryKey } from "./useGetCategoriesByTripID.ts";
 export { getCategoriesByTripIDQueryOptions } from "./useGetCategoriesByTripID.ts";
@@ -8,3 +10,11 @@ export { getCategoriesByTripIDSuspense } from "./useGetCategoriesByTripIDSuspens
 export { getCategoriesByTripIDSuspenseQueryKey } from "./useGetCategoriesByTripIDSuspense.ts";
 export { getCategoriesByTripIDSuspenseQueryOptions } from "./useGetCategoriesByTripIDSuspense.ts";
 export { useGetCategoriesByTripIDSuspense } from "./useGetCategoriesByTripIDSuspense.ts";
+export { hideCategory } from "./useHideCategory.ts";
+export { hideCategoryMutationKey } from "./useHideCategory.ts";
+export { hideCategoryMutationOptions } from "./useHideCategory.ts";
+export { useHideCategory } from "./useHideCategory.ts";
+export { showCategory } from "./useShowCategory.ts";
+export { showCategoryMutationKey } from "./useShowCategory.ts";
+export { showCategoryMutationOptions } from "./useShowCategory.ts";
+export { useShowCategory } from "./useShowCategory.ts";

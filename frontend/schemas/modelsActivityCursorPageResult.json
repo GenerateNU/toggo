@@ -30,7 +30,11 @@
             }
           },
           "description": { "type": "string" },
+          "estimated_price": { "type": "number" },
           "id": { "type": "string" },
+          "location_lat": { "type": "number" },
+          "location_lng": { "type": "number" },
+          "location_name": { "type": "string" },
           "media_url": { "type": "string" },
           "name": { "type": "string" },
           "proposed_by": { "type": "string" },

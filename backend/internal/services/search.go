@@ -57,6 +57,7 @@ func (s *SearchService) SearchTrips(ctx context.Context, userID uuid.UUID, query
 			CoverImageURL: coverImageURL,
 			BudgetMin:     row.BudgetMin,
 			BudgetMax:     row.BudgetMax,
+			Currency:      row.Currency,
 			CreatedAt:     row.CreatedAt,
 			UpdatedAt:     row.UpdatedAt,
 		})
