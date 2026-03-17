@@ -2,6 +2,7 @@ package routers
 
 import (
 	"toggo/internal/controllers"
+	"toggo/internal/server/middlewares"
 	"toggo/internal/types"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,6 +16,7 @@ func TripTabRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.R
 
 	// /api/v1/trips/:tripID/tabs
 	tripTabGroup := apiGroup.Group("/trips/:tripID/tabs")
+	tripTabGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	tripTabGroup.Get("", tripTabController.GetTabs)
 	tripTabGroup.Post("", tripTabController.CreateTab)
 	tripTabGroup.Put("/reorder", tripTabController.ReorderTabs)

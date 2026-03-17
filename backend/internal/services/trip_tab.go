@@ -81,10 +81,17 @@ func (s *TripTabService) CreateTab(ctx context.Context, tripID, userID uuid.UUID
 		return nil, errs.BadRequest(errors.New("cannot create a fixed tab"))
 	}
 
-	// Position new tab at the end
+	// Position new tab at MAX(position)+1 to avoid constraint violations after deletions
 	tabs, err := s.TripTab.FindByTripID(ctx, tripID)
 	if err != nil {
 		return nil, err
+	}
+
+	nextPosition := 0
+	for _, t := range tabs {
+		if t.Position >= nextPosition {
+			nextPosition = t.Position + 1
+		}
 	}
 
 	tab := &models.TripTab{
@@ -92,7 +99,7 @@ func (s *TripTabService) CreateTab(ctx context.Context, tripID, userID uuid.UUID
 		TripID:    tripID,
 		TabType:   req.TabType,
 		Name:      req.Name,
-		Position:  len(tabs),
+		Position:  nextPosition,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -110,13 +117,36 @@ func (s *TripTabService) ReorderTabs(ctx context.Context, tripID, userID uuid.UU
 		return errs.Forbidden()
 	}
 
-	// Ensure no duplicate positions in the request
+	// Fetch current tabs and validate the request is a full one-to-one mapping
+	currentTabs, err := s.TripTab.FindByTripID(ctx, tripID)
+	if err != nil {
+		return err
+	}
+
+	if len(req.Tabs) != len(currentTabs) {
+		return errs.BadRequest(errors.New("reorder request must include all tabs exactly once"))
+	}
+
+	currentIDs := make(map[uuid.UUID]bool)
+	for _, t := range currentTabs {
+		currentIDs[t.ID] = true
+	}
+
+	// Ensure no duplicate positions and all IDs belong to this trip
 	seen := make(map[int]bool)
+	seenIDs := make(map[uuid.UUID]bool)
 	for _, t := range req.Tabs {
+		if !currentIDs[t.ID] {
+			return errs.BadRequest(errors.New("tab does not belong to this trip"))
+		}
+		if seenIDs[t.ID] {
+			return errs.BadRequest(errors.New("duplicate tab IDs in reorder request"))
+		}
 		if seen[t.Position] {
 			return errs.BadRequest(errors.New("duplicate positions in reorder request"))
 		}
 		seen[t.Position] = true
+		seenIDs[t.ID] = true
 	}
 
 	return s.TripTab.UpdateOrder(ctx, tripID, req.Tabs)

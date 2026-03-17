@@ -27,5 +27,5 @@ type UpdateTripTabOrderRequest struct {
 
 type TripTabOrder struct {
 	ID       uuid.UUID `validate:"required" json:"id"`
-	Position int       `validate:"required,min=0" json:"position"`
+	Position int `validate:"min=0" json:"position"`
 }
