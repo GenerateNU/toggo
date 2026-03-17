@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1155,6 +1157,283 @@ func TestActivityRSVPs(t *testing.T) {
 		rsvps := resp["rsvps"].([]interface{})
 		fmt.Printf("RSVPs returned: %+v\n", rsvps)
 		require.True(t, len(rsvps) >= 1)
+	})
+}
+
+func TestActivityImages(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	db := fakes.GetSharedDB()
+
+	// helper: insert a confirmed image record directly into DB
+	insertConfirmedImage := func(t *testing.T) uuid.UUID {
+		t.Helper()
+		imageID := uuid.New()
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: imageID,
+				FileKey: "large/images/" + uuid.NewString() + ".jpg",
+				Size:    models.ImageSizeLarge,
+				Status:  models.UploadStatusConfirmed,
+			}).
+			Exec(context.Background())
+		assert.NoError(t, err)
+		return imageID
+	}
+
+	t.Run("create activity with images returns image_ids in response", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity With Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		images, ok := resp["image_ids"].([]interface{})
+		require.True(t, ok, "image_ids should be an array")
+		require.Equal(t, 1, len(images))
+
+		img := images[0].(map[string]interface{})
+		require.Equal(t, imageID.String(), img["image_id"])
+	})
+
+	t.Run("create activity without images returns empty image_ids", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "Activity Without Images",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		// image_ids should be absent or nil when no images
+		images := resp["image_ids"]
+		if images != nil {
+			require.Equal(t, 0, len(images.([]interface{})))
+		}
+	})
+
+	t.Run("update activity replaces images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		image1 := insertConfirmedImage(t)
+		image2 := insertConfirmedImage(t)
+
+		// Create with image1
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Update Images",
+					ImageIDs: []uuid.UUID{image1},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Update to image2 only
+		newImages := []uuid.UUID{image2}
+		updateResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					ImageIDs: &newImages,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images, ok := updateResp["image_ids"].([]interface{})
+		require.True(t, ok)
+		require.Equal(t, 1, len(images))
+		img := images[0].(map[string]interface{})
+		require.Equal(t, image2.String(), img["image_id"])
+	})
+
+	t.Run("update activity with empty images clears all images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Clear Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		emptyImages := []uuid.UUID{}
+		updateResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					ImageIDs: &emptyImages,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images := updateResp["image_ids"]
+		if images != nil {
+			require.Equal(t, 0, len(images.([]interface{})))
+		}
+	})
+
+	t.Run("delete activity removes image associations", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Delete With Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Delete the activity
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+
+		// Verify activity is gone
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+
+		// Verify activity_images rows are gone (cascade delete)
+		actUUID := uuid.MustParse(activityID)
+		count, err := db.NewSelect().
+			TableExpr("activity_images").
+			Where("activity_id = ?", actUUID).
+			Count(context.Background())
+		assert.NoError(t, err)
+		assert.Equal(t, 0, count, "activity_images rows should be deleted on cascade")
+	})
+
+	t.Run("create activity with too many images returns 422", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		imageIDs := make([]uuid.UUID, models.MaxActivityImages+1)
+		for i := range imageIDs {
+			imageIDs[i] = uuid.New()
+		}
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Too Many Images",
+					ImageIDs: imageIDs,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("get activity includes images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		createResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity For Get Test",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := createResp["id"].(string)
+
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images, ok := getResp["image_ids"].([]interface{})
+		require.True(t, ok)
+		require.Equal(t, 1, len(images))
+		img := images[0].(map[string]interface{})
+		require.Equal(t, imageID.String(), img["image_id"])
 	})
 }
 

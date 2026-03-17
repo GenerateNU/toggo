@@ -19,6 +19,8 @@ type ImageRepository interface {
 	MarkFailed(ctx context.Context, imageID uuid.UUID, size models.ImageSize) error
 	FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	FindByIDAndSize(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
+	FindByIDsAndSize(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) ([]*models.Image, error)
+	FindAllByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	DeleteByID(ctx context.Context, imageID uuid.UUID) error
 	CleanupPendingUploads(ctx context.Context, olderThan time.Duration) (int64, error)
@@ -234,6 +236,40 @@ func (r *imageRepository) FindByIDIncludingPending(ctx context.Context, imageID 
 		return nil, errs.ErrNotFound
 	}
 
+	return images, nil
+}
+
+// FindByIDsAndSize retrieves confirmed images for multiple image IDs at a given size
+func (r *imageRepository) FindByIDsAndSize(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) ([]*models.Image, error) {
+	if len(imageIDs) == 0 {
+		return nil, nil
+	}
+	images := make([]*models.Image, 0, len(imageIDs))
+	err := r.db.NewSelect().
+		Model(&images).
+		Where("image_id IN (?)", bun.In(imageIDs)).
+		Where("size = ?", size).
+		Where("status = ?", models.UploadStatusConfirmed).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return images, nil
+}
+
+// FindAllByID retrieves all size variants of an image regardless of status
+func (r *imageRepository) FindAllByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error) {
+	images := make([]*models.Image, 0)
+	err := r.db.NewSelect().
+		Model(&images).
+		Where("image_id = ?", imageID).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(images) == 0 {
+		return nil, errs.ErrNotFound
+	}
 	return images, nil
 }
 

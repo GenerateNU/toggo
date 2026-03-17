@@ -38,6 +38,89 @@ func (_m *MockS3Client) EXPECT() *MockS3Client_Expecter {
 	return &MockS3Client_Expecter{mock: &_m.Mock}
 }
 
+// DeleteObject provides a mock function for the type MockS3Client
+func (_mock *MockS3Client) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+	var tmpRet mock.Arguments
+	if len(optFns) > 0 {
+		tmpRet = _mock.Called(ctx, params, optFns)
+	} else {
+		tmpRet = _mock.Called(ctx, params)
+	}
+	ret := tmpRet
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteObject")
+	}
+
+	var r0 *s3.DeleteObjectOutput
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)); ok {
+		return returnFunc(ctx, params, optFns...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) *s3.DeleteObjectOutput); ok {
+		r0 = returnFunc(ctx, params, optFns...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*s3.DeleteObjectOutput)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *s3.DeleteObjectInput, ...func(*s3.Options)) error); ok {
+		r1 = returnFunc(ctx, params, optFns...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockS3Client_DeleteObject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteObject'
+type MockS3Client_DeleteObject_Call struct {
+	*mock.Call
+}
+
+// DeleteObject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - params *s3.DeleteObjectInput
+//   - optFns ...func(*s3.Options)
+func (_e *MockS3Client_Expecter) DeleteObject(ctx interface{}, params interface{}, optFns ...interface{}) *MockS3Client_DeleteObject_Call {
+	return &MockS3Client_DeleteObject_Call{Call: _e.mock.On("DeleteObject",
+		append([]interface{}{ctx, params}, optFns...)...)}
+}
+
+func (_c *MockS3Client_DeleteObject_Call) Run(run func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options))) *MockS3Client_DeleteObject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *s3.DeleteObjectInput
+		if args[1] != nil {
+			arg1 = args[1].(*s3.DeleteObjectInput)
+		}
+		var arg2 []func(*s3.Options)
+		var variadicArgs []func(*s3.Options)
+		if len(args) > 2 {
+			variadicArgs = args[2].([]func(*s3.Options))
+		}
+		arg2 = variadicArgs
+		run(
+			arg0,
+			arg1,
+			arg2...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockS3Client_DeleteObject_Call) Return(deleteObjectOutput *s3.DeleteObjectOutput, err error) *MockS3Client_DeleteObject_Call {
+	_c.Call.Return(deleteObjectOutput, err)
+	return _c
+}
+
+func (_c *MockS3Client_DeleteObject_Call) RunAndReturn(run func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)) *MockS3Client_DeleteObject_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // HeadBucket provides a mock function for the type MockS3Client
 func (_mock *MockS3Client) HeadBucket(ctx context.Context, params *s3.HeadBucketInput, optFns ...func(*s3.Options)) (*s3.HeadBucketOutput, error) {
 	var tmpRet mock.Arguments

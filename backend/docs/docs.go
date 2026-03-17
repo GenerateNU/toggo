@@ -383,6 +383,49 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Deletes all size variants of an image from S3 and the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete image",
+                "operationId": "deleteImage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/files/{imageId}/{size}": {
@@ -4731,6 +4774,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "image_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityImageResponse"
+                    }
+                },
                 "location_lat": {
                     "type": "number"
                 },
@@ -4796,6 +4845,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 }
             }
@@ -5058,6 +5118,13 @@ const docTemplate = `{
                 "estimated_price": {
                     "type": "number",
                     "minimum": 0
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "location_lat": {
                     "type": "number",
@@ -6444,6 +6511,13 @@ const docTemplate = `{
                 "estimated_price": {
                     "type": "number",
                     "minimum": 0
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "location_lat": {
                     "type": "number",

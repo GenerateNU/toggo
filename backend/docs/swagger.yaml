@@ -57,6 +57,10 @@ definitions:
         type: number
       id:
         type: string
+      image_ids:
+        items:
+          $ref: '#/definitions/models.ActivityImageResponse'
+        type: array
       location_lat:
         type: number
       location_lng:
@@ -100,6 +104,13 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ActivityImageResponse:
+    properties:
+      image_id:
+        type: string
+      image_url:
         type: string
     type: object
   models.ActivityRSVPAPIResponse:
@@ -269,6 +280,11 @@ definitions:
       estimated_price:
         minimum: 0
         type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       location_lat:
         maximum: 90
         minimum: -90
@@ -1211,6 +1227,11 @@ definitions:
       estimated_price:
         minimum: 0
         type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       location_lat:
         maximum: 90
         minimum: -90
@@ -1511,6 +1532,35 @@ paths:
       tags:
       - comments
   /api/v1/files/{imageId}:
+    delete:
+      description: Deletes all size variants of an image from S3 and the database
+      operationId: deleteImage
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete image
+      tags:
+      - files
     get:
       description: Retrieves presigned URLs for all sizes of an image
       operationId: getFileAllSizes
