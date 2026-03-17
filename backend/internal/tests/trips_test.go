@@ -359,6 +359,135 @@ func TestTripPagination(t *testing.T) {
 	})
 }
 
+func TestTripCurrency(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	userID := createUser(t, app)
+
+	t.Run("defaults to USD when currency not provided", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreateTripRequest{
+					Name:      "Trip Without Currency",
+					BudgetMin: 100,
+					BudgetMax: 1000,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("currency", "USD")
+	})
+
+	t.Run("create trip with explicit currency", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreateTripRequest{
+					Name:      "Euro Trip",
+					BudgetMin: 100,
+					BudgetMax: 2000,
+					Currency:  "EUR",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("currency", "EUR").
+			GetBody()
+
+		tripID := resp["id"].(string)
+
+		// Verify currency persists on GET
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("currency", "EUR")
+	})
+
+	t.Run("currency appears in list response", func(t *testing.T) {
+		ownerID := createUser(t, app)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &ownerID,
+				Body: models.CreateTripRequest{
+					Name:      "JPY Trip",
+					BudgetMin: 100,
+					BudgetMax: 500000,
+					Currency:  "JPY",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		tripID := resp["id"].(string)
+
+		listResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.GET,
+				UserID: &ownerID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := listResp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		trip := items[0].(map[string]interface{})
+		require.Equal(t, tripID, trip["id"])
+		require.Equal(t, "JPY", trip["currency"])
+	})
+
+	t.Run("update trip currency", func(t *testing.T) {
+		ownerID := createUser(t, app)
+		tripID := createTrip(t, app, ownerID)
+
+		newCurrency := "GBP"
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.PATCH,
+				UserID: &ownerID,
+				Body: models.UpdateTripRequest{
+					Currency: &newCurrency,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("currency", "GBP")
+	})
+
+	t.Run("invalid currency code is rejected", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreateTripRequest{
+					Name:      "Bad Currency Trip",
+					BudgetMin: 100,
+					BudgetMax: 1000,
+					Currency:  "USDX", // 4 chars — invalid
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+}
+
 func TestTripValidation(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	authUserID := fakes.GenerateUUID()

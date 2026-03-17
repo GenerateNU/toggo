@@ -5,6 +5,7 @@
     "budget_min": { "type": "integer" },
     "cover_image_url": { "type": "string" },
     "created_at": { "type": "string" },
+    "currency": { "type": "string" },
     "id": { "type": "string" },
     "name": { "type": "string" },
     "updated_at": { "type": "string" }

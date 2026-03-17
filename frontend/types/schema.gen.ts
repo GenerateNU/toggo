@@ -638,7 +638,11 @@ export const modelsActivitySchema = z.object({
     return z.array(modelsDateRangeSchema).optional();
   },
   description: z.optional(z.string()),
+  estimated_price: z.optional(z.number()),
   id: z.optional(z.string()),
+  location_lat: z.optional(z.number()),
+  location_lng: z.optional(z.number()),
+  location_name: z.optional(z.string()),
   media_url: z.optional(z.string()),
   name: z.optional(z.string()),
   proposed_by: z.optional(z.string()),
@@ -654,7 +658,11 @@ export const modelsActivityAPIResponseSchema = z.object({
     return z.array(modelsDateRangeSchema).optional();
   },
   description: z.optional(z.string()),
+  estimated_price: z.optional(z.number()),
   id: z.optional(z.string()),
+  location_lat: z.optional(z.number()),
+  location_lng: z.optional(z.number()),
+  location_name: z.optional(z.string()),
   media_url: z.optional(z.string()),
   name: z.optional(z.string()),
   proposed_by: z.optional(z.string()),
@@ -815,6 +823,10 @@ export const modelsCreateActivityRequestSchema = z.object({
     return z.array(modelsDateRangeSchema).max(20).optional();
   },
   description: z.optional(z.string()),
+  estimated_price: z.optional(z.number().min(0)),
+  location_lat: z.optional(z.number().min(-90).max(90)),
+  location_lng: z.optional(z.number().min(-180).max(180)),
+  location_name: z.optional(z.string().min(1).max(500)),
   media_url: z.optional(z.string()),
   name: z.string().min(1).max(255),
   thumbnail_url: z.optional(z.string()),
@@ -907,6 +919,7 @@ export const modelsCreateTripRequestSchema = z.object({
   budget_max: z.int().min(0),
   budget_min: z.int().min(0),
   cover_image_id: z.optional(z.string()),
+  currency: z.optional(z.string()),
   name: z.string().min(1),
 }) as unknown as z.ZodType<ModelsCreateTripRequest>;
 
@@ -1294,6 +1307,7 @@ export const modelsTripAPIResponseSchema = z.object({
   budget_min: z.optional(z.int()),
   cover_image_url: z.optional(z.string()),
   created_at: z.optional(z.string()),
+  currency: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   updated_at: z.optional(z.string()),
@@ -1340,6 +1354,7 @@ export const modelsTripSchema = z.object({
   budget_min: z.optional(z.int()),
   cover_image_id: z.optional(z.string()),
   created_at: z.optional(z.string()),
+  currency: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   updated_at: z.optional(z.string()),
@@ -1366,13 +1381,13 @@ export const modelsTripInviteAPIResponseSchema = z.object({
 
 export const modelsUpdateActivityRequestSchema = z.object({
   get dates() {
-    return z
-      .array(modelsDateRangeSchema)
-      .max(20)
-      .describe("Max 20 date ranges")
-      .optional();
+    return z.array(modelsDateRangeSchema).max(20).optional();
   },
   description: z.optional(z.string()),
+  estimated_price: z.optional(z.number().min(0)),
+  location_lat: z.optional(z.number().min(-90).max(90)),
+  location_lng: z.optional(z.number().min(-180).max(180)),
+  location_name: z.optional(z.string().min(1).max(500)),
   media_url: z.optional(z.string()),
   name: z.optional(z.string().min(1).max(255)),
   thumbnail_url: z.optional(z.string()),
@@ -1405,6 +1420,7 @@ export const modelsUpdateTripRequestSchema = z.object({
   budget_max: z.optional(z.int().min(0)),
   budget_min: z.optional(z.int().min(0)),
   cover_image_id: z.optional(z.string()),
+  currency: z.optional(z.string()),
   name: z.optional(z.string().min(1)),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 

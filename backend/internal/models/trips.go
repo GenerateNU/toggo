@@ -12,6 +12,7 @@ type Trip struct {
 	CoverImageID *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
 	BudgetMin    int        `bun:"budget_min" json:"budget_min"`
 	BudgetMax    int        `bun:"budget_max" json:"budget_max"`
+	Currency     string     `bun:"currency" json:"currency"`
 	CreatedAt    time.Time  `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt    time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -21,6 +22,7 @@ type CreateTripRequest struct {
 	BudgetMin    int        `json:"budget_min" validate:"required,gte=0"`
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
+	Currency     string     `json:"currency" validate:"omitempty,len=3"`
 }
 
 type UpdateTripRequest struct {
@@ -28,6 +30,7 @@ type UpdateTripRequest struct {
 	BudgetMin    *int       `json:"budget_min" validate:"omitempty,gte=0"`
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
+	Currency     *string    `json:"currency" validate:"omitempty,len=3"`
 }
 
 // TripPageResult holds an offset-paginated list of trips and metadata.
@@ -55,6 +58,7 @@ type TripDatabaseResponse struct {
 	CoverImageKey *string    `bun:"cover_image_key"`
 	BudgetMin     int        `bun:"budget_min"`
 	BudgetMax     int        `bun:"budget_max"`
+	Currency      string     `bun:"currency"`
 	CreatedAt     time.Time  `bun:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at"`
 }
@@ -65,6 +69,7 @@ type TripAPIResponse struct {
 	CoverImageURL *string   `json:"cover_image_url"`
 	BudgetMin     int       `json:"budget_min"`
 	BudgetMax     int       `json:"budget_max"`
+	Currency      string    `json:"currency"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }

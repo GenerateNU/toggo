@@ -38,9 +38,25 @@ export type ModelsActivity = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -85,9 +101,25 @@ export type ModelsActivityAPIResponse = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -437,6 +469,29 @@ export type ModelsCreateActivityRequest = {
    */
   description?: string;
   /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
+  /**
    * @type string | undefined
    */
   media_url?: string;
@@ -661,6 +716,10 @@ export type ModelsCreateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string
@@ -1460,6 +1519,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1578,6 +1641,10 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1641,7 +1708,6 @@ export type ModelsTripInviteAPIResponse = {
 
 export type ModelsUpdateActivityRequest = {
   /**
-   * @description Max 20 date ranges
    * @type array | undefined
    */
   dates?: ModelsDateRange[];
@@ -1649,6 +1715,29 @@ export type ModelsUpdateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -1741,6 +1830,10 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string | undefined
