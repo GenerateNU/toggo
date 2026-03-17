@@ -3,8 +3,9 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { withOpacity } from "../../utils/color";
 import { Smile } from "lucide-react-native";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import ReactionPicker from "./reaction-picker";
 
@@ -134,7 +135,7 @@ export default function Comment({
             */}
             <View ref={anchorRef} collapsable={false} />
 
-            {/* Reactions row — only rendered if there are reactions */}
+            {/* Reactions row (shown only when reactions exist) */}
             {hasReactions && (
               <Box style={styles.reactionsRow}>
                 {comment.reactions.map((r) => (
@@ -145,7 +146,7 @@ export default function Comment({
                   />
                 ))}
 
-                {/* Smiley button */}
+                {/* Add reaction button */}
                 <Pressable
                   onPress={handleSmilePress}
                   style={({ pressed }) => [
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.surfaceBackground,
   },
   reactionBadgeActive: {
-    backgroundColor: ColorPalette.brandPrimary + "20",
+    backgroundColor: withOpacity(ColorPalette.brandPrimary, 0.12),
     borderWidth: 1,
     borderColor: ColorPalette.brandPrimary,
   },

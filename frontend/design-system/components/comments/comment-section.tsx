@@ -2,7 +2,8 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Layout } from "@/design-system/tokens/layout";
+import { Layout, ModalHandle } from "@/design-system/tokens/layout";
+import { X } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
   FlatList,
@@ -103,6 +104,13 @@ export default function CommentSection({
     setActivePickerId(null);
   }, []);
 
+  const handleModalClose = useCallback(() => {
+    // Reset picker state when modal closes
+    setActivePickerId(null);
+    setPickerAnchor({ y: 0, x: 0 });
+    onClose();
+  }, [onClose]);
+
   const renderItem = useCallback(
     ({ item }: { item: CommentData }) => (
       <Comment
@@ -130,7 +138,7 @@ export default function CommentSection({
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={onClose}
+      onRequestClose={handleModalClose}
     >
       <KeyboardAvoidingView
         style={styles.container}
@@ -143,6 +151,14 @@ export default function CommentSection({
           <Text variant="smHeading" color="textSecondary" style={styles.title}>
             Comments
           </Text>
+          <Pressable
+            onPress={handleModalClose}
+            style={styles.closeButton}
+            hitSlop={8}
+            accessibilityLabel="Close comments"
+          >
+            <X size={24} color={ColorPalette.textQuaternary} />
+          </Pressable>
         </Box>
 
         {/* Comment list */}
@@ -217,16 +233,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 10,
     paddingBottom: 12,
+    paddingHorizontal: Layout.spacing.md,
   },
   handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    ...ModalHandle,
     backgroundColor: ColorPalette.borderPrimary,
-    marginBottom: 12,
   },
   title: {
     textAlign: "center",
+    flex: 1,
+  },
+  closeButton: {
+    position: "absolute",
+    right: Layout.spacing.md,
+    top: 10,
   },
   listContent: {
     paddingHorizontal: Layout.spacing.md,

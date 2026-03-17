@@ -280,7 +280,7 @@ export default function DateRangePicker({
         return { start: date, end: date };
       }
       if (date < start) {
-        return { start: date, end };
+        return { start: date, end: date };
       }
       if (end && date > end) {
         return { start, end: date };
@@ -304,6 +304,7 @@ export default function DateRangePicker({
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet"
+      onRequestClose={onClose}
     >
       <Box style={[styles.sheet, { paddingTop: topInset }]}>
         {/* ─── Header ───────────────────────────────────────────────── */}

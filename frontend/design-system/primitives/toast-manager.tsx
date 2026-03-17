@@ -225,10 +225,11 @@ export function ToastProvider({
 
   const show = useCallback(
     (config: ToastConfig) => {
-      const id = nextId++;
       setQueue((prev) => {
+        const id = nextId++;
         const newQueue = [{ ...config, id }, ...prev];
-        // Limit queue to maxVisible items
+
+        // If we exceed maxVisible, keep only the most recent maxVisible toasts
         return newQueue.slice(0, maxVisible);
       });
     },

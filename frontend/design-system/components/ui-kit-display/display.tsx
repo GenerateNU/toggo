@@ -142,8 +142,6 @@ export default function UIKit() {
 
   const handleSave = (range: DateRange) => {
     setSelectedRange(range);
-    console.log("Start:", range.start);
-    console.log("End:", range.end);
   };
 
   const formatDate = (d: Date | null) =>

@@ -64,15 +64,13 @@ export function Checkbox({
         pressed && !disabled && styles.rowPressed,
       ]}
       disabled={disabled}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked, disabled }}
     >
       <CheckboxMark checked={checked} disabled={disabled} />
       <Text
         variant="smLabel"
-        style={{
-          color: disabled
-            ? ColorPalette.textDisabled
-            : ColorPalette.textSecondary,
-        }}
+        color={disabled ? "textDisabled" : "textSecondary"}
       >
         {label}
       </Text>

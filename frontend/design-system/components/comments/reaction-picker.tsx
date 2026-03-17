@@ -21,6 +21,11 @@ export type ReactionPickerProps = {
   onClose: () => void;
 };
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/** Vertical offset to position picker above the anchor point */
+const PICKER_VERTICAL_OFFSET = 20;
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function ReactionPicker({
@@ -66,7 +71,7 @@ export default function ReactionPicker({
           style={[
             styles.container,
             {
-              top: anchorY - 20,
+              top: anchorY - PICKER_VERTICAL_OFFSET,
               left: anchorX,
               transform: [{ scale }],
               opacity,
