@@ -110,19 +110,77 @@ func (_c *MockActivityCategoryRepository_AddCategoriesToActivity_Call) RunAndRet
 
 // AddCategoriesToActivityTx provides a mock function for the type MockActivityCategoryRepository
 func (_mock *MockActivityCategoryRepository) AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, tripID uuid.UUID, categoryNames []string) error {
-	ret := _mock.Called(ctx, &tx, activityID, tripID, categoryNames)
+	ret := _mock.Called(ctx, tx, activityID, tripID, categoryNames)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddCategoriesToActivityTx")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *bun.Tx, uuid.UUID, uuid.UUID, []string) error); ok {
-		r0 = returnFunc(ctx, &tx, activityID, tripID, categoryNames)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bun.Tx, uuid.UUID, uuid.UUID, []string) error); ok {
+		r0 = returnFunc(ctx, tx, activityID, tripID, categoryNames)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
+}
+
+// MockActivityCategoryRepository_AddCategoriesToActivityTx_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddCategoriesToActivityTx'
+type MockActivityCategoryRepository_AddCategoriesToActivityTx_Call struct {
+	*mock.Call
+}
+
+// AddCategoriesToActivityTx is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx bun.Tx
+//   - activityID uuid.UUID
+//   - tripID uuid.UUID
+//   - categoryNames []string
+func (_e *MockActivityCategoryRepository_Expecter) AddCategoriesToActivityTx(ctx interface{}, tx interface{}, activityID interface{}, tripID interface{}, categoryNames interface{}) *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call {
+	return &MockActivityCategoryRepository_AddCategoriesToActivityTx_Call{Call: _e.mock.On("AddCategoriesToActivityTx", ctx, tx, activityID, tripID, categoryNames)}
+}
+
+func (_c *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call) Run(run func(ctx context.Context, tx bun.Tx, activityID uuid.UUID, tripID uuid.UUID, categoryNames []string)) *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 bun.Tx
+		if args[1] != nil {
+			arg1 = args[1].(bun.Tx)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		var arg4 []string
+		if args[4] != nil {
+			arg4 = args[4].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call) Return(err error) *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call) RunAndReturn(run func(ctx context.Context, tx bun.Tx, activityID uuid.UUID, tripID uuid.UUID, categoryNames []string) error) *MockActivityCategoryRepository_AddCategoriesToActivityTx_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // GetCategoriesForActivities provides a mock function for the type MockActivityCategoryRepository
@@ -277,63 +335,6 @@ func (_c *MockActivityCategoryRepository_GetCategoriesForActivity_Call) Return(s
 }
 
 func (_c *MockActivityCategoryRepository_GetCategoriesForActivity_Call) RunAndReturn(run func(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)) *MockActivityCategoryRepository_GetCategoriesForActivity_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// RemoveAllCategoriesFromActivity provides a mock function for the type MockActivityCategoryRepository
-func (_mock *MockActivityCategoryRepository) RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error {
-	ret := _mock.Called(ctx, activityID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for RemoveAllCategoriesFromActivity")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, activityID)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveAllCategoriesFromActivity'
-type MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call struct {
-	*mock.Call
-}
-
-// RemoveAllCategoriesFromActivity is a helper method to define mock.On call
-//   - ctx context.Context
-//   - activityID uuid.UUID
-func (_e *MockActivityCategoryRepository_Expecter) RemoveAllCategoriesFromActivity(ctx interface{}, activityID interface{}) *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call {
-	return &MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call{Call: _e.mock.On("RemoveAllCategoriesFromActivity", ctx, activityID)}
-}
-
-func (_c *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call) Run(run func(ctx context.Context, activityID uuid.UUID)) *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call) Return(err error) *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call) RunAndReturn(run func(ctx context.Context, activityID uuid.UUID) error) *MockActivityCategoryRepository_RemoveAllCategoriesFromActivity_Call {
 	_c.Call.Return(run)
 	return _c
 }

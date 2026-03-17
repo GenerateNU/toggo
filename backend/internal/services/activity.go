@@ -18,7 +18,7 @@ type ActivityServiceInterface interface {
 	GetActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) (*models.ActivityAPIResponse, error)
 	GetActivitiesByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
-	UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error)
+	UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.ActivityAPIResponse, error)
 	DeleteActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) error
 
 	// Category management on activities
@@ -86,6 +86,11 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 
 		// Add categories using ActivityCategory repository, transactionally
 		if len(req.CategoryNames) > 0 {
+			// Ensure categories exist in the categories table first (FK requirement)
+			err = s.Category.UpsertBatchTx(ctx, tx, createdActivity.TripID, req.CategoryNames)
+			if err != nil {
+				return err
+			}
 			err = s.ActivityCategory.AddCategoriesToActivityTx(ctx, tx, createdActivity.ID, createdActivity.TripID, req.CategoryNames)
 			if err != nil {
 				return err
@@ -156,7 +161,7 @@ func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, u
 	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
 }
 
-func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.Activity, error) {
+func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.ActivityAPIResponse, error) {
 	activity, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID)
 	if err != nil {
 		return nil, err
@@ -172,10 +177,9 @@ func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID
 		return nil, errs.Forbidden()
 	}
 
-	var updated *models.Activity
 	err = s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
 		var err error
-		updated, err = s.Activity.Update(ctx, activityID, &req)
+		_, err = s.Activity.Update(ctx, activityID, &req)
 		if err != nil {
 			return err
 		}
@@ -191,7 +195,7 @@ func (s *ActivityService) UpdateActivity(ctx context.Context, tripID, activityID
 	if err != nil {
 		return nil, err
 	}
-	return updated, nil
+	return s.GetActivity(ctx, tripID, activityID, userID)
 }
 
 func (s *ActivityService) DeleteActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) error {
@@ -210,15 +214,8 @@ func (s *ActivityService) DeleteActivity(ctx context.Context, tripID, activityID
 		return errs.Forbidden()
 	}
 
-	return s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-		// Remove images transactionally
-		err := s.Activity.ReplaceImagesTx(ctx, tx, activityID, []uuid.UUID{})
-		if err != nil {
-			return err
-		}
-		// Delete activity
-		return s.Activity.Delete(ctx, activityID)
-	})
+	// activity_images rows are cleaned up automatically via ON DELETE CASCADE
+	return s.Activity.Delete(ctx, activityID)
 }
 
 // GetActivityCategories retrieves categories for an activity with pagination

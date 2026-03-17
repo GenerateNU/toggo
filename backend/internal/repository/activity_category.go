@@ -10,10 +10,10 @@ import (
 
 type ActivityCategoryRepository interface {
 	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
+	AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID, tripID uuid.UUID, categoryNames []string) error
 	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
 	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
 	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
-	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
 }
 
 var _ ActivityCategoryRepository = (*activityCategoryRepository)(nil)
@@ -142,11 +142,3 @@ func (r *activityCategoryRepository) GetCategoriesForActivities(ctx context.Cont
 	return result, nil
 }
 
-// RemoveAllCategoriesFromActivity removes all categories from an activity
-func (r *activityCategoryRepository) RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error {
-	_, err := r.db.NewDelete().
-		Model((*models.ActivityCategory)(nil)).
-		Where("activity_id = ?", activityID).
-		Exec(ctx)
-	return err
-}

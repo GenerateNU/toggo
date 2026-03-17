@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -16,6 +17,7 @@ type CategoryRepository interface {
 	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.Category, error)
 	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
 	Delete(ctx context.Context, tripID uuid.UUID, name string) error
+	UpsertBatchTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error
 }
 
 var _ CategoryRepository = (*categoryRepository)(nil)
@@ -80,6 +82,28 @@ func (r *categoryRepository) Exists(ctx context.Context, tripID uuid.UUID, name 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// UpsertBatchTx inserts multiple categories for a trip in a transaction, ignoring conflicts
+func (r *categoryRepository) UpsertBatchTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error {
+	if len(names) == 0 {
+		return nil
+	}
+	now := time.Now()
+	categories := make([]*models.Category, 0, len(names))
+	for _, name := range names {
+		categories = append(categories, &models.Category{
+			TripID:    tripID,
+			Name:      name,
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+	}
+	_, err := tx.NewInsert().
+		Model(&categories).
+		On("CONFLICT (trip_id, name) DO NOTHING").
+		Exec(ctx)
+	return err
 }
 
 // Delete removes a category (idempotent)
