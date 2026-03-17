@@ -94,6 +94,8 @@ func buildMessage(e validator.FieldError) string {
 		return fmt.Sprintf("%s must be greater than or equal to %s", e.Field(), e.Param())
 	case "lte":
 		return fmt.Sprintf("%s must be less than or equal to %s", e.Field(), e.Param())
+	case "iso4217":
+		return fmt.Sprintf("%s must be a valid ISO 4217 currency code", e.Field())
 	case "image_size":
 		sizes := make([]string, len(allowedImageSizes))
 		for i, s := range allowedImageSizes {
@@ -110,6 +112,7 @@ func NewValidator() *validator.Validate {
 
 	registerUserValidator(v)
 	registerImageValidator(v)
+	registerCurrencyValidator(v)
 
 	return v
 }

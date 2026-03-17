@@ -4597,7 +4597,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "estimated_price": {
+                    "type": "number"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location_lat": {
+                    "type": "number"
+                },
+                "location_lng": {
+                    "type": "number"
+                },
+                "location_name": {
                     "type": "string"
                 },
                 "media_url": {
@@ -4641,7 +4653,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "estimated_price": {
+                    "type": "number"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location_lat": {
+                    "type": "number"
+                },
+                "location_lng": {
+                    "type": "number"
+                },
+                "location_name": {
                     "type": "string"
                 },
                 "media_url": {
@@ -4959,6 +4983,25 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "estimated_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "location_lat": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "location_lng": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
+                },
                 "media_url": {
                     "type": "string"
                 },
@@ -5173,6 +5216,9 @@ const docTemplate = `{
                     "minimum": 0
                 },
                 "cover_image_id": {
+                    "type": "string"
+                },
+                "currency": {
                     "type": "string"
                 },
                 "name": {
@@ -6164,6 +6210,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "currency": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -6188,6 +6237,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "currency": {
                     "type": "string"
                 },
                 "id": {
@@ -6251,7 +6303,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dates": {
-                    "description": "Max 20 date ranges",
                     "type": "array",
                     "maxItems": 20,
                     "items": {
@@ -6260,6 +6311,25 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "estimated_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "location_lat": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "location_lng": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
                 },
                 "media_url": {
                     "type": "string"
@@ -6350,6 +6420,9 @@ const docTemplate = `{
                     "minimum": 0
                 },
                 "cover_image_id": {
+                    "type": "string"
+                },
+                "currency": {
                     "type": "string"
                 },
                 "name": {
