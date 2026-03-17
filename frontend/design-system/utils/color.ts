@@ -17,7 +17,7 @@
  */
 export function withOpacity(hexColor: string, opacity: number): string {
   // Remove # if present
-  const hex = hexColor.replace('#', '');
+  const hex = hexColor.replace("#", "");
 
   // Parse RGB values
   const r = parseInt(hex.substring(0, 2), 16);
