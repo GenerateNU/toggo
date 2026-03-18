@@ -60,11 +60,11 @@ export const NotificationProvider = ({
     undefined,
   );
 
-  const { userId, isAuthenticated } = useUser();
+  const { userId, isAuthenticated, currentUser } = useUser();
   const updateUser = useUpdateUser();
 
   useEffect(() => {
-    if (!isAuthenticated || !userId) return;
+    if (!isAuthenticated || !userId || !currentUser) return;
 
     registerForPushNotificationsAsync().then((token) => {
       if (token) {
@@ -107,7 +107,8 @@ export const NotificationProvider = ({
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [userId, isAuthenticated, updateUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isAuthenticated, currentUser]);
 
   const clearLastNotification = () => {
     setLastNotification(null);

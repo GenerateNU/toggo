@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -769,5 +771,778 @@ func TestActivityPagination(t *testing.T) {
 			nextTime := next["created_at"].(string)
 			require.True(t, currentTime >= nextTime, "Items should be ordered by created_at DESC")
 		}
+	})
+}
+
+func TestActivityLocationAndEstimatedPrice(t *testing.T) {
+	t.Run("create activity with location and estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		locationName := "Eiffel Tower, Paris, France"
+		locationLat := 48.858844
+		locationLng := 2.294351
+		estimatedPrice := 29.99
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Eiffel Tower Visit",
+					LocationName:   &locationName,
+					LocationLat:    &locationLat,
+					LocationLng:    &locationLng,
+					EstimatedPrice: &estimatedPrice,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("location_name", locationName).
+			AssertField("location_lat", locationLat).
+			AssertField("location_lng", locationLng).
+			AssertField("estimated_price", estimatedPrice).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Verify fields persist on GET
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("location_name", locationName).
+			AssertField("location_lat", locationLat).
+			AssertField("location_lng", locationLng).
+			AssertField("estimated_price", estimatedPrice)
+	})
+
+	t.Run("create activity without optional fields omits them from response", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "Activity Without Location",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		require.Nil(t, resp["location_name"])
+		require.Nil(t, resp["location_lat"])
+		require.Nil(t, resp["location_lng"])
+		require.Nil(t, resp["estimated_price"])
+	})
+
+	t.Run("update activity location and estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		activityID := createActivity(t, app, owner, trip, "Activity to Update")
+
+		newLocationName := "Louvre Museum, Paris, France"
+		newLocationLat := 48.860294
+		newLocationLng := 2.337789
+		newPrice := 15.50
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					LocationName:   &newLocationName,
+					LocationLat:    &newLocationLat,
+					LocationLng:    &newLocationLng,
+					EstimatedPrice: &newPrice,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("location_name", newLocationName).
+			AssertField("location_lat", newLocationLat).
+			AssertField("location_lng", newLocationLng).
+			AssertField("estimated_price", newPrice)
+	})
+
+	t.Run("location and estimated price appear in list response", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		locationName := "Tokyo Tower, Japan"
+		locationLat := 35.658581
+		locationLng := 139.745438
+		estimatedPrice := 10.00
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Tokyo Tower Visit",
+					LocationName:   &locationName,
+					LocationLat:    &locationLat,
+					LocationLng:    &locationLng,
+					EstimatedPrice: &estimatedPrice,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		activity := items[0].(map[string]interface{})
+		require.Equal(t, locationName, activity["location_name"])
+		require.Equal(t, locationLat, activity["location_lat"])
+		require.Equal(t, locationLng, activity["location_lng"])
+		require.Equal(t, estimatedPrice, activity["estimated_price"])
+	})
+
+	t.Run("supports cents in estimated price", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		price := 9.99
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Coffee",
+					EstimatedPrice: &price,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertField("estimated_price", price)
+	})
+
+	t.Run("negative estimated price is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		negativePrice := -10.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:         uuid.MustParse(trip),
+					Name:           "Invalid Price Activity",
+					EstimatedPrice: &negativePrice,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("empty location name is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		emptyName := ""
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:       uuid.MustParse(trip),
+					Name:         "Activity With Empty Location",
+					LocationName: &emptyName,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("latitude out of range is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		invalidLat := 91.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:      uuid.MustParse(trip),
+					Name:        "Invalid Lat Activity",
+					LocationLat: &invalidLat,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("longitude out of range is rejected", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		invalidLng := 181.0
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:      uuid.MustParse(trip),
+					Name:        "Invalid Lng Activity",
+					LocationLng: &invalidLng,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+}
+
+func TestActivityRSVPs(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	owner := createUser(t, app)
+	member := createUser(t, app)
+	nonMember := createUser(t, app)
+	trip := createTrip(t, app, owner)
+	addMember(t, app, owner, member, trip)
+	activityID := createActivity(t, app, owner, trip, "RSVP Test Activity")
+
+	t.Run("member can RSVP yes", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "yes",
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("status", "yes")
+	})
+
+	t.Run("member can RSVP maybe", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "maybe",
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("status", "maybe")
+	})
+
+	t.Run("member can RSVP not going", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "no",
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("status", "no")
+	})
+
+	t.Run("non-member cannot RSVP", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &nonMember,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "yes",
+				},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("invalid activity ID returns 404", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, uuid.New().String()),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "yes",
+				},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("invalid status returns 422", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: "invalid-status",
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("get RSVPs for activity", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps := resp["rsvps"].([]interface{})
+		fmt.Printf("RSVPs returned: %+v\n", rsvps)
+		require.True(t, len(rsvps) >= 1)
+	})
+}
+
+func TestActivityImages(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	db := fakes.GetSharedDB()
+
+	// helper: insert a confirmed image record directly into DB
+	insertConfirmedImage := func(t *testing.T) uuid.UUID {
+		t.Helper()
+		imageID := uuid.New()
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: imageID,
+				FileKey: "large/images/" + uuid.NewString() + ".jpg",
+				Size:    models.ImageSizeLarge,
+				Status:  models.UploadStatusConfirmed,
+			}).
+			Exec(context.Background())
+		assert.NoError(t, err)
+		return imageID
+	}
+
+	t.Run("create activity with images returns image_ids in response", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity With Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		images, ok := resp["image_ids"].([]interface{})
+		require.True(t, ok, "image_ids should be an array")
+		require.Equal(t, 1, len(images))
+
+		img := images[0].(map[string]interface{})
+		require.Equal(t, imageID.String(), img["image_id"])
+	})
+
+	t.Run("create activity without images returns empty image_ids", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "Activity Without Images",
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		// image_ids should be absent or nil when no images
+		images := resp["image_ids"]
+		if images != nil {
+			require.Equal(t, 0, len(images.([]interface{})))
+		}
+	})
+
+	t.Run("update activity replaces images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		image1 := insertConfirmedImage(t)
+		image2 := insertConfirmedImage(t)
+
+		// Create with image1
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Update Images",
+					ImageIDs: []uuid.UUID{image1},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Update to image2 only
+		newImages := []uuid.UUID{image2}
+		updateResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					ImageIDs: &newImages,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images, ok := updateResp["image_ids"].([]interface{})
+		require.True(t, ok)
+		require.Equal(t, 1, len(images))
+		img := images[0].(map[string]interface{})
+		require.Equal(t, image2.String(), img["image_id"])
+	})
+
+	t.Run("update activity with empty images clears all images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Clear Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		emptyImages := []uuid.UUID{}
+		updateResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &owner,
+				Body: models.UpdateActivityRequest{
+					ImageIDs: &emptyImages,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images := updateResp["image_ids"]
+		if images != nil {
+			require.Equal(t, 0, len(images.([]interface{})))
+		}
+	})
+
+	t.Run("delete activity removes image associations", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity To Delete With Images",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := resp["id"].(string)
+
+		// Delete the activity
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+
+		// Verify activity is gone
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+
+		// Verify activity_images rows are gone (cascade delete)
+		actUUID := uuid.MustParse(activityID)
+		count, err := db.NewSelect().
+			TableExpr("activity_images").
+			Where("activity_id = ?", actUUID).
+			Count(context.Background())
+		assert.NoError(t, err)
+		assert.Equal(t, 0, count, "activity_images rows should be deleted on cascade")
+	})
+
+	t.Run("create activity with too many images returns 422", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		imageIDs := make([]uuid.UUID, models.MaxActivityImages+1)
+		for i := range imageIDs {
+			imageIDs[i] = uuid.New()
+		}
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Too Many Images",
+					ImageIDs: imageIDs,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("get activity includes images", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		imageID := insertConfirmedImage(t)
+
+		createResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.POST,
+				UserID: &owner,
+				Body: models.CreateActivityRequest{
+					TripID:   uuid.MustParse(trip),
+					Name:     "Activity For Get Test",
+					ImageIDs: []uuid.UUID{imageID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		activityID := createResp["id"].(string)
+
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		images, ok := getResp["image_ids"].([]interface{})
+		require.True(t, ok)
+		require.Equal(t, 1, len(images))
+		img := images[0].(map[string]interface{})
+		require.Equal(t, imageID.String(), img["image_id"])
+	})
+}
+
+func TestActivityRSVPPagination(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	owner := createUser(t, app)
+	trip := createTrip(t, app, owner)
+	activityID := createActivity(t, app, owner, trip, "RSVP Pagination Activity")
+
+	memberIDs := make([]string, 10)
+	for i := 0; i < 10; i++ {
+		member := createUser(t, app)
+		addMember(t, app, owner, member, trip)
+		memberIDs[i] = member
+		var status string
+		switch i % 3 {
+		case 0:
+			status = string(models.RSVPStatusGoing)
+		case 1:
+			status = string(models.RSVPStatusMaybe)
+		case 2:
+			status = string(models.RSVPStatusNotGoing)
+		}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.PUT,
+				UserID: &member,
+				Body: models.ActivityRSVPRequestPayload{
+					Status: models.RSVPStatus(status),
+				},
+			}).
+			AssertStatus(http.StatusOK)
+	}
+
+	t.Run("pagination works with limit", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=4", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps := resp["rsvps"].([]interface{})
+		require.Equal(t, 4, len(rsvps))
+		nextCursor := resp["next_cursor"]
+		require.NotNil(t, nextCursor)
+	})
+
+	t.Run("pagination with cursor returns next page", func(t *testing.T) {
+		// Get first page
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		nextCursor := resp["next_cursor"]
+		require.NotNil(t, nextCursor)
+
+		// Get next page
+		resp2 := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?limit=3&cursor=%s", trip, activityID, nextCursor),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps2, ok := resp2["rsvps"].([]interface{})
+		if !ok {
+			t.Fatalf("Expected resp2['rsvps'] to be []interface{}, got %T. Full response: %#v", resp2["rsvps"], resp2)
+		}
+		require.Equal(t, 3, len(rsvps2))
+	})
+
+	t.Run("filter by status returns correct RSVPs", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?status=%s", trip, activityID, models.RSVPStatusGoing),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		rsvps := resp["rsvps"].([]interface{})
+		for _, rsvp := range rsvps {
+			m := rsvp.(map[string]interface{})
+			require.Equal(t, string(models.RSVPStatusGoing), m["status"])
+		}
+	})
+
+	t.Run("invalid cursor returns 400", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps?cursor=invalid", trip, activityID),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
 	})
 }

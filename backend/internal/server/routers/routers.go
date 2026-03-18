@@ -2,7 +2,6 @@ package routers
 
 import (
 	"toggo/internal/controllers"
-	"toggo/internal/services"
 	"toggo/internal/types"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,16 +10,11 @@ import (
 func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...fiber.Handler) {
 	app.Get("/healthcheck", controllers.HealthcheckHandler(routeParams.ServiceParams.Repository.Health))
 
-	routeParams.ServiceParams.FileService = services.NewFileService(services.FileServiceConfig{
-		PresignClient: routeParams.ServiceParams.Config.AWS.PresignClient,
-		S3Client:      routeParams.ServiceParams.Config.AWS.S3Client,
-		ImageRepo:     routeParams.ServiceParams.Repository.Image,
-		BucketName:    routeParams.ServiceParams.Config.AWS.BucketName,
-		Region:        routeParams.ServiceParams.Config.AWS.Region,
-	})
-
 	// Expo Build & Submit webhooks
 	ExpoWebhooks(app, routeParams)
+
+	// Public invite page (no auth required)
+	InvitePageRoutes(app, routeParams)
 
 	apiGroup := app.Group("/api")
 
@@ -41,7 +35,7 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	CommentRoutes(apiV1Group, routeParams)
 	ActivityRoutes(apiV1Group, routeParams)
 	CategoryRoutes(apiV1Group, routeParams)
-	PollRoutes(apiV1Group, routeParams)
+	VotePollRoutes(apiV1Group, routeParams)
 	RankPollRoutes(apiV1Group, routeParams)
 	SearchRoutes(apiV1Group, routeParams)
 

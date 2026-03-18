@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
+  <title>{{ .PageTitle }}</title>
+  <meta name="description" content="{{ .MetaDescription }}" />
+  <meta property="og:title" content="{{ .PageTitle }}" />
+  <meta property="og:description" content="{{ .MetaDescription }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ .CanonicalURL }}" />
+  {{ if .MetaImage }}<meta property="og:image" content="{{ .MetaImage }}" />{{ end }}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{ .PageTitle }}" />
+  <meta name="twitter:description" content="{{ .MetaDescription }}" />
+  {{ if .MetaImage }}<meta name="twitter:image" content="{{ .MetaImage }}" />{{ end }}
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { toggo: "#FF7E00" } } }
+    }
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #ffffff 0%, #ffffff 35%, #fffcf8 50%, #fff5eb 65%, #ffedda 80%, #ffe4c8 100%);
+    }
+    .cover-section {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .cover-section img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .cover-section .no-cover {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+    }
+    .logo-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-overlay img {
+      width: 120px;
+      height: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.95;
+    }
+    .card-section {
+      position: relative;
+      margin-top: -32px;
+      background: white;
+      border-radius: 1.25rem 1.25rem 0 0;
+      padding: 24px 20px 20px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    .invite-badge {
+      background: #f5f5f5;
+      border-radius: 16px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .invite-badge .emoji {
+      font-size: 48px;
+      line-height: 1;
+    }
+    .invite-badge .text {
+      font-size: 15px;
+      font-weight: 600;
+      font-style: italic;
+      color: #333;
+    }
+    .body-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 20px max(24px, env(safe-area-inset-bottom, 24px));
+    }
+    .invite-text {
+      font-size: 17px;
+      color: #333;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .invite-text strong {
+      font-weight: 700;
+      color: #111;
+    }
+    .actions {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 14px;
+      background: #FF7E00;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .btn-primary:hover { background: #e67200; }
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 14px;
+      background: white;
+      color: #333;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      border: 1px solid #e5e5e5;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .btn-secondary:hover { background: #f9f9f9; }
+
+    /* Tablet: constrain width */
+    @media (min-width: 640px) {
+      body {
+        align-items: center;
+      }
+      .page-wrapper {
+        max-width: 430px;
+        width: 100%;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 40px rgba(0,0,0,0.08);
+      }
+    }
+    /* Laptop+: wider card */
+    @media (min-width: 1024px) {
+      .page-wrapper {
+        max-width: 520px;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-sans antialiased">
+  <div class="page-wrapper" style="display:flex;flex-direction:column;min-height:100dvh;width:100%;">
+
+    {{ if .Data.ErrorMessage }}
+    <!-- Error state -->
+    <div class="cover-section">
+      <div class="no-cover"></div>
+      <div class="logo-overlay">
+        <img src="/static/toggo_logo.svg" alt="toggo" />
+      </div>
+    </div>
+    <div class="card-section">
+      <h2 style="font-size:20px;font-weight:700;color:#111;margin:0 0 8px;">Invite unavailable</h2>
+      <p style="font-size:14px;color:#888;line-height:1.5;margin:0;">{{ .Data.ErrorMessage }}</p>
+    </div>
+    <div class="body-section">
+      <div></div>
+      <div class="actions">
+        <a href="/join" class="btn-primary">Enter a different code</a>
+      </div>
+    </div>
+
+    {{ else }}
+    <!-- Cover image backdrop -->
+    <div class="cover-section">
+      {{ if .Data.CoverImageURL }}
+      <img src="{{ .Data.CoverImageURL }}" alt="Trip cover" />
+      {{ else }}
+      <div class="no-cover"></div>
+      {{ end }}
+      <div class="logo-overlay">
+        <img src="/static/toggo_logo.svg" alt="toggo" />
+      </div>
+    </div>
+
+    <!-- White card overlapping cover -->
+    <div class="card-section">
+      <h2 style="font-size:22px;font-weight:700;color:#111;margin:0 0 6px;">{{ .Data.TripName }}</h2>
+
+      <!-- Members row (stacked avatars) -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;">
+          {{ range $i, $url := .Data.MemberProfilePictureURLs }}
+          <img src="{{ $url }}" alt="Member" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid white;{{ if $i }}margin-left:-10px;{{ end }}" />
+          {{ end }}
+          {{ if gt .Data.MemberCount 3 }}
+          <div style="width:32px;height:32px;border-radius:50%;background:#e5e5e5;border:2px solid white;margin-left:-10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#666;">+{{ subtract .Data.MemberCount 3 }}</div>
+          {{ end }}
+        </div>
+        <span style="font-size:14px;color:#999;">
+          <span style="font-weight:600;color:#555;">{{ .Data.InviterName }}</span>{{ if gt .Data.OtherMemberCount 0 }} and {{ .Data.OtherMemberCount }} other{{ if gt .Data.OtherMemberCount 1 }}s{{ end }}{{ end }}
+        </span>
+      </div>
+
+      <!-- Invite badge (randomized on load) -->
+      <div class="invite-badge">
+        <span class="emoji" id="invite-emoji">🎯</span>
+        <span class="text" id="invite-text">your invite just landed</span>
+      </div>
+      <script>
+        (function() {
+          var messages = [
+            { emoji: "🎯", text: "your invite just landed" },
+            { emoji: "🌍", text: "the world's waiting. so is your group." },
+            { emoji: "🧳", text: "your bag isn't going to pack itself" },
+            { emoji: "✈️", text: "you've been cleared for takeoff" },
+            { emoji: "📬", text: "special delivery" },
+            { emoji: "🎒", text: "pack your bags" },
+            { emoji: "🗺️", text: "adventure awaits" },
+            { emoji: "🎫", text: "you're on the list" },
+            { emoji: "🚀", text: "ready for takeoff" },
+            { emoji: "🤙", text: "you've been summoned" }
+          ];
+          var pick = messages[Math.floor(Math.random() * messages.length)];
+          document.getElementById("invite-emoji").textContent = pick.emoji;
+          document.getElementById("invite-text").textContent = pick.text;
+        })();
+      </script>
+    </div>
+
+    <!-- Body with gradient background -->
+    <div class="body-section">
+      <div class="invite-text" style="margin-bottom:24px;">
+        <p style="margin:0;">
+          <span style="font-size: 1.2em;">
+            You've been invited to join <br/>
+            <strong style="font-size:1.3em; font-weight: 700;">{{ .Data.TripName }}</strong>
+          </span>
+        </p>
+      </div>
+
+      <div class="actions">
+        <button id="open-btn" class="btn-primary" onclick="openApp()">Open in Toggo</button>
+      </div>
+      <script>
+        function openApp() {
+          var deepLink = "{{ .Data.DeepLink }}";
+          var appStoreURL = "https://apps.apple.com";
+          var didNavigate = false;
+
+          // Listen for visibility change (app opened successfully)
+          document.addEventListener("visibilitychange", function() {
+            if (document.hidden) didNavigate = true;
+          });
+
+          // Try to open the deep link
+          window.location.href = deepLink;
+
+          // If still here after 1.5s, app isn't installed — go to App Store
+          setTimeout(function() {
+            if (!didNavigate) {
+              window.location.href = appStoreURL;
+            }
+          }, 1500);
+        }
+      </script>
+    </div>
+    {{ end }}
+
+  </div>
+</body>
+</html>

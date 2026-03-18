@@ -13,10 +13,13 @@ export interface UserState {
   userId: string | null;
   isPending: boolean;
   currentUser?: CurrentUser | null;
+  phoneNumber: string | null;
+  pendingTripCode: string | null;
 
   sendOTP: (phoneNo: string) => Promise<void>;
   verifyOTP: (payload: PhoneAuth) => Promise<void>;
   refreshCurrentUser: () => Promise<CurrentUser>;
+  setPendingTripCode: (code: string | null) => void;
   logout: () => Promise<void>;
 }
 
@@ -28,6 +31,8 @@ export const useUserStore = create<UserState>()(
       isPending: false,
       error: null,
       currentUser: null,
+      phoneNumber: null,
+      pendingTripCode: null,
 
       sendOTP: async (phoneNo: string) => {
         try {
@@ -45,11 +50,9 @@ export const useUserStore = create<UserState>()(
 
           const session: Session = await authService.verifyPhoneOTP(payload);
           let currentUser: CurrentUser | null = null;
-          let found = false;
 
           try {
             currentUser = await authService.getCurrentUser();
-            found = true;
           } catch (err: any) {
             const status =
               err?.status ?? err?.data?.status ?? err?.response?.status;
@@ -57,18 +60,23 @@ export const useUserStore = create<UserState>()(
               throw err;
             }
             currentUser = null;
-            found = false;
+            // no profile yet, user needs to complete setup
           }
 
           set({
-            isAuthenticated: found,
+            isAuthenticated: true,
             userId: currentUser?.id ?? session.user.id,
             currentUser,
+            phoneNumber: payload.phone,
             isPending: false,
           });
         } catch (err) {
           throw new Error(parseError(err));
         }
+      },
+
+      setPendingTripCode: (code: string | null) => {
+        set({ pendingTripCode: code });
       },
 
       refreshCurrentUser: async () => {
@@ -101,6 +109,8 @@ export const useUserStore = create<UserState>()(
           isAuthenticated: false,
           userId: null,
           currentUser: null,
+          phoneNumber: null,
+          pendingTripCode: null,
           isPending: false,
         });
       },
@@ -112,6 +122,8 @@ export const useUserStore = create<UserState>()(
         isAuthenticated: state.isAuthenticated,
         userId: state.userId,
         currentUser: state.currentUser,
+        phoneNumber: state.phoneNumber,
+        pendingTripCode: state.pendingTripCode,
       }),
     },
   ),

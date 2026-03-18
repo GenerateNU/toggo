@@ -17,10 +17,10 @@ export const theme = createTheme({
   coreSize: CoreSize,
   layout: Layout,
   borderRadii: CornerRadius,
-  border: BorderWidth,
   elevation: Elevation,
   transition: Transition,
   textVariants: Typography,
+  borderWidth: BorderWidth,
 
   // Component Variants
   buttonVariants: ButtonVariants,

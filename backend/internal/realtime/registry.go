@@ -9,6 +9,29 @@ var (
 	ErrInvalidTopic = errors.New("topic not registered in event registry")
 )
 
+type EventTopic string
+
+const (
+	EventTopicPollCreated          EventTopic = "poll.created"
+	EventTopicPollUpdated          EventTopic = "poll.updated"
+	EventTopicPollDeleted          EventTopic = "poll.deleted"
+	EventTopicPollVoteAdded        EventTopic = "poll.vote_added"
+	EventTopicPollVoteRemoved      EventTopic = "poll.vote_removed"
+	EventTopicPollRankingSubmitted EventTopic = "poll.ranking_submitted"
+	EventTopicTripCreated          EventTopic = "trip.created"
+	EventTopicTripUpdated          EventTopic = "trip.updated"
+	EventTopicTripDeleted          EventTopic = "trip.deleted"
+	EventTopicMembershipAdded      EventTopic = "membership.added"
+	EventTopicMembershipRemoved    EventTopic = "membership.removed"
+	EventTopicMembershipUpdated    EventTopic = "membership.updated"
+	EventTopicCommentCreated       EventTopic = "comment.created"
+	EventTopicCommentUpdated       EventTopic = "comment.updated"
+	EventTopicCommentDeleted       EventTopic = "comment.deleted"
+	EventTopicFileUploaded         EventTopic = "file.uploaded"
+	EventTopicFileDeleted          EventTopic = "file.deleted"
+	EventTopicNotificationSent     EventTopic = "notification.sent"
+)
+
 // TopicRegistry validates event topics against a whitelist of allowed event names.
 type TopicRegistry struct {
 	allowedTopics map[string]bool
@@ -26,29 +49,29 @@ func NewEventRegistry() *TopicRegistry {
 }
 
 func (r *TopicRegistry) registerDefaultTopics() {
-	topics := []string{
-		"poll.created",
-		"poll.updated",
-		"poll.deleted",
-		"poll.vote_added",
-		"poll.vote_removed",
-		"poll.ranking_submitted",
-		"trip.created",
-		"trip.updated",
-		"trip.deleted",
-		"membership.added",
-		"membership.removed",
-		"membership.updated",
-		"comment.created",
-		"comment.updated",
-		"comment.deleted",
-		"file.uploaded",
-		"file.deleted",
-		"notification.sent",
+	topics := []EventTopic{
+		EventTopicPollCreated,
+		EventTopicPollUpdated,
+		EventTopicPollDeleted,
+		EventTopicPollVoteAdded,
+		EventTopicPollVoteRemoved,
+		EventTopicPollRankingSubmitted,
+		EventTopicTripCreated,
+		EventTopicTripUpdated,
+		EventTopicTripDeleted,
+		EventTopicMembershipAdded,
+		EventTopicMembershipRemoved,
+		EventTopicMembershipUpdated,
+		EventTopicCommentCreated,
+		EventTopicCommentUpdated,
+		EventTopicCommentDeleted,
+		EventTopicFileUploaded,
+		EventTopicFileDeleted,
+		EventTopicNotificationSent,
 	}
 
 	for _, topic := range topics {
-		r.allowedTopics[topic] = true
+		r.allowedTopics[string(topic)] = true
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
-	"fmt"
 	"toggo/internal/config"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,9 +25,6 @@ func ExpoWebhookVerify(cfg config.ExpoNotificationConfig) fiber.Handler {
 		expected := "sha1=" + hex.EncodeToString(mac.Sum(nil))
 
 		if !hmac.Equal([]byte(expected), []byte(signature)) {
-			fmt.Println("Expected:", expected)
-			fmt.Println("Got:", signature)
-
 			return c.Status(401).SendString("Signatures didn't match")
 		}
 

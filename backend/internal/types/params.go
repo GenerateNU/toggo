@@ -1,6 +1,7 @@
 package types //nolint:revive
 
 import (
+	"net/http"
 	"toggo/internal/config"
 	"toggo/internal/realtime"
 	"toggo/internal/repository"
@@ -19,4 +20,6 @@ type ServiceParams struct {
 	Config         *config.Configuration
 	EventPublisher realtime.EventPublisher
 	FileService    services.FileServiceInterface
+	PollService    services.PollServiceInterface
+	HTTPClient     *http.Client
 }

@@ -5,7 +5,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { TextInput } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { z } from "zod";
 
 const OTP_LENGTH = 6;
@@ -46,7 +52,10 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
       const newDigits = [...digits];
       newDigits[index] = numericText;
       onChange(newDigits.join(""));
-      if (index < OTP_LENGTH - 1) inputRefs.current[index + 1]?.focus();
+
+      if (index < OTP_LENGTH - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
     } else if (numericText.length === OTP_LENGTH) {
       onChange(numericText);
       inputRefs.current[OTP_LENGTH - 1]?.focus();
@@ -60,6 +69,7 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
       index > 0
     ) {
       inputRefs.current[index - 1]?.focus();
+
       const newDigits = [...digits];
       newDigits[index - 1] = "";
       onChange(newDigits.join(""));
@@ -72,9 +82,9 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
         <Box
           key={index}
           flex={1}
-          aspectRatio={1}
+          aspectRatio={0.8}
           borderWidth={2}
-          borderColor={hasError ? "error" : digit ? "success" : "borderPrimary"}
+          borderColor={hasError ? "error" : "borderPrimary"}
           borderRadius="sm"
           backgroundColor="white"
           justifyContent="center"
@@ -109,12 +119,14 @@ export default function OTPVerificationForm() {
   const { verifyOTP, sendOTP, isPending, refreshCurrentUser } = useUser();
   const params = useLocalSearchParams();
   const router = useRouter();
+
   const phoneNumber = params.phone as string | undefined;
 
   const [error, setError] = useState<string | null>(null);
   const [timer, setTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const canResend = timer === 0;
 
   useEffect(() => {
     if (!phoneNumber) router.replace("/(auth)/login");
@@ -122,15 +134,12 @@ export default function OTPVerificationForm() {
 
   useEffect(() => {
     if (timer <= 0) return;
-    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
 
-  useEffect(() => {
-    if (timer === 0) {
-      const timeout = setTimeout(() => setCanResend(true), 0);
-      return () => clearTimeout(timeout);
-    }
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [timer]);
 
   const { control, handleSubmit, formState } = useForm<OTPFormData>({
@@ -142,6 +151,7 @@ export default function OTPVerificationForm() {
   const onSubmit = async (data: OTPFormData) => {
     setError(null);
     if (!phoneNumber) return;
+
     setIsSubmitting(true);
 
     try {
@@ -152,32 +162,38 @@ export default function OTPVerificationForm() {
         return;
       }
 
-      await verifyOTP({ phone: normalized.digits, token: data.otp });
+      await verifyOTP({
+        phone: normalized.digits,
+        token: data.otp,
+      });
 
+      let user = null;
       try {
-        const user = await refreshCurrentUser();
-        if (!user?.name || !user?.username) {
+        user = await refreshCurrentUser();
+      } catch (refreshErr: any) {
+        const status =
+          refreshErr?.status ??
+          refreshErr?.data?.status ??
+          refreshErr?.response?.status;
+        if (status === 404 || refreshErr?.message === "User not found") {
           router.replace({
-            pathname: "/(auth)/complete-profile",
+            pathname: "/(auth)/verified",
             params: { phone: normalized.e164 },
           });
           return;
         }
-      } catch (err: any) {
-        const status =
-          err?.status ?? err?.data?.status ?? err?.response?.status;
-        if (status !== 404) {
-          setError(
-            err?.message || "Failed to fetch account. Please try again.",
-          );
-          setIsSubmitting(false);
-          return;
-        }
+        throw refreshErr;
+      }
+
+      if (!user?.name || !user?.username) {
         router.replace({
-          pathname: "/(auth)/complete-profile",
+          pathname: "/(auth)/verified",
           params: { phone: normalized.e164 },
         });
+        return;
       }
+
+      router.replace("/(app)");
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
       setIsSubmitting(false);
@@ -197,65 +213,81 @@ export default function OTPVerificationForm() {
     try {
       await sendOTP(normalized.digits);
       setTimer(60);
-      setCanResend(false);
     } catch (err: any) {
       setError(err?.message || "Failed to resend OTP");
     }
   };
 
   return (
-    <Box gap="md">
-      {error && (
-        <Box backgroundColor="error" padding="sm" borderRadius="sm">
-          <Text variant="smParagraph" color="white">
-            {error}
-          </Text>
-        </Box>
-      )}
-      <Controller
-        name="otp"
-        control={control}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <Box gap="sm">
-            <Text variant="smLabel" color="textSecondary">
-              Enter OTP sent to {phoneNumber}
-            </Text>
-            <OTPInput
-              value={value}
-              onChange={onChange}
-              onBlur={onBlur}
-              hasError={!!formState.errors.otp}
-            />
-            {formState.errors.otp && (
-              <Text variant="xsParagraph" color="error">
-                {formState.errors.otp.message}
-              </Text>
-            )}
-          </Box>
-        )}
-      />
-      <Button
-        layout="textOnly"
-        label="Verify OTP"
-        variant="Primary"
-        loading={isSubmitting}
-        loadingLabel="Verifying..."
-        disabled={!formState.isValid || isSubmitting}
-        onPress={handleSubmit(onSubmit)}
-      />
-      <Text variant="smParagraph" color="textSecondary">
-        {canResend ? "You can resend the code now." : `Resend OTP in ${timer}s`}
-      </Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={280}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <Box flex={1} justifyContent="space-between">
+          <Box gap="md">
+            <Controller
+              name="otp"
+              control={control}
+              render={({ field: { onChange, value, onBlur } }) => (
+                <Box gap="sm">
+                  <OTPInput
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    hasError={!!formState.errors.otp}
+                  />
 
-      <Button
-        layout="textOnly"
-        label="Resend OTP"
-        variant="Tertiary"
-        loading={isPending}
-        loadingLabel="Sending..."
-        disabled={!canResend || isPending}
-        onPress={handleResendOTP}
-      />
-    </Box>
+                  {formState.errors.otp && (
+                    <Text variant="xsParagraph" color="error">
+                      {formState.errors.otp.message}
+                    </Text>
+                  )}
+
+                  {error && (
+                    <Text variant="smParagraph" color="error">
+                      {error}
+                    </Text>
+                  )}
+                </Box>
+              )}
+            />
+          </Box>
+
+          <Box gap="sm">
+            <Button
+              layout="textOnly"
+              label="Verify phone number"
+              variant="Primary"
+              loading={isSubmitting}
+              loadingLabel="Verifying..."
+              disabled={!formState.isValid || isSubmitting}
+              onPress={handleSubmit(onSubmit)}
+            />
+
+            <Box alignItems="center">
+              {canResend ? (
+                <Text variant="smParagraph" color="textQuaternary">
+                  Didn't receive a code?{" "}
+                  <Text
+                    variant="smLabel"
+                    color="textSecondary"
+                    onPress={!isPending ? handleResendOTP : undefined}
+                    style={{ fontWeight: "600" }}
+                  >
+                    Resend code
+                  </Text>
+                </Text>
+              ) : (
+                <Text variant="smParagraph" color="textQuaternary">
+                  Didn't receive a code? Resend in {timer}s
+                </Text>
+              )}
+            </Box>
+          </Box>
+        </Box>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

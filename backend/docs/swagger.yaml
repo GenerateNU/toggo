@@ -16,7 +16,15 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
+        type: string
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
         type: string
       media_url:
         type: string
@@ -45,7 +53,19 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
+        type: string
+      image_ids:
+        items:
+          $ref: '#/definitions/models.ActivityImageResponse'
+        type: array
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
         type: string
       media_url:
         type: string
@@ -86,6 +106,46 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.ActivityImageResponse:
+    properties:
+      image_id:
+        type: string
+      image_url:
+        type: string
+    type: object
+  models.ActivityRSVPAPIResponse:
+    properties:
+      activity_id:
+        type: string
+      created_at:
+        type: string
+      profile_picture_url:
+        type: string
+      status:
+        $ref: '#/definitions/models.RSVPStatus'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.ActivityRSVPRequestPayload:
+    properties:
+      status:
+        $ref: '#/definitions/models.RSVPStatus'
+    type: object
+  models.ActivityRSVPsPageResult:
+    properties:
+      limit:
+        type: integer
+      next_cursor:
+        type: string
+      rsvps:
+        items:
+          $ref: '#/definitions/models.ActivityRSVPAPIResponse'
+        type: array
+    type: object
   models.AddCategoryResponse:
     properties:
       message:
@@ -123,6 +183,9 @@ definitions:
         type: string
       icon:
         type: string
+      is_hidden:
+        description: only present for admins
+        type: boolean
       name:
         type: string
       trip_id:
@@ -213,6 +276,26 @@ definitions:
         maxItems: 20
         type: array
       description:
+        type: string
+      estimated_price:
+        minimum: 0
+        type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
         type: string
       media_url:
         type: string
@@ -320,8 +403,14 @@ definitions:
     type: object
   models.CreatePollRequest:
     properties:
+      categories:
+        items:
+          type: string
+        type: array
       deadline:
         type: string
+      is_anonymous:
+        type: boolean
       options:
         items:
           $ref: '#/definitions/models.CreatePollOptionRequest'
@@ -335,6 +424,8 @@ definitions:
         - rank
       question:
         type: string
+      should_notify_members:
+        type: boolean
     required:
     - poll_type
     - question
@@ -353,6 +444,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -441,6 +534,20 @@ definitions:
       lng:
         type: number
     type: object
+  models.LinkType:
+    enum:
+    - airbnb
+    - booking_com
+    - tiktok
+    - instagram
+    - generic
+    type: string
+    x-enum-varnames:
+    - LinkTypeAirbnb
+    - LinkTypeBookingCom
+    - LinkTypeTikTok
+    - LinkTypeInstagram
+    - LinkTypeGeneric
   models.MatchedSubstring:
     properties:
       length:
@@ -572,6 +679,32 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ParseLinkRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  models.ParsedActivityData:
+    properties:
+      category_suggestions:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      source_type:
+        $ref: '#/definitions/models.LinkType'
+      source_url:
+        type: string
+      thumbnail_url:
         type: string
     type: object
   models.Period:
@@ -751,6 +884,10 @@ definitions:
     type: object
   models.PollAPIResponse:
     properties:
+      categories:
+        items:
+          type: string
+        type: array
       created_at:
         type: string
       created_by:
@@ -759,6 +896,8 @@ definitions:
         type: string
       id:
         type: string
+      is_anonymous:
+        type: boolean
       options:
         items:
           $ref: '#/definitions/models.PollOptionAPIResponse'
@@ -767,6 +906,8 @@ definitions:
         $ref: '#/definitions/models.PollType'
       question:
         type: string
+      should_notify_members:
+        type: boolean
       trip_id:
         type: string
     type: object
@@ -821,8 +962,22 @@ definitions:
           $ref: '#/definitions/models.VoterInfo'
         type: array
     type: object
+  models.RSVPStatus:
+    enum:
+    - "yes"
+    - maybe
+    - "no"
+    type: string
+    x-enum-varnames:
+    - RSVPStatusGoing
+    - RSVPStatusMaybe
+    - RSVPStatusNotGoing
   models.RankPollAPIResponse:
     properties:
+      categories:
+        items:
+          type: string
+        type: array
       created_at:
         type: string
       created_by:
@@ -831,6 +986,8 @@ definitions:
         type: string
       id:
         type: string
+      is_anonymous:
+        type: boolean
       options:
         items:
           $ref: '#/definitions/models.PollOptionAPIResponse'
@@ -839,6 +996,8 @@ definitions:
         $ref: '#/definitions/models.PollType'
       question:
         type: string
+      should_notify_members:
+        type: boolean
       trip_id:
         type: string
     type: object
@@ -1007,6 +1166,8 @@ definitions:
         type: string
       created_at:
         type: string
+      currency:
+        type: string
       id:
         type: string
       name:
@@ -1023,6 +1184,8 @@ definitions:
       cover_image_url:
         type: string
       created_at:
+        type: string
+      currency:
         type: string
       id:
         type: string
@@ -1064,12 +1227,31 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
-        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
         maxItems: 20
         type: array
       description:
+        type: string
+      estimated_price:
+        minimum: 0
+        type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
         type: string
       media_url:
         type: string
@@ -1118,10 +1300,16 @@ definitions:
         minLength: 1
         type: string
     type: object
-  models.UpdatePollRequest:
+  models.UpdatePollWithCategoriesRequest:
     properties:
+      categories:
+        items:
+          type: string
+        type: array
       deadline:
         type: string
+      is_anonymous:
+        type: boolean
       question:
         type: string
     type: object
@@ -1134,6 +1322,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -1359,6 +1549,35 @@ paths:
       tags:
       - comments
   /api/v1/files/{imageId}:
+    delete:
+      description: Deletes all size variants of an image from S3 and the database
+      operationId: deleteImage
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete image
+      tags:
+      - files
     get:
       description: Retrieves presigned URLs for all sizes of an image
       operationId: getFileAllSizes
@@ -2556,6 +2775,173 @@ paths:
       summary: Add category to activity
       tags:
       - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/rsvp:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to RSVP to a specific activity within a trip.
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: RSVP request payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ActivityRSVPRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityRSVPAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: RSVP to activity
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/rsvps:
+    get:
+      description: Returns paginated RSVPs for a specific activity within a trip,
+        optionally filtered by RSVP status.
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: Max items per page (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque cursor returned in next_cursor
+        in: query
+        name: cursor
+        type: string
+      - description: Filter by RSVP status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ActivityRSVPsPageResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get activity RSVPs
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activities/parse-link:
+    post:
+      consumes:
+      - application/json
+      description: Fetches a URL and extracts structured activity fields (name, description,
+        thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram,
+        and generic travel blog URLs.
+      operationId: parseActivityLink
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: URL to parse
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParseLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParsedActivityData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Parse link into activity data
+      tags:
+      - activities
   /api/v1/trips/{tripID}/categories:
     get:
       description: Retrieves all categories for a trip
@@ -2594,6 +2980,88 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get categories by trip
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/hide:
+    put:
+      description: Hides a category from all members (admin only)
+      operationId: hideCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Hide category
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/show:
+    put:
+      description: Makes a previously hidden category visible again (admin only)
+      operationId: showCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Show category
       tags:
       - categories
   /api/v1/trips/{tripID}/invites:
@@ -3266,7 +3734,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UpdatePollRequest'
+          $ref: '#/definitions/models.UpdatePollWithCategoriesRequest'
       produces:
       - application/json
       responses:
@@ -3721,7 +4189,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UpdatePollRequest'
+          $ref: '#/definitions/models.UpdatePollWithCategoriesRequest'
       produces:
       - application/json
       responses:

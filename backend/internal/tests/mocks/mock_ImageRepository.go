@@ -385,6 +385,74 @@ func (_c *MockImageRepository_DeleteByID_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// FindAllByID provides a mock function for the type MockImageRepository
+func (_mock *MockImageRepository) FindAllByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error) {
+	ret := _mock.Called(ctx, imageID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindAllByID")
+	}
+
+	var r0 []*models.Image
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*models.Image, error)); ok {
+		return returnFunc(ctx, imageID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*models.Image); ok {
+		r0 = returnFunc(ctx, imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Image)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockImageRepository_FindAllByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindAllByID'
+type MockImageRepository_FindAllByID_Call struct {
+	*mock.Call
+}
+
+// FindAllByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageID uuid.UUID
+func (_e *MockImageRepository_Expecter) FindAllByID(ctx interface{}, imageID interface{}) *MockImageRepository_FindAllByID_Call {
+	return &MockImageRepository_FindAllByID_Call{Call: _e.mock.On("FindAllByID", ctx, imageID)}
+}
+
+func (_c *MockImageRepository_FindAllByID_Call) Run(run func(ctx context.Context, imageID uuid.UUID)) *MockImageRepository_FindAllByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockImageRepository_FindAllByID_Call) Return(images []*models.Image, err error) *MockImageRepository_FindAllByID_Call {
+	_c.Call.Return(images, err)
+	return _c
+}
+
+func (_c *MockImageRepository_FindAllByID_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)) *MockImageRepository_FindAllByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindByID provides a mock function for the type MockImageRepository
 func (_mock *MockImageRepository) FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error) {
 	ret := _mock.Called(ctx, imageID)
@@ -591,6 +659,80 @@ func (_c *MockImageRepository_FindByIDIncludingPending_Call) Return(images []*mo
 }
 
 func (_c *MockImageRepository_FindByIDIncludingPending_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)) *MockImageRepository_FindByIDIncludingPending_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindByIDsAndSize provides a mock function for the type MockImageRepository
+func (_mock *MockImageRepository) FindByIDsAndSize(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) ([]*models.Image, error) {
+	ret := _mock.Called(ctx, imageIDs, size)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByIDsAndSize")
+	}
+
+	var r0 []*models.Image
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, models.ImageSize) ([]*models.Image, error)); ok {
+		return returnFunc(ctx, imageIDs, size)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, models.ImageSize) []*models.Image); ok {
+		r0 = returnFunc(ctx, imageIDs, size)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Image)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, models.ImageSize) error); ok {
+		r1 = returnFunc(ctx, imageIDs, size)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockImageRepository_FindByIDsAndSize_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindByIDsAndSize'
+type MockImageRepository_FindByIDsAndSize_Call struct {
+	*mock.Call
+}
+
+// FindByIDsAndSize is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageIDs []uuid.UUID
+//   - size models.ImageSize
+func (_e *MockImageRepository_Expecter) FindByIDsAndSize(ctx interface{}, imageIDs interface{}, size interface{}) *MockImageRepository_FindByIDsAndSize_Call {
+	return &MockImageRepository_FindByIDsAndSize_Call{Call: _e.mock.On("FindByIDsAndSize", ctx, imageIDs, size)}
+}
+
+func (_c *MockImageRepository_FindByIDsAndSize_Call) Run(run func(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize)) *MockImageRepository_FindByIDsAndSize_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 models.ImageSize
+		if args[2] != nil {
+			arg2 = args[2].(models.ImageSize)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockImageRepository_FindByIDsAndSize_Call) Return(images []*models.Image, err error) *MockImageRepository_FindByIDsAndSize_Call {
+	_c.Call.Return(images, err)
+	return _c
+}
+
+func (_c *MockImageRepository_FindByIDsAndSize_Call) RunAndReturn(run func(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) ([]*models.Image, error)) *MockImageRepository_FindByIDsAndSize_Call {
 	_c.Call.Return(run)
 	return _c
 }

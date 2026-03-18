@@ -10,6 +10,12 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type SearchRepository interface {
+	SearchTrips(ctx context.Context, userID uuid.UUID, query string, limit, offset int) ([]*models.TripDatabaseResponse, int, error)
+	SearchActivities(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.ActivityDatabaseResponse, int, error)
+	SearchTripMembers(ctx context.Context, tripID uuid.UUID, query string, limit, offset int) ([]*models.MembershipDatabaseResponse, int, error)
+}
+
 var _ SearchRepository = (*searchRepository)(nil)
 
 type searchRepository struct {
@@ -72,7 +78,7 @@ func (r *searchRepository) SearchTrips(
 	err = base.Clone().
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?",
 			models.ImageSizeMedium, models.UploadStatusConfirmed).
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		OrderExpr("ts_rank(to_tsvector('english', t.name), to_tsquery('english', ?)) DESC, t.created_at DESC", tsQuery).

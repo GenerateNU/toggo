@@ -13,7 +13,7 @@ export const ColorPalette = {
   textSecondary: "#000000",
   textQuaternary: "#858585",
   textPrimaryDisable: "#A4A4A4",
-  textSecondaryDisable: "##DEDEDE",
+  textSecondaryDisable: "#DEDEDE",
   textInverse: "#FFFFFF",
   textDisabled: "#BDBDBD",
   textLink: "#007AFF",
@@ -21,7 +21,7 @@ export const ColorPalette = {
   // Icon
   iconPrimary: "#ffffff",
   iconSecondary: "#000000",
-  iconTertiary: "#FEFEFE",
+  iconTertiary: "#7E7E7E",
 
   // Surface
   surfaceBackground: "#F5F5F7",
@@ -37,7 +37,7 @@ export const ColorPalette = {
   iconSecondaryBackground: "#F6F6F6",
 
   // Borders
-  borderPrimary: "#E5E5E5",
+  borderPrimary: "#D6D6D6",
   borderSecondary: "#F0F0F0",
 
   // Feedback / Status

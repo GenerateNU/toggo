@@ -16,6 +16,9 @@ export type CurrentUser = {
   id: string;
   name: string;
   username: string;
+  profile_picture?: string;
+  phone_number?: string;
+  timezone?: string;
 };
 
 export class SupabaseAuth implements AuthService {

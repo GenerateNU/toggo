@@ -41,10 +41,9 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 // @Router       /api/v1/trips/{tripID}/pitches [post]
 // @ID           createPitch
 func (ctrl *PitchController) CreatePitch(c *fiber.Ctx) error {
-	userIDStr, ok := c.Locals("userID").(string)
-	userID, validateErr := validators.ValidateID(userIDStr)
-	if !ok || validateErr != nil {
-		return errs.Unauthorized()
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return err
 	}
 
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -153,10 +152,9 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 // @Router       /api/v1/trips/{tripID}/pitches/{pitchID} [patch]
 // @ID           updatePitch
 func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
-	userIDStr, ok := c.Locals("userID").(string)
-	userID, validateErr := validators.ValidateID(userIDStr)
-	if !ok || validateErr != nil {
-		return errs.Unauthorized()
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return err
 	}
 
 	tripID, err := validators.ValidateID(c.Params("tripID"))
@@ -178,9 +176,6 @@ func (ctrl *PitchController) UpdatePitch(c *fiber.Ctx) error {
 
 	pitch, err := ctrl.pitchService.Update(c.Context(), tripID, pitchID, userID, req)
 	if err != nil {
-		if errs.IsNotFound(err) {
-			return errs.NewAPIError(http.StatusNotFound, err)
-		}
 		return err
 	}
 	return c.Status(http.StatusOK).JSON(pitch)

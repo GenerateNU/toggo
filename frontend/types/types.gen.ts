@@ -38,9 +38,25 @@ export type ModelsActivity = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -67,6 +83,17 @@ export type ModelsActivity = {
   updated_at?: string;
 };
 
+export type ModelsActivityImageResponse = {
+  /**
+   * @type string | undefined
+   */
+  image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  image_url?: string;
+};
+
 export type ModelsActivityAPIResponse = {
   /**
    * @type array | undefined
@@ -85,9 +112,29 @@ export type ModelsActivityAPIResponse = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: ModelsActivityImageResponse[];
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -152,6 +199,70 @@ export type ModelsActivityCursorPageResult = {
   next_cursor?: string;
 };
 
+export const modelsRSVPStatus = {
+  RSVPStatusGoing: "yes",
+  RSVPStatusMaybe: "maybe",
+  RSVPStatusNotGoing: "no",
+} as const;
+
+export type ModelsRSVPStatusEnumKey =
+  (typeof modelsRSVPStatus)[keyof typeof modelsRSVPStatus];
+
+export type ModelsRSVPStatus = ModelsRSVPStatusEnumKey;
+
+export type ModelsActivityRSVPAPIResponse = {
+  /**
+   * @type string | undefined
+   */
+  activity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  status?: ModelsRSVPStatus;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsActivityRSVPRequestPayload = {
+  /**
+   * @type string | undefined
+   */
+  status?: ModelsRSVPStatus;
+};
+
+export type ModelsActivityRSVPsPageResult = {
+  /**
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @type string | undefined
+   */
+  next_cursor?: string;
+  /**
+   * @type array | undefined
+   */
+  rsvps?: ModelsActivityRSVPAPIResponse[];
+};
+
 export type ModelsAddCategoryResponse = {
   /**
    * @type string | undefined
@@ -212,6 +323,11 @@ export type ModelsCategoryAPIResponse = {
    * @type string | undefined
    */
   icon?: string;
+  /**
+   * @description only present for admins
+   * @type boolean | undefined
+   */
+  is_hidden?: boolean;
   /**
    * @type string | undefined
    */
@@ -372,6 +488,33 @@ export type ModelsCreateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -549,9 +692,17 @@ export type ModelsPollType = ModelsPollTypeEnumKey;
 
 export type ModelsCreatePollRequest = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   deadline?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
   /**
    * @type array | undefined
    */
@@ -561,6 +712,10 @@ export type ModelsCreatePollRequest = {
    * @type string
    */
   question: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
 };
 
 export type ModelsCreateTripInviteRequest = {
@@ -585,6 +740,10 @@ export type ModelsCreateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string
@@ -1088,6 +1247,10 @@ export type ModelsPollOptionAPIResponse = {
 
 export type ModelsPollAPIResponse = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   created_at?: string;
@@ -1104,6 +1267,10 @@ export type ModelsPollAPIResponse = {
    */
   id?: string;
   /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
+  /**
    * @type array | undefined
    */
   options?: ModelsPollOptionAPIResponse[];
@@ -1115,6 +1282,10 @@ export type ModelsPollAPIResponse = {
    * @type string | undefined
    */
   question?: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
   /**
    * @type string | undefined
    */
@@ -1172,6 +1343,10 @@ export type ModelsPollVotersResponse = {
 
 export type ModelsRankPollAPIResponse = {
   /**
+   * @type array | undefined
+   */
+  categories?: string[];
+  /**
    * @type string | undefined
    */
   created_at?: string;
@@ -1188,6 +1363,10 @@ export type ModelsRankPollAPIResponse = {
    */
   id?: string;
   /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
+  /**
    * @type array | undefined
    */
   options?: ModelsPollOptionAPIResponse[];
@@ -1199,6 +1378,10 @@ export type ModelsRankPollAPIResponse = {
    * @type string | undefined
    */
   question?: string;
+  /**
+   * @type boolean | undefined
+   */
+  should_notify_members?: boolean;
   /**
    * @type string | undefined
    */
@@ -1360,6 +1543,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1478,6 +1665,10 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1541,7 +1732,6 @@ export type ModelsTripInviteAPIResponse = {
 
 export type ModelsUpdateActivityRequest = {
   /**
-   * @description Max 20 date ranges
    * @type array | undefined
    */
   dates?: ModelsDateRange[];
@@ -1549,6 +1739,33 @@ export type ModelsUpdateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -1607,11 +1824,19 @@ export type ModelsUpdatePitchRequest = {
   title?: string;
 };
 
-export type ModelsUpdatePollRequest = {
+export type ModelsUpdatePollWithCategoriesRequest = {
+  /**
+   * @type array | undefined
+   */
+  categories?: string[];
   /**
    * @type string | undefined
    */
   deadline?: string;
+  /**
+   * @type boolean | undefined
+   */
+  is_anonymous?: boolean;
   /**
    * @type string | undefined
    */
@@ -1633,6 +1858,10 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string | undefined
@@ -2024,6 +2253,42 @@ export type GetFileAllSizesQuery = {
   Response: GetFileAllSizes200;
   PathParams: GetFileAllSizesPathParams;
   Errors: GetFileAllSizes400 | GetFileAllSizes404 | GetFileAllSizes500;
+};
+
+export type DeleteImagePathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteImage204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteImage400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteImage404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteImage500 = ErrsAPIError;
+
+export type DeleteImageMutationResponse = DeleteImage204;
+
+export type DeleteImageMutation = {
+  Response: DeleteImage204;
+  PathParams: DeleteImagePathParams;
+  Errors: DeleteImage400 | DeleteImage404 | DeleteImage500;
 };
 
 export type GetFilePathParams = {
@@ -3223,6 +3488,160 @@ export type RemoveCategoryFromActivityMutation = {
     | RemoveCategoryFromActivity500;
 };
 
+export type PostApiV1TripsTripidActivitiesActivityidRsvpPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+/**
+ * @description OK
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp200 =
+  ModelsActivityRSVPAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvp500 = ErrsAPIError;
+
+/**
+ * @description RSVP request payload
+ */
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest =
+  ModelsActivityRSVPRequestPayload;
+
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse =
+  PostApiV1TripsTripidActivitiesActivityidRsvp200;
+
+export type PostApiV1TripsTripidActivitiesActivityidRsvpMutation = {
+  Response: PostApiV1TripsTripidActivitiesActivityidRsvp200;
+  Request: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+  PathParams: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams;
+  Errors:
+    | PostApiV1TripsTripidActivitiesActivityidRsvp400
+    | PostApiV1TripsTripidActivitiesActivityidRsvp401
+    | PostApiV1TripsTripidActivitiesActivityidRsvp403
+    | PostApiV1TripsTripidActivitiesActivityidRsvp404
+    | PostApiV1TripsTripidActivitiesActivityidRsvp422
+    | PostApiV1TripsTripidActivitiesActivityidRsvp500;
+};
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+};
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams = {
+  /**
+   * @description Max items per page (default 20, max 100)
+   * @type integer | undefined
+   */
+  limit?: number;
+  /**
+   * @description Opaque cursor returned in next_cursor
+   * @type string | undefined
+   */
+  cursor?: string;
+  /**
+   * @description Filter by RSVP status
+   * @type string | undefined
+   */
+  status?: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps200 =
+  ModelsActivityRSVPsPageResult;
+
+/**
+ * @description Bad Request
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetApiV1TripsTripidActivitiesActivityidRsvps500 = ErrsAPIError;
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse =
+  GetApiV1TripsTripidActivitiesActivityidRsvps200;
+
+export type GetApiV1TripsTripidActivitiesActivityidRsvpsQuery = {
+  Response: GetApiV1TripsTripidActivitiesActivityidRsvps200;
+  PathParams: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams;
+  QueryParams: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams;
+  Errors:
+    | GetApiV1TripsTripidActivitiesActivityidRsvps400
+    | GetApiV1TripsTripidActivitiesActivityidRsvps401
+    | GetApiV1TripsTripidActivitiesActivityidRsvps403
+    | GetApiV1TripsTripidActivitiesActivityidRsvps404
+    | GetApiV1TripsTripidActivitiesActivityidRsvps422
+    | GetApiV1TripsTripidActivitiesActivityidRsvps500;
+};
+
 export type GetCategoriesByTripIDPathParams = {
   /**
    * @description Trip ID
@@ -3272,6 +3691,118 @@ export type GetCategoriesByTripIDQuery = {
     | GetCategoriesByTripID403
     | GetCategoriesByTripID404
     | GetCategoriesByTripID500;
+};
+
+export type HideCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type HideCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type HideCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type HideCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type HideCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type HideCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type HideCategory500 = ErrsAPIError;
+
+export type HideCategoryMutationResponse = HideCategory204;
+
+export type HideCategoryMutation = {
+  Response: HideCategory204;
+  PathParams: HideCategoryPathParams;
+  Errors:
+    | HideCategory400
+    | HideCategory401
+    | HideCategory403
+    | HideCategory404
+    | HideCategory500;
+};
+
+export type ShowCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ShowCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ShowCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ShowCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ShowCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ShowCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ShowCategory500 = ErrsAPIError;
+
+export type ShowCategoryMutationResponse = ShowCategory204;
+
+export type ShowCategoryMutation = {
+  Response: ShowCategory204;
+  PathParams: ShowCategoryPathParams;
+  Errors:
+    | ShowCategory400
+    | ShowCategory401
+    | ShowCategory403
+    | ShowCategory404
+    | ShowCategory500;
 };
 
 export type CreateTripInvitePathParams = {
@@ -4103,7 +4634,8 @@ export type UpdateRankPoll500 = ErrsAPIError;
 /**
  * @description Update rank poll request
  */
-export type UpdateRankPollMutationRequest = ModelsUpdatePollRequest;
+export type UpdateRankPollMutationRequest =
+  ModelsUpdatePollWithCategoriesRequest;
 
 export type UpdateRankPollMutationResponse = UpdateRankPoll200;
 
@@ -4661,7 +5193,7 @@ export type UpdatePoll500 = ErrsAPIError;
 /**
  * @description Update poll request
  */
-export type UpdatePollMutationRequest = ModelsUpdatePollRequest;
+export type UpdatePollMutationRequest = ModelsUpdatePollWithCategoriesRequest;
 
 export type UpdatePollMutationResponse = UpdatePoll200;
 

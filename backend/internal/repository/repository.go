@@ -1,11 +1,6 @@
 package repository
 
 import (
-	"context"
-	"time"
-	"toggo/internal/models"
-
-	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
@@ -22,27 +17,33 @@ type Repository struct {
 	ActivityCategory ActivityCategoryRepository
 	Poll             PollRepository
 	PollRanking      PollRankingRepository
+	PollVoting       PollVotingRepository
+	PollCategory     PollCategoryRepository
 	TripInvite       TripInviteRepository
 	Search           SearchRepository
+	ActivityRSVP     ActivityRSVPRepository
 	db               *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:             &userRepository{db: db},
-		Health:           &healthRepository{db: db},
-		Image:            &imageRepository{db: db},
-		Comment:          &commentRepository{db: db},
-		Trip:             &tripRepository{db: db},
-		Poll:             &pollRepository{db: db},
-		PollRanking:      &pollRankingRepository{db: db},
-		Membership:       &membershipRepository{db: db},
-		Pitch:            &pitchRepository{db: db},
-		Activity:         &activityRepository{db: db},
-		Category:         &categoryRepository{db: db},
-		ActivityCategory: &activityCategoryRepository{db: db},
-		TripInvite:       newTripInviteRepository(db),
-		Search:           &searchRepository{db: db},
+		User:             NewUserRepository(db),
+		Health:           NewHealthRepository(db),
+		Image:            NewImageRepository(db),
+		Comment:          NewCommentRepository(db),
+		Trip:             NewTripRepository(db),
+		Poll:             NewPollRepository(db),
+		PollRanking:      NewPollRankingRepository(db),
+		PollVoting:       NewPollVotingRepository(db),
+		PollCategory:     NewPollCategoryRepository(db),
+		Membership:       NewMembershipRepository(db),
+		Pitch:            NewPitchRepository(db),
+		Activity:         NewActivityRepository(db),
+		Category:         NewCategoryRepository(db),
+		ActivityCategory: NewActivityCategoryRepository(db),
+		ActivityRSVP:     NewActivityRSVPRepository(db),
+		TripInvite:       NewTripInviteRepository(db),
+		Search:           NewSearchRepository(db),
 		db:               db,
 	}
 }

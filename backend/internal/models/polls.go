@@ -24,15 +24,15 @@ const (
 
 // Poll represents a voting poll attached to a trip.
 type Poll struct {
-	bun.BaseModel `bun:"table:polls,alias:p"`
-
-	ID        uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
-	TripID    uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
-	CreatedBy uuid.UUID  `bun:"created_by,type:uuid,notnull" json:"created_by"`
-	Question  string     `bun:"question,notnull" json:"question"`
-	PollType  PollType   `bun:"poll_type,notnull" json:"poll_type"`
-	CreatedAt time.Time  `bun:"created_at,nullzero,default:now()" json:"created_at"`
-	Deadline  *time.Time `bun:"deadline,nullzero" json:"deadline,omitempty"`
+	ID                  uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
+	TripID              uuid.UUID  `bun:"trip_id,type:uuid,notnull" json:"trip_id"`
+	CreatedBy           uuid.UUID  `bun:"created_by,type:uuid,notnull" json:"created_by"`
+	Question            string     `bun:"question,notnull" json:"question"`
+	PollType            PollType   `bun:"poll_type,notnull" json:"poll_type"`
+	CreatedAt           time.Time  `bun:"created_at,nullzero,default:now()" json:"created_at"`
+	Deadline            *time.Time `bun:"deadline,nullzero" json:"deadline,omitempty"`
+	ShouldNotifyMembers bool       `bun:"should_notify_members,notnull,default:false" json:"should_notify_members"`
+	IsAnonymous         bool       `bun:"is_anonymous,notnull,default:false" json:"is_anonymous"`
 
 	// Relations
 	Options []PollOption `bun:"rel:has-many,join:id=poll_id" json:"options,omitempty"`
@@ -40,8 +40,6 @@ type Poll struct {
 
 // PollOption represents a single selectable option within a poll.
 type PollOption struct {
-	bun.BaseModel `bun:"table:poll_options,alias:po"`
-
 	ID         uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
 	PollID     uuid.UUID  `bun:"poll_id,type:uuid,notnull" json:"poll_id"`
 	OptionType OptionType `bun:"option_type,notnull" json:"option_type"`
@@ -57,8 +55,6 @@ type PollOption struct {
 // only vote once per option. For single-choice polls, exactly one row exists
 // per user; for multi-choice, one row per selected option.
 type PollVote struct {
-	bun.BaseModel `bun:"table:poll_votes,alias:pv"`
-
 	PollID    uuid.UUID `bun:"poll_id,pk,type:uuid,notnull" json:"poll_id"`
 	OptionID  uuid.UUID `bun:"option_id,pk,type:uuid,notnull" json:"option_id"`
 	UserID    uuid.UUID `bun:"user_id,pk,type:uuid,notnull" json:"user_id"`
@@ -67,16 +63,27 @@ type PollVote struct {
 
 // UpdatePollRequest is a partial-update payload; at least one field must be non-nil.
 type UpdatePollRequest struct {
-	Question *string    `json:"question"`
-	Deadline *time.Time `json:"deadline"`
+	Question    *string    `json:"question"`
+	Deadline    *time.Time `json:"deadline"`
+	IsAnonymous *bool      `json:"is_anonymous"`
+}
+
+type UpdatePollWithCategoriesRequest struct {
+	Question    *string    `json:"question"`
+	Deadline    *time.Time `json:"deadline"`
+	IsAnonymous *bool      `json:"is_anonymous"`
+	Categories  *[]string  `json:"categories,omitempty"`
 }
 
 // CreatePollRequest is the payload for creating a new poll with optional initial options.
 type CreatePollRequest struct {
-	Question string                    `json:"question" validate:"required"`
-	PollType PollType                  `json:"poll_type" validate:"required,oneof=single multi rank"`
-	Deadline *time.Time                `json:"deadline,omitempty"`
-	Options  []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
+	Question            string                    `json:"question" validate:"required"`
+	PollType            PollType                  `json:"poll_type" validate:"required,oneof=single multi rank"`
+	Deadline            *time.Time                `json:"deadline,omitempty"`
+	ShouldNotifyMembers bool                      `json:"should_notify_members"`
+	IsAnonymous         bool                      `json:"is_anonymous"`
+	Options             []CreatePollOptionRequest `json:"options" validate:"omitempty,dive"`
+	Categories          []string                  `json:"categories,omitempty"`
 }
 
 // CreatePollOptionRequest is the payload for adding an option to an existing poll.
@@ -95,14 +102,17 @@ type CastVoteRequest struct {
 
 // PollAPIResponse is the external representation of a poll with vote data.
 type PollAPIResponse struct {
-	ID        uuid.UUID               `json:"id"`
-	TripID    uuid.UUID               `json:"trip_id"`
-	CreatedBy uuid.UUID               `json:"created_by"`
-	Question  string                  `json:"question"`
-	PollType  PollType                `json:"poll_type"`
-	CreatedAt time.Time               `json:"created_at"`
-	Deadline  *time.Time              `json:"deadline,omitempty"`
-	Options   []PollOptionAPIResponse `json:"options"`
+	ID                  uuid.UUID               `json:"id"`
+	TripID              uuid.UUID               `json:"trip_id"`
+	CreatedBy           uuid.UUID               `json:"created_by"`
+	Question            string                  `json:"question"`
+	PollType            PollType                `json:"poll_type"`
+	CreatedAt           time.Time               `json:"created_at"`
+	Deadline            *time.Time              `json:"deadline,omitempty"`
+	IsAnonymous         bool                    `json:"is_anonymous"`
+	ShouldNotifyMembers bool                    `json:"should_notify_members"`
+	Options             []PollOptionAPIResponse `json:"options"`
+	Categories          []string                `json:"categories,omitempty"`
 }
 
 // PollOptionAPIResponse is an option enriched with its vote count and whether the requesting user voted for it.
