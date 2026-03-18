@@ -3,6 +3,7 @@ import { Text } from "@/design-system/primitives/text";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 
@@ -97,10 +98,10 @@ export default function TextField({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 4,
+    gap: Layout.spacing.xxs,
   },
   label: {
-    marginBottom: 4,
+    marginBottom: Layout.spacing.xxs,
   },
   inputRow: {
     flexDirection: "row",
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
     borderRadius: CornerRadius.sm,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
-    minHeight: 48,
+    minHeight: CoreSize.xl,
   },
   inputRowFocused: {
     borderWidth: 2,
@@ -132,6 +133,6 @@ const styles = StyleSheet.create({
   },
   error: {
     color: ColorPalette.error,
-    marginTop: 4,
+    marginTop: Layout.spacing.xxs,
   },
 });

@@ -1,6 +1,7 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout, ModalHandle } from "@/design-system/tokens/layout";
 import { X } from "lucide-react-native";
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.md,
   },
   handlePressable: {
-    paddingVertical: 8,
+    paddingVertical: Layout.spacing.xs,
   },
   handle: {
     ...ModalHandle,
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Layout.spacing.md,
-    paddingBottom: 16,
+    paddingBottom: Layout.spacing.sm,
   },
   listContentEmpty: {
     flex: 1,
@@ -268,17 +269,17 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    paddingVertical: 60,
+    gap: Layout.spacing.xs,
+    paddingVertical: Layout.spacing.xxl,
   },
   emptyEmoji: {
-    fontSize: 48,
+    fontSize: CoreSize.xl,
   },
   inputBar: {
     gap: 6,
     paddingHorizontal: Layout.spacing.md,
     paddingTop: 10,
-    paddingBottom: 24,
+    paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ColorPalette.borderSecondary,
     backgroundColor: ColorPalette.white,
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     color: ColorPalette.textSecondary,
   },
   sendButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Layout.spacing.sm,
     paddingVertical: 10,
     borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.black,

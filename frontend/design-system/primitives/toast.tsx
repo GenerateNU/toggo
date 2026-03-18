@@ -3,7 +3,9 @@ import { Text } from "@/design-system/primitives/text";
 import { Check, X } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 import { ColorPalette } from "../tokens/color";
+import { CoreSize } from "../tokens/core-size";
 import { CornerRadius } from "../tokens/corner-radius";
+import { Layout } from "../tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,8 +45,11 @@ export default function Toast({
       {action && (
         <Pressable
           onPress={() => {
-            action.onPress();
-            onClose();
+            try {
+              action.onPress();
+            } finally {
+              onClose();
+            }
           }}
           hitSlop={8}
         >
@@ -72,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
     borderRadius: CornerRadius.md,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: Layout.spacing.sm,
     gap: 12,
     shadowColor: ColorPalette.black,
     shadowOffset: { width: 0, height: 4 },
@@ -81,8 +86,8 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   checkCircle: {
-    width: 24,
-    height: 24,
+    width: CoreSize.sm,
+    height: CoreSize.sm,
     alignItems: "center",
     justifyContent: "center",
   },

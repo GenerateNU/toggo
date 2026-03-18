@@ -100,7 +100,9 @@ const DayCell = React.memo(
 
     return (
       <Pressable
-        onPress={() => !isDisabled && onPress(date)}
+        onPress={() => onPress(date)}
+        disabled={isDisabled}
+        accessibilityState={{ disabled: isDisabled }}
         style={styles.dayOuter}
       >
         {/* Range band */}
@@ -237,6 +239,14 @@ export default function DateRangePicker({
       setRange({ start: null, end: null });
     }
   }, [visible]);
+
+  // Normalize minDate to midnight for accurate date comparisons
+  const normalizedMinDate = useMemo(() => {
+    if (!minDate) return undefined;
+    const normalized = new Date(minDate);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  }, [minDate]);
 
   const topInset =
     Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
@@ -406,7 +416,7 @@ export default function DateRangePicker({
               year={year}
               month={month}
               range={range}
-              minDate={minDate}
+              minDate={normalizedMinDate}
               onDayPress={handleDayPress}
             />
           ))}
@@ -437,7 +447,7 @@ export default function DateRangePicker({
               </Text>
             </Pressable>
 
-            {/* Save button — always shows "Save Dates" */}
+            {/* Save button */}
             <Pressable
               onPress={handleSave}
               style={({ pressed }) => [
@@ -472,8 +482,8 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     paddingHorizontal: GRID_PADDING,
-    paddingTop: 24,
-    paddingBottom: 8,
+    paddingTop: Layout.spacing.md,
+    paddingBottom: Layout.spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: ColorPalette.borderPrimary,
   },
@@ -485,11 +495,11 @@ const styles = StyleSheet.create({
   /* Selection summary */
   summaryRow: {
     marginTop: 12,
-    gap: 8,
+    gap: Layout.spacing.xs,
   },
   summaryPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
     backgroundColor: ColorPalette.surfaceBackground,
   },
@@ -499,7 +509,7 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.borderPrimary,
   },
   summaryArrow: {
-    marginHorizontal: 4,
+    marginHorizontal: Layout.spacing.xxs,
   },
 
   /* Weekday labels */
@@ -520,7 +530,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Layout.spacing.xs,
-    paddingBottom: 120,
+    paddingBottom: 120, // Large safe area for scrolling
   },
 
   /* Month */
@@ -529,7 +539,7 @@ const styles = StyleSheet.create({
     marginBottom: Layout.spacing.md,
   },
   monthLabel: {
-    marginBottom: 8,
+    marginBottom: Layout.spacing.xs,
   },
 
   /* Day outer wrapper */
@@ -551,18 +561,14 @@ const styles = StyleSheet.create({
     left: "50%",
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
-    height: "75%",
-    top: "12.5%",
   },
   rangeBandEnd: {
     right: "50%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
-    height: "75%",
-    top: "12.5%",
   },
 
-  /* Day circle — now fully circular */
+  /* Day circle */
   dayCircle: {
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,

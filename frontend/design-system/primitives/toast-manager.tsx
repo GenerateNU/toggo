@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { Animated, StyleSheet } from "react-native";
+import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
 import Toast from "./toast";
 
@@ -55,9 +56,9 @@ export const useToast = (): ToastContextValue => {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const TOAST_HEIGHT = 56;
+const TOAST_HEIGHT = CoreSize.xxl;
 const TOAST_GAP = 10;
-const EDGE_INSET = 60;
+const EDGE_INSET = Layout.spacing.xxl;
 
 // ─── Single Toast Item ───────────────────────────────────────────────────────
 
