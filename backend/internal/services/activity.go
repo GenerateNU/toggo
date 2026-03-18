@@ -104,13 +104,25 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 				}
 			}
 
-			// Batch create categories (idempotent - won't fail on duplicates)
+			// Get current max position for this trip
+			var maxPos int
+			err = tx.NewSelect().
+				TableExpr("categories").
+				ColumnExpr("COALESCE(MAX(position), -1)").
+				Where("trip_id = ?", req.TripID).
+				Scan(ctx, &maxPos)
+			if err != nil {
+				return err
+			}
+
+			// Batch create categories with positions (idempotent - won't fail on duplicates)
 			now := time.Now()
 			categories := make([]models.Category, len(uniqueNames))
 			for i, name := range uniqueNames {
 				categories[i] = models.Category{
 					TripID:    req.TripID,
 					Name:      name,
+					Position:  maxPos + 1 + i,
 					CreatedAt: now,
 					UpdatedAt: now,
 				}
@@ -275,10 +287,22 @@ func (s *ActivityService) AddCategoryToActivity(ctx context.Context, tripID, act
 		return err
 	}
 
-	// Create category with ON CONFLICT DO NOTHING (upsert pattern)
+	// Get current max position for this trip
+	var maxPos int
+	err = s.Repository.GetDB().NewSelect().
+		TableExpr("categories").
+		ColumnExpr("COALESCE(MAX(position), -1)").
+		Where("trip_id = ?", activity.TripID).
+		Scan(ctx, &maxPos)
+	if err != nil {
+		return err
+	}
+
+	// Create category with position at end, ON CONFLICT DO NOTHING (upsert pattern)
 	category := &models.Category{
 		TripID:    activity.TripID,
 		Name:      categoryName,
+		Position:  maxPos + 1,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

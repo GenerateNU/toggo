@@ -41,7 +41,6 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 			Config:         config,
 			EventPublisher: publisher,
 			PollService:    services.NewPollService(repository, publisher),
-			TripTabService: services.NewTripTabService(repository),
 		},
 	}
 

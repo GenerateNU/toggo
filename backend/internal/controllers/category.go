@@ -60,7 +60,6 @@ func (ctrl *CategoryController) GetCategoriesByTripID(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Return typed response
 	return c.Status(http.StatusOK).JSON(models.CategoryListResponse{
 		Categories: categories,
 	})
@@ -122,6 +121,71 @@ func (ctrl *CategoryController) ShowCategory(c *fiber.Ctx) error {
 	}
 
 	if err := ctrl.categoryService.SetCategoryVisibility(c.Context(), tripID, userID, name, false); err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
+
+// @Summary      Get trip tabs
+// @Description  Retrieves all visible categories for a trip ordered by position
+// @Tags         categories
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Success      200 {object} models.CategoryListResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/tabs [get]
+// @ID           getTripTabs
+func (ctrl *CategoryController) GetTabs(c *fiber.Ctx) error {
+	tripID, userID, err := ctrl.parseTripAndUserIDs(c)
+	if err != nil {
+		return err
+	}
+
+	tabs, err := ctrl.categoryService.GetTabs(c.Context(), tripID, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"tabs": tabs})
+}
+
+// @Summary      Reorder trip tabs
+// @Description  Updates the position of visible categories for a trip
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        request body models.UpdateCategoryTabOrderRequest true "Reorder request"
+// @Success      204 "No Content"
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/tabs/reorder [put]
+// @ID           reorderTripTabs
+func (ctrl *CategoryController) ReorderTabs(c *fiber.Ctx) error {
+	tripID, userID, err := ctrl.parseTripAndUserIDs(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.UpdateCategoryTabOrderRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	if err := ctrl.categoryService.ReorderTabs(c.Context(), tripID, userID, req); err != nil {
 		return err
 	}
 

@@ -117,7 +117,6 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 		serviceParams.EventPublisher,
 	)
 
-	serviceParams.TripTabService = services.NewTripTabService(repo)
 
 	routeParams := types.RouteParams{
 		Validator:     utilities.NewValidator(),

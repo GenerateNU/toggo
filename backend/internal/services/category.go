@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -12,6 +13,8 @@ import (
 type CategoryServiceInterface interface {
 	GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID, includeHidden bool) ([]*models.CategoryAPIResponse, error)
 	SetCategoryVisibility(ctx context.Context, tripID, userID uuid.UUID, name string, isHidden bool) error
+	GetTabs(ctx context.Context, tripID, userID uuid.UUID) ([]*models.CategoryAPIResponse, error)
+	ReorderTabs(ctx context.Context, tripID, userID uuid.UUID, req models.UpdateCategoryTabOrderRequest) error
 }
 
 var _ CategoryServiceInterface = (*CategoryService)(nil)
@@ -79,6 +82,70 @@ func (s *CategoryService) SetCategoryVisibility(ctx context.Context, tripID, use
 	return s.Category.SetHidden(ctx, tripID, name, isHidden)
 }
 
+// GetTabs returns all visible (non-hidden) categories for a trip ordered by position
+func (s *CategoryService) GetTabs(ctx context.Context, tripID, userID uuid.UUID) ([]*models.CategoryAPIResponse, error) {
+	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errs.ErrNotFound
+	}
+
+	categories, err := s.Category.FindByTripID(ctx, tripID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.convertToAPICategories(categories), nil
+}
+
+// ReorderTabs updates the position of all visible categories for a trip
+func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.UUID, req models.UpdateCategoryTabOrderRequest) error {
+	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
+	if err != nil {
+		return err
+	}
+	if !isMember {
+		return errs.ErrNotFound
+	}
+
+	// Fetch only visible categories for validation
+	currentCategories, err := s.Category.FindByTripID(ctx, tripID, false)
+	if err != nil {
+		return err
+	}
+
+	if len(req.Tabs) != len(currentCategories) {
+		return errs.BadRequest(errors.New("reorder request must include all visible tabs exactly once"))
+	}
+
+	// Build lookup of current visible category names
+	currentNames := make(map[string]bool)
+	for _, c := range currentCategories {
+		currentNames[c.Name] = true
+	}
+
+	// Validate no duplicates and all names belong to this trip
+	seenNames := make(map[string]bool)
+	seenPositions := make(map[int]bool)
+	for _, t := range req.Tabs {
+		if !currentNames[t.Name] {
+			return errs.BadRequest(errors.New("category does not belong to this trip or is hidden"))
+		}
+		if seenNames[t.Name] {
+			return errs.BadRequest(errors.New("duplicate category names in reorder request"))
+		}
+		if seenPositions[t.Position] {
+			return errs.BadRequest(errors.New("duplicate positions in reorder request"))
+		}
+		seenNames[t.Name] = true
+		seenPositions[t.Position] = true
+	}
+
+	return s.Category.UpdateOrder(ctx, tripID, req.Tabs)
+}
+
 func (s *CategoryService) convertToAPICategories(categories []*models.Category) []*models.CategoryAPIResponse {
 	apiCategories := make([]*models.CategoryAPIResponse, 0, len(categories))
 	for _, category := range categories {
@@ -86,6 +153,7 @@ func (s *CategoryService) convertToAPICategories(categories []*models.Category) 
 			TripID:    category.TripID,
 			Name:      category.Name,
 			Icon:      category.Icon,
+			Position:  category.Position,
 			CreatedAt: category.CreatedAt,
 			UpdatedAt: category.UpdatedAt,
 		})
@@ -102,6 +170,7 @@ func (s *CategoryService) convertToAPICategoriesWithHidden(categories []*models.
 			Name:      category.Name,
 			Icon:      category.Icon,
 			IsHidden:  &isHidden,
+			Position:  category.Position,
 			CreatedAt: category.CreatedAt,
 			UpdatedAt: category.UpdatedAt,
 		})

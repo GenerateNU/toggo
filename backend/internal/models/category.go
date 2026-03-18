@@ -15,6 +15,7 @@ type Category struct {
 	Name      string    `bun:"name,pk" json:"name"`
 	Icon      *string   `bun:"icon" json:"icon,omitempty"`
 	IsHidden  bool      `bun:"is_hidden" json:"is_hidden"`
+	Position  int       `bun:"position" json:"position"`
 	CreatedAt time.Time `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -32,6 +33,7 @@ type CategoryAPIResponse struct {
 	Name      string    `json:"name"`
 	Icon      *string   `json:"icon,omitempty"`
 	IsHidden  *bool     `json:"is_hidden,omitempty"` // only present for admins
+	Position  int       `json:"position"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -39,4 +41,16 @@ type CategoryAPIResponse struct {
 // CategoryListResponse for listing categories
 type CategoryListResponse struct {
 	Categories []*CategoryAPIResponse `json:"categories"`
+}
+
+// CategoryTabOrder represents a single category's new position in a reorder request
+type CategoryTabOrder struct {
+	TripID   uuid.UUID `validate:"required" json:"trip_id"`
+	Name     string    `validate:"required,min=1" json:"name"`
+	Position int       `validate:"min=0" json:"position"`
+}
+
+// UpdateCategoryTabOrderRequest is the payload for reordering tabs
+type UpdateCategoryTabOrderRequest struct {
+	Tabs []CategoryTabOrder `validate:"required,min=1" json:"tabs"`
 }
