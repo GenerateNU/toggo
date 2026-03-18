@@ -43,11 +43,15 @@ type CategoryListResponse struct {
 	Categories []*CategoryAPIResponse `json:"categories"`
 }
 
+// TabListResponse is returned for the tabs endpoint
+type TabListResponse struct {
+	Tabs []*CategoryAPIResponse `json:"tabs"`
+}
+
 // CategoryTabOrder represents a single category's new position in a reorder request
 type CategoryTabOrder struct {
-	TripID   uuid.UUID `validate:"required" json:"trip_id"`
-	Name     string    `validate:"required,min=1" json:"name"`
-	Position int       `validate:"min=0" json:"position"`
+	Name     string `validate:"required,min=1" json:"name"`
+	Position int    `validate:"min=0" json:"position"`
 }
 
 // UpdateCategoryTabOrderRequest is the payload for reordering tabs

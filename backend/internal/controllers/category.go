@@ -132,7 +132,7 @@ func (ctrl *CategoryController) ShowCategory(c *fiber.Ctx) error {
 // @Tags         categories
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
-// @Success      200 {object} models.CategoryListResponse
+// @Success      200 {object} models.TabListResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
 // @Failure      403 {object} errs.APIError
@@ -151,7 +151,7 @@ func (ctrl *CategoryController) GetTabs(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"tabs": tabs})
+	return c.Status(http.StatusOK).JSON(models.TabListResponse{Tabs: tabs})
 }
 
 // @Summary      Reorder trip tabs
