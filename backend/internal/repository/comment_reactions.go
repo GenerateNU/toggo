@@ -13,7 +13,7 @@ type CommentReactionRepository interface {
 	Create(ctx context.Context, reaction *models.CommentReaction) (*models.CommentReaction, error)
 	DeleteByUserEmoji(ctx context.Context, commentID uuid.UUID, userID uuid.UUID, emoji string) error
 	GetSummary(ctx context.Context, commentID uuid.UUID, currentUserID uuid.UUID) ([]models.CommentReactionSummary, error)
-	ListUsersForEmoji(ctx context.Context, commentID uuid.UUID, emoji string) ([]commentReactionUserDBRow, error)
+	ListUsersForEmoji(ctx context.Context, commentID uuid.UUID, emoji string) ([]CommentReactionUserDBRow, error)
 }
 
 var _ CommentReactionRepository = (*commentReactionRepository)(nil)
@@ -79,15 +79,15 @@ func (r *commentReactionRepository) GetSummary(ctx context.Context, commentID uu
 	return out, nil
 }
 
-type commentReactionUserDBRow struct {
+type CommentReactionUserDBRow struct {
 	UserID            uuid.UUID  `json:"user_id"`
 	Username          string     `json:"username"`
 	ProfilePictureID  *uuid.UUID `json:"profile_picture_id"`
 	ProfilePictureKey *string    `bun:"profile_picture_key" json:"-"`
 }
 
-func (r *commentReactionRepository) ListUsersForEmoji(ctx context.Context, commentID uuid.UUID, emoji string) ([]commentReactionUserDBRow, error) {
-	var users []commentReactionUserDBRow
+func (r *commentReactionRepository) ListUsersForEmoji(ctx context.Context, commentID uuid.UUID, emoji string) ([]CommentReactionUserDBRow, error) {
+	var users []CommentReactionUserDBRow
 
 	err := r.db.NewSelect().
 		TableExpr("comment_reactions AS cr").
