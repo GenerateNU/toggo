@@ -249,7 +249,7 @@ export default function DateRangePicker({
     });
   }, [monthsToShow]);
 
-  // ─── Updated selection logic ─────────────────────────────────────────
+  // ─── selection logic ─────────────────────────────────────────
   //
   // End date is NEVER null after a selection (only via Clear button).
   // 1. Nothing selected → single-day range
@@ -325,7 +325,7 @@ export default function DateRangePicker({
           >
             <Pressable
               onPress={onClose}
-              hitSlop={12}
+              hitSlop={16}
               style={styles.closeButton}
             >
               <X size={20} color={ColorPalette.textQuaternary} />
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     paddingHorizontal: GRID_PADDING,
-    paddingTop: 12,
+    paddingTop: 24,
     paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: ColorPalette.borderPrimary,

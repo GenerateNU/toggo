@@ -147,14 +147,20 @@ export default function CommentSection({
       >
         {/* Header */}
         <Box style={styles.header}>
-          <View style={styles.handle} />
+          <Pressable
+            onPress={handleModalClose}
+            hitSlop={16}
+            style={styles.handlePressable}
+          >
+            <View style={styles.handle} />
+          </Pressable>
           <Text variant="smHeading" color="textSecondary" style={styles.title}>
             Comments
           </Text>
           <Pressable
             onPress={handleModalClose}
             style={styles.closeButton}
-            hitSlop={8}
+            hitSlop={16}
             accessibilityLabel="Close comments"
           >
             <X size={24} color={ColorPalette.textQuaternary} />
@@ -231,9 +237,12 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    paddingTop: 10,
+    paddingTop: 20,
     paddingBottom: 12,
     paddingHorizontal: Layout.spacing.md,
+  },
+  handlePressable: {
+    paddingVertical: 8,
   },
   handle: {
     ...ModalHandle,
@@ -246,7 +255,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: "absolute",
     right: Layout.spacing.md,
-    top: 10,
+    top: 20,
   },
   listContent: {
     paddingHorizontal: Layout.spacing.md,
