@@ -41,7 +41,7 @@ func (rc *RankPollController) CreateRankPoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (rc *RankPollController) GetRankPollResults(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (rc *RankPollController) UpdateRankPoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (rc *RankPollController) DeleteRankPoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -203,7 +203,7 @@ func (rc *RankPollController) AddOption(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -252,7 +252,7 @@ func (rc *RankPollController) DeleteOption(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (rc *RankPollController) SubmitRanking(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -332,7 +332,7 @@ func (rc *RankPollController) GetPollVoters(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
