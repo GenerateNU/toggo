@@ -141,6 +141,7 @@ export const Button: React.FC<ButtonProps> = ({
             paddingHorizontal: isIconOnly ? 0 : resolved.paddingHorizontal,
             borderRadius: resolved.borderRadius,
             borderWidth: resolved.borderWidth,
+            borderStyle: variant === "Dashed" ? "dashed" : "solid",
             borderColor: resolved.borderColor
               ? colors[resolved.borderColor as keyof typeof colors]
               : undefined,

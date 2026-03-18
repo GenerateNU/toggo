@@ -49,7 +49,8 @@
           "color": "#ffffff"
         }
       ],
-      "react-native-localize"
+      "react-native-localize",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "router": {},
