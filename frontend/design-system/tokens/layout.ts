@@ -29,6 +29,17 @@ export const Layout = {
   },
 } as const;
 
+/**
+ * Standard handle for bottom sheet modals
+ * Used to indicate draggable sheet UI
+ */
+export const ModalHandle = {
+  width: 36,
+  height: 4,
+  borderRadius: 2,
+  marginBottom: 12,
+} as const;
+
 export type LayoutKey = keyof typeof Layout;
 export type LayoutGridKey = keyof typeof Layout.grid;
 export type LayoutSpacingKey = keyof typeof Layout.spacing;
