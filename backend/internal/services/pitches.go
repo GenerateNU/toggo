@@ -209,16 +209,10 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 	}, nil
 }
 
-// Update updates pitch metadata (title, description, duration) and returns the updated pitch with presigned audio URL.
+// Update updates pitch metadata and, when ImageIDs is provided in the request, replaces image associations.
+// Only the pitch creator (userID == pitch.UserID) is allowed to update; members who did not create the pitch get a 403.
 func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error) {
-	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
-	if err != nil {
-		return nil, err
-	}
-	if pitch.UserID != userID {
-		return nil, errs.Forbidden()
-	}
-	updated, err := s.pitchRepo.Update(ctx, pitchID, tripID, &req)
+	existing, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
 	if err != nil {
 		return nil, err
 	}

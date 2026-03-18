@@ -13,10 +13,18 @@ import (
 
 type PitchRepository interface {
 	Create(ctx context.Context, pitch *models.TripPitch) (*models.TripPitch, error)
+	CreateWithImages(ctx context.Context, pitch *models.TripPitch, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.TripPitch, error)
 	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error)
 	Update(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest) (*models.TripPitch, error)
+	UpdateWithImages(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	Delete(ctx context.Context, id, tripID uuid.UUID) error
+
+	SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error
+	GetImageIDsForPitch(ctx context.Context, pitchID uuid.UUID) ([]uuid.UUID, error)
+	GetImageIDsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error)
+	GetImageKeysForPitch(ctx context.Context, pitchID uuid.UUID) ([]string, error)
+	GetImageKeysForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 }
 
 var _ PitchRepository = (*pitchRepository)(nil)
