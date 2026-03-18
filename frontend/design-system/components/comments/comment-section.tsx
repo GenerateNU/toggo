@@ -28,7 +28,7 @@ export type CommentSectionProps = {
   currentUserName: string;
   currentUserAvatar?: string;
   currentUserSeed?: string;
-  onSubmitComment: (comment: CommentData) => void;
+  onSubmitComment: (comment: CommentData) => Promise<void>;
   onReact: (commentId: string, emoji: string) => void;
 };
 
@@ -65,12 +65,14 @@ export default function CommentSection({
   const [inputText, setInputText] = useState("");
   const [activePickerId, setActivePickerId] = useState<string | null>(null);
   const [pickerAnchor, setPickerAnchor] = useState({ y: 0, x: 0 });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const charsRemaining = 500 - inputText.length;
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const trimmed = inputText.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSubmitting) return;
 
     const newComment: CommentData = {
       id: Date.now().toString(),
@@ -82,10 +84,20 @@ export default function CommentSection({
       reactions: [],
     };
 
-    onSubmitComment(newComment);
-    setInputText("");
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await onSubmitComment(newComment);
+      setInputText(""); // Only clear on success
+    } catch (_error) {
+      setSubmitError("Failed to post comment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [
     inputText,
+    isSubmitting,
     onSubmitComment,
     currentUserId,
     currentUserName,
@@ -196,7 +208,7 @@ export default function CommentSection({
               maxLength={500}
               textAlignVertical="top"
             />
-            {inputText.trim().length > 0 && (
+            {inputText.trim().length > 0 && !isSubmitting && (
               <Pressable
                 onPress={handleSubmit}
                 style={({ pressed }) => [
@@ -209,8 +221,20 @@ export default function CommentSection({
                 </Text>
               </Pressable>
             )}
+            {isSubmitting && (
+              <Box style={styles.sendButton}>
+                <Text variant="smLabel" style={{ color: ColorPalette.white }}>
+                  ...
+                </Text>
+              </Box>
+            )}
           </Box>
-          {charsRemaining <= 100 && (
+          {submitError && (
+            <Text variant="xsLabel" style={styles.errorText}>
+              {submitError}
+            </Text>
+          )}
+          {charsRemaining <= 100 && !submitError && (
             <Text
               variant="xsLabel"
               style={[
@@ -317,5 +341,9 @@ const styles = StyleSheet.create({
   },
   charCountUrgent: {
     color: ColorPalette.brandPrimary,
+  },
+  errorText: {
+    color: ColorPalette.error,
+    textAlign: "right",
   },
 });

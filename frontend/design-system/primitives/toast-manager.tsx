@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { Animated, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
 import Toast from "./toast";
@@ -77,6 +78,7 @@ const ToastItem = ({
   onStartDismiss,
   onCompleteDismiss,
 }: ToastItemProps) => {
+  const insets = useSafeAreaInsets();
   const slideDirection = position === "top" ? -1 : 1;
   const slideY = useMemo(
     () => new Animated.Value(80 * slideDirection),
@@ -150,9 +152,11 @@ const ToastItem = ({
     }).start();
   }, [visibleIndex, positionY, position]);
 
-  // Use fixed positioning and combine both translateY values
+  // Use fixed positioning with safe area insets and combine both translateY values
+  const safeEdgeInset =
+    position === "top" ? EDGE_INSET + insets.top : EDGE_INSET + insets.bottom;
   const fixedPosition =
-    position === "top" ? { top: EDGE_INSET } : { bottom: EDGE_INSET };
+    position === "top" ? { top: safeEdgeInset } : { bottom: safeEdgeInset };
   const combinedTranslateY = Animated.add(slideY, positionY);
 
   const showClose = entry.showClose !== false;

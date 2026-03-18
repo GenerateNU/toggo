@@ -232,13 +232,19 @@ export default function DateRangePicker({
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
 
-  // Clear the selection when the modal opens
+  // Initialize range when modal opens
   useEffect(() => {
     if (visible) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRange({ start: null, end: null });
+      // Only clear if no initialRange provided, otherwise use initialRange
+      if (!initialRange.start && !initialRange.end) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRange({ start: null, end: null });
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRange(initialRange);
+      }
     }
-  }, [visible]);
+  }, [visible, initialRange]);
 
   // Normalize minDate to midnight for accurate date comparisons
   const normalizedMinDate = useMemo(() => {
@@ -429,6 +435,7 @@ export default function DateRangePicker({
             <Pressable
               onPress={handleClear}
               style={({ pressed }) => [
+                styles.footerButtonBase,
                 styles.clearButton,
                 pressed && styles.clearButtonPressed,
                 !hasRange && styles.clearButtonDisabled,
@@ -451,6 +458,7 @@ export default function DateRangePicker({
             <Pressable
               onPress={handleSave}
               style={({ pressed }) => [
+                styles.footerButtonBase,
                 styles.saveButton,
                 pressed && styles.saveButtonPressed,
                 !hasRange && styles.saveButtonDisabled,
@@ -598,12 +606,14 @@ const styles = StyleSheet.create({
     gap: 10,
     flexDirection: "row",
   },
-  clearButton: {
+  footerButtonBase: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
+  },
+  clearButton: {
     borderWidth: 1,
     borderColor: ColorPalette.borderPrimary,
     backgroundColor: ColorPalette.white,
@@ -615,11 +625,6 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.borderSecondary,
   },
   saveButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.black,
   },
   saveButtonPressed: {

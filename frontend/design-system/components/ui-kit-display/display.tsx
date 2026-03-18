@@ -185,7 +185,7 @@ export default function UIKit() {
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [comments, setComments] = useState<CommentData[]>(Comments);
 
-  const handleSubmitComment = useCallback((comment: CommentData) => {
+  const handleSubmitComment = useCallback(async (comment: CommentData) => {
     setComments((prev) => [...prev, comment]);
   }, []);
 
