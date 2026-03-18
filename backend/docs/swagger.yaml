@@ -3528,8 +3528,9 @@ paths:
       - application/json
       description: |-
         Updates pitch metadata (title, description, duration).
-        When image_ids is present in the request it fully replaces the pitch's image associations
-        (pass an empty array to remove all images; omit the field to leave images unchanged).
+        When image_ids is omitted from the request, existing image associations remain unchanged.
+        When image_ids is an empty array, all image associations are removed.
+        When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
         The response returns S3 file keys (image_keys) for easier lookup.
       operationId: updatePitch
       parameters:

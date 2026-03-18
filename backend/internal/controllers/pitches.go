@@ -135,8 +135,9 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 
 // @Summary      Update a pitch
 // @Description  Updates pitch metadata (title, description, duration).
-// @Description  When image_ids is present in the request it fully replaces the pitch's image associations
-// @Description  (pass an empty array to remove all images; omit the field to leave images unchanged).
+// @Description  When image_ids is omitted from the request, existing image associations remain unchanged.
+// @Description  When image_ids is an empty array, all image associations are removed.
+// @Description  When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
 // @Description  The response returns S3 file keys (image_keys) for easier lookup.
 // @Tags         pitches
 // @Accept       json
