@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type VotePollController struct {
@@ -43,7 +44,7 @@ func (pc *VotePollController) CreatePoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -82,7 +83,7 @@ func (pc *VotePollController) GetPollsByTripID(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (pc *VotePollController) GetPoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -162,7 +163,7 @@ func (pc *VotePollController) UpdatePoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -205,7 +206,7 @@ func (pc *VotePollController) DeletePoll(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -241,7 +242,7 @@ func (pc *VotePollController) AddOption(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -290,7 +291,7 @@ func (pc *VotePollController) DeleteOption(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -326,7 +327,7 @@ func (pc *VotePollController) CastVote(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	userID, err := validators.ExtractUserID(c)
+	userID, err := getUserID(c)
 	if err != nil {
 		return err
 	}
@@ -348,3 +349,23 @@ func (pc *VotePollController) CastVote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(poll)
 }
 
+// getUserID extracts and validates the authenticated user ID from the request context.
+func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
+	val := c.Locals("userID")
+	if val == nil {
+		return uuid.Nil, errs.Unauthorized()
+	}
+
+	switch v := val.(type) {
+	case string:
+		userID, err := validators.ValidateID(v)
+		if err != nil {
+			return uuid.Nil, errs.Unauthorized()
+		}
+		return userID, nil
+	case uuid.UUID:
+		return v, nil
+	default:
+		return uuid.Nil, errs.Unauthorized()
+	}
+}
