@@ -9,6 +9,7 @@ type Repository struct {
 	Health           HealthRepository
 	Image            ImageRepository
 	Comment          CommentRepository
+	CommentReaction  CommentReactionRepository
 	Membership       MembershipRepository
 	Trip             TripRepository
 	Pitch            PitchRepository
@@ -31,6 +32,7 @@ func NewRepository(db *bun.DB) *Repository {
 		Health:           NewHealthepository(db),
 		Image:            NewImageRepository(db),
 		Comment:          NewCommentRepository(db),
+		CommentReaction:  NewCommentReactionRepository(db),
 		Trip:             NewTripRepository(db),
 		Poll:             NewPollRepository(db),
 		PollRanking:      NewPollRankingRepository(db),
