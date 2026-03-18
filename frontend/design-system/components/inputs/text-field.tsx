@@ -1,11 +1,11 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import React, { useState } from "react";
-import { StyleSheet, TextInput, TextInputProps } from "react-native";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import React, { useState } from "react";
+import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ export default function TextField({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="smLabel" color="textSecondary" style={styles.label}>
+        <Text variant="xsLabel" color="textSecondary" style={styles.label}>
           {label}
         </Text>
       )}

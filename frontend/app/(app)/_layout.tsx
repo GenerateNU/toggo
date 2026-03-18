@@ -1,6 +1,6 @@
 import { useUser } from "@/contexts/user";
 import { BackButton } from "@/design-system";
-import { ToastProvider } from "@/design-system/primitives/toast-manager";
+import { ToastProvider } from "@/design-system";
 import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {

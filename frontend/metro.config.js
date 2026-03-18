@@ -18,6 +18,7 @@ defaultConfig.resolver = {
   ...defaultConfig.resolver,
   assetExts: defaultConfig.resolver.assetExts.filter((ext) => ext !== "svg"),
   sourceExts: [...defaultConfig.resolver.sourceExts, "svg"],
+  nodeModulesPaths: [require("path").resolve(__dirname, "node_modules")],
 };
 
 module.exports = defaultConfig;
