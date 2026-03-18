@@ -20,6 +20,7 @@ type ImageRepository interface {
 	FindByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	FindByIDAndSize(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.Image, error)
 	FindByIDsAndSize(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) ([]*models.Image, error)
+	FindConfirmedByIDs(ctx context.Context, imageIDs []uuid.UUID) ([]uuid.UUID, error)
 	FindAllByID(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	FindByIDIncludingPending(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error)
 	DeleteByID(ctx context.Context, imageID uuid.UUID) error
@@ -255,6 +256,24 @@ func (r *imageRepository) FindByIDsAndSize(ctx context.Context, imageIDs []uuid.
 		return nil, err
 	}
 	return images, nil
+}
+
+// FindConfirmedByIDs returns the image IDs that exist and are confirmed (batch validation)
+func (r *imageRepository) FindConfirmedByIDs(ctx context.Context, imageIDs []uuid.UUID) ([]uuid.UUID, error) {
+	if len(imageIDs) == 0 {
+		return []uuid.UUID{}, nil
+	}
+	var confirmedIDs []uuid.UUID
+	err := r.db.NewSelect().
+		Model((*models.Image)(nil)).
+		ColumnExpr("DISTINCT image_id").
+		Where("image_id IN (?)", bun.In(imageIDs)).
+		Where("status = ?", models.UploadStatusConfirmed).
+		Scan(ctx, &confirmedIDs)
+	if err != nil {
+		return nil, err
+	}
+	return confirmedIDs, nil
 }
 
 // FindAllByID retrieves all size variants of an image regardless of status

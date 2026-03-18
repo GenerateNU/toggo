@@ -508,6 +508,84 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
+	t.Run("create pitch with multiple valid images (batch validation)", func(t *testing.T) {
+		requireS3(t)
+		// Create 3 confirmed images to test batch query efficiency
+		img1 := createConfirmedImage(t)
+		img2 := createConfirmedImage(t)
+		img3 := createConfirmedImage(t)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Multiple images",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{img1, img2, img3},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		pitch := resp["pitch"].(map[string]any)
+		keys, ok := pitch["image_keys"].([]any)
+		require.True(t, ok)
+		require.Len(t, keys, 3, "should have 3 image keys")
+	})
+
+	t.Run("create pitch with pending image returns 400", func(t *testing.T) {
+		requireS3(t)
+		// Create a pending (unconfirmed) image
+		db := fakes.GetSharedDB()
+		pendingID := uuid.New()
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: pendingID,
+				FileKey: "test-images/pending-" + pendingID.String() + ".jpg",
+				Size:    models.ImageSizeMedium,
+				Status:  models.UploadStatusPending,
+			}).
+			Exec(context.Background())
+		require.NoError(t, err)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Pending image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{pendingID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("create pitch with mix of valid and invalid images returns 400", func(t *testing.T) {
+		requireS3(t)
+		validID := createConfirmedImage(t)
+		invalidID := uuid.New() // doesn't exist
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Mixed images",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{validID, invalidID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
 	// -- GET includes image_keys --
 
 	t.Run("get pitch includes image_keys", func(t *testing.T) {
