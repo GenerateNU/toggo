@@ -9,7 +9,6 @@ var allowedActivityTimesOfDay = []models.ActivityTimeOfDay{
 	models.ActivityTimeOfDayMorning,
 	models.ActivityTimeOfDayAfternoon,
 	models.ActivityTimeOfDayEvening,
-	models.ActivityTimeOfDayNight,
 }
 
 func ValidateActivityTimeOfDay(timeOfDay string) error {

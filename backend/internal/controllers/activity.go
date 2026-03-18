@@ -117,7 +117,7 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        category query string false "Filter by category name"
-// @Param        time_of_day query string false "Filter by time of day (morning, afternoon, evening, night)"
+// @Param        time_of_day query string false "Filter by time of day (morning, afternoon, evening)"
 // @Param        limit query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.ActivityCursorPageResult

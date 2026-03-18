@@ -2224,7 +2224,7 @@ paths:
         in: query
         name: category
         type: string
-      - description: Filter by time of day (morning, afternoon, evening, night)
+      - description: Filter by time of day (morning, afternoon, evening)
         in: query
         name: time_of_day
         type: string

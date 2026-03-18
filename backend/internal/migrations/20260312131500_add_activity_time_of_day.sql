@@ -3,7 +3,7 @@
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'activity_time_of_day') THEN
-        CREATE TYPE activity_time_of_day AS ENUM ('morning', 'afternoon', 'evening', 'night');
+        CREATE TYPE activity_time_of_day AS ENUM ('morning', 'afternoon', 'evening');
     END IF;
 END $$;
 

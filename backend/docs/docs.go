@@ -1320,7 +1320,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by time of day (morning, afternoon, evening, night)",
+                        "description": "Filter by time of day (morning, afternoon, evening)",
                         "name": "time_of_day",
                         "in": "query"
                     },
