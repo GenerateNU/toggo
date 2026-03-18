@@ -70,15 +70,13 @@ export default function RadioGroup<T extends string = string>({
               pressed && !disabled && styles.rowPressed,
             ]}
             disabled={disabled}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: selected, disabled }}
           >
             <RadioDot selected={selected} disabled={disabled} />
             <Text
               variant="smLabel"
-              style={{
-                color: disabled
-                  ? ColorPalette.textDisabled
-                  : ColorPalette.textSecondary,
-              }}
+              color={disabled ? "textDisabled" : "textSecondary"}
             >
               {opt.label}
             </Text>

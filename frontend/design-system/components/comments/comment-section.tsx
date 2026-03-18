@@ -1,8 +1,10 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Layout } from "@/design-system/tokens/layout";
+import { Layout, ModalHandle } from "@/design-system/tokens/layout";
+import { X } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
   FlatList,
@@ -26,7 +28,7 @@ export type CommentSectionProps = {
   currentUserName: string;
   currentUserAvatar?: string;
   currentUserSeed?: string;
-  onSubmitComment: (comment: CommentData) => void;
+  onSubmitComment: (comment: CommentData) => Promise<void>;
   onReact: (commentId: string, emoji: string) => void;
 };
 
@@ -63,12 +65,14 @@ export default function CommentSection({
   const [inputText, setInputText] = useState("");
   const [activePickerId, setActivePickerId] = useState<string | null>(null);
   const [pickerAnchor, setPickerAnchor] = useState({ y: 0, x: 0 });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const charsRemaining = 500 - inputText.length;
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     const trimmed = inputText.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSubmitting) return;
 
     const newComment: CommentData = {
       id: Date.now().toString(),
@@ -80,10 +84,20 @@ export default function CommentSection({
       reactions: [],
     };
 
-    onSubmitComment(newComment);
-    setInputText("");
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await onSubmitComment(newComment);
+      setInputText(""); // Only clear on success
+    } catch (_error) {
+      setSubmitError("Failed to post comment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }, [
     inputText,
+    isSubmitting,
     onSubmitComment,
     currentUserId,
     currentUserName,
@@ -102,6 +116,13 @@ export default function CommentSection({
   const handleClosePicker = useCallback(() => {
     setActivePickerId(null);
   }, []);
+
+  const handleModalClose = useCallback(() => {
+    // Reset picker state when modal closes
+    setActivePickerId(null);
+    setPickerAnchor({ y: 0, x: 0 });
+    onClose();
+  }, [onClose]);
 
   const renderItem = useCallback(
     ({ item }: { item: CommentData }) => (
@@ -130,7 +151,7 @@ export default function CommentSection({
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={onClose}
+      onRequestClose={handleModalClose}
     >
       <KeyboardAvoidingView
         style={styles.container}
@@ -139,10 +160,24 @@ export default function CommentSection({
       >
         {/* Header */}
         <Box style={styles.header}>
-          <View style={styles.handle} />
+          <Pressable
+            onPress={handleModalClose}
+            hitSlop={16}
+            style={styles.handlePressable}
+          >
+            <View style={styles.handle} />
+          </Pressable>
           <Text variant="smHeading" color="textSecondary" style={styles.title}>
             Comments
           </Text>
+          <Pressable
+            onPress={handleModalClose}
+            style={styles.closeButton}
+            hitSlop={16}
+            accessibilityLabel="Close comments"
+          >
+            <X size={24} color={ColorPalette.textQuaternary} />
+          </Pressable>
         </Box>
 
         {/* Comment list */}
@@ -173,7 +208,7 @@ export default function CommentSection({
               maxLength={500}
               textAlignVertical="top"
             />
-            {inputText.trim().length > 0 && (
+            {inputText.trim().length > 0 && !isSubmitting && (
               <Pressable
                 onPress={handleSubmit}
                 style={({ pressed }) => [
@@ -186,8 +221,20 @@ export default function CommentSection({
                 </Text>
               </Pressable>
             )}
+            {isSubmitting && (
+              <Box style={styles.sendButton}>
+                <Text variant="smLabel" style={{ color: ColorPalette.white }}>
+                  ...
+                </Text>
+              </Box>
+            )}
           </Box>
-          {charsRemaining <= 100 && (
+          {submitError && (
+            <Text variant="xsLabel" style={styles.errorText}>
+              {submitError}
+            </Text>
+          )}
+          {charsRemaining <= 100 && !submitError && (
             <Text
               variant="xsLabel"
               style={[
@@ -215,22 +262,29 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    paddingTop: 10,
+    paddingTop: 20,
     paddingBottom: 12,
+    paddingHorizontal: Layout.spacing.md,
+  },
+  handlePressable: {
+    paddingVertical: Layout.spacing.xs,
   },
   handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    ...ModalHandle,
     backgroundColor: ColorPalette.borderPrimary,
-    marginBottom: 12,
   },
   title: {
     textAlign: "center",
+    flex: 1,
+  },
+  closeButton: {
+    position: "absolute",
+    right: Layout.spacing.md,
+    top: 20,
   },
   listContent: {
     paddingHorizontal: Layout.spacing.md,
-    paddingBottom: 16,
+    paddingBottom: Layout.spacing.sm,
   },
   listContentEmpty: {
     flex: 1,
@@ -239,17 +293,17 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    paddingVertical: 60,
+    gap: Layout.spacing.xs,
+    paddingVertical: Layout.spacing.xxl,
   },
   emptyEmoji: {
-    fontSize: 48,
+    fontSize: CoreSize.xl,
   },
   inputBar: {
     gap: 6,
     paddingHorizontal: Layout.spacing.md,
     paddingTop: 10,
-    paddingBottom: 24,
+    paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ColorPalette.borderSecondary,
     backgroundColor: ColorPalette.white,
@@ -272,7 +326,7 @@ const styles = StyleSheet.create({
     color: ColorPalette.textSecondary,
   },
   sendButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Layout.spacing.sm,
     paddingVertical: 10,
     borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.black,
@@ -287,5 +341,9 @@ const styles = StyleSheet.create({
   },
   charCountUrgent: {
     color: ColorPalette.brandPrimary,
+  },
+  errorText: {
+    color: ColorPalette.error,
+    textAlign: "right",
   },
 });

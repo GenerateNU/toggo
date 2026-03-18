@@ -28,7 +28,7 @@ type Repository struct {
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
 		User:             NewUserRepository(db),
-		Health:           NewHealthepository(db),
+		Health:           NewHealthRepository(db),
 		Image:            NewImageRepository(db),
 		Comment:          NewCommentRepository(db),
 		Trip:             NewTripRepository(db),

@@ -20,7 +20,7 @@ const THUMB_SIZE = 26;
 const THUMB_OFFSET = 2;
 const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - THUMB_OFFSET * 2;
 const TRACK_OFF_COLOR = ColorPalette.borderPrimary;
-const TRACK_ON_COLOR = "#34C759";
+const TRACK_ON_COLOR = ColorPalette.brandSecondary;
 
 export default function Toggle({
   label,
@@ -77,12 +77,8 @@ export default function Toggle({
       {label && (
         <Text
           variant="smLabel"
-          style={{
-            color: disabled
-              ? ColorPalette.textDisabled
-              : ColorPalette.textSecondary,
-            flex: 1,
-          }}
+          color={disabled ? "textDisabled" : "textSecondary"}
+          style={{ flex: 1 }}
         >
           {label}
         </Text>

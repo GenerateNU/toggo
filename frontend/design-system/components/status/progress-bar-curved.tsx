@@ -1,6 +1,6 @@
 import { ColorPalette } from "@/design-system/tokens/color";
 import { useEffect, useState } from "react";
-import { Animated, Easing, View, ViewStyle } from "react-native";
+import { Animated, Easing, StyleProp, View, ViewStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ export type ProgressBarCurvedProps = {
   /** Duration of the fill animation in ms */
   duration?: number;
   /** Additional style overrides on the outer container */
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ export default function ProgressBarCurved({
   percent,
   size = 120,
   strokeWidth = 10,
-  fillColor = "#4ECBA0",
+  fillColor = ColorPalette.progressFill,
   trackColor = ColorPalette.surfaceBackground,
   duration = 800,
   style,

@@ -1,11 +1,16 @@
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
+import { CommentData } from "@/design-system/components/comments/comment";
+import CommentSection from "@/design-system/components/comments/comment-section";
+import TextField from "@/design-system/components/inputs/text-field";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
 import DateRangePicker, {
   DateRange,
 } from "@/design-system/primitives/date-picker";
+import Divider from "@/design-system/primitives/divider";
 import { Text } from "@/design-system/primitives/text";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize, CoreSizeKey } from "@/design-system/tokens/core-size";
@@ -20,29 +25,21 @@ import {
   TypographyVariant,
 } from "@/design-system/tokens/typography";
 import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Easing,
-  View,
-  TouchableOpacity,
   Pressable,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
-import Toggle from "../buttons/toggle";
-import TextField from "@/design-system/components/inputs/text-field";
 import RadioGroup from "../buttons/radio";
-import {
-  ToastProvider,
-  useToast,
-} from "@/design-system/primitives/toast-manager";
-import CommentSection from "@/design-system/components/comments/comment-section";
-import { CommentData } from "@/design-system/components/comments/comment";
-import Divider from "@/design-system/primitives/divider";
-import ProgressBarCurved from "../status/progress-bar-curved";
+import Toggle from "../buttons/toggle";
 import Comments from "../comments/example-comments.json";
 import SkeletonCircle from "../skeleton/circle";
 import SkeletonRect from "../skeleton/rectangle";
+import ProgressBarCurved from "../status/progress-bar-curved";
 
 function Section({
   title,
@@ -125,14 +122,6 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
-  return (
-    <ToastProvider>
-      <UIKitContent />
-    </ToastProvider>
-  );
-}
-
-function UIKitContent() {
   const toast = useToast();
 
   // ─── Progress Bar Group ────────────────────────────────────────────────
@@ -153,8 +142,6 @@ function UIKitContent() {
 
   const handleSave = (range: DateRange) => {
     setSelectedRange(range);
-    console.log("Start:", range.start);
-    console.log("End:", range.end);
   };
 
   const formatDate = (d: Date | null) =>
@@ -198,7 +185,7 @@ function UIKitContent() {
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [comments, setComments] = useState<CommentData[]>(Comments);
 
-  const handleSubmitComment = useCallback((comment: CommentData) => {
+  const handleSubmitComment = useCallback(async (comment: CommentData) => {
     setComments((prev) => [...prev, comment]);
   }, []);
 

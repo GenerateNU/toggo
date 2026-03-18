@@ -1,7 +1,8 @@
 import type { CurrentUser } from "@/auth/service";
+import { supabase } from "@/auth/client";
 import { useUserStore } from "@/auth/store";
 import { PhoneAuth } from "@/types/auth";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 
 interface UserContextType {
   isAuthenticated: boolean;
@@ -35,6 +36,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const verifyOTP = useUserStore((state) => state.verifyOTP);
   const refreshCurrentUser = useUserStore((state) => state.refreshCurrentUser);
   const setPendingTripCode = useUserStore((state) => state.setPendingTripCode);
+
+  // Keep Zustand auth state in sync with Supabase session events.
+  // Handles cases where the refresh token expires or is invalidated externally.
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        logout();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [logout]);
 
   return (
     <UserContext.Provider

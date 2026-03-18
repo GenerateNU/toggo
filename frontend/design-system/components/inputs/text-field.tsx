@@ -1,11 +1,10 @@
-import { InsideBottomSheetContext } from "@/design-system/components/bottom-sheet/bottom-sheet";
-import { ColorPalette } from "@/design-system//tokens/color";
-import { CornerRadius } from "@/design-system//tokens/corner-radius";
-import { Layout } from "@/design-system//tokens/layout";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import React, { useContext, useState } from "react";
+import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
+import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -22,8 +21,6 @@ export type TextFieldProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"];
   secureTextEntry?: boolean;
   maxLength?: number;
-  onFocus?: () => void;
-  onBlur?: () => void;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -40,15 +37,11 @@ export default function TextField({
   autoCapitalize = "none",
   secureTextEntry,
   maxLength,
-  onFocus,
-  onBlur,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
-  const isInsideBottomSheet = useContext(InsideBottomSheetContext);
-  const InputComponent = isInsideBottomSheet ? BottomSheetTextInput : TextInput;
 
   const borderColor = error
-    ? ERROR_COLOR
+    ? ColorPalette.error
     : focused
       ? ColorPalette.black
       : ColorPalette.borderPrimary;
@@ -56,11 +49,7 @@ export default function TextField({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text
-          variant="xsLabel"
-          color={focused ? "textSecondary" : "textQuaternary"}
-          style={styles.label}
-        >
+        <Text variant="xsLabel" color="textSecondary" style={styles.label}>
           {label}
         </Text>
       )}
@@ -73,7 +62,7 @@ export default function TextField({
         ]}
       >
         {leftIcon && <Box style={styles.iconWrapper}>{leftIcon}</Box>}
-        <InputComponent
+        <TextInput
           style={[
             styles.input,
             disabled && styles.inputDisabled,
@@ -88,14 +77,8 @@ export default function TextField({
           placeholder={placeholder}
           placeholderTextColor={ColorPalette.textQuaternary}
           editable={!disabled}
-          onFocus={() => {
-            setFocused(true);
-            onFocus?.();
-          }}
-          onBlur={() => {
-            setFocused(false);
-            onBlur?.();
-          }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           secureTextEntry={secureTextEntry}
@@ -113,25 +96,22 @@ export default function TextField({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const ERROR_COLOR = "#DC2626";
-
 const styles = StyleSheet.create({
   container: {
-    gap: 4,
+    gap: Layout.spacing.xxs,
   },
   label: {
-    marginBottom: 4,
+    marginBottom: Layout.spacing.xxs,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderStyle: "solid",
     borderColor: ColorPalette.borderPrimary,
-    borderRadius: CornerRadius.md,
+    borderRadius: CornerRadius.sm,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
-    minHeight: 48,
+    minHeight: CoreSize.xl,
   },
   inputRowFocused: {
     borderWidth: 2,
@@ -145,14 +125,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     paddingVertical: 12,
   },
   inputDisabled: {
     opacity: 0.6,
   },
   error: {
-    color: ERROR_COLOR,
-    marginTop: 4,
+    color: ColorPalette.error,
+    marginTop: Layout.spacing.xxs,
   },
 });

@@ -1,9 +1,14 @@
 import { useCreatePoll } from "@/api/polls/useCreatePoll";
 import { useCreateRankPoll } from "@/api/polls/useCreateRankPoll";
-import { BottomSheet, Box, Button, Text } from "@/design-system";
-import { useToast } from "@/design-system/primitives/toast-manager";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { AlertTriangle, X } from "lucide-react-native";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  Icon,
+  Text,
+  useToast,
+} from "@/design-system";
+import { X } from "lucide-react-native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable } from "react-native";
 import StepPollType, { PollType } from "./step-poll-type";
@@ -155,11 +160,7 @@ const CreatePollSheet = forwardRef<
       onCreated?.();
     } catch (e) {
       console.error("Failed to create poll:", e);
-      toast.show({
-        title: "Failed to create poll",
-        subtitle: "Please try again later",
-        icon: AlertTriangle,
-      });
+      toast.show({ message: "Failed to create poll. Please try again." });
     }
   };
 
@@ -268,7 +269,7 @@ const CreatePollSheet = forwardRef<
           justifyContent="space-between"
         >
           <Pressable onPress={close} style={{ padding: 4 }}>
-            <X size={20} color={ColorPalette.textSecondary} />
+            <Icon icon={X} size="md" color="textSecondary" />
           </Pressable>
           <Text variant="smLabel" color="textSecondary">
             Create a poll

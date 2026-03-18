@@ -1,6 +1,4 @@
 import { Box } from "@/design-system/primitives/box";
-import { Text } from "@/design-system/primitives/text";
-import { type LucideIcon } from "lucide-react-native";
 import React, {
   createContext,
   useCallback,
@@ -10,10 +8,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Animated, Pressable, StyleSheet } from "react-native";
-import { ColorPalette } from "../tokens/color";
-import { CornerRadius } from "../tokens/corner-radius";
+import { Animated, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
+import Toast from "./toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -23,16 +22,15 @@ type ToastAction = {
 };
 
 type ToastConfig = {
-  title: string;
-  subtitle?: string;
-  icon?: LucideIcon;
-  rightIcon?: LucideIcon;
+  message: string;
   action?: ToastAction;
+  showClose?: boolean;
   duration?: number;
 };
 
 type ToastEntry = ToastConfig & {
   id: number;
+  dismissing?: boolean;
 };
 
 type ToastPosition = "top" | "bottom";
@@ -59,31 +57,41 @@ export const useToast = (): ToastContextValue => {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const TOAST_HEIGHT = 56;
+const TOAST_HEIGHT = CoreSize.xxl;
 const TOAST_GAP = 10;
-const EDGE_INSET = 60;
+const EDGE_INSET = Layout.spacing.xxl;
 
 // ─── Single Toast Item ───────────────────────────────────────────────────────
 
 type ToastItemProps = {
   entry: ToastEntry;
-  index: number;
+  visibleIndex: number;
   position: ToastPosition;
-  onDismiss: (id: number) => void;
+  onStartDismiss: (id: number) => void;
+  onCompleteDismiss: (id: number) => void;
 };
 
-const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
+const ToastItem = ({
+  entry,
+  visibleIndex,
+  position,
+  onStartDismiss,
+  onCompleteDismiss,
+}: ToastItemProps) => {
+  const insets = useSafeAreaInsets();
   const slideDirection = position === "top" ? -1 : 1;
-  const translateY = useMemo(
+  const slideY = useMemo(
     () => new Animated.Value(80 * slideDirection),
     [slideDirection],
   );
+  const positionY = useMemo(() => new Animated.Value(0), []);
   const enterOpacity = useMemo(() => new Animated.Value(0), []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hide = useCallback(() => {
+    onStartDismiss(entry.id);
     Animated.parallel([
-      Animated.timing(translateY, {
+      Animated.timing(slideY, {
         toValue: 80 * slideDirection,
         duration: 250,
         useNativeDriver: true,
@@ -93,12 +101,22 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start(() => onDismiss(entry.id));
-  }, [translateY, enterOpacity, onDismiss, entry.id, slideDirection]);
+    ]).start(() => onCompleteDismiss(entry.id));
+  }, [
+    slideY,
+    enterOpacity,
+    onStartDismiss,
+    onCompleteDismiss,
+    entry.id,
+    slideDirection,
+  ]);
 
   useEffect(() => {
+    // Don't animate in if already dismissing
+    if (entry.dismissing) return;
+
     Animated.parallel([
-      Animated.spring(translateY, {
+      Animated.spring(slideY, {
         toValue: 0,
         useNativeDriver: true,
         damping: 20,
@@ -119,79 +137,52 @@ const ToastItem = ({ entry, index, position, onDismiss }: ToastItemProps) => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [entry.duration, hide, translateY, enterOpacity]);
+  }, [entry.duration, entry.dismissing, hide, slideY, enterOpacity]);
 
-  const offset = EDGE_INSET + index * (TOAST_HEIGHT + TOAST_GAP);
-  const positionStyle =
-    position === "top" ? { top: offset } : { bottom: offset };
+  // Animate position when visibleIndex changes
+  useEffect(() => {
+    const targetOffset = visibleIndex * (TOAST_HEIGHT + TOAST_GAP);
+    // For bottom position, move UP (negative), for top position, move DOWN (positive)
+    const adjustedOffset = position === "bottom" ? -targetOffset : targetOffset;
+    Animated.spring(positionY, {
+      toValue: adjustedOffset,
+      useNativeDriver: true,
+      damping: 20,
+      stiffness: 300,
+    }).start();
+  }, [visibleIndex, positionY, position]);
+
+  // Use fixed positioning with safe area insets and combine both translateY values
+  const safeEdgeInset =
+    position === "top" ? EDGE_INSET + insets.top : EDGE_INSET + insets.bottom;
+  const fixedPosition =
+    position === "top" ? { top: safeEdgeInset } : { bottom: safeEdgeInset };
+  const combinedTranslateY = Animated.add(slideY, positionY);
+
+  const showClose = entry.showClose !== false;
 
   return (
     <Animated.View
       style={[
         styles.toastContainer,
-        positionStyle,
+        fixedPosition,
         {
-          transform: [{ translateY }],
+          transform: [{ translateY: combinedTranslateY }],
           opacity: enterOpacity,
         },
       ]}
     >
-      <Box style={styles.toast}>
-        {entry.icon && (
-          <Box style={styles.iconCircle}>
-            {React.createElement(entry.icon, {
-              size: 14,
-              color: ColorPalette.textSecondary,
-              strokeWidth: 2.5,
-            })}
-          </Box>
-        )}
-
-        <Box style={styles.message}>
-          <Text variant="smLabel" color="textSecondary" numberOfLines={1}>
-            {entry.title}
-          </Text>
-          {entry.subtitle && (
-            <Text
-              variant="xsParagraph"
-              color="textQuaternary"
-              numberOfLines={2}
-            >
-              {entry.subtitle}
-            </Text>
-          )}
-        </Box>
-
-        {entry.action && (
-          <Pressable
-            onPress={() => {
-              entry.action!.onPress();
-              hide();
-            }}
-            hitSlop={8}
-          >
-            <Text variant="smLabel" style={styles.actionLabel}>
-              {entry.action.label}
-            </Text>
-          </Pressable>
-        )}
-
-        {entry.rightIcon && !entry.action && (
-          <Pressable onPress={hide} hitSlop={8} style={styles.closeButton}>
-            {React.createElement(entry.rightIcon, {
-              size: 18,
-              color: ColorPalette.textQuaternary,
-            })}
-          </Pressable>
-        )}
-      </Box>
+      <Toast
+        message={entry.message}
+        action={entry.action}
+        showClose={showClose}
+        onClose={hide}
+      />
     </Animated.View>
   );
 };
 
 // ─── Provider ────────────────────────────────────────────────────────────────
-
-let nextId = 0;
 
 export function ToastProvider({
   children,
@@ -199,13 +190,28 @@ export function ToastProvider({
   maxVisible = 3,
 }: ToastProviderProps) {
   const [queue, setQueue] = useState<ToastEntry[]>([]);
+  const nextIdRef = useRef<number>(0);
 
-  const show = useCallback((config: ToastConfig) => {
-    const id = nextId++;
-    setQueue((prev) => [...prev, { ...config, id }]);
+  const show = useCallback(
+    (config: ToastConfig) => {
+      setQueue((prev) => {
+        const id = nextIdRef.current++;
+        const newQueue = [{ ...config, id }, ...prev];
+
+        // If we exceed maxVisible, keep only the most recent maxVisible toasts
+        return newQueue.slice(0, maxVisible);
+      });
+    },
+    [maxVisible],
+  );
+
+  const startDismiss = useCallback((id: number) => {
+    setQueue((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, dismissing: true } : t)),
+    );
   }, []);
 
-  const dismiss = useCallback((id: number) => {
+  const completeDismiss = useCallback((id: number) => {
     setQueue((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
@@ -217,15 +223,25 @@ export function ToastProvider({
     <ToastContext.Provider value={contextValue}>
       {children}
 
-      {visibleToasts.map((entry, i) => (
-        <ToastItem
-          key={entry.id}
-          entry={entry}
-          index={i}
-          position={position}
-          onDismiss={dismiss}
-        />
-      ))}
+      <Box style={styles.overlay}>
+        {visibleToasts.map((entry, i) => {
+          // Calculate visible index (excluding dismissing toasts before this one)
+          const visibleIndex = visibleToasts
+            .slice(0, i)
+            .filter((t) => !t.dismissing).length;
+
+          return (
+            <ToastItem
+              key={entry.id}
+              entry={entry}
+              visibleIndex={visibleIndex}
+              position={position}
+              onStartDismiss={startDismiss}
+              onCompleteDismiss={completeDismiss}
+            />
+          );
+        })}
+      </Box>
     </ToastContext.Provider>
   );
 }
@@ -233,40 +249,18 @@ export function ToastProvider({
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: "box-none" as const,
+    zIndex: 9999,
+  },
   toastContainer: {
     position: "absolute",
     left: Layout.spacing.md,
     right: Layout.spacing.md,
-    zIndex: 9999,
-  },
-  toast: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
-    shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  iconCircle: {
-    width: 24,
-    height: 24,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  message: {
-    flex: 1,
-  },
-  actionLabel: {
-    color: "#2563EB",
-    fontWeight: "600",
-  },
-  closeButton: {
-    padding: 2,
   },
 });

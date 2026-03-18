@@ -2,7 +2,6 @@ import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { Box, Button, Screen, Text, useToast } from "@/design-system";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { CheckCircle, X } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { ActivityIndicator, Share } from "react-native";
 import CreateFAB from "./components/create-fab";
@@ -51,10 +50,7 @@ export default function Trip() {
           tripID={tripID!}
           onCreated={() =>
             toast.show({
-              title: "Poll Sent!",
-              subtitle: "Your trip will get notification to vote",
-              icon: CheckCircle,
-              rightIcon: X,
+              message: "Poll sent! Your trip members will be notified.",
             })
           }
         />

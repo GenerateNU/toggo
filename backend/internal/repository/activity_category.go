@@ -10,10 +10,10 @@ import (
 
 type ActivityCategoryRepository interface {
 	AddCategoriesToActivity(ctx context.Context, activityID, tripID uuid.UUID, categoryNames []string) error
+	AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID, tripID uuid.UUID, categoryNames []string) error
 	RemoveCategoryFromActivity(ctx context.Context, activityID uuid.UUID, categoryName string) error
 	GetCategoriesForActivity(ctx context.Context, activityID uuid.UUID, limit int, cursor *string) ([]string, *string, error)
 	GetCategoriesForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID][]string, error)
-	RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error
 }
 
 var _ ActivityCategoryRepository = (*activityCategoryRepository)(nil)
@@ -45,6 +45,31 @@ func (r *activityCategoryRepository) AddCategoriesToActivity(ctx context.Context
 		Model(&activityCategories).
 		On("CONFLICT (activity_id, category_name) DO NOTHING"). // Idempotent
 		Exec(ctx)
+	return err
+}
+
+// AddCategoriesToActivityTx adds multiple categories to an activity in a transaction
+func (r *activityCategoryRepository) AddCategoriesToActivityTx(ctx context.Context, tx bun.Tx, activityID, tripID uuid.UUID, categoryNames []string) error {
+	if len(categoryNames) == 0 {
+		return nil
+	}
+	seen := make(map[string]bool, len(categoryNames))
+	uniqueNames := make([]string, 0, len(categoryNames))
+	for _, name := range categoryNames {
+		if !seen[name] {
+			seen[name] = true
+			uniqueNames = append(uniqueNames, name)
+		}
+	}
+	activityCategories := make([]*models.ActivityCategory, 0, len(uniqueNames))
+	for _, categoryName := range uniqueNames {
+		activityCategories = append(activityCategories, &models.ActivityCategory{
+			ActivityID:   activityID,
+			TripID:       tripID,
+			CategoryName: categoryName,
+		})
+	}
+	_, err := tx.NewInsert().Model(&activityCategories).On("CONFLICT (activity_id, category_name) DO NOTHING").Exec(ctx)
 	return err
 }
 
@@ -120,13 +145,4 @@ func (r *activityCategoryRepository) GetCategoriesForActivities(ctx context.Cont
 		result[ac.ActivityID] = append(result[ac.ActivityID], ac.CategoryName)
 	}
 	return result, nil
-}
-
-// RemoveAllCategoriesFromActivity removes all categories from an activity
-func (r *activityCategoryRepository) RemoveAllCategoriesFromActivity(ctx context.Context, activityID uuid.UUID) error {
-	_, err := r.db.NewDelete().
-		Model((*models.ActivityCategory)(nil)).
-		Where("activity_id = ?", activityID).
-		Exec(ctx)
-	return err
 }
