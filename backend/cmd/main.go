@@ -16,6 +16,7 @@ import (
 	"toggo/internal/database"
 	"toggo/internal/realtime"
 	"toggo/internal/server"
+	"toggo/internal/workflows"
 )
 
 func main() {
@@ -39,9 +40,15 @@ func main() {
 	}
 	realtimeService.Start()
 
+	temporalClient, err := workflows.NewTemporalClient(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create Temporal client: %v", err)
+	}
+	defer temporalClient.Close()
+
 	ctx := setupSignalHandler()
 
-	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler())
+	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler(), temporalClient)
 
 	go startServer(app, cfg.App.Port)
 
