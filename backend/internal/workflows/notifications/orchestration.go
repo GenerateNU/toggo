@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/api/serviceerror"
 	"go.temporal.io/sdk/client"
 )
@@ -38,12 +39,9 @@ func (s *PollScheduler) ScheduleDeadlineReminder(ctx context.Context, pollID, tr
 	}
 
 	workflowOptions := client.StartWorkflowOptions{
-		ID:        pollDeadlineReminderWorkflowID(pollID),
-		TaskQueue: ScheduledNotificationTaskQueueName,
-	}
-
-	if err := s.CancelDeadlineReminder(ctx, pollID); err != nil {
-		log.Printf("poll_scheduler: failed to cancel existing reminder for poll %s: %v", pollID, err)
+		ID:                       pollDeadlineReminderWorkflowID(pollID),
+		TaskQueue:                ScheduledNotificationTaskQueueName,
+		WorkflowIDConflictPolicy: *enums.WORKFLOW_ID_CONFLICT_POLICY_TERMINATE_EXISTING.Enum(),
 	}
 
 	we, err := s.client.ExecuteWorkflow(ctx, workflowOptions, ScheduledNotificationWorkflow, input)
