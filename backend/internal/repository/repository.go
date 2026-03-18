@@ -131,6 +131,10 @@ type PitchRepository interface {
 	UpdateWithImages(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	GetImageIDsForPitch(ctx context.Context, pitchID uuid.UUID) ([]uuid.UUID, error)
 	GetImageIDsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error)
+	// GetImageKeysForPitch returns the S3 file keys associated with a single pitch.
+	GetImageKeysForPitch(ctx context.Context, pitchID uuid.UUID) ([]string, error)
+	// GetImageKeysForPitches batch-loads S3 file keys for multiple pitches to avoid N+1 queries.
+	GetImageKeysForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]string, error)
 }
 
 type ActivityRepository interface {

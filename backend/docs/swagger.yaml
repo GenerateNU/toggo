@@ -278,6 +278,11 @@ definitions:
         type: string
       description:
         type: string
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -588,6 +593,10 @@ definitions:
         type: integer
       id:
         type: string
+      image_keys:
+        items:
+          type: string
+        type: array
       title:
         type: string
       trip_id:
@@ -1097,6 +1106,14 @@ definitions:
       duration:
         minimum: 0
         type: integer
+      image_ids:
+        description: |-
+          ImageIDs, when non-nil, fully replaces the pitch's image associations.
+          Pass an empty slice to remove all images; omit the field to leave images unchanged.
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -2926,8 +2943,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new pitch for the trip and returns a presigned URL to
-        upload the audio file
+      description: |-
+        Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+        Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response returns S3 file keys (image_keys) for easier lookup.
       operationId: createPitch
       parameters:
       - description: Trip ID
@@ -3002,6 +3020,7 @@ paths:
       - pitches
     get:
       description: Returns a single pitch with a presigned URL for the audio file
+        and S3 file keys for associated images
       operationId: getPitch
       parameters:
       - description: Trip ID
@@ -3039,7 +3058,11 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates pitch metadata (title, description, duration)
+      description: |-
+        Updates pitch metadata (title, description, duration).
+        When image_ids is present in the request it fully replaces the pitch's image associations
+        (pass an empty array to remove all images; omit the field to leave images unchanged).
+        The response returns S3 file keys (image_keys) for easier lookup.
       operationId: updatePitch
       parameters:
       - description: Trip ID

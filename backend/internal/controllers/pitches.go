@@ -27,7 +27,7 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 
 // @Summary      Create a pitch
 // @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
-// @Description  Optionally supply up to 5 confirmed image IDs (image_ids) to associate with the pitch.
+// @Description  Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response returns S3 file keys (image_keys) for easier lookup.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
@@ -103,7 +103,7 @@ func (ctrl *PitchController) ListPitches(c *fiber.Ctx) error {
 }
 
 // @Summary      Get a pitch by ID
-// @Description  Returns a single pitch with a presigned URL for the audio file
+// @Description  Returns a single pitch with a presigned URL for the audio file and S3 file keys for associated images
 // @Tags         pitches
 // @Produce      json
 // @Param        tripID  path string true "Trip ID"
@@ -136,8 +136,9 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 
 // @Summary      Update a pitch
 // @Description  Updates pitch metadata (title, description, duration).
-// @Description  When image_ids is present it fully replaces the pitch's image associations
+// @Description  When image_ids is present in the request it fully replaces the pitch's image associations
 // @Description  (pass an empty array to remove all images; omit the field to leave images unchanged).
+// @Description  The response returns S3 file keys (image_keys) for easier lookup.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json

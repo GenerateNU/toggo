@@ -2461,7 +2461,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file",
+                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file.\nOptionally supply up to 5 confirmed image IDs (image_ids) in the request. The response returns S3 file keys (image_keys) for easier lookup.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2527,7 +2527,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/pitches/{pitchID}": {
             "get": {
-                "description": "Returns a single pitch with a presigned URL for the audio file",
+                "description": "Returns a single pitch with a presigned URL for the audio file and S3 file keys for associated images",
                 "produces": [
                     "application/json"
                 ],
@@ -2627,7 +2627,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates pitch metadata (title, description, duration)",
+                "description": "Updates pitch metadata (title, description, duration).\nWhen image_ids is present in the request it fully replaces the pitch's image associations\n(pass an empty array to remove all images; omit the field to leave images unchanged).\nThe response returns S3 file keys (image_keys) for easier lookup.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4703,6 +4703,13 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "title": {
                     "type": "string",
                     "minLength": 1
@@ -5162,6 +5169,12 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "image_keys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "title": {
                     "type": "string"
@@ -5911,6 +5924,14 @@ const docTemplate = `{
                 "duration": {
                     "type": "integer",
                     "minimum": 0
+                },
+                "image_ids": {
+                    "description": "ImageIDs, when non-nil, fully replaces the pitch's image associations.\nPass an empty slice to remove all images; omit the field to leave images unchanged.",
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "title": {
                     "type": "string",

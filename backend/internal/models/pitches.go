@@ -49,16 +49,16 @@ type UpdatePitchRequest struct {
 }
 
 type PitchAPIResponse struct {
-	ID          uuid.UUID   `json:"id"`
-	TripID      uuid.UUID   `json:"trip_id"`
-	UserID      uuid.UUID   `json:"user_id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	AudioURL    string      `json:"audio_url"`
-	Duration    *int        `json:"duration,omitempty"`
-	ImageIDs    []uuid.UUID `json:"image_ids,omitempty"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	TripID      uuid.UUID `json:"trip_id"`
+	UserID      uuid.UUID `json:"user_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	AudioURL    string    `json:"audio_url"`
+	Duration    *int      `json:"duration,omitempty"`
+	ImageKeys   []string  `json:"image_keys,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type CreatePitchResponse struct {

@@ -268,3 +268,46 @@ func (r *pitchRepository) GetImageIDsForPitches(ctx context.Context, pitchIDs []
 	}
 	return result, nil
 }
+
+// GetImageKeysForPitch returns the S3 file keys associated with a single pitch.
+func (r *pitchRepository) GetImageKeysForPitch(ctx context.Context, pitchID uuid.UUID) ([]string, error) {
+	var keys []string
+	err := r.db.NewSelect().
+		TableExpr("pitch_images pi").
+		Join("INNER JOIN images i ON i.image_id = pi.image_id").
+		ColumnExpr("i.file_key").
+		Where("pi.pitch_id = ?", pitchID).
+		Where("i.status = ?", "confirmed").
+		Scan(ctx, &keys)
+	if err != nil {
+		return nil, err
+	}
+	return keys, nil
+}
+
+// GetImageKeysForPitches batch-loads S3 file keys for multiple pitches to avoid N+1 queries.
+func (r *pitchRepository) GetImageKeysForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
+	result := make(map[uuid.UUID][]string, len(pitchIDs))
+	if len(pitchIDs) == 0 {
+		return result, nil
+	}
+	type row struct {
+		PitchID uuid.UUID `bun:"pitch_id"`
+		FileKey string    `bun:"file_key"`
+	}
+	var rows []row
+	err := r.db.NewSelect().
+		TableExpr("pitch_images pi").
+		Join("INNER JOIN images i ON i.image_id = pi.image_id").
+		ColumnExpr("pi.pitch_id, i.file_key").
+		Where("pi.pitch_id IN (?)", bun.In(pitchIDs)).
+		Where("i.status = ?", "confirmed").
+		Scan(ctx, &rows)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range rows {
+		result[r.PitchID] = append(result[r.PitchID], r.FileKey)
+	}
+	return result, nil
+}

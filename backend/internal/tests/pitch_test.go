@@ -423,7 +423,7 @@ func TestPitchImages(t *testing.T) {
 
 	// -- CREATE with images --
 
-	t.Run("create pitch with image_ids returns them in response", func(t *testing.T) {
+	t.Run("create pitch with image_ids returns image_keys in response", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		resp := testkit.New(t).
@@ -442,10 +442,11 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusCreated).
 			GetBody()
 		pitch := resp["pitch"].(map[string]any)
-		ids, ok := pitch["image_ids"].([]any)
+		keys, ok := pitch["image_keys"].([]any)
 		require.True(t, ok)
-		require.Len(t, ids, 1)
-		assert.Equal(t, imgID.String(), ids[0].(string))
+		require.Len(t, keys, 1)
+		// Verify it's a file key string, not a UUID
+		assert.Contains(t, keys[0].(string), "test-images/pitch-")
 	})
 
 	t.Run("create pitch with too many images returns 422", func(t *testing.T) {
@@ -507,9 +508,9 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
-	// -- GET includes image_ids --
+	// -- GET includes image_keys --
 
-	t.Run("get pitch includes image_ids", func(t *testing.T) {
+	t.Run("get pitch includes image_keys", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "GetWithImg", []uuid.UUID{imgID})
@@ -522,15 +523,15 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		ids, ok := resp["image_ids"].([]any)
+		keys, ok := resp["image_keys"].([]any)
 		require.True(t, ok)
-		require.Len(t, ids, 1)
-		assert.Equal(t, imgID.String(), ids[0].(string))
+		require.Len(t, keys, 1)
+		assert.Contains(t, keys[0].(string), "test-images/pitch-")
 	})
 
-	// -- LIST includes image_ids --
+	// -- LIST includes image_keys --
 
-	t.Run("list pitches includes image_ids", func(t *testing.T) {
+	t.Run("list pitches includes image_keys", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "ListWithImg", []uuid.UUID{imgID})
@@ -549,10 +550,10 @@ func TestPitchImages(t *testing.T) {
 			p := item.(map[string]any)
 			if p["id"].(string) == pitchID {
 				found = true
-				ids, ok := p["image_ids"].([]any)
+				keys, ok := p["image_keys"].([]any)
 				require.True(t, ok)
-				require.Len(t, ids, 1)
-				assert.Equal(t, imgID.String(), ids[0].(string))
+				require.Len(t, keys, 1)
+				assert.Contains(t, keys[0].(string), "test-images/pitch-")
 			}
 		}
 		assert.True(t, found, "pitch not found in list response")
@@ -577,13 +578,15 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		ids, ok := resp["image_ids"].([]any)
+		keys, ok := resp["image_keys"].([]any)
 		require.True(t, ok)
 		// Both img1 (existing) and img2 (newly added) should be present.
-		require.Len(t, ids, 2)
-		idStrs := []string{ids[0].(string), ids[1].(string)}
-		assert.Contains(t, idStrs, img1.String())
-		assert.Contains(t, idStrs, img2.String())
+		require.Len(t, keys, 2)
+		// Verify both are S3 keys
+		keyStrs := []string{keys[0].(string), keys[1].(string)}
+		for _, k := range keyStrs {
+			assert.Contains(t, k, "test-images/pitch-")
+		}
 	})
 
 	t.Run("update with empty image_ids removes all associations", func(t *testing.T) {
@@ -612,9 +615,9 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		// image_ids is omitempty — absent key or empty slice both mean no images.
-		if ids, ok := getResp["image_ids"].([]any); ok {
-			assert.Len(t, ids, 0)
+		// image_keys is omitempty — absent key or empty slice both mean no images.
+		if keys, ok := getResp["image_keys"].([]any); ok {
+			assert.Len(t, keys, 0)
 		}
 	})
 
@@ -675,10 +678,10 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 		assert.Equal(t, newTitle, resp["title"])
-		ids, ok := resp["image_ids"].([]any)
+		keys, ok := resp["image_keys"].([]any)
 		require.True(t, ok)
-		require.Len(t, ids, 1)
-		assert.Equal(t, imgID.String(), ids[0].(string))
+		require.Len(t, keys, 1)
+		assert.Contains(t, keys[0].(string), "test-images/pitch-")
 	})
 }
 
