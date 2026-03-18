@@ -383,6 +383,49 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Deletes all size variants of an image from S3 and the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete image",
+                "operationId": "deleteImage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/files/{imageId}/{size}": {
@@ -1447,6 +1490,78 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/activities/parse-link": {
+            "post": {
+                "description": "Fetches a URL and extracts structured activity fields (name, description, thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram, and generic travel blog URLs.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Parse link into activity data",
+                "operationId": "parseActivityLink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "URL to parse",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ParseLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ParsedActivityData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/activities/{activityID}": {
             "get": {
                 "description": "Retrieves a specific activity",
@@ -2090,6 +2205,128 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.CategoryListResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/categories/{name}/hide": {
+            "put": {
+                "description": "Hides a category from all members (admin only)",
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Hide category",
+                "operationId": "hideCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/categories/{name}/show": {
+            "put": {
+                "description": "Makes a previously hidden category visible again (admin only)",
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Show category",
+                "operationId": "showCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -4475,7 +4712,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "estimated_price": {
+                    "type": "number"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location_lat": {
+                    "type": "number"
+                },
+                "location_lng": {
+                    "type": "number"
+                },
+                "location_name": {
                     "type": "string"
                 },
                 "media_url": {
@@ -4519,7 +4768,25 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "estimated_price": {
+                    "type": "number"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityImageResponse"
+                    }
+                },
+                "location_lat": {
+                    "type": "number"
+                },
+                "location_lng": {
+                    "type": "number"
+                },
+                "location_name": {
                     "type": "string"
                 },
                 "media_url": {
@@ -4578,6 +4845,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 }
             }
@@ -4689,6 +4967,10 @@ const docTemplate = `{
                 },
                 "icon": {
                     "type": "string"
+                },
+                "is_hidden": {
+                    "description": "only present for admins",
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -4832,6 +5114,32 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "estimated_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "location_lat": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "location_lng": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
                 },
                 "media_url": {
                     "type": "string"
@@ -5049,6 +5357,9 @@ const docTemplate = `{
                 "cover_image_id": {
                     "type": "string"
                 },
+                "currency": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
@@ -5168,6 +5479,23 @@ const docTemplate = `{
                     "type": "number"
                 }
             }
+        },
+        "models.LinkType": {
+            "type": "string",
+            "enum": [
+                "airbnb",
+                "booking_com",
+                "tiktok",
+                "instagram",
+                "generic"
+            ],
+            "x-enum-varnames": [
+                "LinkTypeAirbnb",
+                "LinkTypeBookingCom",
+                "LinkTypeTikTok",
+                "LinkTypeInstagram",
+                "LinkTypeGeneric"
+            ]
         },
         "models.MatchedSubstring": {
             "type": "object",
@@ -5367,6 +5695,46 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParseLinkRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParsedActivityData": {
+            "type": "object",
+            "properties": {
+                "category_suggestions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source_type": {
+                    "$ref": "#/definitions/models.LinkType"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
                     "type": "string"
                 }
             }
@@ -6038,6 +6406,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "currency": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -6062,6 +6433,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "currency": {
                     "type": "string"
                 },
                 "id": {
@@ -6125,7 +6499,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dates": {
-                    "description": "Max 20 date ranges",
                     "type": "array",
                     "maxItems": 20,
                     "items": {
@@ -6134,6 +6507,32 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "estimated_price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "location_lat": {
+                    "type": "number",
+                    "maximum": 90,
+                    "minimum": -90
+                },
+                "location_lng": {
+                    "type": "number",
+                    "maximum": 180,
+                    "minimum": -180
+                },
+                "location_name": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 1
                 },
                 "media_url": {
                     "type": "string"
@@ -6224,6 +6623,9 @@ const docTemplate = `{
                     "minimum": 0
                 },
                 "cover_image_id": {
+                    "type": "string"
+                },
+                "currency": {
                     "type": "string"
                 },
                 "name": {

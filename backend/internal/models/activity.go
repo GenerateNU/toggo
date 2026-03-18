@@ -20,16 +20,20 @@ type DateRange struct {
 
 // Activity represents the activities table (no longer has category_name)
 type Activity struct {
-	ID           uuid.UUID    `bun:"id,pk,type:uuid,default:gen_random_uuid()" json:"id"`
-	TripID       uuid.UUID    `bun:"trip_id,type:uuid" json:"trip_id"`
-	ProposedBy   *uuid.UUID   `bun:"proposed_by,type:uuid" json:"proposed_by,omitempty"`
-	Name         string       `bun:"name" json:"name"`
-	ThumbnailURL *string      `bun:"thumbnail_url" json:"thumbnail_url,omitempty"`
-	MediaURL     *string      `bun:"media_url" json:"media_url,omitempty"`
-	Description  *string      `bun:"description" json:"description,omitempty"`
-	Dates        *[]DateRange `bun:"dates,type:jsonb" json:"dates,omitempty"`
-	CreatedAt    time.Time    `bun:"created_at,nullzero" json:"created_at"`
-	UpdatedAt    time.Time    `bun:"updated_at,nullzero" json:"updated_at"`
+	ID             uuid.UUID    `bun:"id,pk,type:uuid,default:gen_random_uuid()" json:"id"`
+	TripID         uuid.UUID    `bun:"trip_id,type:uuid" json:"trip_id"`
+	ProposedBy     *uuid.UUID   `bun:"proposed_by,type:uuid" json:"proposed_by,omitempty"`
+	Name           string       `bun:"name" json:"name"`
+	ThumbnailURL   *string      `bun:"thumbnail_url" json:"thumbnail_url,omitempty"`
+	MediaURL       *string      `bun:"media_url" json:"media_url,omitempty"`
+	Description    *string      `bun:"description" json:"description,omitempty"`
+	Dates          *[]DateRange `bun:"dates,type:jsonb" json:"dates,omitempty"`
+	LocationName   *string      `bun:"location_name" json:"location_name,omitempty"`
+	LocationLat    *float64     `bun:"location_lat" json:"location_lat,omitempty"`
+	LocationLng    *float64     `bun:"location_lng" json:"location_lng,omitempty"`
+	EstimatedPrice *float64     `bun:"estimated_price" json:"estimated_price,omitempty"`
+	CreatedAt      time.Time    `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt      time.Time    `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 // ActivityCategory represents the activity_categories join table
@@ -42,22 +46,32 @@ type ActivityCategory struct {
 
 // CreateActivityRequest for creating a new activity
 type CreateActivityRequest struct {
-	TripID        uuid.UUID    `validate:"omitempty,uuid" json:"trip_id,omitempty"`
-	CategoryNames []string     `validate:"omitempty,max=10,dive,min=1,max=255" json:"category_names"`
-	Name          string       `validate:"required,min=1,max=255" json:"name"`
-	ThumbnailURL  *string      `validate:"omitempty,url" json:"thumbnail_url"`
-	MediaURL      *string      `validate:"omitempty,url" json:"media_url"`
-	Description   *string      `validate:"omitempty" json:"description"`
-	Dates         *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"`
+	TripID         uuid.UUID    `validate:"omitempty,uuid" json:"trip_id,omitempty"`
+	CategoryNames  []string     `validate:"omitempty,max=10,dive,min=1,max=255" json:"category_names"`
+	Name           string       `validate:"required,min=1,max=255" json:"name"`
+	ThumbnailURL   *string      `validate:"omitempty,url" json:"thumbnail_url"`
+	MediaURL       *string      `validate:"omitempty,url" json:"media_url"`
+	Description    *string      `validate:"omitempty" json:"description"`
+	Dates          *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"`
+	LocationName   *string      `validate:"omitempty,min=1,max=500" json:"location_name"`
+	LocationLat    *float64     `validate:"omitempty,min=-90,max=90" json:"location_lat"`
+	LocationLng    *float64     `validate:"omitempty,min=-180,max=180" json:"location_lng"`
+	EstimatedPrice *float64     `validate:"omitempty,min=0" json:"estimated_price"`
+	ImageIDs       []uuid.UUID  `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // UpdateActivityRequest for updating an existing activity
 type UpdateActivityRequest struct {
-	Name         *string      `validate:"omitempty,min=1,max=255" json:"name"`
-	ThumbnailURL *string      `validate:"omitempty,url" json:"thumbnail_url"`
-	MediaURL     *string      `validate:"omitempty,url" json:"media_url"`
-	Description  *string      `validate:"omitempty" json:"description"`
-	Dates        *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"` // Max 20 date ranges
+	Name           *string      `validate:"omitempty,min=1,max=255" json:"name"`
+	ThumbnailURL   *string      `validate:"omitempty,url" json:"thumbnail_url"`
+	MediaURL       *string      `validate:"omitempty,url" json:"media_url"`
+	Description    *string      `validate:"omitempty" json:"description"`
+	Dates          *[]DateRange `validate:"omitempty,max=20,dive" json:"dates"`
+	LocationName   *string      `validate:"omitempty,min=1,max=500" json:"location_name"`
+	LocationLat    *float64     `validate:"omitempty,min=-90,max=90" json:"location_lat"`
+	LocationLng    *float64     `validate:"omitempty,min=-180,max=180" json:"location_lng"`
+	EstimatedPrice *float64     `validate:"omitempty,min=0" json:"estimated_price"`
+	ImageIDs       *[]uuid.UUID `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
 // AddCategoryToActivityRequest for adding a category to an activity
@@ -92,32 +106,55 @@ type ActivityDatabaseResponse struct {
 	MediaURL           *string      `json:"media_url,omitempty"`
 	Description        *string      `json:"description,omitempty"`
 	Dates              *[]DateRange `json:"dates,omitempty"`
+	LocationName       *string      `json:"location_name,omitempty"`
+	LocationLat        *float64     `json:"location_lat,omitempty"`
+	LocationLng        *float64     `json:"location_lng,omitempty"`
+	EstimatedPrice     *float64     `json:"estimated_price,omitempty"`
 	CreatedAt          time.Time    `json:"created_at"`
 	UpdatedAt          time.Time    `json:"updated_at"`
 	ProposerUsername   string       `json:"proposer_username"`
 	ProposerPictureID  *uuid.UUID   `json:"proposer_picture_id,omitempty"`
 	ProposerPictureKey *string      `bun:"proposer_picture_key" json:"-"`
 	CategoryNames      []string     `json:"category_names"`
+	ImageKeys          []uuid.UUID  `bun:"image_keys" json:"-"`
 }
 
-// ActivityAPIResponse is returned to the frontend
+// ActivityImageResponse represents a resolved image with its presigned URL
+type ActivityImageResponse struct {
+	ImageID  uuid.UUID `json:"image_id"`
+	ImageURL string    `json:"image_url"`
+}
+
 type ActivityAPIResponse struct {
-	ID                 uuid.UUID    `json:"id"`
-	TripID             uuid.UUID    `json:"trip_id"`
-	ProposedBy         *uuid.UUID   `json:"proposed_by,omitempty"`
-	Name               string       `json:"name"`
-	ThumbnailURL       *string      `json:"thumbnail_url,omitempty"`
-	MediaURL           *string      `json:"media_url,omitempty"`
-	Description        *string      `json:"description,omitempty"`
-	Dates              *[]DateRange `json:"dates,omitempty"`
-	CreatedAt          time.Time    `json:"created_at"`
-	UpdatedAt          time.Time    `json:"updated_at"`
-	ProposerUsername   string       `json:"proposer_username"`
-	ProposerPictureURL *string      `json:"proposer_picture_url,omitempty"`
-	CategoryNames      []string     `json:"category_names"`
+	ID                 uuid.UUID               `json:"id"`
+	TripID             uuid.UUID               `json:"trip_id"`
+	ProposedBy         *uuid.UUID              `json:"proposed_by,omitempty"`
+	Name               string                  `json:"name"`
+	ThumbnailURL       *string                 `json:"thumbnail_url,omitempty"`
+	MediaURL           *string                 `json:"media_url,omitempty"`
+	Description        *string                 `json:"description,omitempty"`
+	Dates              *[]DateRange            `json:"dates,omitempty"`
+	LocationName       *string                 `json:"location_name,omitempty"`
+	LocationLat        *float64                `json:"location_lat,omitempty"`
+	LocationLng        *float64                `json:"location_lng,omitempty"`
+	EstimatedPrice     *float64                `json:"estimated_price,omitempty"`
+	CreatedAt          time.Time               `json:"created_at"`
+	UpdatedAt          time.Time               `json:"updated_at"`
+	ProposerUsername   string                  `json:"proposer_username"`
+	ProposerPictureURL *string                 `json:"proposer_picture_url,omitempty"`
+	CategoryNames      []string                `json:"category_names"`
+	Images             []ActivityImageResponse `json:"image_ids"`
 }
 
 // AddCategoryResponse represents the response for adding a category to an activity
 type AddCategoryResponse struct {
 	Message string `json:"message" example:"Category added successfully"`
+}
+
+const MaxActivityImages = 5
+
+type ActivityImage struct {
+	ActivityID uuid.UUID `bun:"activity_id,pk,type:uuid,notnull"`
+	ImageID    uuid.UUID `bun:"image_id,pk,type:uuid,notnull"`
+	CreatedAt  time.Time `bun:"created_at,nullzero,default:now()"`
 }

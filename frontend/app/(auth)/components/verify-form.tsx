@@ -192,6 +192,8 @@ export default function OTPVerificationForm() {
         });
         return;
       }
+
+      router.replace("/(app)");
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
       setIsSubmitting(false);
