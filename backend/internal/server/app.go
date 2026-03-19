@@ -11,12 +11,14 @@ import (
 	"toggo/internal/services"
 	"toggo/internal/types"
 	"toggo/internal/validators"
+	"toggo/internal/workflows/notifications"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/uptrace/bun"
+	"go.temporal.io/sdk/client"
 )
 
-func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.WSHandler) *fiber.App {
+func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.WSHandler, temporalClient client.Client) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ServerHeader: config.App.Name,
 		AppName:      fmt.Sprintf("%s API %s", config.App.Name, config.App.Version),
@@ -44,6 +46,11 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 		Region:        awsCfg.Region,
 	})
 
+	var scheduler *notifications.PollScheduler
+	if temporalClient != nil {
+		scheduler = notifications.NewPollScheduler(temporalClient)
+	}
+
 	routeParams := types.RouteParams{
 		Validator: validator,
 		ServiceParams: &types.ServiceParams{
@@ -51,8 +58,9 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 			Config:         config,
 			EventPublisher: publisher,
 			FileService:    fileService,
-			PollService:    services.NewPollService(repository, publisher),
+			PollService:    services.NewPollService(repository, publisher, scheduler),
 			HTTPClient:     services.DefaultHTTPClient(),
+			TemporalClient: temporalClient,
 		},
 	}
 

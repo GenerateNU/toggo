@@ -115,6 +115,7 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 	serviceParams.PollService = services.NewPollService(
 		repo,
 		serviceParams.EventPublisher,
+		nil,
 	)
 
 	serviceParams.HTTPClient = services.DefaultHTTPClient()
