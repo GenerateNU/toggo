@@ -3,5 +3,5 @@ node_modules
 tmp
 .kubb
 .DS_Store
-Pulumi.toggo.yaml
+Pulumi.infrastructure.yaml
 .idea
