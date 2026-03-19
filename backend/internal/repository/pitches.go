@@ -23,8 +23,8 @@ type PitchRepository interface {
 	SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error
 	GetImageIDsForPitch(ctx context.Context, pitchID uuid.UUID) ([]uuid.UUID, error)
 	GetImageIDsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error)
-	GetImageKeysForPitch(ctx context.Context, pitchID uuid.UUID) ([]string, error)
-	GetImageKeysForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]string, error)
+	GetImagesForPitch(ctx context.Context, pitchID uuid.UUID) ([]models.PitchImageKey, error)
+	GetImagesForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]models.PitchImageKey, error)
 }
 
 var _ PitchRepository = (*pitchRepository)(nil)
@@ -289,45 +289,54 @@ func (r *pitchRepository) GetImageIDsForPitches(ctx context.Context, pitchIDs []
 	return result, nil
 }
 
-// GetImageKeysForPitch returns the S3 file keys associated with a single pitch.
-func (r *pitchRepository) GetImageKeysForPitch(ctx context.Context, pitchID uuid.UUID) ([]string, error) {
-	var keys []string
+// GetImagesForPitch returns image IDs with their medium S3 keys for a single pitch.
+func (r *pitchRepository) GetImagesForPitch(ctx context.Context, pitchID uuid.UUID) ([]models.PitchImageKey, error) {
+	var rows []models.PitchImageKey
 	err := r.db.NewSelect().
 		TableExpr("pitch_images pi").
 		Join("INNER JOIN images i ON i.image_id = pi.image_id").
-		ColumnExpr("i.file_key").
+		ColumnExpr("pi.image_id AS id, i.file_key AS medium_key").
 		Where("pi.pitch_id = ?", pitchID).
 		Where("i.status = ?", "confirmed").
-		Scan(ctx, &keys)
+		Where("i.size = ?", models.ImageSizeMedium).
+		Scan(ctx, &rows)
 	if err != nil {
 		return nil, err
 	}
-	return keys, nil
+	return rows, nil
 }
 
-// GetImageKeysForPitches batch-loads S3 file keys for multiple pitches to avoid N+1 queries.
-func (r *pitchRepository) GetImageKeysForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]string, error) {
-	result := make(map[uuid.UUID][]string, len(pitchIDs))
+// GetImagesForPitches batch-loads image IDs with medium keys for multiple pitches to avoid N+1 queries.
+func (r *pitchRepository) GetImagesForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]models.PitchImageKey, error) {
+	result := make(map[uuid.UUID][]models.PitchImageKey, len(pitchIDs))
 	if len(pitchIDs) == 0 {
 		return result, nil
 	}
+
 	type row struct {
-		PitchID uuid.UUID `bun:"pitch_id"`
-		FileKey string    `bun:"file_key"`
+		PitchID   uuid.UUID `bun:"pitch_id"`
+		ImageID   uuid.UUID `bun:"image_id"`
+		MediumKey string    `bun:"medium_key"`
 	}
 	var rows []row
 	err := r.db.NewSelect().
 		TableExpr("pitch_images pi").
 		Join("INNER JOIN images i ON i.image_id = pi.image_id").
-		ColumnExpr("pi.pitch_id, i.file_key").
+		ColumnExpr("pi.pitch_id, pi.image_id AS image_id, i.file_key AS medium_key").
 		Where("pi.pitch_id IN (?)", bun.In(pitchIDs)).
 		Where("i.status = ?", "confirmed").
+		Where("i.size = ?", models.ImageSizeMedium).
 		Scan(ctx, &rows)
 	if err != nil {
 		return nil, err
 	}
-	for _, r := range rows {
-		result[r.PitchID] = append(result[r.PitchID], r.FileKey)
+
+	// Group by pitch_id
+	for _, row := range rows {
+		result[row.PitchID] = append(result[row.PitchID], models.PitchImageKey{
+			ID:        row.ImageID,
+			MediumKey: row.MediumKey,
+		})
 	}
 	return result, nil
 }

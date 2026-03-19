@@ -30,6 +30,18 @@ type PitchImage struct {
 	CreatedAt time.Time `bun:"created_at,nullzero,default:now()"`
 }
 
+// PitchImageInfo represents image metadata returned in pitch API responses with presigned URLs.
+type PitchImageInfo struct {
+	ID        uuid.UUID `json:"id"`
+	MediumURL string    `json:"medium_url"`
+}
+
+// PitchImageKey is an internal struct used by the repository layer (contains S3 key, not URL).
+type PitchImageKey struct {
+	ID        uuid.UUID
+	MediumKey string
+}
+
 type CreatePitchRequest struct {
 	Title         string      `validate:"required,min=1" json:"title"`
 	Description   string      `validate:"omitempty" json:"description"`
@@ -49,16 +61,16 @@ type UpdatePitchRequest struct {
 }
 
 type PitchAPIResponse struct {
-	ID          uuid.UUID `json:"id"`
-	TripID      uuid.UUID `json:"trip_id"`
-	UserID      uuid.UUID `json:"user_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	AudioURL    string    `json:"audio_url"`
-	Duration    *int      `json:"duration,omitempty"`
-	ImageKeys   []string  `json:"image_keys,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          uuid.UUID         `json:"id"`
+	TripID      uuid.UUID         `json:"trip_id"`
+	UserID      uuid.UUID         `json:"user_id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	AudioURL    string            `json:"audio_url"`
+	Duration    *int              `json:"duration,omitempty"`
+	Images      []PitchImageInfo  `json:"images,omitempty"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 type CreatePitchResponse struct {

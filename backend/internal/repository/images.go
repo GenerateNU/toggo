@@ -258,7 +258,8 @@ func (r *imageRepository) FindByIDsAndSize(ctx context.Context, imageIDs []uuid.
 	return images, nil
 }
 
-// FindConfirmedByIDs returns the image IDs that exist and are confirmed (batch validation)
+// FindConfirmedByIDs returns the image IDs that have a confirmed medium-size variant (batch validation).
+// Medium size is used for pitch images in the UI.
 func (r *imageRepository) FindConfirmedByIDs(ctx context.Context, imageIDs []uuid.UUID) ([]uuid.UUID, error) {
 	if len(imageIDs) == 0 {
 		return []uuid.UUID{}, nil
@@ -268,6 +269,7 @@ func (r *imageRepository) FindConfirmedByIDs(ctx context.Context, imageIDs []uui
 		Model((*models.Image)(nil)).
 		ColumnExpr("DISTINCT image_id").
 		Where("image_id IN (?)", bun.In(imageIDs)).
+		Where("size = ?", models.ImageSizeMedium).
 		Where("status = ?", models.UploadStatusConfirmed).
 		Scan(ctx, &confirmedIDs)
 	if err != nil {

@@ -352,19 +352,21 @@ func TestPitchUpdate(t *testing.T) {
 
 func strPtr(s string) *string { return &s }
 
-// createConfirmedImage inserts a confirmed image row directly into the DB and returns its ID.
+// createConfirmedImage inserts confirmed image rows (medium and large) directly into the DB and returns the ID.
 // This bypasses the S3 upload flow, mirroring the pattern used in trip_cover_image_test.go.
 func createConfirmedImage(t *testing.T) uuid.UUID {
 	t.Helper()
 	db := fakes.GetSharedDB()
 	imageID := uuid.New()
+	// Create only medium size variant (pitches fetch medium URLs by default)
+	image := &models.Image{
+		ImageID: imageID,
+		FileKey: "medium/test-images/pitch-" + imageID.String() + ".jpg",
+		Size:    models.ImageSizeMedium,
+		Status:  models.UploadStatusConfirmed,
+	}
 	_, err := db.NewInsert().
-		Model(&models.Image{
-			ImageID: imageID,
-			FileKey: "test-images/pitch-" + imageID.String() + ".jpg",
-			Size:    models.ImageSizeMedium,
-			Status:  models.UploadStatusConfirmed,
-		}).
+		Model(image).
 		Exec(context.Background())
 	require.NoError(t, err)
 	return imageID
@@ -423,7 +425,7 @@ func TestPitchImages(t *testing.T) {
 
 	// -- CREATE with images --
 
-	t.Run("create pitch with image_ids returns image_keys in response", func(t *testing.T) {
+	t.Run("create pitch with image_ids returns images with medium_url", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		resp := testkit.New(t).
@@ -442,11 +444,14 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusCreated).
 			GetBody()
 		pitch := resp["pitch"].(map[string]any)
-		keys, ok := pitch["image_keys"].([]any)
+		images, ok := pitch["images"].([]any)
 		require.True(t, ok)
-		require.Len(t, keys, 1)
-		// Verify it's a file key string, not a UUID
-		assert.Contains(t, keys[0].(string), "test-images/pitch-")
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL should be a full URL
 	})
 
 	t.Run("create pitch with too many images returns 422", func(t *testing.T) {
@@ -530,9 +535,17 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusCreated).
 			GetBody()
 		pitch := resp["pitch"].(map[string]any)
-		keys, ok := pitch["image_keys"].([]any)
+		images, ok := pitch["images"].([]any)
 		require.True(t, ok)
-		require.Len(t, keys, 3, "should have 3 image keys")
+		require.Len(t, images, 3, "should have 3 images")
+		// Verify each image has id and medium_url
+		for _, imgAny := range images {
+			img := imgAny.(map[string]any)
+			assert.NotEmpty(t, img["id"])
+			mediumURL := img["medium_url"].(string)
+			assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+			assert.Contains(t, mediumURL, "http") // presigned URL
+		}
 	})
 
 	t.Run("create pitch with pending image returns 400", func(t *testing.T) {
@@ -586,9 +599,9 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 
-	// -- GET includes image_keys --
+	// -- GET includes images with medium_url --
 
-	t.Run("get pitch includes image_keys", func(t *testing.T) {
+	t.Run("get pitch includes images with medium_url", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "GetWithImg", []uuid.UUID{imgID})
@@ -601,15 +614,19 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		keys, ok := resp["image_keys"].([]any)
+		images, ok := resp["images"].([]any)
 		require.True(t, ok)
-		require.Len(t, keys, 1)
-		assert.Contains(t, keys[0].(string), "test-images/pitch-")
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL
 	})
 
-	// -- LIST includes image_keys --
+	// -- LIST includes images with medium_url --
 
-	t.Run("list pitches includes image_keys", func(t *testing.T) {
+	t.Run("list pitches includes images with medium_url", func(t *testing.T) {
 		requireS3(t)
 		imgID := createConfirmedImage(t)
 		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "ListWithImg", []uuid.UUID{imgID})
@@ -628,10 +645,14 @@ func TestPitchImages(t *testing.T) {
 			p := item.(map[string]any)
 			if p["id"].(string) == pitchID {
 				found = true
-				keys, ok := p["image_keys"].([]any)
+				images, ok := p["images"].([]any)
 				require.True(t, ok)
-				require.Len(t, keys, 1)
-				assert.Contains(t, keys[0].(string), "test-images/pitch-")
+				require.Len(t, images, 1)
+				img := images[0].(map[string]any)
+				assert.Equal(t, imgID.String(), img["id"])
+				mediumURL := img["medium_url"].(string)
+				assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+				assert.Contains(t, mediumURL, "http") // presigned URL
 			}
 		}
 		assert.True(t, found, "pitch not found in list response")
@@ -656,14 +677,17 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		keys, ok := resp["image_keys"].([]any)
+		images, ok := resp["images"].([]any)
 		require.True(t, ok)
 		// Both img1 (existing) and img2 (newly added) should be present.
-		require.Len(t, keys, 2)
-		// Verify both are S3 keys
-		keyStrs := []string{keys[0].(string), keys[1].(string)}
-		for _, k := range keyStrs {
-			assert.Contains(t, k, "test-images/pitch-")
+		require.Len(t, images, 2)
+		// Verify both images have ID and medium_url
+		for _, imgAny := range images {
+			img := imgAny.(map[string]any)
+			assert.NotEmpty(t, img["id"])
+			mediumURL := img["medium_url"].(string)
+			assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+			assert.Contains(t, mediumURL, "http") // presigned URL
 		}
 	})
 
@@ -693,9 +717,9 @@ func TestPitchImages(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			GetBody()
-		// image_keys is omitempty — absent key or empty slice both mean no images.
-		if keys, ok := getResp["image_keys"].([]any); ok {
-			assert.Len(t, keys, 0)
+		// images is omitempty — absent key or empty slice both mean no images.
+		if images, ok := getResp["images"].([]any); ok {
+			assert.Len(t, images, 0)
 		}
 	})
 
@@ -756,10 +780,14 @@ func TestPitchImages(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 		assert.Equal(t, newTitle, resp["title"])
-		keys, ok := resp["image_keys"].([]any)
+		images, ok := resp["images"].([]any)
 		require.True(t, ok)
-		require.Len(t, keys, 1)
-		assert.Contains(t, keys[0].(string), "test-images/pitch-")
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL
 	})
 }
 
