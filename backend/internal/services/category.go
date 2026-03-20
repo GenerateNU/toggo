@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -12,6 +13,8 @@ import (
 type CategoryServiceInterface interface {
 	GetCategoriesByTripID(ctx context.Context, tripID, userID uuid.UUID, includeHidden bool) ([]*models.CategoryAPIResponse, error)
 	SetCategoryVisibility(ctx context.Context, tripID, userID uuid.UUID, name string, isHidden bool) error
+	CreateCategory(ctx context.Context, tripID, userID uuid.UUID, req models.CreateCategoryRequest) (*models.CategoryAPIResponse, error)
+	DeleteCategory(ctx context.Context, tripID, userID uuid.UUID, name string) error
 }
 
 var _ CategoryServiceInterface = (*CategoryService)(nil)
@@ -63,6 +66,71 @@ func (s *CategoryService) GetCategoriesByTripID(ctx context.Context, tripID, use
 	return s.convertToAPICategories(categories), nil
 }
 
+func (s *CategoryService) CreateCategory(ctx context.Context, tripID, userID uuid.UUID, req models.CreateCategoryRequest) (*models.CategoryAPIResponse, error) {
+	_, err := s.Trip.Find(ctx, tripID)
+	if err != nil {
+		return nil, errs.ErrNotFound
+	}
+
+	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errs.Forbidden()
+	}
+
+	exists, err := s.Category.Exists(ctx, tripID, req.Name)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errs.BadRequest(errors.New("category with this name already exists"))
+	}
+
+	count, err := s.Category.CountByTripID(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+
+	category := &models.Category{
+		TripID:    tripID,
+		Name:      req.Name,
+		Label:     req.Label,
+		Icon:      req.Icon,
+		IsDefault: false,
+		Position:  count,
+	}
+
+	created, err := s.Category.Create(ctx, category)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.toAPIResponse(created), nil
+}
+
+func (s *CategoryService) DeleteCategory(ctx context.Context, tripID, userID uuid.UUID, name string) error {
+	isAdmin, err := s.Membership.IsAdmin(ctx, tripID, userID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return errs.Forbidden()
+	}
+
+	category, err := s.Category.Find(ctx, tripID, name)
+	if err != nil {
+		return err
+	}
+
+	if category.IsDefault {
+		return errs.BadRequest(errors.New("cannot delete a default category, use hide instead"))
+	}
+
+	return s.Category.Delete(ctx, tripID, name)
+}
+
 func (s *CategoryService) SetCategoryVisibility(ctx context.Context, tripID, userID uuid.UUID, name string, isHidden bool) error {
 	isAdmin, err := s.Membership.IsAdmin(ctx, tripID, userID)
 	if err != nil {
@@ -79,16 +147,23 @@ func (s *CategoryService) SetCategoryVisibility(ctx context.Context, tripID, use
 	return s.Category.SetHidden(ctx, tripID, name, isHidden)
 }
 
+func (s *CategoryService) toAPIResponse(category *models.Category) *models.CategoryAPIResponse {
+	return &models.CategoryAPIResponse{
+		TripID:    category.TripID,
+		Name:      category.Name,
+		Label:     category.Label,
+		Icon:      category.Icon,
+		IsDefault: category.IsDefault,
+		Position:  category.Position,
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
+	}
+}
+
 func (s *CategoryService) convertToAPICategories(categories []*models.Category) []*models.CategoryAPIResponse {
 	apiCategories := make([]*models.CategoryAPIResponse, 0, len(categories))
 	for _, category := range categories {
-		apiCategories = append(apiCategories, &models.CategoryAPIResponse{
-			TripID:    category.TripID,
-			Name:      category.Name,
-			Icon:      category.Icon,
-			CreatedAt: category.CreatedAt,
-			UpdatedAt: category.UpdatedAt,
-		})
+		apiCategories = append(apiCategories, s.toAPIResponse(category))
 	}
 	return apiCategories
 }
@@ -97,14 +172,9 @@ func (s *CategoryService) convertToAPICategoriesWithHidden(categories []*models.
 	apiCategories := make([]*models.CategoryAPIResponse, 0, len(categories))
 	for _, category := range categories {
 		isHidden := category.IsHidden
-		apiCategories = append(apiCategories, &models.CategoryAPIResponse{
-			TripID:    category.TripID,
-			Name:      category.Name,
-			Icon:      category.Icon,
-			IsHidden:  &isHidden,
-			CreatedAt: category.CreatedAt,
-			UpdatedAt: category.UpdatedAt,
-		})
+		resp := s.toAPIResponse(category)
+		resp.IsHidden = &isHidden
+		apiCategories = append(apiCategories, resp)
 	}
 	return apiCategories
 }

@@ -114,18 +114,8 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 			return err
 		}
 
-		// Create default categories with batch insert (single query instead of 5)
-		categories := make([]models.Category, len(models.DefaultCategoryNames))
-		for i, name := range models.DefaultCategoryNames {
-			categories[i] = models.Category{
-				TripID: trip.ID,
-				Name:   name,
-			}
-		}
-		_, err = tx.NewInsert().
-			Model(&categories).
-			Exec(ctx)
-		if err != nil {
+		// Seed default categories as a single batch insert
+		if err := s.Category.UpsertBatchTx(ctx, tx, trip.ID, models.DefaultCategoryNames); err != nil {
 			return err
 		}
 
@@ -288,7 +278,6 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 
 const defaultInviteExpiry = 7 * 24 * time.Hour
 
-// generateInviteCode returns a URL-safe hex string (e.g. 12 chars).
 func generateInviteCode() (string, error) {
 	b := make([]byte, 6)
 	if _, err := rand.Read(b); err != nil {

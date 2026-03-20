@@ -16,6 +16,9 @@ type CategoryRepository interface {
 	Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error)
 	FindByTripID(ctx context.Context, tripID uuid.UUID, includeHidden bool) ([]*models.Category, error)
 	Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error)
+	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
+	EnsureCategoriesExistTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error
+	EnsureCategoriesExist(ctx context.Context, tripID uuid.UUID, names []string) error
 	SetHidden(ctx context.Context, tripID uuid.UUID, name string, isHidden bool) error
 	Delete(ctx context.Context, tripID uuid.UUID, name string) error
 	UpsertBatchTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error
@@ -31,7 +34,6 @@ func NewCategoryRepository(db *bun.DB) CategoryRepository {
 	return &categoryRepository{db: db}
 }
 
-// Create adds a new category to a trip
 func (r *categoryRepository) Create(ctx context.Context, category *models.Category) (*models.Category, error) {
 	_, err := r.db.NewInsert().
 		Model(category).
@@ -43,7 +45,6 @@ func (r *categoryRepository) Create(ctx context.Context, category *models.Catego
 	return category, nil
 }
 
-// Find retrieves a specific category by composite key
 func (r *categoryRepository) Find(ctx context.Context, tripID uuid.UUID, name string) (*models.Category, error) {
 	category := &models.Category{}
 	err := r.db.NewSelect().
@@ -59,13 +60,12 @@ func (r *categoryRepository) Find(ctx context.Context, tripID uuid.UUID, name st
 	return category, nil
 }
 
-// FindByTripID retrieves categories for a trip. Pass includeHidden=true to also return hidden categories (admin use).
 func (r *categoryRepository) FindByTripID(ctx context.Context, tripID uuid.UUID, includeHidden bool) ([]*models.Category, error) {
 	var categories []*models.Category
 	q := r.db.NewSelect().
 		Model(&categories).
 		Where("trip_id = ?", tripID).
-		Order("name ASC")
+		Order("position ASC")
 
 	if !includeHidden {
 		q = q.Where("is_hidden = false")
@@ -77,7 +77,6 @@ func (r *categoryRepository) FindByTripID(ctx context.Context, tripID uuid.UUID,
 	return categories, nil
 }
 
-// Exists checks if a category exists for a trip
 func (r *categoryRepository) Exists(ctx context.Context, tripID uuid.UUID, name string) (bool, error) {
 	count, err := r.db.NewSelect().
 		Model((*models.Category)(nil)).
@@ -89,17 +88,70 @@ func (r *categoryRepository) Exists(ctx context.Context, tripID uuid.UUID, name 
 	return count > 0, nil
 }
 
-// UpsertBatchTx inserts multiple categories for a trip in a transaction, ignoring conflicts
+func (r *categoryRepository) CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error) {
+	count, err := r.db.NewSelect().
+		Model((*models.Category)(nil)).
+		Where("trip_id = ?", tripID).
+		Count(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// EnsureCategoriesExistTx inserts non-default categories that don't already exist,
+// assigning each a position based on the current count to avoid unique constraint violations.
+// For use inside a transaction.
+func (r *categoryRepository) EnsureCategoriesExistTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error {
+	for _, name := range names {
+		_, err := tx.ExecContext(ctx, `
+			INSERT INTO categories (trip_id, name, label, is_default, position, created_at, updated_at)
+			SELECT $1, $2, $2, false, (SELECT COUNT(*) FROM categories WHERE trip_id = $1), now(), now()
+			ON CONFLICT (trip_id, name) DO NOTHING
+		`, tripID, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// EnsureCategoriesExist inserts non-default categories that don't already exist,
+// assigning each a position based on the current count to avoid unique constraint violations.
+// For use outside a transaction.
+func (r *categoryRepository) EnsureCategoriesExist(ctx context.Context, tripID uuid.UUID, names []string) error {
+	for _, name := range names {
+		_, err := r.db.ExecContext(ctx, `
+			INSERT INTO categories (trip_id, name, label, is_default, position, created_at, updated_at)
+			SELECT $1, $2, $2, false, (SELECT COUNT(*) FROM categories WHERE trip_id = $1), now(), now()
+			ON CONFLICT (trip_id, name) DO NOTHING
+		`, tripID, name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// UpsertBatchTx inserts default categories for a trip in a transaction, ignoring conflicts.
+// Only use this for seeding defaults on trip creation.
 func (r *categoryRepository) UpsertBatchTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error {
 	if len(names) == 0 {
 		return nil
 	}
 	now := time.Now()
 	categories := make([]*models.Category, 0, len(names))
-	for _, name := range names {
+	for i, name := range names {
+		label, ok := models.DefaultCategoryLabels[name]
+		if !ok {
+			label = name
+		}
 		categories = append(categories, &models.Category{
 			TripID:    tripID,
 			Name:      name,
+			Label:     label,
+			IsDefault: true,
+			Position:  i,
 			CreatedAt: now,
 			UpdatedAt: now,
 		})
@@ -111,7 +163,6 @@ func (r *categoryRepository) UpsertBatchTx(ctx context.Context, tx bun.Tx, tripI
 	return err
 }
 
-// SetHidden sets the is_hidden flag on a category
 func (r *categoryRepository) SetHidden(ctx context.Context, tripID uuid.UUID, name string, isHidden bool) error {
 	_, err := r.db.NewUpdate().
 		Model((*models.Category)(nil)).
@@ -121,13 +172,10 @@ func (r *categoryRepository) SetHidden(ctx context.Context, tripID uuid.UUID, na
 	return err
 }
 
-// Delete removes a category (idempotent)
 func (r *categoryRepository) Delete(ctx context.Context, tripID uuid.UUID, name string) error {
 	_, err := r.db.NewDelete().
 		Model((*models.Category)(nil)).
 		Where("trip_id = ? AND name = ?", tripID, name).
 		Exec(ctx)
-
-	// Idempotent - don't error if already deleted
 	return err
 }

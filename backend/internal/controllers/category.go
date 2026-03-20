@@ -29,6 +29,7 @@ func NewCategoryController(categoryService services.CategoryServiceInterface, va
 // @Tags         categories
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
+// @Param        include_hidden query bool false "Include hidden categories (admin only)"
 // @Success      200 {object} models.CategoryListResponse
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
@@ -60,10 +61,80 @@ func (ctrl *CategoryController) GetCategoriesByTripID(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Return typed response
 	return c.Status(http.StatusOK).JSON(models.CategoryListResponse{
 		Categories: categories,
 	})
+}
+
+// @Summary      Create category
+// @Description  Creates a new custom category for a trip (any trip member)
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        request body models.CreateCategoryRequest true "Category details"
+// @Success      201 {object} models.CategoryAPIResponse
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/categories [post]
+// @ID           createCategory
+func (ctrl *CategoryController) CreateCategory(c *fiber.Ctx) error {
+	tripID, userID, err := ctrl.parseTripAndUserIDs(c)
+	if err != nil {
+		return err
+	}
+
+	var req models.CreateCategoryRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.BadRequest(err)
+	}
+
+	req.TripID = tripID
+
+	if err := ctrl.validator.Struct(req); err != nil {
+		return errs.BadRequest(err)
+	}
+
+	category, err := ctrl.categoryService.CreateCategory(c.Context(), tripID, userID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusCreated).JSON(category)
+}
+
+// @Summary      Delete category
+// @Description  Deletes a custom category from a trip (admin only, cannot delete default categories)
+// @Tags         categories
+// @Param        tripID path string true "Trip ID"
+// @Param        name path string true "Category name"
+// @Success      204 "No Content"
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/categories/{name} [delete]
+// @ID           deleteCategory
+func (ctrl *CategoryController) DeleteCategory(c *fiber.Ctx) error {
+	tripID, userID, err := ctrl.parseTripAndUserIDs(c)
+	if err != nil {
+		return err
+	}
+
+	name := c.Params("name")
+	if name == "" {
+		return errs.BadRequest(nil)
+	}
+
+	if err := ctrl.categoryService.DeleteCategory(c.Context(), tripID, userID, name); err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
 }
 
 // @Summary      Hide category

@@ -17,6 +17,8 @@ func CategoryRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	tripCategoryGroup := apiGroup.Group("/trips/:tripID/categories")
 	tripCategoryGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
 	tripCategoryGroup.Get("", categoryController.GetCategoriesByTripID)
+	tripCategoryGroup.Post("", categoryController.CreateCategory)
+	tripCategoryGroup.Delete("/:name", categoryController.DeleteCategory)
 	tripCategoryGroup.Put("/:name/hide", categoryController.HideCategory)
 	tripCategoryGroup.Put("/:name/show", categoryController.ShowCategory)
 
