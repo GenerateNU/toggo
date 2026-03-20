@@ -115,11 +115,7 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		}
 
 		// Seed default categories as a single batch insert
-		if err := s.Category.UpsertBatchTx(ctx, tx, trip.ID, models.DefaultCategoryNames); err != nil {
-			return err
-		}
-
-		return nil
+		return s.Category.UpsertBatchTx(ctx, tx, trip.ID, models.DefaultCategoryNames)
 	})
 
 	if err != nil {
