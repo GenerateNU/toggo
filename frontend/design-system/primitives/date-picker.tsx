@@ -1,6 +1,6 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Modal,
@@ -26,7 +26,6 @@ export type DateRangePickerProps = {
   initialRange?: DateRange;
   monthsToShow?: number;
   minDate?: Date;
-  variant?: "single" | "range";
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -101,7 +100,9 @@ const DayCell = React.memo(
 
     return (
       <Pressable
-        onPress={() => !isDisabled && onPress(date)}
+        onPress={() => onPress(date)}
+        disabled={isDisabled}
+        accessibilityState={{ disabled: isDisabled }}
         style={styles.dayOuter}
       >
         {/* Range band */}
@@ -228,9 +229,30 @@ export default function DateRangePicker({
   initialRange = { start: null, end: null },
   monthsToShow = 12,
   minDate,
-  variant = "range",
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
+
+  // Initialize range when modal opens
+  useEffect(() => {
+    if (visible) {
+      // Only clear if no initialRange provided, otherwise use initialRange
+      if (!initialRange.start && !initialRange.end) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRange({ start: null, end: null });
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRange(initialRange);
+      }
+    }
+  }, [visible, initialRange]);
+
+  // Normalize minDate to midnight for accurate date comparisons
+  const normalizedMinDate = useMemo(() => {
+    if (!minDate) return undefined;
+    const normalized = new Date(minDate);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  }, [minDate]);
 
   const topInset =
     Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
@@ -243,7 +265,7 @@ export default function DateRangePicker({
     });
   }, [monthsToShow]);
 
-  // ─── Updated selection logic ─────────────────────────────────────────
+  // ─── selection logic ─────────────────────────────────────────
   //
   // End date is NEVER null after a selection (only via Clear button).
   // 1. Nothing selected → single-day range
@@ -256,47 +278,41 @@ export default function DateRangePicker({
   //    - tap before start → single-day range on new date
   //    - tap after end    → move end
   //    - tap between      → collapse to single-day range on new date
-  const handleDayPress = useCallback(
-    (date: Date) => {
-      if (variant === "single") {
-        setRange({ start: date, end: date });
-        return;
+  const handleDayPress = useCallback((date: Date) => {
+    setRange((prev) => {
+      const { start, end } = prev;
+
+      // Case 1: nothing selected
+      if (!start) {
+        return { start: date, end: date };
       }
 
-      setRange((prev) => {
-        const { start, end } = prev;
-
-        // Case 1: nothing selected
-        if (!start) {
-          return { start: date, end: date };
-        }
-
-        // Case 2: single-day range (start === end)
-        if (end && isSameDay(start, end)) {
-          if (isSameDay(date, start)) {
-            return prev;
-          }
-          if (date < start) {
-            return { start: date, end: date };
-          }
-          return { start, end: date };
-        }
-
-        // Case 3: both start and end are selected (distinct range)
-        if (isSameDay(date, start) || (end && isSameDay(date, end))) {
-          return { start: date, end: date };
+      // Case 2: single-day range (start === end)
+      if (end && isSameDay(start, end)) {
+        if (isSameDay(date, start)) {
+          // Re-tapping the same day — do nothing
+          return prev;
         }
         if (date < start) {
-          return { start: date, end };
+          return { start: date, end: date };
         }
-        if (end && date > end) {
-          return { start, end: date };
-        }
+        return { start, end: date };
+      }
+
+      // Case 3: both start and end are selected (distinct range)
+      if (isSameDay(date, start) || (end && isSameDay(date, end))) {
         return { start: date, end: date };
-      });
-    },
-    [variant],
-  );
+      }
+      if (date < start) {
+        return { start: date, end: date };
+      }
+      if (end && date > end) {
+        return { start, end: date };
+      }
+      // date is between start and end → collapse to single-day range
+      return { start: date, end: date };
+    });
+  }, []);
 
   const handleClear = () => setRange({ start: null, end: null });
 
@@ -312,6 +328,7 @@ export default function DateRangePicker({
       visible={visible}
       animationType="slide"
       presentationStyle="pageSheet"
+      onRequestClose={onClose}
     >
       <Box style={[styles.sheet, { paddingTop: topInset }]}>
         {/* ─── Header ───────────────────────────────────────────────── */}
@@ -324,13 +341,13 @@ export default function DateRangePicker({
           >
             <Pressable
               onPress={onClose}
-              hitSlop={12}
+              hitSlop={16}
               style={styles.closeButton}
             >
               <X size={20} color={ColorPalette.textQuaternary} />
             </Pressable>
             <Text variant="mdHeading" color="textSecondary">
-              {variant === "single" ? "Select date" : "Select dates"}
+              Select dates
             </Text>
           </Box>
 
@@ -355,34 +372,30 @@ export default function DateRangePicker({
                 {formatShortDate(range.start)}
               </Text>
             </Box>
-            {variant === "range" && (
-              <>
-                <Text
-                  variant="xsLabel"
-                  color="textQuaternary"
-                  style={styles.summaryArrow}
-                >
-                  →
-                </Text>
-                <Box
-                  style={[
-                    styles.summaryPill,
-                    !!range.end && styles.summaryPillActive,
-                  ]}
-                >
-                  <Text
-                    variant="smLabel"
-                    style={{
-                      color: range.end
-                        ? ColorPalette.textSecondary
-                        : ColorPalette.textQuaternary,
-                    }}
-                  >
-                    {formatShortDate(range.end)}
-                  </Text>
-                </Box>
-              </>
-            )}
+            <Text
+              variant="xsLabel"
+              color="textQuaternary"
+              style={styles.summaryArrow}
+            >
+              →
+            </Text>
+            <Box
+              style={[
+                styles.summaryPill,
+                !!range.end && styles.summaryPillActive,
+              ]}
+            >
+              <Text
+                variant="smLabel"
+                style={{
+                  color: range.end
+                    ? ColorPalette.textSecondary
+                    : ColorPalette.textQuaternary,
+                }}
+              >
+                {formatShortDate(range.end)}
+              </Text>
+            </Box>
           </Box>
         </Box>
 
@@ -409,7 +422,7 @@ export default function DateRangePicker({
               year={year}
               month={month}
               range={range}
-              minDate={minDate}
+              minDate={normalizedMinDate}
               onDayPress={handleDayPress}
             />
           ))}
@@ -422,6 +435,7 @@ export default function DateRangePicker({
             <Pressable
               onPress={handleClear}
               style={({ pressed }) => [
+                styles.footerButtonBase,
                 styles.clearButton,
                 pressed && styles.clearButtonPressed,
                 !hasRange && styles.clearButtonDisabled,
@@ -440,10 +454,11 @@ export default function DateRangePicker({
               </Text>
             </Pressable>
 
-            {/* Save button — always shows "Save Dates" */}
+            {/* Save button */}
             <Pressable
               onPress={handleSave}
               style={({ pressed }) => [
+                styles.footerButtonBase,
                 styles.saveButton,
                 pressed && styles.saveButtonPressed,
                 !hasRange && styles.saveButtonDisabled,
@@ -475,8 +490,8 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     paddingHorizontal: GRID_PADDING,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: Layout.spacing.md,
+    paddingBottom: Layout.spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: ColorPalette.borderPrimary,
   },
@@ -488,11 +503,11 @@ const styles = StyleSheet.create({
   /* Selection summary */
   summaryRow: {
     marginTop: 12,
-    gap: 8,
+    gap: Layout.spacing.xs,
   },
   summaryPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
     backgroundColor: ColorPalette.surfaceBackground,
   },
@@ -502,7 +517,7 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.borderPrimary,
   },
   summaryArrow: {
-    marginHorizontal: 4,
+    marginHorizontal: Layout.spacing.xxs,
   },
 
   /* Weekday labels */
@@ -523,7 +538,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Layout.spacing.xs,
-    paddingBottom: 120,
+    paddingBottom: 120, // Large safe area for scrolling
   },
 
   /* Month */
@@ -532,7 +547,7 @@ const styles = StyleSheet.create({
     marginBottom: Layout.spacing.md,
   },
   monthLabel: {
-    marginBottom: 8,
+    marginBottom: Layout.spacing.xs,
   },
 
   /* Day outer wrapper */
@@ -554,18 +569,14 @@ const styles = StyleSheet.create({
     left: "50%",
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
-    height: "75%",
-    top: "12.5%",
   },
   rangeBandEnd: {
     right: "50%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
-    height: "75%",
-    top: "12.5%",
   },
 
-  /* Day circle — now fully circular */
+  /* Day circle */
   dayCircle: {
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,
@@ -595,12 +606,14 @@ const styles = StyleSheet.create({
     gap: 10,
     flexDirection: "row",
   },
-  clearButton: {
+  footerButtonBase: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
+  },
+  clearButton: {
     borderWidth: 1,
     borderColor: ColorPalette.borderPrimary,
     backgroundColor: ColorPalette.white,
@@ -612,11 +625,6 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.borderSecondary,
   },
   saveButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.black,
   },
   saveButtonPressed: {
