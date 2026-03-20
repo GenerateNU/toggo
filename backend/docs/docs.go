@@ -2872,7 +2872,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file.\nOptionally supply up to 5 confirmed image IDs (image_ids) in the request. The response returns S3 file keys (image_keys) for easier lookup.",
+                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file.\nOptionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2938,7 +2938,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/pitches/{pitchID}": {
             "get": {
-                "description": "Returns a single pitch with a presigned URL for the audio file and S3 file keys for associated images",
+                "description": "Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)",
                 "produces": [
                     "application/json"
                 ],
@@ -3038,7 +3038,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates pitch metadata (title, description, duration).\nWhen image_ids is omitted from the request, existing image associations remain unchanged.\nWhen image_ids is an empty array, all image associations are removed.\nWhen image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).\nThe response returns S3 file keys (image_keys) for easier lookup.",
+                "description": "Updates pitch metadata (title, description, duration).\nWhen image_ids is omitted from the request, existing image associations remain unchanged.\nWhen image_ids is an empty array, all image associations are removed.\nWhen image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).\nThe response includes images with presigned medium_url for each image.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5775,10 +5775,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "image_keys": {
+                "images": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/models.PitchImageInfo"
                     }
                 },
                 "title": {
@@ -5808,6 +5808,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PitchImageInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "medium_url": {
                     "type": "string"
                 }
             }

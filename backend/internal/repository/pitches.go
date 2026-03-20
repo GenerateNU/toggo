@@ -20,7 +20,6 @@ type PitchRepository interface {
 	UpdateWithImages(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	Delete(ctx context.Context, id, tripID uuid.UUID) error
 
-	SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error
 	GetImageIDsForPitch(ctx context.Context, pitchID uuid.UUID) ([]uuid.UUID, error)
 	GetImageIDsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID][]uuid.UUID, error)
 	GetImagesForPitch(ctx context.Context, pitchID uuid.UUID) ([]models.PitchImageKey, error)
@@ -164,29 +163,6 @@ func (r *pitchRepository) Delete(ctx context.Context, id, tripID uuid.UUID) erro
 		return errs.ErrNotFound
 	}
 	return nil
-}
-
-// SetImages fully replaces the image associations for a pitch in a single transaction.
-// Passing an empty slice removes all associations.
-func (r *pitchRepository) SetImages(ctx context.Context, pitchID uuid.UUID, imageIDs []uuid.UUID) error {
-	return r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		if len(imageIDs) == 0 {
-			_, err := tx.NewDelete().
-				TableExpr("pitch_images").
-				Where("pitch_id = ?", pitchID).
-				Exec(ctx)
-			return err
-		}
-		rows := make([]models.PitchImage, len(imageIDs))
-		for i, id := range imageIDs {
-			rows[i] = models.PitchImage{PitchID: pitchID, ImageID: id}
-		}
-		_, err := tx.NewInsert().
-			Model(&rows).
-			On("CONFLICT (pitch_id, image_id) DO NOTHING").
-			Exec(ctx)
-		return err
-	})
 }
 
 // UpdateWithImages atomically updates pitch metadata and merges image associations
