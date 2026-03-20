@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"toggo/internal/constants"
 	"toggo/internal/errs"
@@ -191,6 +192,10 @@ func (s *PollVotingService) DeleteVotePoll(ctx context.Context, tripID, pollID, 
 
 	if _, err := s.repository.Poll.DeletePoll(ctx, pollID); err != nil {
 		return nil, err
+	}
+
+	if err := s.pollService.CancelDeadlineReminder(ctx, pollID); err != nil {
+		log.Printf("failed to cancel deadline reminder for poll %s: %v", pollID, err)
 	}
 
 	resp := s.toAPIResponse(poll, summary)

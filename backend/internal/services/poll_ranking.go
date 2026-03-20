@@ -301,6 +301,10 @@ func (s *RankPollService) DeleteRankPoll(ctx context.Context, tripID uuid.UUID, 
 		return nil, err
 	}
 
+	if err := s.pollService.CancelDeadlineReminder(ctx, pollID); err != nil {
+		log.Printf("failed to cancel deadline reminder for poll %s: %v", pollID, err)
+	}
+
 	resp := s.toRankPollAPIResponse(deleted)
 	s.pollService.PublishEvent(ctx, realtime.EventTopicPollDeleted, tripID.String(), resp)
 

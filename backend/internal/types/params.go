@@ -8,6 +8,7 @@ import (
 	"toggo/internal/services"
 
 	"github.com/go-playground/validator/v10"
+	"go.temporal.io/sdk/client"
 )
 
 type RouteParams struct {
@@ -22,4 +23,5 @@ type ServiceParams struct {
 	FileService    services.FileServiceInterface
 	PollService    services.PollServiceInterface
 	HTTPClient     *http.Client
+	TemporalClient client.Client
 }
