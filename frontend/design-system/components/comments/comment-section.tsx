@@ -90,7 +90,7 @@ export default function CommentSection({
     try {
       await onSubmitComment(newComment);
       setInputText(""); // Only clear on success
-    } catch (_error) {
+    } catch {
       setSubmitError("Failed to post comment. Please try again.");
     } finally {
       setIsSubmitting(false);
