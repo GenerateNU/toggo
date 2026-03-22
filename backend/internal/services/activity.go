@@ -90,8 +90,8 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 
 		// Add categories using ActivityCategory repository, transactionally
 		if len(req.CategoryNames) > 0 {
-			// Ensure categories exist in the categories table first (FK requirement)
-			err = s.Category.UpsertBatchTx(ctx, tx, createdActivity.TripID, req.CategoryNames)
+			// Ensure categories exist (creates non-default ones if missing, safe position assignment)
+			err = s.Category.EnsureCategoriesExistTx(ctx, tx, createdActivity.TripID, req.CategoryNames)
 			if err != nil {
 				return err
 			}
@@ -223,12 +223,10 @@ func (s *ActivityService) DeleteActivity(ctx context.Context, tripID, activityID
 
 // GetActivityCategories retrieves categories for an activity with pagination
 func (s *ActivityService) GetActivityCategories(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCategoriesPageResult, error) {
-	// Verify activity belongs to trip
 	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
 		return nil, err
 	}
 
-	// Parse cursor (simple string for category name)
 	var cursor *string
 	if cursorToken != "" {
 		cursor = &cursorToken
@@ -253,35 +251,22 @@ func (s *ActivityService) GetActivityCategories(ctx context.Context, tripID, act
 
 // AddCategoryToActivity adds a category to an activity
 func (s *ActivityService) AddCategoryToActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, categoryName string) error {
-	// Verify activity belongs to trip
 	activity, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID)
 	if err != nil {
 		return err
 	}
 
-	// Create category with ON CONFLICT DO NOTHING (upsert pattern)
-	category := &models.Category{
-		TripID:    activity.TripID,
-		Name:      categoryName,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	_, err = s.Repository.GetDB().NewInsert().
-		Model(category).
-		On("CONFLICT (trip_id, name) DO NOTHING").
-		Exec(ctx)
+	// Ensure category exists (creates it as non-default if missing, safe position assignment)
+	err = s.Category.EnsureCategoriesExist(ctx, activity.TripID, []string{categoryName})
 	if err != nil {
 		return err
 	}
 
-	// Add category to activity (already idempotent in repository)
 	return s.ActivityCategory.AddCategoriesToActivity(ctx, activityID, activity.TripID, []string{categoryName})
 }
 
 // RemoveCategoryFromActivity removes a category from an activity
 func (s *ActivityService) RemoveCategoryFromActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, categoryName string) error {
-	// Verify activity belongs to trip
 	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
 		return err
 	}
@@ -291,9 +276,7 @@ func (s *ActivityService) RemoveCategoryFromActivity(ctx context.Context, tripID
 
 // Helper methods
 
-// buildActivityListResponse fetches categories and file URLs, then builds the paginated response
 func (s *ActivityService) buildActivityListResponse(ctx context.Context, activities []*models.ActivityDatabaseResponse, nextCursor *models.ActivityCursor, limit int) (*models.ActivityCursorPageResult, error) {
-	// Fetch categories for all activities in batch
 	activityIDs := make([]uuid.UUID, len(activities))
 	for i, activity := range activities {
 		activityIDs[i] = activity.ID
@@ -303,7 +286,6 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 		return nil, err
 	}
 
-	// Populate categories
 	for _, activity := range activities {
 		if categories, ok := categoriesMap[activity.ID]; ok {
 			activity.CategoryNames = categories
@@ -312,7 +294,6 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 		}
 	}
 
-	// Fetch file URLs
 	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, activities, func(item *models.ActivityDatabaseResponse) *string {
 		return item.ProposerPictureKey
 	}, models.ImageSizeSmall)
