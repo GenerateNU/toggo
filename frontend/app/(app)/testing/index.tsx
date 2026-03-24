@@ -92,6 +92,12 @@ export default function Home() {
         variant="Primary"
         onPress={() => router.push("/testing/test-rank-poll")}
       />
+      <Button
+        layout="textOnly"
+        label="Test Activity Feed"
+        variant="Primary"
+        onPress={() => router.push("/testing/test-activity-feed")}
+      />
     </Box>
   );
 }

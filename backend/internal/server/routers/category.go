@@ -10,7 +10,7 @@ import (
 )
 
 func CategoryRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	categoryService := services.NewCategoryService(routeParams.ServiceParams.Repository)
+	categoryService := services.NewCategoryService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.EventPublisher)
 	categoryController := controllers.NewCategoryController(categoryService, routeParams.Validator)
 
 	// /api/v1/trips/:tripID/categories

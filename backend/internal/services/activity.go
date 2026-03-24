@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -36,12 +38,14 @@ var _ ActivityServiceInterface = (*ActivityService)(nil)
 type ActivityService struct {
 	*repository.Repository
 	fileService FileServiceInterface
+	publisher   realtime.EventPublisher
 }
 
-func NewActivityService(repo *repository.Repository, fileService FileServiceInterface) ActivityServiceInterface {
+func NewActivityService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) ActivityServiceInterface {
 	return &ActivityService{
 		Repository:  repo,
 		fileService: fileService,
+		publisher:   publisher,
 	}
 }
 
@@ -116,8 +120,40 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 		return nil, err
 	}
 
-	// Fetch complete activity with categories
-	return s.GetActivity(ctx, req.TripID, createdActivity.ID, userID)
+	// Fetch complete activity with categories and proposer info
+	result, err := s.GetActivity(ctx, req.TripID, createdActivity.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	s.publishActivityCreated(ctx, result, userID)
+
+	return result, nil
+}
+
+func (s *ActivityService) publishActivityCreated(ctx context.Context, activity *models.ActivityAPIResponse, actorID uuid.UUID) {
+	if s.publisher == nil {
+		return
+	}
+	actorName := ""
+	if activity.ProposerUsername != "" {
+		actorName = activity.ProposerUsername
+	}
+	event, err := realtime.NewEventWithActor(
+		realtime.EventTopicActivityCreated,
+		activity.TripID.String(),
+		activity.ID.String(),
+		actorID.String(),
+		actorName,
+		activity,
+	)
+	if err != nil {
+		log.Printf("Failed to create activity.created event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish activity.created event: %v", err)
+	}
 }
 
 func (s *ActivityService) GetActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) (*models.ActivityAPIResponse, error) {

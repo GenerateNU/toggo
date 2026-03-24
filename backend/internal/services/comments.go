@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -22,12 +24,14 @@ var _ CommentServiceInterface = (*CommentService)(nil)
 type CommentService struct {
 	repository  *repository.Repository
 	fileService FileServiceInterface
+	publisher   realtime.EventPublisher
 }
 
-func NewCommentService(repo *repository.Repository, fileService FileServiceInterface) CommentServiceInterface {
+func NewCommentService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) CommentServiceInterface {
 	return &CommentService{
 		repository:  repo,
 		fileService: fileService,
+		publisher:   publisher,
 	}
 }
 
@@ -52,7 +56,30 @@ func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCom
 		return nil, err
 	}
 
+	s.publishCommentCreated(ctx, comment, userID)
+
 	return comment, nil
+}
+
+func (s *CommentService) publishCommentCreated(ctx context.Context, comment *models.Comment, actorID uuid.UUID) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(
+		realtime.EventTopicCommentCreated,
+		comment.TripID.String(),
+		comment.EntityID.String(),
+		actorID.String(),
+		"",
+		comment,
+	)
+	if err != nil {
+		log.Printf("Failed to create comment.created event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish comment.created event: %v", err)
+	}
 }
 
 func (s *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error) {
