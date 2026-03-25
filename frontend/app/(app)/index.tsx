@@ -11,7 +11,7 @@ import {
   ImagePicker,
   Text,
 } from "@/design-system";
-import { AnimatedBox } from "@/design-system/primitives/animated-box";
+import { AnimatedBox } from "@/design-system";
 import { useCreateTrip } from "@/index";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check, X } from "lucide-react-native";

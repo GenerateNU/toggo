@@ -23,19 +23,29 @@ type PollServiceInterface interface {
 	BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll
 	BuildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption
 	UpdatePollWithTx(ctx context.Context, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error)
+	ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline *time.Time) error
+	CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error
 }
 
 var _ PollServiceInterface = (*PollService)(nil)
 
+// schedules and cancels poll deadline reminders; defined here to avoid an import cycle with workflows
+type DeadlineScheduler interface {
+	ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline time.Time) error
+	CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error
+}
+
 type PollService struct {
 	repository *repository.Repository
 	publisher  realtime.EventPublisher
+	scheduler  DeadlineScheduler
 }
 
-func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
+func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher, scheduler DeadlineScheduler) PollServiceInterface {
 	return &PollService{
 		repository: repo,
 		publisher:  publisher,
+		scheduler:  scheduler,
 	}
 }
 
@@ -157,6 +167,10 @@ func (s *PollService) CreatePollWithTx(
 		return nil, nil, err
 	}
 
+	if err := s.ScheduleDeadlineReminder(ctx, created.ID, tripID, created.Deadline); err != nil {
+		log.Printf("failed to schedule deadline reminder for poll %s: %v", created.ID, err)
+	}
+
 	return created, categoryNames, nil
 }
 
@@ -216,6 +230,12 @@ func (s *PollService) UpdatePollWithTx(
 		return nil, nil, err
 	}
 
+	if req.Deadline != nil {
+		if err := s.ScheduleDeadlineReminder(ctx, pollID, tripID, req.Deadline); err != nil {
+			log.Printf("failed to reschedule deadline reminder for poll %s: %v", pollID, err)
+		}
+	}
+
 	return updated, categoryNames, nil
 }
 
@@ -239,4 +259,18 @@ func (s *PollService) resolveCategoryUpdate(
 		pollID,
 		&values,
 	)
+}
+
+func (s *PollService) ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline *time.Time) error {
+	if s.scheduler == nil || deadline == nil {
+		return nil
+	}
+	return s.scheduler.ScheduleDeadlineReminder(ctx, pollID, tripID, *deadline)
+}
+
+func (s *PollService) CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error {
+	if s.scheduler == nil {
+		return nil
+	}
+	return s.scheduler.CancelDeadlineReminder(ctx, pollID)
 }

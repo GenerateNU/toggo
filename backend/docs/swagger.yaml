@@ -16,7 +16,15 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
+        type: string
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
         type: string
       media_url:
         type: string
@@ -45,7 +53,19 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        type: number
       id:
+        type: string
+      image_ids:
+        items:
+          $ref: '#/definitions/models.ActivityImageResponse'
+        type: array
+      location_lat:
+        type: number
+      location_lng:
+        type: number
+      location_name:
         type: string
       media_url:
         type: string
@@ -84,6 +104,13 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ActivityImageResponse:
+    properties:
+      image_id:
+        type: string
+      image_url:
         type: string
     type: object
   models.ActivityRSVPAPIResponse:
@@ -156,6 +183,9 @@ definitions:
         type: string
       icon:
         type: string
+      is_hidden:
+        description: only present for admins
+        type: boolean
       name:
         type: string
       trip_id:
@@ -247,6 +277,26 @@ definitions:
         type: array
       description:
         type: string
+      estimated_price:
+        minimum: 0
+        type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
+        type: string
       media_url:
         type: string
       name:
@@ -311,6 +361,11 @@ definitions:
         type: string
       description:
         type: string
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -389,6 +444,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -477,6 +534,20 @@ definitions:
       lng:
         type: number
     type: object
+  models.LinkType:
+    enum:
+    - airbnb
+    - booking_com
+    - tiktok
+    - instagram
+    - generic
+    type: string
+    x-enum-varnames:
+    - LinkTypeAirbnb
+    - LinkTypeBookingCom
+    - LinkTypeTikTok
+    - LinkTypeInstagram
+    - LinkTypeGeneric
   models.MatchedSubstring:
     properties:
       length:
@@ -610,6 +681,32 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.ParseLinkRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  models.ParsedActivityData:
+    properties:
+      category_suggestions:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      source_type:
+        $ref: '#/definitions/models.LinkType'
+      source_url:
+        type: string
+      thumbnail_url:
+        type: string
+    type: object
   models.Period:
     properties:
       close:
@@ -629,6 +726,10 @@ definitions:
         type: integer
       id:
         type: string
+      images:
+        items:
+          $ref: '#/definitions/models.PitchImageInfo'
+        type: array
       title:
         type: string
       trip_id:
@@ -647,6 +748,13 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.PitchImageInfo:
+    properties:
+      id:
+        type: string
+      medium_url:
         type: string
     type: object
   models.PlaceDetailsRequest:
@@ -1065,6 +1173,8 @@ definitions:
         type: string
       created_at:
         type: string
+      currency:
+        type: string
       id:
         type: string
       name:
@@ -1081,6 +1191,8 @@ definitions:
       cover_image_url:
         type: string
       created_at:
+        type: string
+      currency:
         type: string
       id:
         type: string
@@ -1122,12 +1234,31 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
-        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
         maxItems: 20
         type: array
       description:
+        type: string
+      estimated_price:
+        minimum: 0
+        type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
+      location_lat:
+        maximum: 90
+        minimum: -90
+        type: number
+      location_lng:
+        maximum: 180
+        minimum: -180
+        type: number
+      location_name:
+        maxLength: 500
+        minLength: 1
         type: string
       media_url:
         type: string
@@ -1164,6 +1295,14 @@ definitions:
       duration:
         minimum: 0
         type: integer
+      image_ids:
+        description: |-
+          ImageIDs, when non-nil, fully replaces the pitch's image associations.
+          Pass an empty slice to remove all images; omit the field to leave images unchanged.
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -1190,6 +1329,8 @@ definitions:
         minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      currency:
         type: string
       name:
         minLength: 1
@@ -1415,6 +1556,35 @@ paths:
       tags:
       - comments
   /api/v1/files/{imageId}:
+    delete:
+      description: Deletes all size variants of an image from S3 and the database
+      operationId: deleteImage
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete image
+      tags:
+      - files
     get:
       description: Retrieves presigned URLs for all sizes of an image
       operationId: getFileAllSizes
@@ -2729,6 +2899,56 @@ paths:
       summary: Get activity RSVPs
       tags:
       - activities
+  /api/v1/trips/{tripID}/activities/parse-link:
+    post:
+      consumes:
+      - application/json
+      description: Fetches a URL and extracts structured activity fields (name, description,
+        thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram,
+        and generic travel blog URLs.
+      operationId: parseActivityLink
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: URL to parse
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParseLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParsedActivityData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Parse link into activity data
+      tags:
+      - activities
   /api/v1/trips/{tripID}/categories:
     get:
       description: Retrieves all categories for a trip
@@ -2767,6 +2987,88 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get categories by trip
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/hide:
+    put:
+      description: Hides a category from all members (admin only)
+      operationId: hideCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Hide category
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}/show:
+    put:
+      description: Makes a previously hidden category visible again (admin only)
+      operationId: showCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Show category
       tags:
       - categories
   /api/v1/trips/{tripID}/invites:
@@ -3116,8 +3418,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new pitch for the trip and returns a presigned URL to
-        upload the audio file
+      description: |-
+        Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+        Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
       operationId: createPitch
       parameters:
       - description: Trip ID
@@ -3191,7 +3494,8 @@ paths:
       tags:
       - pitches
     get:
-      description: Returns a single pitch with a presigned URL for the audio file
+      description: Returns a single pitch with presigned URLs for the audio file and
+        associated images (medium_url for each image)
       operationId: getPitch
       parameters:
       - description: Trip ID
@@ -3229,7 +3533,12 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates pitch metadata (title, description, duration)
+      description: |-
+        Updates pitch metadata (title, description, duration).
+        When image_ids is omitted from the request, existing image associations remain unchanged.
+        When image_ids is an empty array, all image associations are removed.
+        When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+        The response includes images with presigned medium_url for each image.
       operationId: updatePitch
       parameters:
       - description: Trip ID

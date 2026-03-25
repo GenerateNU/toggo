@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"toggo/internal/config"
@@ -351,6 +352,26 @@ func TestPitchUpdate(t *testing.T) {
 
 func strPtr(s string) *string { return &s }
 
+// createConfirmedImage inserts confirmed image rows (medium and large) directly into the DB and returns the ID.
+// This bypasses the S3 upload flow, mirroring the pattern used in trip_cover_image_test.go.
+func createConfirmedImage(t *testing.T) uuid.UUID {
+	t.Helper()
+	db := fakes.GetSharedDB()
+	imageID := uuid.New()
+	// Create only medium size variant (pitches fetch medium URLs by default)
+	image := &models.Image{
+		ImageID: imageID,
+		FileKey: "medium/test-images/pitch-" + imageID.String() + ".jpg",
+		Size:    models.ImageSizeMedium,
+		Status:  models.UploadStatusConfirmed,
+	}
+	_, err := db.NewInsert().
+		Model(image).
+		Exec(context.Background())
+	require.NoError(t, err)
+	return imageID
+}
+
 /* =========================
    DELETE
 =========================*/
@@ -391,4 +412,406 @@ func TestPitchDelete(t *testing.T) {
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
+}
+
+/* =========================
+   IMAGE ASSOCIATIONS
+=========================*/
+
+func TestPitchImages(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	userID := createTestUser(t, app, "ImgUser", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	tripID := createTestTrip(t, app, userID, "ImgTrip", 100, 500)
+
+	// -- CREATE with images --
+
+	t.Run("create pitch with image_ids returns images with medium_url", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Pitch with image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{imgID},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		pitch := resp["pitch"].(map[string]any)
+		images, ok := pitch["images"].([]any)
+		require.True(t, ok)
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL should be a full URL
+	})
+
+	t.Run("create pitch with too many images returns 422", func(t *testing.T) {
+		requireS3(t)
+		tooMany := make([]uuid.UUID, models.MaxPitchImages+1)
+		for i := range tooMany {
+			tooMany[i] = createConfirmedImage(t)
+		}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Too many",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      tooMany,
+				},
+			}).
+			AssertStatus(http.StatusUnprocessableEntity)
+	})
+
+	t.Run("create pitch with non-existent image ID returns 400", func(t *testing.T) {
+		requireS3(t)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Bad image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{uuid.New()}, // does not exist
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("create pitch with duplicate image IDs returns 400", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Dup image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{imgID, imgID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("create pitch with multiple valid images (batch validation)", func(t *testing.T) {
+		requireS3(t)
+		// Create 3 confirmed images to test batch query efficiency
+		img1 := createConfirmedImage(t)
+		img2 := createConfirmedImage(t)
+		img3 := createConfirmedImage(t)
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Multiple images",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{img1, img2, img3},
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+		pitch := resp["pitch"].(map[string]any)
+		images, ok := pitch["images"].([]any)
+		require.True(t, ok)
+		require.Len(t, images, 3, "should have 3 images")
+		// Verify each image has id and medium_url
+		for _, imgAny := range images {
+			img := imgAny.(map[string]any)
+			assert.NotEmpty(t, img["id"])
+			mediumURL := img["medium_url"].(string)
+			assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+			assert.Contains(t, mediumURL, "http") // presigned URL
+		}
+	})
+
+	t.Run("create pitch with pending image returns 400", func(t *testing.T) {
+		requireS3(t)
+		// Create a pending (unconfirmed) image
+		db := fakes.GetSharedDB()
+		pendingID := uuid.New()
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: pendingID,
+				FileKey: "test-images/pending-" + pendingID.String() + ".jpg",
+				Size:    models.ImageSizeMedium,
+				Status:  models.UploadStatusPending,
+			}).
+			Exec(context.Background())
+		require.NoError(t, err)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Pending image",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{pendingID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("create pitch with mix of valid and invalid images returns 400", func(t *testing.T) {
+		requireS3(t)
+		validID := createConfirmedImage(t)
+		invalidID := uuid.New() // doesn't exist
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Mixed images",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+					ImageIDs:      []uuid.UUID{validID, invalidID},
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	// -- GET includes images with medium_url --
+
+	t.Run("get pitch includes images with medium_url", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "GetWithImg", []uuid.UUID{imgID})
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		images, ok := resp["images"].([]any)
+		require.True(t, ok)
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL
+	})
+
+	// -- LIST includes images with medium_url --
+
+	t.Run("list pitches includes images with medium_url", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "ListWithImg", []uuid.UUID{imgID})
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		items := resp["items"].([]any)
+		found := false
+		for _, item := range items {
+			p := item.(map[string]any)
+			if p["id"].(string) == pitchID {
+				found = true
+				images, ok := p["images"].([]any)
+				require.True(t, ok)
+				require.Len(t, images, 1)
+				img := images[0].(map[string]any)
+				assert.Equal(t, imgID.String(), img["id"])
+				mediumURL := img["medium_url"].(string)
+				assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+				assert.Contains(t, mediumURL, "http") // presigned URL
+			}
+		}
+		assert.True(t, found, "pitch not found in list response")
+	})
+
+	// -- UPDATE image associations --
+
+	t.Run("update adds image associations (existing images are not removed)", func(t *testing.T) {
+		requireS3(t)
+		img1 := createConfirmedImage(t)
+		img2 := createConfirmedImage(t)
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "AddImg", []uuid.UUID{img1})
+
+		img2Slice := []uuid.UUID{img2}
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &img2Slice},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		images, ok := resp["images"].([]any)
+		require.True(t, ok)
+		// Both img1 (existing) and img2 (newly added) should be present.
+		require.Len(t, images, 2)
+		// Verify both images have ID and medium_url
+		for _, imgAny := range images {
+			img := imgAny.(map[string]any)
+			assert.NotEmpty(t, img["id"])
+			mediumURL := img["medium_url"].(string)
+			assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+			assert.Contains(t, mediumURL, "http") // presigned URL
+		}
+	})
+
+	t.Run("update with empty image_ids removes all associations", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "RemoveImg", []uuid.UUID{imgID})
+
+		empty := []uuid.UUID{}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &empty},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Follow-up GET must confirm the image association was actually removed.
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		// images is omitempty — absent key or empty slice both mean no images.
+		if images, ok := getResp["images"].([]any); ok {
+			assert.Len(t, images, 0)
+		}
+	})
+
+	t.Run("update with duplicate image IDs returns 400", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitch(t, app, userID, tripID, "DupUpdateImg", "audio/mpeg")
+		dupSlice := []uuid.UUID{imgID, imgID}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &dupSlice},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("update that would exceed image cap via merge returns 400", func(t *testing.T) {
+		requireS3(t)
+		// Fill the pitch up to MaxPitchImages.
+		existingIDs := make([]uuid.UUID, models.MaxPitchImages)
+		for i := range existingIDs {
+			existingIDs[i] = createConfirmedImage(t)
+		}
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "CapMergeImg", existingIDs)
+
+		// One additional new image would push merged total to MaxPitchImages+1.
+		extraID := createConfirmedImage(t)
+		extraSlice := []uuid.UUID{extraID}
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				Body:   models.UpdatePitchRequest{ImageIDs: &extraSlice},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("update omitting image_ids leaves associations unchanged", func(t *testing.T) {
+		requireS3(t)
+		imgID := createConfirmedImage(t)
+		pitchID, _ := createPitchWithImages(t, app, userID, tripID, "KeepImg", []uuid.UUID{imgID})
+
+		newTitle := "KeepImg Updated"
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.PATCH,
+				UserID: &userID,
+				// ImageIDs is nil (omitted) — images must be unchanged
+				Body: models.UpdatePitchRequest{Title: &newTitle},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		assert.Equal(t, newTitle, resp["title"])
+		images, ok := resp["images"].([]any)
+		require.True(t, ok)
+		require.Len(t, images, 1)
+		img := images[0].(map[string]any)
+		assert.Equal(t, imgID.String(), img["id"])
+		mediumURL := img["medium_url"].(string)
+		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
+		assert.Contains(t, mediumURL, "http") // presigned URL
+	})
+}
+
+// createPitchWithImages is like createPitch but also sends image_ids in the request body.
+func createPitchWithImages(t *testing.T, app *fiber.App, userID, tripID string, title string, imageIDs []uuid.UUID) (pitchID string, uploadURL string) {
+	t.Helper()
+	requireS3(t)
+	resp := testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/trips/" + tripID + "/pitches",
+			Method: testkit.POST,
+			UserID: &userID,
+			Body: models.CreatePitchRequest{
+				Title:         title,
+				ContentType:   "audio/mpeg",
+				ContentLength: 1024,
+				ImageIDs:      imageIDs,
+			},
+		}).
+		AssertStatus(http.StatusCreated).
+		GetBody()
+	pitch := resp["pitch"].(map[string]any)
+	pitchID = pitch["id"].(string)
+	uploadURL = resp["upload_url"].(string)
+	return pitchID, uploadURL
 }

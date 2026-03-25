@@ -12,10 +12,8 @@ export const ColorPalette = {
   textPrimary: "#ffffff",
   textSecondary: "#000000",
   textQuaternary: "#858585",
-  textPrimaryDisable: "#A4A4A4",
-  textSecondaryDisable: "#DEDEDE",
   textInverse: "#FFFFFF",
-  textDisabled: "#BDBDBD",
+  textDisabled: "#999999",
   textLink: "#007AFF",
 
   // Icon
@@ -32,7 +30,7 @@ export const ColorPalette = {
   // Background
   primaryBackground: "#000000",
   secondaryBackground: "#ECECEC",
-  disabledBackground: "#CECECE",
+  disabledBackground: "#CCCCCC",
   iconPrimaryBackground: "#000000",
   iconSecondaryBackground: "#F6F6F6",
 
@@ -45,6 +43,7 @@ export const ColorPalette = {
   error: "#FF3B30",
   warning: "#FF9500",
   info: "#007AFF",
+  progressFill: "#4ECBA0",
 } as const;
 
 export type ColorName = keyof typeof ColorPalette;

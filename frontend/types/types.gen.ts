@@ -38,9 +38,25 @@ export type ModelsActivity = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -67,6 +83,17 @@ export type ModelsActivity = {
   updated_at?: string;
 };
 
+export type ModelsActivityImageResponse = {
+  /**
+   * @type string | undefined
+   */
+  image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  image_url?: string;
+};
+
 export type ModelsActivityAPIResponse = {
   /**
    * @type array | undefined
@@ -85,9 +112,29 @@ export type ModelsActivityAPIResponse = {
    */
   description?: string;
   /**
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: ModelsActivityImageResponse[];
+  /**
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -277,6 +324,11 @@ export type ModelsCategoryAPIResponse = {
    */
   icon?: string;
   /**
+   * @description only present for admins
+   * @type boolean | undefined
+   */
+  is_hidden?: boolean;
+  /**
    * @type string | undefined
    */
   name?: string;
@@ -436,6 +488,33 @@ export type ModelsCreateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -661,6 +740,10 @@ export type ModelsCreateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string
@@ -1460,6 +1543,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1578,6 +1665,10 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  currency?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
@@ -1641,7 +1732,6 @@ export type ModelsTripInviteAPIResponse = {
 
 export type ModelsUpdateActivityRequest = {
   /**
-   * @description Max 20 date ranges
    * @type array | undefined
    */
   dates?: ModelsDateRange[];
@@ -1649,6 +1739,33 @@ export type ModelsUpdateActivityRequest = {
    * @type string | undefined
    */
   description?: string;
+  /**
+   * @minLength 0
+   * @type number | undefined
+   */
+  estimated_price?: number;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
+   * @minLength -90
+   * @maxLength 90
+   * @type number | undefined
+   */
+  location_lat?: number;
+  /**
+   * @minLength -180
+   * @maxLength 180
+   * @type number | undefined
+   */
+  location_lng?: number;
+  /**
+   * @minLength 1
+   * @maxLength 500
+   * @type string | undefined
+   */
+  location_name?: string;
   /**
    * @type string | undefined
    */
@@ -1741,6 +1858,10 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   cover_image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  currency?: string;
   /**
    * @minLength 1
    * @type string | undefined
@@ -2132,6 +2253,42 @@ export type GetFileAllSizesQuery = {
   Response: GetFileAllSizes200;
   PathParams: GetFileAllSizesPathParams;
   Errors: GetFileAllSizes400 | GetFileAllSizes404 | GetFileAllSizes500;
+};
+
+export type DeleteImagePathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteImage204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteImage400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteImage404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteImage500 = ErrsAPIError;
+
+export type DeleteImageMutationResponse = DeleteImage204;
+
+export type DeleteImageMutation = {
+  Response: DeleteImage204;
+  PathParams: DeleteImagePathParams;
+  Errors: DeleteImage400 | DeleteImage404 | DeleteImage500;
 };
 
 export type GetFilePathParams = {
@@ -3534,6 +3691,118 @@ export type GetCategoriesByTripIDQuery = {
     | GetCategoriesByTripID403
     | GetCategoriesByTripID404
     | GetCategoriesByTripID500;
+};
+
+export type HideCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type HideCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type HideCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type HideCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type HideCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type HideCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type HideCategory500 = ErrsAPIError;
+
+export type HideCategoryMutationResponse = HideCategory204;
+
+export type HideCategoryMutation = {
+  Response: HideCategory204;
+  PathParams: HideCategoryPathParams;
+  Errors:
+    | HideCategory400
+    | HideCategory401
+    | HideCategory403
+    | HideCategory404
+    | HideCategory500;
+};
+
+export type ShowCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ShowCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ShowCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ShowCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ShowCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ShowCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ShowCategory500 = ErrsAPIError;
+
+export type ShowCategoryMutationResponse = ShowCategory204;
+
+export type ShowCategoryMutation = {
+  Response: ShowCategory204;
+  PathParams: ShowCategoryPathParams;
+  Errors:
+    | ShowCategory400
+    | ShowCategory401
+    | ShowCategory403
+    | ShowCategory404
+    | ShowCategory500;
 };
 
 export type CreateTripInvitePathParams = {

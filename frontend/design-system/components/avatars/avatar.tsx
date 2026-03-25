@@ -39,22 +39,16 @@ export const Avatar: React.FC<AvatarProps> = ({
   seed,
 }) => {
   const { coreSize } = useTheme<Theme>();
+  const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [profilePhoto]);
 
   const size = coreSize[variant as CoreSizeKey];
   const { background, icon: iconColor } = getDeterministicColors(seed);
 
-  const renderContent = () => {
-    if (profilePhoto) {
-      return (
-        <Image
-          style={{ width: "100%", height: "100%", borderRadius: 999 }}
-          source={{ uri: profilePhoto }}
-        />
-      );
-    }
-
-    return <User size={size * 0.6} color={iconColor} />;
-  };
+  const showImage = profilePhoto && !imageError;
 
   return (
     <Box
@@ -63,9 +57,18 @@ export const Avatar: React.FC<AvatarProps> = ({
       justifyContent="center"
       alignItems="center"
       borderRadius="full"
+      overflow="hidden"
       style={{ backgroundColor: background }}
     >
-      {renderContent()}
+      {showImage ? (
+        <Image
+          style={{ width: "100%", height: "100%" }}
+          source={{ uri: profilePhoto }}
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <User size={size * 0.6} color={iconColor} />
+      )}
     </Box>
   );
 };

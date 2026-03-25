@@ -13,13 +13,17 @@ import (
 
 type ActivityRepository interface {
 	Create(ctx context.Context, activity *models.Activity) (*models.Activity, error)
+	CreateActivityTx(ctx context.Context, tx bun.Tx, activity *models.Activity) (*models.Activity, error)
 	Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error)
 	FindByTripID(ctx context.Context, tripID uuid.UUID, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
 	FindByCategoryName(ctx context.Context, tripID uuid.UUID, categoryName string, cursor *models.ActivityCursor, limit int) ([]*models.ActivityDatabaseResponse, *models.ActivityCursor, error)
 	Exists(ctx context.Context, activityID uuid.UUID) (bool, error)
 	CountByTripID(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
+	UpdateTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error)
 	Delete(ctx context.Context, activityID uuid.UUID) error
+	AddImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
+	ReplaceImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error
 }
 
 var _ ActivityRepository = (*activityRepository)(nil)
@@ -44,6 +48,15 @@ func (r *activityRepository) Create(ctx context.Context, activity *models.Activi
 	return activity, nil
 }
 
+// CreateActivityTx creates an activity in a transaction
+func (r *activityRepository) CreateActivityTx(ctx context.Context, tx bun.Tx, activity *models.Activity) (*models.Activity, error) {
+	_, err := tx.NewInsert().Model(activity).Returning("*").Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return activity, nil
+}
+
 // Find retrieves a specific activity by ID with proposer details (categories fetched separately)
 func (r *activityRepository) Find(ctx context.Context, activityID uuid.UUID) (*models.ActivityDatabaseResponse, error) {
 	activity := &models.ActivityDatabaseResponse{}
@@ -53,9 +66,12 @@ func (r *activityRepository) Find(ctx context.Context, activityID uuid.UUID) (*m
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
+		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
 		Where("a.id = ?", activityID).
+		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		Scan(ctx, activity)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,6 +82,7 @@ func (r *activityRepository) Find(ctx context.Context, activityID uuid.UUID) (*m
 	return activity, nil
 }
 
+// FindByTripID retrieves all activities for a trip
 func (r *activityRepository) FindByTripID(
 	ctx context.Context,
 	tripID uuid.UUID,
@@ -78,9 +95,12 @@ func (r *activityRepository) FindByTripID(
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
+		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
 		Where("a.trip_id = ?", tripID).
+		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
@@ -100,10 +120,16 @@ func (r *activityRepository) FindByCategoryName(
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
+		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").
-		Where("a.trip_id = ? AND ac.category_name = ?", tripID, categoryName).
+		Join("JOIN categories AS cat ON cat.trip_id = a.trip_id AND cat.name = ac.category_name").
+		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
+		Where("a.trip_id = ?", tripID).
+		Where("ac.category_name = ?", categoryName).
+		Where("cat.is_hidden = false").
+		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
@@ -157,6 +183,22 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 		updateQuery = updateQuery.Set("dates = ?", *req.Dates)
 	}
 
+	if req.LocationName != nil {
+		updateQuery = updateQuery.Set("location_name = ?", *req.LocationName)
+	}
+
+	if req.LocationLat != nil {
+		updateQuery = updateQuery.Set("location_lat = ?", *req.LocationLat)
+	}
+
+	if req.LocationLng != nil {
+		updateQuery = updateQuery.Set("location_lng = ?", *req.LocationLng)
+	}
+
+	if req.EstimatedPrice != nil {
+		updateQuery = updateQuery.Set("estimated_price = ?", *req.EstimatedPrice)
+	}
+
 	// Atomic update with RETURNING to avoid race conditions
 	updatedActivity := &models.Activity{}
 	err := updateQuery.
@@ -169,6 +211,52 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 		return nil, err
 	}
 
+	return updatedActivity, nil
+}
+
+// UpdateTx modifies an activity within the provided transaction
+func (r *activityRepository) UpdateTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, req *models.UpdateActivityRequest) (*models.Activity, error) {
+	updateQuery := tx.NewUpdate().
+		Model(&models.Activity{}).
+		Where("id = ?", activityID).
+		Set("updated_at = ?", time.Now())
+
+	if req.Name != nil {
+		updateQuery = updateQuery.Set("name = ?", *req.Name)
+	}
+	if req.ThumbnailURL != nil {
+		updateQuery = updateQuery.Set("thumbnail_url = ?", *req.ThumbnailURL)
+	}
+	if req.MediaURL != nil {
+		updateQuery = updateQuery.Set("media_url = ?", *req.MediaURL)
+	}
+	if req.Description != nil {
+		updateQuery = updateQuery.Set("description = ?", *req.Description)
+	}
+	if req.Dates != nil {
+		updateQuery = updateQuery.Set("dates = ?", *req.Dates)
+	}
+	if req.LocationName != nil {
+		updateQuery = updateQuery.Set("location_name = ?", *req.LocationName)
+	}
+	if req.LocationLat != nil {
+		updateQuery = updateQuery.Set("location_lat = ?", *req.LocationLat)
+	}
+	if req.LocationLng != nil {
+		updateQuery = updateQuery.Set("location_lng = ?", *req.LocationLng)
+	}
+	if req.EstimatedPrice != nil {
+		updateQuery = updateQuery.Set("estimated_price = ?", *req.EstimatedPrice)
+	}
+
+	updatedActivity := &models.Activity{}
+	err := updateQuery.Returning("*").Scan(ctx, updatedActivity)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errs.ErrNotFound
+		}
+		return nil, err
+	}
 	return updatedActivity, nil
 }
 
@@ -215,4 +303,34 @@ func (r *activityRepository) executePaginatedQuery(
 	}
 
 	return activities, nextCursor, nil
+}
+
+// AddImagesTx adds images to an activity in a transaction
+func (r *activityRepository) AddImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error {
+	if len(imageIDs) == 0 {
+		return nil
+	}
+	now := time.Now()
+	activityImages := make([]*models.ActivityImage, len(imageIDs))
+	for i, imageID := range imageIDs {
+		activityImages[i] = &models.ActivityImage{
+			ActivityID: activityID,
+			ImageID:    imageID,
+			CreatedAt:  now,
+		}
+	}
+	_, err := tx.NewInsert().
+		Model(&activityImages).
+		On("CONFLICT (activity_id, image_id) DO NOTHING").
+		Exec(ctx)
+	return err
+}
+
+// ReplaceImagesTx replaces images for an activity in a transaction
+func (r *activityRepository) ReplaceImagesTx(ctx context.Context, tx bun.Tx, activityID uuid.UUID, imageIDs []uuid.UUID) error {
+	_, err := tx.NewDelete().Table("activity_images").Where("activity_id = ?", activityID).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	return r.AddImagesTx(ctx, tx, activityID, imageIDs)
 }

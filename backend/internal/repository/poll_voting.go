@@ -13,6 +13,7 @@ type PollVotingRepository interface {
 	CastVote(ctx context.Context, pollID, userID uuid.UUID, votes []models.PollVote) ([]models.PollVote, error)
 	GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error)
 	GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error)
+	GetVoterStatus(ctx context.Context, pollID uuid.UUID, tripID uuid.UUID) ([]models.VoterInfo, error)
 }
 
 var _ PollVotingRepository = (*pollVotingRepository)(nil)
@@ -103,4 +104,23 @@ func (r *pollVotingRepository) GetPollsVotes(ctx context.Context, pollIDs []uuid
 	}
 
 	return result, nil
+}
+
+func (r *pollVotingRepository) GetVoterStatus(ctx context.Context, pollID uuid.UUID, tripID uuid.UUID) ([]models.VoterInfo, error) {
+	var voters []models.VoterInfo
+	err := r.db.NewSelect().
+		TableExpr("memberships AS m").
+		ColumnExpr("m.user_id").
+		ColumnExpr("u.username").
+		ColumnExpr("BOOL_OR(pv.user_id IS NOT NULL) AS has_voted").
+		Join("JOIN users AS u ON u.id = m.user_id").
+		Join("LEFT JOIN poll_votes AS pv ON pv.poll_id = ? AND pv.user_id = m.user_id", pollID).
+		Where("m.trip_id = ?", tripID).
+		Group("m.user_id", "u.username").
+		Order("has_voted DESC", "u.username ASC").
+		Scan(ctx, &voters)
+	if err != nil {
+		return nil, err
+	}
+	return voters, nil
 }

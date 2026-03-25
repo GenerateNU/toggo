@@ -5,7 +5,9 @@ import (
 	"log"
 	"toggo/internal/config"
 	"toggo/internal/repository"
+	"toggo/internal/services"
 	"toggo/internal/workflows/example"
+	"toggo/internal/workflows/notifications"
 
 	"go.temporal.io/sdk/worker"
 )
@@ -62,6 +64,10 @@ func StartAllWorkersWithContext(ctx context.Context, repo *repository.Repository
 	// TODO: remove example worker later
 	userWorker := example.StartUserWorker(c, *repo)
 	manager.StartWorker(userWorker)
+
+	expoClient := services.NewExpoClient("")
+	notificationWorker := notifications.StartNotificationWorker(c, *repo, expoClient)
+	manager.StartWorker(notificationWorker)
 
 	<-ctx.Done()
 	manager.StopAllWorkers()
