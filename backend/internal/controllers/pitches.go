@@ -26,7 +26,8 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 }
 
 // @Summary      Create a pitch
-// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+// @Description  Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
@@ -101,7 +102,7 @@ func (ctrl *PitchController) ListPitches(c *fiber.Ctx) error {
 }
 
 // @Summary      Get a pitch by ID
-// @Description  Returns a single pitch with a presigned URL for the audio file
+// @Description  Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
 // @Tags         pitches
 // @Produce      json
 // @Param        tripID  path string true "Trip ID"
@@ -133,7 +134,11 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 }
 
 // @Summary      Update a pitch
-// @Description  Updates pitch metadata (title, description, duration)
+// @Description  Updates pitch metadata (title, description, duration).
+// @Description  When image_ids is omitted from the request, existing image associations remain unchanged.
+// @Description  When image_ids is an empty array, all image associations are removed.
+// @Description  When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+// @Description  The response includes images with presigned medium_url for each image.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
