@@ -86,19 +86,21 @@ import { Box, Text, Button } from '@/design-system';
 
 function WelcomeCard() {
   return (
-    <Box padding="md" backgroundColor="surfaceCard" borderRadius="md">
+    <Box padding="md" backgroundColor="surfaceCard" borderRadius="md" gap="xs">
       <Text variant="lgHeading" color="textPrimary">
         Welcome to Toggo
       </Text>
-      <Text variant="smParagraph" color="textSecondary" marginTop="xs">
+      <Text variant="smParagraph" color="textSecondary">
         Start planning your next adventure
       </Text>
-      <Button
-        variant="Primary"
-        label="Create Trip"
-        onPress={() => {}}
-        marginTop="md"
-      />
+      <Box marginTop="sm">
+        <Button
+          variant="Primary"
+          label="Create Trip"
+          layout="textOnly"
+          onPress={() => {}}
+        />
+      </Box>
     </Box>
   );
 }
@@ -283,19 +285,28 @@ xxl:  64px  // Hero spacing (dramatic separation)
 **Examples:**
 ```tsx
 // Button icon + label: xxs (4px)
-<Icon /> <Text>Submit</Text>
+<Box flexDirection="row" alignItems="center" gap="xxs">
+  <Icon />
+  <Text>Submit</Text>
+</Box>
 
 // Form fields: sm (16px)
-<TextField label="Name" marginBottom="sm" />
-<TextField label="Email" marginBottom="sm" />
+<Box gap="sm">
+  <TextField label="Name" />
+  <TextField label="Email" />
+</Box>
 
 // Card sections: md (24px)
-<CardHeader marginBottom="md" />
-<CardContent marginBottom="md" />
+<Box gap="md">
+  <CardHeader />
+  <CardContent />
+</Box>
 
 // Between cards: lg (32px)
-<Card marginBottom="lg" />
-<Card marginBottom="lg" />
+<Box gap="lg">
+  <Card />
+  <Card />
+</Box>
 ```
 
 ### Layout
@@ -636,11 +647,21 @@ toast.show({
 ```tsx
 import { SkeletonRect, SkeletonCircle } from '@/design-system';
 
-<SkeletonCircle size={48} />
-<SkeletonRect width="100%" height={20} marginTop="sm" />
+<Box gap="sm">
+  <SkeletonCircle size="xl" />
+  <SkeletonRect width="full" height="xs" />
+</Box>
 ```
 
 **When to use:** Loading states, perceived performance
+
+**Props:**
+- `size`: CoreSizeKey for circle or square mode
+- `width`: SkeletonWidthKey ('quarter', 'half', 'threeQuarter', 'full') for rectangle mode
+- `height`: CoreSizeKey for rectangle mode
+- `borderRadius`: Optional corner radius override
+- `variant`: 'light' | 'base' | 'dark' (affects opacity)
+- `style`: Optional ViewStyle for custom styling
 
 ---
 
@@ -653,8 +674,9 @@ import { SkeletonRect, SkeletonCircle } from '@/design-system';
   borderRadius="md"
   padding="md"
   elevation="md"
+  gap="xs"
 >
-  <Text variant="mdHeading" marginBottom="xs">
+  <Text variant="mdHeading">
     Card Title
   </Text>
   <Text variant="smParagraph" color="textSecondary">
