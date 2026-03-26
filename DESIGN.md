@@ -35,8 +35,8 @@ A unified visual language across all touchpoints ensures users feel confident an
 ### ⚡ Efficiency
 Reusable, well-documented components accelerate development and reduce cognitive load for engineers, allowing teams to focus on solving user problems rather than reinventing UI patterns.
 
-### ♿ Accessibility
-Universal design isn't optional—it's fundamental. Every component is built with WCAG 2.1 AA compliance in mind, ensuring all users can plan their trips effectively.
+### 🌍 Inclusive Design
+Build with broad usability in mind. While not every feature needs WCAG AAA compliance, following basic accessibility principles makes the app better for everyone—from users with visual impairments to those using the app in bright sunlight.
 
 ---
 
@@ -449,15 +449,15 @@ import { AnimatedBox } from '@/design-system';
 
 #### Button Layouts
 - `textOnly`: Label only (default)
+- `leadingIcon`: Icon on left + label
+- `leadingAndTrailingIcon`: Icons on both sides + label
 - `iconOnly`: Icon only (for compact spaces)
-- `iconLeft`: Icon on left + label
-- `iconRight`: Icon on right + label
 
 **Best Practices:**
 - Use `Primary` for the single most important action
 - Limit to one Primary button per screen section
 - Secondary buttons can have multiple instances
-- Icon-only buttons MUST have accessible labels
+- Icon-only buttons require `accessibilityLabel`
 
 ### Navigation
 
@@ -548,29 +548,43 @@ import { TimePicker } from '@/design-system';
 import { Avatar } from '@/design-system';
 
 <Avatar
-  source={{ uri: profileImageUrl }}
-  size="md"
-  fallback="AB"
+  profilePhoto={profileImageUrl}
+  variant="md"
+  seed={userId} // For deterministic background colors
 />
 ```
 
-**Sizes:** `xs`, `sm`, `md`, `lg`, `xl`
+**Variants:** `xs`, `sm`, `md`, `lg`, `xl`, `xxl`, `xxxl`
+
+**Props:**
+- `profilePhoto`: Optional image URL
+- `variant`: Size variant (CoreSizeKey)
+- `seed`: String for deterministic color generation (e.g., user ID)
+
+**Note:** Avatar auto-generates colored backgrounds when no photo is provided.
 
 #### ImagePicker
 ```tsx
 import { ImagePicker } from '@/design-system';
 
 <ImagePicker
-  variant="single"
-  onImageSelected={handleImage}
-  aspectRatio={1}
+  value={imageUri}
+  onChange={(uri) => setImageUri(uri)}
+  variant="circular"
+  size={88}
 />
 ```
 
 **Variants:**
-- `single`: Pick one image
-- `multiple`: Pick multiple images
-- `avatar`: Circular crop for profile pictures
+- `circular`: Circular image picker (for avatars)
+- `rectangular`: Rectangular image picker
+
+**Props:**
+- `value`: Current image URI
+- `onChange`: Callback when image changes
+- `variant`: `circular` or `rectangular`
+- `size`: Size for circular variant (default: 88)
+- `width`/`height`: Dimensions for rectangular variant
 
 ### Brand
 
@@ -578,15 +592,19 @@ import { ImagePicker } from '@/design-system';
 ```tsx
 import { Logo } from '@/design-system';
 
-<Logo size="md" variant="full" />
+<Logo />
 ```
+
+Simple text-based "toggo" logo with brand styling. No props.
 
 #### Illustration
 ```tsx
 import { Illustration } from '@/design-system';
 
-<Illustration name="empty-trips" width={200} />
+<Illustration />
 ```
+
+Emoji-based illustration (✈️🌇🏖️). No props.
 
 ### Feedback
 
@@ -597,13 +615,21 @@ import { useToast } from '@/design-system';
 const toast = useToast();
 
 toast.show({
-  type: 'success',
   message: 'Trip created successfully',
   duration: 3000,
+  showClose: true,
+  action: {
+    label: 'Undo',
+    onPress: handleUndo,
+  },
 });
 ```
 
-**Types:** `success`, `error`, `warning`, `info`
+**Props:**
+- `message`: Toast content (required)
+- `duration`: Auto-dismiss time in ms (optional)
+- `showClose`: Show close button (optional)
+- `action`: Optional action button with label and onPress
 
 ### Skeletons
 
@@ -694,60 +720,64 @@ import { Screen } from '@/design-system';
 
 ## Accessibility
 
-### Color Contrast
-All text-on-background combinations meet **WCAG AA** standards (4.5:1 for normal text, 3:1 for large text).
+While not every feature requires strict WCAG compliance, following basic accessibility principles improves the experience for all users.
+
+### Color Contrast (Recommended)
+Aim for **WCAG AA** standards where practical (4.5:1 for normal text, 3:1 for large text).
 
 **Testing:** Use the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
 
-### Touch Targets
-Minimum touch target size: **44×44 points** (iOS HIG, WCAG 2.5.5)
+**Note:** Brand colors and visual design may sometimes take precedence. Focus contrast efforts on critical paths (auth, payment, navigation).
+
+### Touch Targets (Best Practice)
+**Recommended minimum:** 44×44 points (iOS HIG guideline)
 
 ```tsx
-// ✅ Good: 44px minimum
+// ✅ Recommended: 44px for primary actions
 <Button layout="iconOnly" icon={<Icon />} />
 
-// ❌ Bad: 28px too small
-<Pressable style={{ width: 28, height: 28 }}>
+// ⚠️ Acceptable for non-critical UI: Smaller targets
+<Pressable style={{ width: 32, height: 32 }}>
   <Icon />
 </Pressable>
 ```
 
-### Screen Readers
-- All interactive elements have accessible labels
-- Images have meaningful `alt` text or are marked decorative
-- Form inputs have proper labels and error announcements
+**When to prioritize:** Primary CTAs, navigation, form inputs
+**Less critical:** Decorative elements, secondary actions
+
+### Screen Readers (Optional but Helpful)
+Consider adding accessible labels for better screen reader support:
 
 ```tsx
-// ✅ Good: Accessible
+// ✅ Enhanced: Screen reader friendly
 <Button
   label="Submit"
   accessibilityLabel="Submit trip details"
   onPress={handleSubmit}
 />
 
-// ❌ Bad: No label
+// ✓ Acceptable: Basic implementation
 <Pressable onPress={handleSubmit}>
   <Icon name="checkmark" />
+  <Text>Submit</Text>
 </Pressable>
 ```
 
-### Focus Management
-- Tab order follows visual order
-- Focus indicators are clear and visible
-- Modal/sheet traps focus within
-
-### Reduced Motion
-Respect `prefers-reduced-motion`:
+### Reduced Motion (Nice to Have)
+Respect `prefers-reduced-motion` for critical animations:
 
 ```tsx
 import { useReducedMotion } from 'react-native-reanimated';
 
 const reducedMotion = useReducedMotion();
 
+// Optional: Disable non-essential animations
 const animation = reducedMotion
   ? undefined
   : FadeIn.duration(300);
 ```
+
+**Priority areas:** Page transitions, loading states, modals
 
 ---
 

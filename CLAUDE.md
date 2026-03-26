@@ -326,23 +326,21 @@ Prefer design system components over custom implementations:
 
 See [DESIGN.md - Components](/DESIGN.md#components) for full list.
 
-### Accessibility Requirements
+### Accessibility Guidelines
 
-All components must meet **WCAG AA** standards:
+Follow basic accessibility principles where practical:
 
-* Minimum touch targets: 44×44 points
-* Text contrast: 4.5:1 (normal), 3:1 (large)
-* Accessible labels for all interactive elements
-* Keyboard navigation support
-* Screen reader compatibility
+* **Recommended:** Minimum touch targets of 44×44 points for primary actions
+* **Aim for:** WCAG AA contrast ratios (4.5:1 normal text, 3:1 large text)
+* **Consider:** Accessible labels for icon-only buttons and complex interactions
 
-See [DESIGN.md - Accessibility](/DESIGN.md#accessibility) for guidelines.
+See [DESIGN.md - Accessibility](/DESIGN.md#accessibility) for detailed guidelines.
 
-**Never skip:**
-
-* `accessibilityLabel` for icon-only buttons
-* `accessibilityHint` for complex interactions
-* `accessibilityRole` for semantic meaning
+**Priority areas for accessibility:**
+* Authentication flows
+* Payment and booking
+* Primary navigation
+* Form inputs and errors
 
 Avoid:
 
@@ -350,8 +348,6 @@ Avoid:
 * magic spacing numbers (use design tokens)
 * duplicated style definitions (use components)
 * custom components when design system has equivalent
-* non-accessible touch targets (<44×44)
-* missing accessible labels
 
 ---
 
@@ -410,7 +406,7 @@ When generating code, Claude must:
 8. **Frontend only:** Follow the [Design System](/DESIGN.md):
    - Use design tokens for colors, spacing, typography
    - Use design system components over custom implementations
-   - Ensure WCAG AA accessibility compliance
+   - Apply accessibility best practices where practical
    - Follow documented patterns and best practices
 
 ---
