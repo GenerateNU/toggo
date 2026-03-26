@@ -757,7 +757,7 @@ const animation = reducedMotion
 
 1. **Create the component file:**
    ```
-   design-system/components/[category]/[component-name].tsx
+   frontend/design-system/components/[category]/[component-name].tsx
    ```
 
 2. **Use design tokens:**
