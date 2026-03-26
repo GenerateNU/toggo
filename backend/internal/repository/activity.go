@@ -150,10 +150,13 @@ func (r *activityRepository) FindByTimeOfDay(
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
+		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
 		Where("a.trip_id = ?", tripID).
 		Where("a.time_of_day = ?", timeOfDay).
+		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
@@ -173,11 +176,17 @@ func (r *activityRepository) FindByCategoryAndTimeOfDay(
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
+		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").
-		Where("a.trip_id = ? AND ac.category_name = ?", tripID, categoryName).
+		Join("JOIN categories AS cat ON cat.trip_id = a.trip_id AND cat.name = ac.category_name").
+		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
+		Where("a.trip_id = ?", tripID).
+		Where("ac.category_name = ?", categoryName).
+		Where("cat.is_hidden = false").
 		Where("a.time_of_day = ?", timeOfDay).
+		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
