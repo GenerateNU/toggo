@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"toggo/internal/errs"
+	"toggo/internal/realtime"
 	"toggo/internal/services"
 	"toggo/internal/validators"
 
@@ -18,11 +19,12 @@ func NewActivityFeedController(feedService services.ActivityFeedServiceInterface
 }
 
 // @Summary      Get trip activity feed
-// @Description  Returns events in the trip that occurred after the caller's last-seen cursor. Advances the cursor on each call.
+// @Description  Returns all unread events in the caller's trip feed. Events persist until explicitly dismissed via the mark-read endpoint.
 // @Tags         activity-feed
 // @Produce      json
-// @Param        tripID path string true "Trip ID"
-// @Success      200 {array} realtime.Event
+// @Param        tripID path string true "Trip ID (UUID)"
+// @Success      200 {array}  realtime.Event
+// @Failure      400 {object} errs.APIError "Invalid trip ID"
 // @Failure      401 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/activity [get]
@@ -42,11 +44,12 @@ func (ctrl *ActivityFeedController) GetFeed(c *fiber.Ctx) error {
 }
 
 // @Summary      Get unread activity count
-// @Description  Returns the number of unseen events in the trip feed since the caller's last-seen cursor.
+// @Description  Returns the number of events in the caller's trip feed that have not yet been marked as read.
 // @Tags         activity-feed
 // @Produce      json
-// @Param        tripID path string true "Trip ID"
-// @Success      200 {object} map[string]int64
+// @Param        tripID path string true "Trip ID (UUID)"
+// @Success      200 {object} realtime.UnreadCountResponse
+// @Failure      400 {object} errs.APIError "Invalid trip ID"
 // @Failure      401 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/activity/unread-count [get]
@@ -62,7 +65,7 @@ func (ctrl *ActivityFeedController) GetUnreadCount(c *fiber.Ctx) error {
 		return errs.InternalServerError()
 	}
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{"unread_count": count})
+	return c.Status(http.StatusOK).JSON(realtime.UnreadCountResponse{UnreadCount: count})
 }
 
 // @Summary      Mark activity event as read

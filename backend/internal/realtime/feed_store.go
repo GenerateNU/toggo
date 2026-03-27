@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 const activityEventTTL = 30 * 24 * time.Hour
+const feedCursorTTL = 6 * 30 * 24 * time.Hour
 
 func activityUserTripKey(userID, tripID string) string {
 	return fmt.Sprintf("activity:%s:%s", userID, tripID)
@@ -46,16 +48,22 @@ func (s *ActivityFeedStore) FanOutEvent(ctx context.Context, event *Event, recip
 	}
 
 	score := float64(event.Timestamp.UnixMilli())
+
+	var fanOutErrs []string
 	for _, recipientID := range recipientIDs {
 		key := activityUserTripKey(recipientID, event.TripID)
 		if err := s.client.ZAdd(ctx, key, redis.Z{Score: score, Member: event.ID}).Err(); err != nil {
-			return fmt.Errorf("failed to add event to feed for user %s: %w", recipientID, err)
+			fanOutErrs = append(fanOutErrs, fmt.Sprintf("user %s: %v", recipientID, err))
+			continue
 		}
 		if err := s.client.Expire(ctx, key, activityEventTTL).Err(); err != nil {
 			log.Printf("activity feed: failed to set TTL on feed key for user %s: %v", recipientID, err)
 		}
 	}
 
+	if len(fanOutErrs) > 0 {
+		return fmt.Errorf("fan-out failures for event %s: [%s]", event.ID, strings.Join(fanOutErrs, "; "))
+	}
 	return nil
 }
 
@@ -90,11 +98,25 @@ func (s *ActivityFeedStore) GetFeedAfterCursor(ctx context.Context, userID, trip
 	for i, val := range vals {
 		if val == nil {
 			// Payload expired; remove the stale reference from the sorted set.
-			s.client.ZRem(ctx, key, eventIDs[i])
+			if err := s.client.ZRem(ctx, key, eventIDs[i]).Err(); err != nil {
+				log.Printf("activity feed: failed to remove stale event %s from feed: %v", eventIDs[i], err)
+			}
 			continue
 		}
+
+		var raw []byte
+		switch v := val.(type) {
+		case string:
+			raw = []byte(v)
+		case []byte:
+			raw = v
+		default:
+			log.Printf("activity feed: unexpected payload type %T for event %s, skipping", val, eventIDs[i])
+			continue
+		}
+
 		var event Event
-		if err := json.Unmarshal([]byte(val.(string)), &event); err != nil {
+		if err := json.Unmarshal(raw, &event); err != nil {
 			log.Printf("activity feed: failed to unmarshal event %s: %v", eventIDs[i], err)
 			continue
 		}
@@ -130,6 +152,14 @@ func (s *ActivityFeedStore) GetCursor(ctx context.Context, userID, tripID string
 }
 
 // SetCursor advances the user's last-seen timestamp for a given trip.
+// It also refreshes the TTL on the cursor hash so inactive users' keys evict automatically.
 func (s *ActivityFeedStore) SetCursor(ctx context.Context, userID, tripID string, timestampMs int64) error {
-	return s.client.HSet(ctx, feedCursorKey(userID), tripID, timestampMs).Err()
+	key := feedCursorKey(userID)
+	if err := s.client.HSet(ctx, key, tripID, timestampMs).Err(); err != nil {
+		return err
+	}
+	if err := s.client.Expire(ctx, key, feedCursorTTL).Err(); err != nil {
+		log.Printf("activity feed: failed to set TTL on cursor key for user %s: %v", userID, err)
+	}
+	return nil
 }

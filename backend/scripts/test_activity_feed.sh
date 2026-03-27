@@ -77,6 +77,11 @@ api_get() {
     curl -s "$API_BASE_URL$path" -H "Authorization: Bearer $jwt"
 }
 
+api_delete() {
+    local jwt="$1" path="$2"
+    curl -s -X DELETE "$API_BASE_URL$path" -H "Authorization: Bearer $jwt"
+}
+
 # ─── seed ────────────────────────────────────────────────────────────────────
 
 seed_database() {
@@ -326,6 +331,50 @@ do_unread() {
     api_get "$jwt" "/trips/$TRIP_ID/activity/unread-count" | jq .
 }
 
+do_mark_read() {
+    local actor="$1" jwt="$2"
+    echo ""
+    echo -e "${BLUE}=== $actor's current feed ===${NC}"
+
+    local result
+    result=$(api_get "$jwt" "/trips/$TRIP_ID/activity")
+    local count
+    count=$(echo "$result" | jq 'length')
+
+    if [ "$count" -eq 0 ]; then
+        warn "No events in feed — nothing to mark as read"
+        return
+    fi
+
+    echo "  $count event(s):"
+    local i=1
+    declare -a EVENT_IDS
+    while IFS= read -r line; do
+        local topic actor_id event_id
+        topic=$(echo "$line"    | jq -r '.topic')
+        actor_id=$(echo "$line" | jq -r '.actor_id // "-"')
+        event_id=$(echo "$line" | jq -r '.id')
+        printf "  %2d) [%s] actor=%s  id=%s\n" "$i" "$topic" "$actor_id" "$event_id"
+        EVENT_IDS[$i]="$event_id"
+        i=$(( i + 1 ))
+    done < <(echo "$result" | jq -c '.[]')
+
+    local choice
+    while true; do
+        read -rp "  Mark which event as read (1-$(( i - 1 ))): " choice
+        if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -lt "$i" ]; then break; fi
+        echo "  Invalid choice, try again."
+    done
+
+    local target_id="${EVENT_IDS[$choice]}"
+    info "Marking event $target_id as read..."
+    api_delete "$jwt" "/trips/$TRIP_ID/activity/$target_id"
+
+    local updated_count
+    updated_count=$(api_get "$jwt" "/trips/$TRIP_ID/activity" | jq 'length')
+    echo -e "  ${GREEN}✓${NC} Done — feed now has $updated_count event(s) (was $count)"
+}
+
 view_ids() {
     echo ""
     echo "  Trip ID : $TRIP_ID"
@@ -362,6 +411,11 @@ show_menu() {
     echo "  15) Unread count ($BOB_NAME)"
     echo "  16) Unread count ($CHARLIE_NAME)"
     echo "---"
+    echo "Mark read:"
+    echo "  19) Mark an event read ($ALICE_NAME)"
+    echo "  20) Mark an event read ($BOB_NAME)"
+    echo "  21) Mark an event read ($CHARLIE_NAME)"
+    echo "---"
     echo "  17) View IDs"
     echo "  18) Reseed database"
     echo "  0)  Exit"
@@ -396,6 +450,9 @@ while true; do
         15) do_unread       "$BOB_NAME"     "$BOB_JWT" ;;
         16) do_unread       "$CHARLIE_NAME" "$CHARLIE_JWT" ;;
         17) view_ids ;;
+        19) do_mark_read "$ALICE_NAME"   "$ALICE_JWT" ;;
+        20) do_mark_read "$BOB_NAME"     "$BOB_JWT" ;;
+        21) do_mark_read "$CHARLIE_NAME" "$CHARLIE_JWT" ;;
         18)
             log "Reseeding database..."
             exec "$0"

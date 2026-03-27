@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"toggo/internal/models"
 	"toggo/internal/repository"
 
 	"github.com/google/uuid"
@@ -87,24 +88,32 @@ func (s *ActivityFeedSubscriber) handleEvent(ctx context.Context, event *Event) 
 		return
 	}
 
-	members, err := s.membershipRepo.FindByTripID(ctx, tripID)
-	if err != nil {
-		log.Printf("activity feed subscriber: failed to get members for trip %s: %v", event.TripID, err)
-		return
-	}
+	const memberPageSize = 500
 
-	recipientIDs := make([]string, 0, len(members))
-	for _, m := range members {
-		if m.UserID.String() != event.ActorID {
-			recipientIDs = append(recipientIDs, m.UserID.String())
+	var cursor *models.MembershipCursor
+	for {
+		members, nextCursor, err := s.membershipRepo.FindByTripIDWithCursor(ctx, tripID, memberPageSize, cursor)
+		if err != nil {
+			log.Printf("activity feed subscriber: failed to get members for trip %s: %v", event.TripID, err)
+			return
 		}
-	}
 
-	if len(recipientIDs) == 0 {
-		return
-	}
+		recipientIDs := make([]string, 0, len(members))
+		for _, m := range members {
+			if m.UserID.String() != event.ActorID {
+				recipientIDs = append(recipientIDs, m.UserID.String())
+			}
+		}
 
-	if err := s.store.FanOutEvent(ctx, event, recipientIDs); err != nil {
-		log.Printf("activity feed subscriber: failed to fan out event %s: %v", event.ID, err)
+		if len(recipientIDs) > 0 {
+			if err := s.store.FanOutEvent(ctx, event, recipientIDs); err != nil {
+				log.Printf("activity feed subscriber: failed to fan out event %s: %v", event.ID, err)
+			}
+		}
+
+		if nextCursor == nil {
+			break
+		}
+		cursor = nextCursor
 	}
 }

@@ -8,6 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// UnreadCountResponse is the response body for the unread activity count endpoint.
+type UnreadCountResponse struct {
+	UnreadCount int64 `json:"unread_count"`
+}
+
 // Event represents a real-time event with topic-based routing and trip scoping.
 type Event struct {
 	ID        string          `json:"id"`
@@ -16,7 +21,7 @@ type Event struct {
 	EntityID  string          `json:"entity_id,omitempty"`
 	ActorID   string          `json:"actor_id,omitempty"`
 	ActorName string          `json:"actor_name,omitempty"`
-	Data      json.RawMessage `json:"data"`
+	Data      json.RawMessage `json:"data" swaggertype:"object"`
 	Timestamp time.Time       `json:"timestamp"`
 }
 

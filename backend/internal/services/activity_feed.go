@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"log"
-	"time"
+	"runtime/debug"
 	"toggo/internal/realtime"
 	"toggo/internal/repository"
 
@@ -42,7 +42,14 @@ func NewActivityFeedService(redisClient *redis.Client, membershipRepo repository
 
 // Start begins listening for trip events and fanning them out to member feeds.
 func (s *ActivityFeedService) Start() {
-	go s.subscriber.Start(s.ctx)
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("activity feed subscriber: panic recovered: %v\n%s", r, debug.Stack())
+			}
+		}()
+		s.subscriber.Start(s.ctx)
+	}()
 	log.Println("Activity feed service started")
 }
 
@@ -60,16 +67,7 @@ func (s *ActivityFeedService) GetFeed(ctx context.Context, userID, tripID string
 		return nil, err
 	}
 
-	events, err := s.store.GetFeedAfterCursor(ctx, userID, tripID, cursorMs)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.store.SetCursor(ctx, userID, tripID, time.Now().UnixMilli()); err != nil {
-		log.Printf("activity feed: failed to advance cursor for user %s trip %s: %v", userID, tripID, err)
-	}
-
-	return events, nil
+	return s.store.GetFeedAfterCursor(ctx, userID, tripID, cursorMs)
 }
 
 // MarkRead removes a specific event from the user's feed, permanently dismissing it.
