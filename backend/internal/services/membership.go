@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -32,12 +34,14 @@ var _ MembershipServiceInterface = (*MembershipService)(nil)
 type MembershipService struct {
 	*repository.Repository
 	fileService FileServiceInterface
+	publisher   realtime.EventPublisher
 }
 
-func NewMembershipService(repo *repository.Repository, fileService FileServiceInterface) MembershipServiceInterface {
+func NewMembershipService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) MembershipServiceInterface {
 	return &MembershipService{
 		Repository:  repo,
 		fileService: fileService,
+		publisher:   publisher,
 	}
 }
 
@@ -153,6 +157,8 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 		}
 		return nil, err
 	}
+
+	s.publishMembershipAdded(ctx, created.TripID.String(), userID.String())
 
 	return created, nil
 }
@@ -366,4 +372,18 @@ func (s *MembershipService) buildMembershipPageResult(apiMemberships []*models.M
 	}
 
 	return result, nil
+}
+
+func (s *MembershipService) publishMembershipAdded(ctx context.Context, tripID, actorID string) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(realtime.EventTopicMembershipAdded, tripID, actorID, actorID, "", nil)
+	if err != nil {
+		log.Printf("Failed to create membership.added event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish membership.added event: %v", err)
+	}
 }

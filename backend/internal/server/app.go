@@ -18,7 +18,7 @@ import (
 	"go.temporal.io/sdk/client"
 )
 
-func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.WSHandler, temporalClient client.Client) *fiber.App {
+func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.EventPublisher, wsHandler *realtime.WSHandler, activityFeedService services.ActivityFeedServiceInterface, temporalClient client.Client) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ServerHeader: config.App.Name,
 		AppName:      fmt.Sprintf("%s API %s", config.App.Name, config.App.Version),
@@ -54,13 +54,14 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 	routeParams := types.RouteParams{
 		Validator: validator,
 		ServiceParams: &types.ServiceParams{
-			Repository:     repository,
-			Config:         config,
-			EventPublisher: publisher,
-			FileService:    fileService,
-			PollService:    services.NewPollService(repository, publisher, scheduler),
-			HTTPClient:     services.DefaultHTTPClient(),
-			TemporalClient: temporalClient,
+			Repository:          repository,
+			Config:              config,
+			EventPublisher:      publisher,
+			FileService:         fileService,
+			PollService:         services.NewPollService(repository, publisher, scheduler),
+			ActivityFeedService: activityFeedService,
+			HTTPClient:          services.DefaultHTTPClient(),
+			TemporalClient:      temporalClient,
 		},
 	}
 

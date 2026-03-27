@@ -10,7 +10,7 @@ import (
 )
 
 func CommentRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Router {
-	commentService := services.NewCommentService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.FileService)
+	commentService := services.NewCommentService(routeParams.ServiceParams.Repository, routeParams.ServiceParams.FileService, routeParams.ServiceParams.EventPublisher)
 	commentController := controllers.NewCommentController(commentService, routeParams.Validator)
 
 	// /api/v1/comments
