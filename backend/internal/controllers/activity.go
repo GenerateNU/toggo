@@ -114,12 +114,13 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 }
 
 // @Summary      Get activities by trip
-// @Description  Retrieves paginated activities for a trip, optionally filtered by category and time of day
+// @Description  Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date
 // @Tags         activities
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        category query string false "Filter by category name"
 // @Param        time_of_day query string false "Filter by time of day (morning, afternoon, evening)"
+// @Param        date query string false "Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day"
 // @Param        limit query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.ActivityCursorPageResult
@@ -149,30 +150,28 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
 	categoryName := c.Query("category")
-	timeOfDay := c.Query("time_of_day")
-	if err := validators.ValidateActivityTimeOfDay(timeOfDay); err != nil {
+	timeOfDayStr := c.Query("time_of_day")
+	dateStr := c.Query("date")
+	if err := validators.ValidateActivityTimeOfDay(timeOfDayStr); err != nil {
+		return err
+	}
+	if err := validators.ValidateActivityDateFilter(dateStr); err != nil {
 		return err
 	}
 
-	// Apply optional filters
-	var result *models.ActivityCursorPageResult
-	if categoryName != "" && timeOfDay != "" {
-		result, err = ctrl.activityService.GetActivitiesByCategoryAndTimeOfDay(
-			c.Context(),
-			tripID,
-			userID,
-			categoryName,
-			models.ActivityTimeOfDay(timeOfDay),
-			limit,
-			cursorToken,
-		)
-	} else if categoryName != "" {
-		result, err = ctrl.activityService.GetActivitiesByCategory(c.Context(), tripID, userID, categoryName, limit, cursorToken)
-	} else if timeOfDay != "" {
-		result, err = ctrl.activityService.GetActivitiesByTimeOfDay(c.Context(), tripID, userID, models.ActivityTimeOfDay(timeOfDay), limit, cursorToken)
-	} else {
-		result, err = ctrl.activityService.GetActivitiesByTripID(c.Context(), tripID, userID, limit, cursorToken)
+	filterParams := models.ActivityQueryParams{}
+	if categoryName != "" {
+		filterParams.Category = &categoryName
 	}
+	if timeOfDayStr != "" {
+		tod := models.ActivityTimeOfDay(timeOfDayStr)
+		filterParams.TimeOfDay = &tod
+	}
+	if dateStr != "" {
+		filterParams.Date = &dateStr
+	}
+
+	result, err := ctrl.activityService.GetActivitiesWithFilters(c.Context(), tripID, userID, filterParams, limit, cursorToken)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {

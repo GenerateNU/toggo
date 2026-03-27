@@ -90,6 +90,16 @@ type AddCategoryToActivityRequest struct {
 	CategoryName string `validate:"required,min=1,max=255" json:"category_name"`
 }
 
+// ActivityQueryParams holds optional filters for listing activities.
+// Only non-nil / non-empty fields apply.
+type ActivityQueryParams struct {
+	Category  *string
+	TimeOfDay *ActivityTimeOfDay
+	// Date is an ISO 8601 calendar date (YYYY-MM-DD). When set, only activities
+	// whose dates JSON includes a range containing this day are returned.
+	Date *string
+}
+
 // ActivityCursor reuses the standard time+UUID cursor payload
 type ActivityCursor = TimeUUIDCursor
 
