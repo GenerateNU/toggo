@@ -176,6 +176,12 @@ export default function Home() {
       />
       <Button
         layout="textOnly"
+        label="Trips"
+        variant="Primary"
+        onPress={() => router.push("/trips")}
+      />
+      <Button
+        layout="textOnly"
         label={createTripMutation.isPending ? "Creating..." : "Create Trip"}
         variant="Primary"
         disabled={createTripMutation.isPending}
