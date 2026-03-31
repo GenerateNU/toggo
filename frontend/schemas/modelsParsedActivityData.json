@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "category_suggestions": { "type": "array", "items": { "type": "string" } },
+    "description": { "type": "string" },
+    "media_url": { "type": "string" },
+    "name": { "type": "string" },
+    "source_type": {
+      "type": "string",
+      "enum": ["airbnb", "booking_com", "tiktok", "instagram", "generic"],
+      "x-enum-varnames": [
+        "LinkTypeAirbnb",
+        "LinkTypeBookingCom",
+        "LinkTypeTikTok",
+        "LinkTypeInstagram",
+        "LinkTypeGeneric"
+      ],
+      "x-readme-ref-name": "models.LinkType"
+    },
+    "source_url": { "type": "string" },
+    "thumbnail_url": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.ParsedActivityData"
+}

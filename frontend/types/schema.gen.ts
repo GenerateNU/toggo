@@ -41,6 +41,7 @@ import type {
   ErrsAPIError,
   ModelsDateRange,
   ModelsActivity,
+  ModelsActivityGoingUserResponse,
   ModelsActivityImageResponse,
   ModelsActivityAPIResponse,
   ModelsActivityCategoriesPageResult,
@@ -63,9 +64,11 @@ import type {
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
   ModelsCreateActivityRequest,
+  ModelsCreateCategoryRequest,
   ModelsCreateCommentRequest,
   ModelsCreateMembershipRequest,
   ModelsCreatePitchRequest,
+  ModelsPitchImageInfo,
   ModelsPitchAPIResponse,
   ModelsCreatePitchResponse,
   ModelsOptionType,
@@ -78,6 +81,7 @@ import type {
   ModelsDayTime,
   ModelsGetFileResponse,
   ModelsGetFileAllSizesResponse,
+  ModelsLinkType,
   ModelsMatchedSubstring,
   ModelsMembership,
   ModelsMembershipAPIResponse,
@@ -88,6 +92,8 @@ import type {
   ModelsOpeningHours,
   ModelsOptionWithScore,
   ModelsPaginatedCommentsResponse,
+  ModelsParseLinkRequest,
+  ModelsParsedActivityData,
   ModelsPitchCursorPageResult,
   ModelsPlaceDetailsRequest,
   ModelsPlaceGeometry,
@@ -126,6 +132,8 @@ import type {
   ModelsUploadURLRequest,
   ModelsUploadURLResponse,
   ModelsUser,
+  RealtimeEvent,
+  RealtimeUnreadCountResponse,
   DeleteComment204,
   DeleteComment400,
   DeleteComment401,
@@ -276,6 +284,15 @@ import type {
   CreateActivityMutationRequest,
   CreateActivityMutationResponse,
   CreateActivityPathParams,
+  ParseActivityLink200,
+  ParseActivityLink400,
+  ParseActivityLink401,
+  ParseActivityLink403,
+  ParseActivityLink422,
+  ParseActivityLink500,
+  ParseActivityLinkMutationRequest,
+  ParseActivityLinkMutationResponse,
+  ParseActivityLinkPathParams,
   GetActivity200,
   GetActivity400,
   GetActivity401,
@@ -340,6 +357,24 @@ import type {
   GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams,
   GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
   GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse,
+  GetTripActivityFeed200,
+  GetTripActivityFeed400,
+  GetTripActivityFeed401,
+  GetTripActivityFeed500,
+  GetTripActivityFeedPathParams,
+  GetTripActivityFeedQueryResponse,
+  GetUnreadActivityCount200,
+  GetUnreadActivityCount400,
+  GetUnreadActivityCount401,
+  GetUnreadActivityCount500,
+  GetUnreadActivityCountPathParams,
+  GetUnreadActivityCountQueryResponse,
+  MarkActivityEventRead204,
+  MarkActivityEventRead400,
+  MarkActivityEventRead401,
+  MarkActivityEventRead500,
+  MarkActivityEventReadMutationResponse,
+  MarkActivityEventReadPathParams,
   GetCategoriesByTripID200,
   GetCategoriesByTripID400,
   GetCategoriesByTripID401,
@@ -347,7 +382,25 @@ import type {
   GetCategoriesByTripID404,
   GetCategoriesByTripID500,
   GetCategoriesByTripIDPathParams,
+  GetCategoriesByTripIDQueryParams,
   GetCategoriesByTripIDQueryResponse,
+  CreateCategory201,
+  CreateCategory400,
+  CreateCategory401,
+  CreateCategory403,
+  CreateCategory404,
+  CreateCategory500,
+  CreateCategoryMutationRequest,
+  CreateCategoryMutationResponse,
+  CreateCategoryPathParams,
+  DeleteCategory204,
+  DeleteCategory400,
+  DeleteCategory401,
+  DeleteCategory403,
+  DeleteCategory404,
+  DeleteCategory500,
+  DeleteCategoryMutationResponse,
+  DeleteCategoryPathParams,
   HideCategory204,
   HideCategory400,
   HideCategory401,
@@ -674,6 +727,12 @@ export const modelsActivitySchema = z.object({
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivity>;
 
+export const modelsActivityGoingUserResponseSchema = z.object({
+  profile_picture_url: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsActivityGoingUserResponse>;
+
 export const modelsActivityImageResponseSchema = z.object({
   image_id: z.optional(z.string()),
   image_url: z.optional(z.string()),
@@ -687,6 +746,10 @@ export const modelsActivityAPIResponseSchema = z.object({
   },
   description: z.optional(z.string()),
   estimated_price: z.optional(z.number()),
+  going_count: z.optional(z.int()),
+  get going_users() {
+    return z.array(modelsActivityGoingUserResponseSchema).optional();
+  },
   id: z.optional(z.string()),
   get image_ids() {
     return z.array(modelsActivityImageResponseSchema).optional();
@@ -781,8 +844,11 @@ export const modelsCastVoteRequestSchema = z.object({
 export const modelsCategoryAPIResponseSchema = z.object({
   created_at: z.optional(z.string()),
   icon: z.optional(z.string()),
-  is_hidden: z.optional(z.boolean().describe("only present for admins")),
+  is_default: z.optional(z.boolean()),
+  is_hidden: z.optional(z.boolean()),
+  label: z.optional(z.string()),
   name: z.optional(z.string()),
+  position: z.optional(z.int()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsCategoryAPIResponse>;
@@ -866,6 +932,13 @@ export const modelsCreateActivityRequestSchema = z.object({
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsCreateActivityRequest>;
 
+export const modelsCreateCategoryRequestSchema = z.object({
+  icon: z.optional(z.string().max(255)),
+  label: z.string().min(1).max(255),
+  name: z.string().min(1).max(255),
+  trip_id: z.string(),
+}) as unknown as z.ZodType<ModelsCreateCategoryRequest>;
+
 export const modelsCreateCommentRequestSchema = z.object({
   content: z.string().min(1),
   entity_id: z.string(),
@@ -887,8 +960,14 @@ export const modelsCreatePitchRequestSchema = z.object({
   content_length: z.int().min(1),
   content_type: z.string().min(1),
   description: z.optional(z.string()),
+  image_ids: z.optional(z.array(z.string()).max(5)),
   title: z.string().min(1),
 }) as unknown as z.ZodType<ModelsCreatePitchRequest>;
+
+export const modelsPitchImageInfoSchema = z.object({
+  id: z.optional(z.string()),
+  medium_url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPitchImageInfo>;
 
 export const modelsPitchAPIResponseSchema = z.object({
   audio_url: z.optional(z.string()),
@@ -896,6 +975,9 @@ export const modelsPitchAPIResponseSchema = z.object({
   description: z.optional(z.string()),
   duration: z.optional(z.int()),
   id: z.optional(z.string()),
+  get images() {
+    return z.array(modelsPitchImageInfoSchema).optional();
+  },
   title: z.optional(z.string()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
@@ -982,6 +1064,14 @@ export const modelsGetFileAllSizesResponseSchema = z.object({
   },
   imageId: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsGetFileAllSizesResponse>;
+
+export const modelsLinkTypeSchema = z.enum([
+  "airbnb",
+  "booking_com",
+  "tiktok",
+  "instagram",
+  "generic",
+]) as unknown as z.ZodType<ModelsLinkType>;
 
 export const modelsMatchedSubstringSchema = z.object({
   length: z.optional(z.int()),
@@ -1071,6 +1161,22 @@ export const modelsPaginatedCommentsResponseSchema = z.object({
   limit: z.optional(z.int()),
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPaginatedCommentsResponse>;
+
+export const modelsParseLinkRequestSchema = z.object({
+  url: z.string(),
+}) as unknown as z.ZodType<ModelsParseLinkRequest>;
+
+export const modelsParsedActivityDataSchema = z.object({
+  category_suggestions: z.optional(z.array(z.string())),
+  description: z.optional(z.string()),
+  media_url: z.optional(z.string()),
+  name: z.optional(z.string()),
+  get source_type() {
+    return modelsLinkTypeSchema.optional();
+  },
+  source_url: z.optional(z.string()),
+  thumbnail_url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsParsedActivityData>;
 
 export const modelsPitchCursorPageResultSchema = z.object({
   get items() {
@@ -1440,6 +1546,14 @@ export const modelsUpdateMembershipRequestSchema = z.object({
 export const modelsUpdatePitchRequestSchema = z.object({
   description: z.optional(z.string()),
   duration: z.optional(z.int().min(0)),
+  image_ids: z.optional(
+    z
+      .array(z.string())
+      .max(5)
+      .describe(
+        "ImageIDs, when non-nil, fully replaces the pitch's image associations.\nPass an empty slice to remove all images; omit the field to leave images unchanged.",
+      ),
+  ),
   title: z.optional(z.string().min(1)),
 }) as unknown as z.ZodType<ModelsUpdatePitchRequest>;
 
@@ -1496,6 +1610,21 @@ export const modelsUserSchema = z.object({
   updated_at: z.optional(z.string()),
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUser>;
+
+export const realtimeEventSchema = z.object({
+  actor_id: z.optional(z.string()),
+  actor_name: z.optional(z.string()),
+  data: z.optional(z.object({})),
+  entity_id: z.optional(z.string()),
+  id: z.optional(z.string()),
+  timestamp: z.optional(z.string()),
+  topic: z.optional(z.string()),
+  trip_id: z.optional(z.string()),
+}) as unknown as z.ZodType<RealtimeEvent>;
+
+export const realtimeUnreadCountResponseSchema = z.object({
+  unread_count: z.optional(z.int()),
+}) as unknown as z.ZodType<RealtimeUnreadCountResponse>;
 
 /**
  * @description Created
@@ -2645,6 +2774,63 @@ export const createActivityMutationResponseSchema = z.lazy(
   () => createActivity201Schema,
 ) as unknown as z.ZodType<CreateActivityMutationResponse>;
 
+export const parseActivityLinkPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<ParseActivityLinkPathParams>;
+
+/**
+ * @description OK
+ */
+export const parseActivityLink200Schema = z.lazy(
+  () => modelsParsedActivityDataSchema,
+) as unknown as z.ZodType<ParseActivityLink200>;
+
+/**
+ * @description Bad Request
+ */
+export const parseActivityLink400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ParseActivityLink400>;
+
+/**
+ * @description Unauthorized
+ */
+export const parseActivityLink401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ParseActivityLink401>;
+
+/**
+ * @description Forbidden
+ */
+export const parseActivityLink403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ParseActivityLink403>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const parseActivityLink422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ParseActivityLink422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const parseActivityLink500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ParseActivityLink500>;
+
+/**
+ * @description URL to parse
+ */
+export const parseActivityLinkMutationRequestSchema = z.lazy(
+  () => modelsParseLinkRequestSchema,
+) as unknown as z.ZodType<ParseActivityLinkMutationRequest>;
+
+export const parseActivityLinkMutationResponseSchema = z.lazy(
+  () => parseActivityLink200Schema,
+) as unknown as z.ZodType<ParseActivityLinkMutationResponse>;
+
 export const getActivityPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
   activityID: z.string().describe("Activity ID"),
@@ -3136,9 +3322,125 @@ export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryResponseSchema =
     () => getApiV1TripsTripidActivitiesActivityidRsvps200Schema,
   ) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse>;
 
+export const getTripActivityFeedPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID (UUID)"),
+}) as unknown as z.ZodType<GetTripActivityFeedPathParams>;
+
+/**
+ * @description OK
+ */
+export const getTripActivityFeed200Schema = z.array(
+  z.lazy(() => realtimeEventSchema),
+) as unknown as z.ZodType<GetTripActivityFeed200>;
+
+/**
+ * @description Invalid trip ID
+ */
+export const getTripActivityFeed400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripActivityFeed400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getTripActivityFeed401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripActivityFeed401>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getTripActivityFeed500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripActivityFeed500>;
+
+export const getTripActivityFeedQueryResponseSchema = z.lazy(
+  () => getTripActivityFeed200Schema,
+) as unknown as z.ZodType<GetTripActivityFeedQueryResponse>;
+
+export const getUnreadActivityCountPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID (UUID)"),
+}) as unknown as z.ZodType<GetUnreadActivityCountPathParams>;
+
+/**
+ * @description OK
+ */
+export const getUnreadActivityCount200Schema = z.lazy(
+  () => realtimeUnreadCountResponseSchema,
+) as unknown as z.ZodType<GetUnreadActivityCount200>;
+
+/**
+ * @description Invalid trip ID
+ */
+export const getUnreadActivityCount400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetUnreadActivityCount400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getUnreadActivityCount401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetUnreadActivityCount401>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getUnreadActivityCount500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetUnreadActivityCount500>;
+
+export const getUnreadActivityCountQueryResponseSchema = z.lazy(
+  () => getUnreadActivityCount200Schema,
+) as unknown as z.ZodType<GetUnreadActivityCountQueryResponse>;
+
+export const markActivityEventReadPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  eventID: z.string().describe("Event ID"),
+}) as unknown as z.ZodType<MarkActivityEventReadPathParams>;
+
+/**
+ * @description No Content
+ */
+export const markActivityEventRead204Schema =
+  z.any() as unknown as z.ZodType<MarkActivityEventRead204>;
+
+/**
+ * @description Bad Request
+ */
+export const markActivityEventRead400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<MarkActivityEventRead400>;
+
+/**
+ * @description Unauthorized
+ */
+export const markActivityEventRead401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<MarkActivityEventRead401>;
+
+/**
+ * @description Internal Server Error
+ */
+export const markActivityEventRead500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<MarkActivityEventRead500>;
+
+export const markActivityEventReadMutationResponseSchema = z.lazy(
+  () => markActivityEventRead204Schema,
+) as unknown as z.ZodType<MarkActivityEventReadMutationResponse>;
+
 export const getCategoriesByTripIDPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
 }) as unknown as z.ZodType<GetCategoriesByTripIDPathParams>;
+
+export const getCategoriesByTripIDQueryParamsSchema = z
+  .object({
+    include_hidden: z.optional(
+      z.boolean().describe("Include hidden categories (admin only)"),
+    ),
+  })
+  .optional() as unknown as z.ZodType<GetCategoriesByTripIDQueryParams>;
 
 /**
  * @description OK
@@ -3185,6 +3487,113 @@ export const getCategoriesByTripID500Schema = z.lazy(
 export const getCategoriesByTripIDQueryResponseSchema = z.lazy(
   () => getCategoriesByTripID200Schema,
 ) as unknown as z.ZodType<GetCategoriesByTripIDQueryResponse>;
+
+export const createCategoryPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<CreateCategoryPathParams>;
+
+/**
+ * @description Created
+ */
+export const createCategory201Schema = z.lazy(
+  () => modelsCategoryAPIResponseSchema,
+) as unknown as z.ZodType<CreateCategory201>;
+
+/**
+ * @description Bad Request
+ */
+export const createCategory400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateCategory400>;
+
+/**
+ * @description Unauthorized
+ */
+export const createCategory401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateCategory401>;
+
+/**
+ * @description Forbidden
+ */
+export const createCategory403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateCategory403>;
+
+/**
+ * @description Not Found
+ */
+export const createCategory404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateCategory404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const createCategory500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<CreateCategory500>;
+
+/**
+ * @description Category details
+ */
+export const createCategoryMutationRequestSchema = z.lazy(
+  () => modelsCreateCategoryRequestSchema,
+) as unknown as z.ZodType<CreateCategoryMutationRequest>;
+
+export const createCategoryMutationResponseSchema = z.lazy(
+  () => createCategory201Schema,
+) as unknown as z.ZodType<CreateCategoryMutationResponse>;
+
+export const deleteCategoryPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  name: z.string().describe("Category name"),
+}) as unknown as z.ZodType<DeleteCategoryPathParams>;
+
+/**
+ * @description No Content
+ */
+export const deleteCategory204Schema =
+  z.any() as unknown as z.ZodType<DeleteCategory204>;
+
+/**
+ * @description Bad Request
+ */
+export const deleteCategory400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteCategory400>;
+
+/**
+ * @description Unauthorized
+ */
+export const deleteCategory401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteCategory401>;
+
+/**
+ * @description Forbidden
+ */
+export const deleteCategory403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteCategory403>;
+
+/**
+ * @description Not Found
+ */
+export const deleteCategory404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteCategory404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deleteCategory500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<DeleteCategory500>;
+
+export const deleteCategoryMutationResponseSchema = z.lazy(
+  () => deleteCategory204Schema,
+) as unknown as z.ZodType<DeleteCategoryMutationResponse>;
 
 export const hideCategoryPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

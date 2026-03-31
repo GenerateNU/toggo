@@ -8,11 +8,11 @@
         "properties": {
           "created_at": { "type": "string" },
           "icon": { "type": "string" },
-          "is_hidden": {
-            "description": "only present for admins",
-            "type": "boolean"
-          },
+          "is_default": { "type": "boolean" },
+          "is_hidden": { "type": "boolean" },
+          "label": { "type": "string" },
           "name": { "type": "string" },
+          "position": { "type": "integer" },
           "trip_id": { "type": "string" },
           "updated_at": { "type": "string" }
         },

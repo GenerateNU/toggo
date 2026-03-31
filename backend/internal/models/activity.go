@@ -98,25 +98,26 @@ type ActivityCategoriesPageResult struct {
 
 // ActivityDatabaseResponse includes joined data from the database
 type ActivityDatabaseResponse struct {
-	ID                 uuid.UUID    `json:"id"`
-	TripID             uuid.UUID    `json:"trip_id"`
-	ProposedBy         *uuid.UUID   `json:"proposed_by,omitempty"`
-	Name               string       `json:"name"`
-	ThumbnailURL       *string      `json:"thumbnail_url,omitempty"`
-	MediaURL           *string      `json:"media_url,omitempty"`
-	Description        *string      `json:"description,omitempty"`
-	Dates              *[]DateRange `json:"dates,omitempty"`
-	LocationName       *string      `json:"location_name,omitempty"`
-	LocationLat        *float64     `json:"location_lat,omitempty"`
-	LocationLng        *float64     `json:"location_lng,omitempty"`
-	EstimatedPrice     *float64     `json:"estimated_price,omitempty"`
-	CreatedAt          time.Time    `json:"created_at"`
-	UpdatedAt          time.Time    `json:"updated_at"`
-	ProposerUsername   string       `json:"proposer_username"`
-	ProposerPictureID  *uuid.UUID   `json:"proposer_picture_id,omitempty"`
-	ProposerPictureKey *string      `bun:"proposer_picture_key" json:"-"`
-	CategoryNames      []string     `json:"category_names"`
-	ImageKeys          []uuid.UUID  `bun:"image_keys" json:"-"`
+	ID                 uuid.UUID     `json:"id"`
+	TripID             uuid.UUID     `json:"trip_id"`
+	ProposedBy         *uuid.UUID    `json:"proposed_by,omitempty"`
+	Name               string        `json:"name"`
+	ThumbnailURL       *string       `json:"thumbnail_url,omitempty"`
+	MediaURL           *string       `json:"media_url,omitempty"`
+	Description        *string       `json:"description,omitempty"`
+	Dates              *[]DateRange  `json:"dates,omitempty"`
+	LocationName       *string       `json:"location_name,omitempty"`
+	LocationLat        *float64      `json:"location_lat,omitempty"`
+	LocationLng        *float64      `json:"location_lng,omitempty"`
+	EstimatedPrice     *float64      `json:"estimated_price,omitempty"`
+	CreatedAt          time.Time     `json:"created_at"`
+	UpdatedAt          time.Time     `json:"updated_at"`
+	ProposerUsername   string        `json:"proposer_username"`
+	ProposerPictureID  *uuid.UUID    `json:"proposer_picture_id,omitempty"`
+	ProposerPictureKey *string       `bun:"proposer_picture_key" json:"-"`
+	CategoryNames      []string      `json:"category_names"`
+	ImageKeys          []uuid.UUID   `bun:"image_keys" json:"-"`
+	GoingUsers         GoingUserList `bun:"going_users_json" json:"-"`
 }
 
 // ActivityImageResponse represents a resolved image with its presigned URL
@@ -126,24 +127,26 @@ type ActivityImageResponse struct {
 }
 
 type ActivityAPIResponse struct {
-	ID                 uuid.UUID               `json:"id"`
-	TripID             uuid.UUID               `json:"trip_id"`
-	ProposedBy         *uuid.UUID              `json:"proposed_by,omitempty"`
-	Name               string                  `json:"name"`
-	ThumbnailURL       *string                 `json:"thumbnail_url,omitempty"`
-	MediaURL           *string                 `json:"media_url,omitempty"`
-	Description        *string                 `json:"description,omitempty"`
-	Dates              *[]DateRange            `json:"dates,omitempty"`
-	LocationName       *string                 `json:"location_name,omitempty"`
-	LocationLat        *float64                `json:"location_lat,omitempty"`
-	LocationLng        *float64                `json:"location_lng,omitempty"`
-	EstimatedPrice     *float64                `json:"estimated_price,omitempty"`
-	CreatedAt          time.Time               `json:"created_at"`
-	UpdatedAt          time.Time               `json:"updated_at"`
-	ProposerUsername   string                  `json:"proposer_username"`
-	ProposerPictureURL *string                 `json:"proposer_picture_url,omitempty"`
-	CategoryNames      []string                `json:"category_names"`
-	Images             []ActivityImageResponse `json:"image_ids"`
+	ID                 uuid.UUID                   `json:"id"`
+	TripID             uuid.UUID                   `json:"trip_id"`
+	ProposedBy         *uuid.UUID                  `json:"proposed_by,omitempty"`
+	Name               string                      `json:"name"`
+	ThumbnailURL       *string                     `json:"thumbnail_url,omitempty"`
+	MediaURL           *string                     `json:"media_url,omitempty"`
+	Description        *string                     `json:"description,omitempty"`
+	Dates              *[]DateRange                `json:"dates,omitempty"`
+	LocationName       *string                     `json:"location_name,omitempty"`
+	LocationLat        *float64                    `json:"location_lat,omitempty"`
+	LocationLng        *float64                    `json:"location_lng,omitempty"`
+	EstimatedPrice     *float64                    `json:"estimated_price,omitempty"`
+	CreatedAt          time.Time                   `json:"created_at"`
+	UpdatedAt          time.Time                   `json:"updated_at"`
+	ProposerUsername   string                      `json:"proposer_username"`
+	ProposerPictureURL *string                     `json:"proposer_picture_url,omitempty"`
+	CategoryNames      []string                    `json:"category_names"`
+	Images             []ActivityImageResponse     `json:"image_ids"`
+	GoingCount         int                         `json:"going_count"`
+	GoingUsers         []ActivityGoingUserResponse `json:"going_users"`
 }
 
 // AddCategoryResponse represents the response for adding a category to an activity
