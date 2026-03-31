@@ -3,7 +3,6 @@ package errs
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -55,7 +54,6 @@ func handlePgError(pgErr *pgconn.PgError) error {
 		return fmt.Errorf("%s is required", pgErr.ColumnName)
 
 	default:
-		slog.Error("unhandled postgres error", "code", pgErr.Code, "message", pgErr.Message, "detail", pgErr.Detail, "constraint", pgErr.ConstraintName)
 		return ErrDatabaseError
 	}
 }
