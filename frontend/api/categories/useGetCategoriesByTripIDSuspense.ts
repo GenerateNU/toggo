@@ -8,6 +8,7 @@ import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   GetCategoriesByTripIDQueryResponse,
   GetCategoriesByTripIDPathParams,
+  GetCategoriesByTripIDQueryParams,
   GetCategoriesByTripID400,
   GetCategoriesByTripID401,
   GetCategoriesByTripID403,
@@ -24,9 +25,11 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getCategoriesByTripIDSuspenseQueryKey = (
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params: GetCategoriesByTripIDQueryParams = {},
 ) =>
   [
     { url: "/api/v1/trips/:tripID/categories", params: { tripID: tripID } },
+    ...(params ? [params] : []),
   ] as const;
 
 export type GetCategoriesByTripIDSuspenseQueryKey = ReturnType<
@@ -40,6 +43,7 @@ export type GetCategoriesByTripIDSuspenseQueryKey = ReturnType<
  */
 export async function getCategoriesByTripIDSuspense(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,6 +61,7 @@ export async function getCategoriesByTripIDSuspense(
   >({
     method: "GET",
     url: `/api/v1/trips/${tripID}/categories`,
+    params,
     ...requestConfig,
   });
   return res.data;
@@ -64,9 +69,10 @@ export async function getCategoriesByTripIDSuspense(
 
 export function getCategoriesByTripIDSuspenseQueryOptions(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
   config: Partial<RequestConfig> & { client?: Client } = {},
 ) {
-  const queryKey = getCategoriesByTripIDSuspenseQueryKey(tripID);
+  const queryKey = getCategoriesByTripIDSuspenseQueryKey(tripID, params);
   return queryOptions<
     GetCategoriesByTripIDQueryResponse,
     ResponseErrorConfig<
@@ -85,7 +91,7 @@ export function getCategoriesByTripIDSuspenseQueryOptions(
       if (!config.signal) {
         config.signal = signal;
       }
-      return getCategoriesByTripIDSuspense(tripID, config);
+      return getCategoriesByTripIDSuspense(tripID, params, config);
     },
   });
 }
@@ -100,6 +106,7 @@ export function useGetCategoriesByTripIDSuspense<
   TQueryKey extends QueryKey = GetCategoriesByTripIDSuspenseQueryKey,
 >(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
   options: {
     query?: Partial<
       UseSuspenseQueryOptions<
@@ -121,11 +128,12 @@ export function useGetCategoriesByTripIDSuspense<
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
   const queryKey =
-    queryOptions?.queryKey ?? getCategoriesByTripIDSuspenseQueryKey(tripID);
+    queryOptions?.queryKey ??
+    getCategoriesByTripIDSuspenseQueryKey(tripID, params);
 
   const query = useSuspenseQuery(
     {
-      ...getCategoriesByTripIDSuspenseQueryOptions(tripID, config),
+      ...getCategoriesByTripIDSuspenseQueryOptions(tripID, params, config),
       queryKey,
       ...queryOptions,
     } as unknown as UseSuspenseQueryOptions,

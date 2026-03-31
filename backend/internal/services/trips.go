@@ -23,7 +23,7 @@ type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAPIResponse, error)
 	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error)
-	UpdateTrip(ctx context.Context, tripID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
+	UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error
 	CreateTripInvite(ctx context.Context, tripID uuid.UUID, createdBy uuid.UUID, req models.CreateTripInviteRequest) (*models.TripInviteAPIResponse, error)
 }
@@ -44,7 +44,7 @@ func NewTripService(repo *repository.Repository, fileService FileServiceInterfac
 	}
 }
 
-func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error) {
+func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error) { //nolint:cyclop
 	// Validate business rules
 	if req.Name == "" {
 		return nil, errs.BadRequest(errors.New("trip name cannot be empty"))
@@ -124,7 +124,7 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 
 	// Publish trip.created event
 	if s.publisher != nil {
-		event, err := realtime.NewEvent("trip.created", createdTrip.ID.String(), createdTrip)
+		event, err := realtime.NewEventWithActor(realtime.EventTopicTripCreated, createdTrip.ID.String(), createdTrip.ID.String(), creatorUserID.String(), "", createdTrip)
 		if err != nil {
 			log.Printf("Failed to create trip.created event: %v", err)
 		} else if err := s.publisher.Publish(ctx, event); err != nil {
@@ -205,7 +205,7 @@ func (s *TripService) buildTripPageResult(tripResponses []*models.TripAPIRespons
 	return result, nil
 }
 
-func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
+func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error) {
 	// Validate business rules only if fields are provided
 	if req.Name != nil && *req.Name == "" {
 		return nil, errs.BadRequest(errors.New("trip name cannot be empty"))
@@ -226,7 +226,7 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, req mode
 
 	// Publish trip.updated event
 	if s.publisher != nil {
-		event, err := realtime.NewEvent("trip.updated", tripID.String(), trip)
+		event, err := realtime.NewEventWithActor(realtime.EventTopicTripUpdated, tripID.String(), tripID.String(), actorID.String(), "", trip)
 		if err != nil {
 			log.Printf("Failed to create trip.updated event: %v", err)
 		} else if err := s.publisher.Publish(ctx, event); err != nil {

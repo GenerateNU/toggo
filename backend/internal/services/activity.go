@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -36,12 +38,14 @@ var _ ActivityServiceInterface = (*ActivityService)(nil)
 type ActivityService struct {
 	*repository.Repository
 	fileService FileServiceInterface
+	publisher   realtime.EventPublisher
 }
 
-func NewActivityService(repo *repository.Repository, fileService FileServiceInterface) ActivityServiceInterface {
+func NewActivityService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) ActivityServiceInterface {
 	return &ActivityService{
 		Repository:  repo,
 		fileService: fileService,
+		publisher:   publisher,
 	}
 }
 
@@ -116,8 +120,40 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 		return nil, err
 	}
 
-	// Fetch complete activity with categories
-	return s.GetActivity(ctx, req.TripID, createdActivity.ID, userID)
+	// Fetch complete activity with categories and proposer info
+	result, err := s.GetActivity(ctx, req.TripID, createdActivity.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	s.publishActivityCreated(ctx, result, userID)
+
+	return result, nil
+}
+
+func (s *ActivityService) publishActivityCreated(ctx context.Context, activity *models.ActivityAPIResponse, actorID uuid.UUID) {
+	if s.publisher == nil {
+		return
+	}
+	actorName := ""
+	if activity.ProposerUsername != "" {
+		actorName = activity.ProposerUsername
+	}
+	event, err := realtime.NewEventWithActor(
+		realtime.EventTopicActivityCreated,
+		activity.TripID.String(),
+		activity.ID.String(),
+		actorID.String(),
+		actorName,
+		activity,
+	)
+	if err != nil {
+		log.Printf("Failed to create activity.created event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish activity.created event: %v", err)
+	}
 }
 
 func (s *ActivityService) GetActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) (*models.ActivityAPIResponse, error) {
@@ -342,8 +378,14 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		return nil, err
 	}
 
+	picURLMap := pagination.FetchFileURLs(ctx, s.fileService, []models.GoingUser(activity.GoingUsers), func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
 	apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+	apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, picURLMap)
+	apiResp.GoingCount = len(apiResp.GoingUsers)
 	return apiResp, nil
 }
 
@@ -352,6 +394,9 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 	if err != nil {
 		return nil, err
 	}
+
+	goingUserPicURLMap := s.batchFetchGoingUserPicURLs(ctx, activities)
+
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -362,9 +407,38 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
 		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+		apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, goingUserPicURLMap)
+		apiResp.GoingCount = len(apiResp.GoingUsers)
 		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities, nil
+}
+
+func (s *ActivityService) batchFetchGoingUserPicURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) map[string]string {
+	var allUsers []models.GoingUser
+	for _, a := range activities {
+		allUsers = append(allUsers, a.GoingUsers...)
+	}
+	return pagination.FetchFileURLs(ctx, s.fileService, allUsers, func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+}
+
+func resolveGoingUsers(users models.GoingUserList, picURLMap map[string]string) []models.ActivityGoingUserResponse {
+	if len(users) == 0 {
+		return []models.ActivityGoingUserResponse{}
+	}
+	responses := make([]models.ActivityGoingUserResponse, 0, len(users))
+	for _, u := range users {
+		resp := models.ActivityGoingUserResponse{UserID: u.UserID, Username: u.Username}
+		if u.ProfilePictureKey != nil && *u.ProfilePictureKey != "" {
+			if url, ok := picURLMap[*u.ProfilePictureKey]; ok {
+				resp.ProfilePictureURL = &url
+			}
+		}
+		responses = append(responses, resp)
+	}
+	return responses
 }
 
 func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) (map[uuid.UUID]string, error) {

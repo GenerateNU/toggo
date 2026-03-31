@@ -3,6 +3,12 @@
   "properties": {
     "description": { "type": "string" },
     "duration": { "type": "integer", "minimum": 0 },
+    "image_ids": {
+      "description": "ImageIDs, when non-nil, fully replaces the pitch's image associations.\nPass an empty slice to remove all images; omit the field to leave images unchanged.",
+      "type": "array",
+      "maxItems": 5,
+      "items": { "type": "string" }
+    },
     "title": { "type": "string", "minLength": 1 }
   },
   "x-readme-ref-name": "models.UpdatePitchRequest"

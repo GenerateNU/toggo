@@ -77,7 +77,7 @@ func (s *PollVotingService) CreateVotePoll(
 		categoryNames,
 	)
 
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollCreated, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollCreated, tripID.String(), created.ID.String(), userID.String(), resp)
 
 	return resp, nil
 }
@@ -160,7 +160,7 @@ func (s *PollVotingService) UpdateVotePoll(
 
 	resp := s.toAPIResponse(updated, summary, categoryNames)
 
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollUpdated, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollUpdated, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }
@@ -199,7 +199,7 @@ func (s *PollVotingService) DeleteVotePoll(ctx context.Context, tripID, pollID, 
 	}
 
 	resp := s.toAPIResponse(poll, summary)
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollDeleted, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollDeleted, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }
@@ -325,7 +325,7 @@ func (s *PollVotingService) CastVote(ctx context.Context, tripID, pollID, userID
 	if len(req.OptionIDs) == 0 {
 		topic = realtime.EventTopicPollVoteRemoved
 	}
-	s.pollService.PublishEvent(ctx, topic, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, topic, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }

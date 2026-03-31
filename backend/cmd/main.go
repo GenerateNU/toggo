@@ -15,7 +15,9 @@ import (
 	"toggo/internal/config"
 	"toggo/internal/database"
 	"toggo/internal/realtime"
+	"toggo/internal/repository"
 	"toggo/internal/server"
+	"toggo/internal/services"
 	"toggo/internal/workflows"
 )
 
@@ -40,6 +42,14 @@ func main() {
 	}
 	realtimeService.Start()
 
+	// Initialize activity feed service
+	repo := repository.NewRepository(db)
+	activityFeedService := services.NewActivityFeedService(
+		realtimeService.GetUnderlyingRedisClient(),
+		repo.Membership,
+	)
+	activityFeedService.Start()
+
 	temporalClient, err := workflows.NewTemporalClient(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create Temporal client: %v", err)
@@ -48,12 +58,12 @@ func main() {
 
 	ctx := setupSignalHandler()
 
-	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler(), temporalClient)
+	app := server.CreateApp(cfg, db, realtimeService.GetPublisher(), realtimeService.GetHandler(), activityFeedService, temporalClient)
 
 	go startServer(app, cfg.App.Port)
 
 	<-ctx.Done()
-	gracefulShutdown(app, realtimeService)
+	gracefulShutdown(app, realtimeService, activityFeedService)
 }
 
 func setupSignalHandler() context.Context {
@@ -74,11 +84,13 @@ func startServer(app interface{ Listen(string) error }, port int) {
 	}
 }
 
-func gracefulShutdown(app interface{ ShutdownWithContext(context.Context) error }, realtimeService *realtime.RealtimeService) {
+func gracefulShutdown(app interface{ ShutdownWithContext(context.Context) error }, realtimeService *realtime.RealtimeService, activityFeedService *services.ActivityFeedService) {
 	log.Println("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	activityFeedService.Shutdown()
 
 	if err := realtimeService.Shutdown(ctx); err != nil {
 		log.Printf("Realtime service shutdown error: %v", err)

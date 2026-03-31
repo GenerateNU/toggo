@@ -13,6 +13,7 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	activityService := services.NewActivityService(
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.FileService,
+		routeParams.ServiceParams.EventPublisher,
 	)
 	linkParserService := services.NewLinkParserServiceWithClient(routeParams.ServiceParams.HTTPClient)
 	activityController := controllers.NewActivityController(activityService, linkParserService, routeParams.Validator)

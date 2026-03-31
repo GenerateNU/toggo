@@ -1158,6 +1158,85 @@ func TestActivityRSVPs(t *testing.T) {
 		fmt.Printf("RSVPs returned: %+v\n", rsvps)
 		require.True(t, len(rsvps) >= 1)
 	})
+
+	t.Run("activity going_count and going_users reflect yes RSVPs", func(t *testing.T) {
+		ctx := context.Background()
+		app := fakes.GetSharedTestApp()
+		activityOwner := createUser(t, app)
+		goingMember := createUser(t, app)
+		notGoingMember := createUser(t, app)
+		testTrip := createTrip(t, app, activityOwner)
+		addMember(t, app, activityOwner, goingMember, testTrip)
+		addMember(t, app, activityOwner, notGoingMember, testTrip)
+		testActivityID := createActivity(t, app, activityOwner, testTrip, "Going Test Activity")
+
+		// Set up profile picture for goingMember
+		db := fakes.GetSharedDB()
+		profileImageID := uuid.New()
+		uniqueFileKey := fmt.Sprintf("going_user_pic_%s_small.jpg", uuid.NewString())
+		_, err := db.NewInsert().
+			Model(&models.Image{
+				ImageID: profileImageID,
+				FileKey: uniqueFileKey,
+				Size:    models.ImageSizeSmall,
+				Status:  models.UploadStatusConfirmed,
+			}).
+			Exec(ctx)
+		require.NoError(t, err)
+
+		_, err = db.NewUpdate().
+			Model(&models.User{}).
+			Set("profile_picture = ?", profileImageID).
+			Where("id = ?", goingMember).
+			Exec(ctx)
+		require.NoError(t, err)
+
+		// goingMember RSVPs yes
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", testTrip, testActivityID),
+				Method: testkit.PUT,
+				UserID: &goingMember,
+				Body:   models.ActivityRSVPRequestPayload{Status: models.RSVPStatusGoing},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// notGoingMember RSVPs no
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", testTrip, testActivityID),
+				Method: testkit.PUT,
+				UserID: &notGoingMember,
+				Body:   models.ActivityRSVPRequestPayload{Status: models.RSVPStatusNotGoing},
+			}).
+			AssertStatus(http.StatusOK)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s", testTrip, testActivityID),
+				Method: testkit.GET,
+				UserID: &activityOwner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, float64(1), resp["going_count"])
+
+		goingUsers := resp["going_users"].([]interface{})
+		require.Equal(t, 1, len(goingUsers))
+
+		user := goingUsers[0].(map[string]interface{})
+		require.Equal(t, goingMember, user["user_id"])
+		require.NotEmpty(t, user["username"])
+
+		profilePictureURL, ok := user["profile_picture_url"].(string)
+		require.True(t, ok, "profile_picture_url missing or not a string")
+		require.NotEmpty(t, profilePictureURL)
+		require.Contains(t, profilePictureURL, uniqueFileKey)
+	})
 }
 
 func TestActivityImages(t *testing.T) {
