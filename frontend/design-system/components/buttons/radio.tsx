@@ -52,8 +52,8 @@ export default function RadioGroup<T extends string = string>({
     <Box style={styles.container}>
       {label && (
         <Text
-          variant="smHeading"
-          color="textSecondary"
+          variant="bodySmStrong"
+          color="textInverse"
           style={styles.groupLabel}
         >
           {label}
@@ -75,8 +75,8 @@ export default function RadioGroup<T extends string = string>({
           >
             <RadioDot selected={selected} disabled={disabled} />
             <Text
-              variant="smLabel"
-              color={disabled ? "textDisabled" : "textSecondary"}
+              variant="bodySmMedium"
+              color={disabled ? "textDisabled" : "textInverse"}
             >
               {opt.label}
             </Text>
@@ -113,20 +113,20 @@ const styles = StyleSheet.create({
     height: OUTER_SIZE,
     borderRadius: OUTER_SIZE / 2,
     borderWidth: 2,
-    borderColor: ColorPalette.borderPrimary,
+    borderColor: ColorPalette.borderDefault,
     alignItems: "center",
     justifyContent: "center",
   },
   outerSelected: {
-    borderColor: ColorPalette.black,
+    borderColor: ColorPalette.backgroundDefault,
   },
   outerDisabled: {
-    borderColor: ColorPalette.borderSecondary,
+    borderColor: ColorPalette.borderSubtle,
   },
   inner: {
     width: INNER_SIZE,
     height: INNER_SIZE,
     borderRadius: INNER_SIZE / 2,
-    backgroundColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
   },
 });

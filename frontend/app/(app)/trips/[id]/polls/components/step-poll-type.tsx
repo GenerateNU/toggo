@@ -58,7 +58,7 @@ export default function StepPollType({
 
   return (
     <Box gap="sm">
-      <Text variant="xsLabel" color="textQuaternary">
+      <Text variant="bodyXsMedium" color="textSubtle">
         Type
       </Text>
       <Box gap="sm">
@@ -76,35 +76,35 @@ export default function StepPollType({
                     flex={1}
                     padding="sm"
                     borderRadius="md"
-                    backgroundColor="surfaceCard"
+                    backgroundColor="backgroundCard"
                     alignItems="center"
                     gap="xs"
                     style={{
                       minHeight: CARD_MIN_HEIGHT,
                       borderWidth: isSelected ? 2 : 1,
                       borderColor: isSelected
-                        ? ColorPalette.black
-                        : ColorPalette.borderPrimary,
+                        ? ColorPalette.backgroundDefault
+                        : ColorPalette.borderDefault,
                     }}
                   >
                     <Icon
                       size={20}
                       color={
                         isSelected
-                          ? ColorPalette.textSecondary
-                          : ColorPalette.textQuaternary
+                          ? ColorPalette.textInverse
+                          : ColorPalette.textSubtle
                       }
                     />
                     <Text
-                      variant="smLabel"
-                      color="textSecondary"
+                      variant="bodySmMedium"
+                      color="textInverse"
                       numberOfLines={1}
                     >
                       {label}
                     </Text>
                     <Text
-                      variant="xxsParagraph"
-                      color="textQuaternary"
+                      variant="bodyXsDefault"
+                      color="textSubtle"
                       numberOfLines={1}
                     >
                       {subtitle}

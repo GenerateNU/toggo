@@ -9,9 +9,9 @@ export default function Notifications() {
         alignItems="center"
         padding="lg"
         gap="md"
-        backgroundColor="white"
+        backgroundColor="backgroundCard"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="textInverse">
           Notifications
         </Text>
       </Box>

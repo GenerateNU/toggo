@@ -1,5 +1,6 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
+import { X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
@@ -10,7 +11,6 @@ import {
   StatusBar,
   StyleSheet,
 } from "react-native";
-import { X } from "lucide-react-native";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
 import { Layout } from "../tokens/layout";
@@ -125,13 +125,13 @@ const DayCell = React.memo(
           ]}
         >
           <Text
-            variant="smLabel"
+            variant="bodySmMedium"
             style={{
               color: isEndpoint
-                ? ColorPalette.white
+                ? ColorPalette.backgroundSubtle
                 : isDisabled
                   ? ColorPalette.textDisabled
-                  : ColorPalette.textSecondary,
+                  : ColorPalette.textInverse,
             }}
           >
             {day}
@@ -181,8 +181,8 @@ const MonthGrid = React.memo(
     return (
       <Box style={styles.monthBlock}>
         <Text
-          variant="smHeading"
-          color="textSecondary"
+          variant="bodySmStrong"
+          color="textDefault"
           style={styles.monthLabel}
         >
           {formatMonth(year, month)}
@@ -344,9 +344,9 @@ export default function DateRangePicker({
               hitSlop={16}
               style={styles.closeButton}
             >
-              <X size={20} color={ColorPalette.textQuaternary} />
+              <X size={20} color={ColorPalette.textSubtle} />
             </Pressable>
-            <Text variant="mdHeading" color="textSecondary">
+            <Text variant="headingSm" color="textDefault">
               Select dates
             </Text>
           </Box>
@@ -362,19 +362,19 @@ export default function DateRangePicker({
               style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
             >
               <Text
-                variant="smLabel"
+                variant="bodySmMedium"
                 style={{
                   color: hasRange
-                    ? ColorPalette.textSecondary
-                    : ColorPalette.textQuaternary,
+                    ? ColorPalette.textInverse
+                    : ColorPalette.textSubtle,
                 }}
               >
                 {formatShortDate(range.start)}
               </Text>
             </Box>
             <Text
-              variant="xsLabel"
-              color="textQuaternary"
+              variant="bodyXsMedium"
+              color="textSubtle"
               style={styles.summaryArrow}
             >
               →
@@ -386,11 +386,11 @@ export default function DateRangePicker({
               ]}
             >
               <Text
-                variant="smLabel"
+                variant="bodySmMedium"
                 style={{
                   color: range.end
-                    ? ColorPalette.textSecondary
-                    : ColorPalette.textQuaternary,
+                    ? ColorPalette.textInverse
+                    : ColorPalette.textSubtle,
                 }}
               >
                 {formatShortDate(range.end)}
@@ -403,7 +403,7 @@ export default function DateRangePicker({
         <Box flexDirection="row" style={styles.weekdayRow}>
           {DAYS.map((d, i) => (
             <Box key={i} style={styles.weekdayCell}>
-              <Text variant="xsLabel" color="textQuaternary">
+              <Text variant="bodyXsMedium" color="textSubtle">
                 {d}
               </Text>
             </Box>
@@ -443,10 +443,10 @@ export default function DateRangePicker({
               disabled={!hasRange}
             >
               <Text
-                variant="mdLabel"
+                variant="bodyMedium"
                 style={{
                   color: hasRange
-                    ? ColorPalette.textSecondary
+                    ? ColorPalette.textInverse
                     : ColorPalette.textDisabled,
                 }}
               >
@@ -465,7 +465,10 @@ export default function DateRangePicker({
               ]}
               disabled={!hasRange}
             >
-              <Text variant="mdLabel" style={{ color: ColorPalette.white }}>
+              <Text
+                variant="bodyMedium"
+                style={{ color: ColorPalette.textDefault }}
+              >
                 Save Dates
               </Text>
             </Pressable>
@@ -478,13 +481,13 @@ export default function DateRangePicker({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.secondaryBackground;
+const RANGE_TINT = ColorPalette.backgroundSubtle;
 
 const styles = StyleSheet.create({
   /* Sheet */
   sheet: {
     flex: 1,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.backgroundCard,
   },
 
   /* Header */
@@ -493,7 +496,7 @@ const styles = StyleSheet.create({
     paddingTop: Layout.spacing.md,
     paddingBottom: Layout.spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.borderPrimary,
+    borderBottomColor: ColorPalette.borderDefault,
   },
   closeButton: {
     position: "absolute",
@@ -509,12 +512,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.surfaceBackground,
+    backgroundColor: ColorPalette.backgroundCard,
   },
   summaryPillActive: {
-    backgroundColor: ColorPalette.secondaryBackground,
-    borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
+    backgroundColor: ColorPalette.backgroundSubtle,
+    borderColor: ColorPalette.borderDefault,
   },
   summaryArrow: {
     marginHorizontal: Layout.spacing.xxs,
@@ -525,7 +527,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: GRID_PADDING,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.borderSecondary,
+    borderBottomColor: ColorPalette.borderSubtle,
   },
   weekdayCell: {
     width: CELL_SIZE,
@@ -585,12 +587,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dayCircleSelected: {
-    backgroundColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
     borderRadius: CIRCLE_SIZE / 2,
   },
   dayCircleToday: {
     borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
+    borderColor: ColorPalette.borderDefault,
     borderRadius: CIRCLE_SIZE / 2,
   },
 
@@ -599,8 +601,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: GRID_PADDING,
     paddingTop: Layout.spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderPrimary,
-    backgroundColor: ColorPalette.white,
+    borderTopColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.backgroundCard,
   },
   footerButtons: {
     gap: 10,
@@ -614,23 +616,22 @@ const styles = StyleSheet.create({
     borderRadius: CornerRadius.md,
   },
   clearButton: {
-    borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
-    backgroundColor: ColorPalette.white,
+    borderColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.backgroundSubtle,
   },
   clearButtonPressed: {
     opacity: 0.85,
   },
   clearButtonDisabled: {
-    borderColor: ColorPalette.borderSecondary,
+    borderColor: ColorPalette.borderSubtle,
   },
   saveButton: {
-    backgroundColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
   },
   saveButtonPressed: {
     opacity: 0.85,
   },
   saveButtonDisabled: {
-    backgroundColor: ColorPalette.disabledBackground,
+    backgroundColor: ColorPalette.backgroundDisabled,
   },
 });

@@ -1,12 +1,11 @@
 export const FontSize = {
-  xxs: 10,
   xs: 12,
   sm: 14,
   md: 16,
-  lg: 18,
+  lx: 20,
   xl: 24,
   xxl: 32,
-  xxxl: 36,
+  xxxl: 64,
 } as const;
 
 export const FontFamily = {
@@ -45,54 +44,45 @@ const createTypography = ({
 }: TypographyConfig): TypographyStyle => {
   const fontSize = FontSize[size];
   const fontFamily = FontFamily[family];
-  const isDisplay = fontSize >= 24;
-  const resolvedLineHeight = lineHeightMultiplier ?? (isDisplay ? 1.2 : 1.4);
+  const isLarge = fontSize >= 24;
+  const resolvedLineHeight = lineHeightMultiplier ?? (isLarge ? 1.2 : 1.4);
 
   return {
     fontSize,
     fontFamily,
     lineHeight: Math.round(fontSize * resolvedLineHeight),
-    letterSpacing: letterSpacing ?? (isDisplay ? -0.5 : 0),
+    letterSpacing: letterSpacing ?? (isLarge ? -0.5 : 0),
   };
 };
 
 export const Typography = {
   defaults: createTypography({ size: "md", family: "regular" }),
 
-  // Display — use black/extraBold for maximum impact
-  xxxlDisplay: createTypography({ size: "xxxl", family: "black" }),
-  xxlDisplay: createTypography({ size: "xxl", family: "black" }),
-  xlDisplay: createTypography({ size: "xl", family: "extraBold" }),
-  lgDisplay: createTypography({ size: "lg", family: "extraBold" }),
-  smDisplay: createTypography({ size: "sm", family: "extraBold" }),
+  // Headings
+  headingXl: createTypography({ size: "xl", family: "semiBold" }),
+  headingMd: createTypography({ size: "lx", family: "semiBold" }),
+  headingSm: createTypography({ size: "md", family: "medium" }),
 
-  // Heading — semiBold/bold
-  xxlHeading: createTypography({ size: "xxl", family: "bold" }),
-  xlHeading: createTypography({ size: "xl", family: "bold" }),
-  lgHeading: createTypography({ size: "lg", family: "bold" }),
-  mdHeading: createTypography({ size: "md", family: "semiBold" }),
-  smHeading: createTypography({ size: "sm", family: "semiBold" }),
-  xsHeading: createTypography({ size: "xs", family: "semiBold" }),
+  // Body — default (regular), medium, strong (semibold)
+  bodyDefault: createTypography({ size: "md", family: "regular" }),
+  bodyMedium: createTypography({ size: "md", family: "medium" }),
+  bodyStrong: createTypography({ size: "md", family: "semiBold" }),
 
-  // Label — medium weight for UI labels
-  lgLabel: createTypography({ size: "lg", family: "medium" }),
-  mdLabel: createTypography({ size: "md", family: "medium" }),
-  smLabel: createTypography({ size: "sm", family: "medium" }),
-  xsLabel: createTypography({ size: "xs", family: "medium" }),
+  bodySmDefault: createTypography({ size: "sm", family: "regular" }),
+  bodySmMedium: createTypography({ size: "sm", family: "medium" }),
+  bodySmStrong: createTypography({ size: "sm", family: "semiBold" }),
 
-  // Paragraph — regular for body text
-  lgParagraph: createTypography({ size: "lg", family: "regular" }),
-  mdParagraph: createTypography({ size: "md", family: "regular" }),
-  smParagraph: createTypography({ size: "sm", family: "regular" }),
-  xsParagraph: createTypography({ size: "xs", family: "regular" }),
-  xxsParagraph: createTypography({ size: "xxs", family: "regular" }),
+  bodyXsDefault: createTypography({ size: "xs", family: "regular" }),
+  bodyXsMedium: createTypography({ size: "xs", family: "medium" }),
+  bodyXsStrong: createTypography({ size: "xs", family: "semiBold" }),
 
-  // Logo
+  // Logo (Zain ExtraBold)
+  logoXl: createTypography({ size: "xl", family: "logo", letterSpacing: -1 }),
   logoXxl: createTypography({ size: "xxl", family: "logo", letterSpacing: -1 }),
-  logoXxxxl: createTypography({
+  logoXxxl: createTypography({
     size: "xxxl",
     family: "logo",
-    letterSpacing: -1,
+    letterSpacing: -2,
   }),
 } as const;
 

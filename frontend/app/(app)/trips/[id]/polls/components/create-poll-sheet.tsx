@@ -227,7 +227,7 @@ const CreatePollSheet = forwardRef<
       paddingHorizontal="md"
       paddingVertical="sm"
       paddingBottom="xl"
-      backgroundColor="white"
+      backgroundColor="backgroundCard"
     >
       {step > 0 && (
         <Box flex={1}>
@@ -269,9 +269,9 @@ const CreatePollSheet = forwardRef<
           justifyContent="space-between"
         >
           <Pressable onPress={close} style={{ padding: 4 }}>
-            <Icon icon={X} size="md" color="textSecondary" />
+            <Icon icon={X} size="md" color="textInverse" />
           </Pressable>
-          <Text variant="smLabel" color="textSecondary">
+          <Text variant="bodySmMedium" color="textInverse">
             Create a poll
           </Text>
           <Box style={{ width: 28 }} />

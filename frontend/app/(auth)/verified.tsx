@@ -16,7 +16,7 @@ export default function VerifiedPage() {
     <Screen>
       <Box
         flex={1}
-        backgroundColor="white"
+        backgroundColor="backgroundCard"
         justifyContent="center"
         alignItems="center"
         padding="xl"
@@ -26,10 +26,10 @@ export default function VerifiedPage() {
         </Box>
 
         <Box alignItems="center">
-          <Text variant="lgHeading" color="textSecondary" textAlign="center">
+          <Text variant="headingMd" color="textDefault" textAlign="center">
             You've been verified
           </Text>
-          <Text variant="mdParagraph" color="textQuaternary" textAlign="center">
+          <Text variant="bodyDefault" color="textSubtle" textAlign="center">
             Plan or join a trip now!
           </Text>
         </Box>

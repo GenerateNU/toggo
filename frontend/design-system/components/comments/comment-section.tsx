@@ -43,7 +43,7 @@ const INPUT_PADDING_VERTICAL = 10;
 const EmptyState = () => (
   <Box style={styles.emptyContainer}>
     <Text style={styles.emptyEmoji}>📮</Text>
-    <Text variant="smParagraph" color="textQuaternary">
+    <Text variant="bodySmDefault" color="textSubtle">
       No comments yet... be the first
     </Text>
   </Box>
@@ -167,7 +167,7 @@ export default function CommentSection({
           >
             <View style={styles.handle} />
           </Pressable>
-          <Text variant="smHeading" color="textSecondary" style={styles.title}>
+          <Text variant="bodySmStrong" color="textDefault" style={styles.title}>
             Comments
           </Text>
           <Pressable
@@ -176,7 +176,7 @@ export default function CommentSection({
             hitSlop={16}
             accessibilityLabel="Close comments"
           >
-            <X size={24} color={ColorPalette.textQuaternary} />
+            <X size={24} color={ColorPalette.textSubtle} />
           </Pressable>
         </Box>
 
@@ -200,7 +200,7 @@ export default function CommentSection({
             <TextInput
               style={styles.input}
               placeholder="Add a comment"
-              placeholderTextColor={ColorPalette.textQuaternary}
+              placeholderTextColor={ColorPalette.textSubtle}
               value={inputText}
               onChangeText={setInputText}
               returnKeyType="default"
@@ -216,27 +216,33 @@ export default function CommentSection({
                   pressed && styles.sendButtonPressed,
                 ]}
               >
-                <Text variant="smLabel" style={{ color: ColorPalette.white }}>
+                <Text
+                  variant="bodySmMedium"
+                  style={{ color: ColorPalette.textDefault }}
+                >
                   Send
                 </Text>
               </Pressable>
             )}
             {isSubmitting && (
               <Box style={styles.sendButton}>
-                <Text variant="smLabel" style={{ color: ColorPalette.white }}>
+                <Text
+                  variant="bodySmMedium"
+                  style={{ color: ColorPalette.textDefault }}
+                >
                   ...
                 </Text>
               </Box>
             )}
           </Box>
           {submitError && (
-            <Text variant="xsLabel" style={styles.errorText}>
+            <Text variant="bodyXsMedium" style={styles.errorText}>
               {submitError}
             </Text>
           )}
           {charsRemaining <= 100 && !submitError && (
             <Text
-              variant="xsLabel"
+              variant="bodyXsMedium"
               style={[
                 styles.charCount,
                 charsRemaining <= 20 && styles.charCountUrgent,
@@ -256,7 +262,7 @@ export default function CommentSection({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.backgroundCard,
     borderTopLeftRadius: CornerRadius.lg,
     borderTopRightRadius: CornerRadius.lg,
   },
@@ -271,7 +277,7 @@ const styles = StyleSheet.create({
   },
   handle: {
     ...ModalHandle,
-    backgroundColor: ColorPalette.borderPrimary,
+    backgroundColor: ColorPalette.borderDefault,
   },
   title: {
     textAlign: "center",
@@ -305,8 +311,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderSecondary,
-    backgroundColor: ColorPalette.white,
+    borderTopColor: ColorPalette.borderSubtle,
+    backgroundColor: ColorPalette.backgroundCard,
   },
   inputRow: {
     flexDirection: "row",
@@ -322,28 +328,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: CornerRadius.md,
     borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
-    color: ColorPalette.textSecondary,
+    borderColor: ColorPalette.borderDefault,
+    color: ColorPalette.textInverse,
   },
   sendButton: {
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: 10,
     borderRadius: CornerRadius.md,
-    backgroundColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
     marginBottom: Platform.OS === "ios" ? 0 : 1,
   },
   sendButtonPressed: {
     opacity: 0.85,
   },
   charCount: {
-    color: ColorPalette.textQuaternary,
+    color: ColorPalette.textSubtle,
     textAlign: "right",
   },
   charCountUrgent: {
     color: ColorPalette.brandPrimary,
   },
   errorText: {
-    color: ColorPalette.error,
+    color: ColorPalette.statusError,
     textAlign: "right",
   },
 });

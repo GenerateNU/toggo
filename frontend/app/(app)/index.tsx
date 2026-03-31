@@ -148,11 +148,11 @@ export default function Home() {
       alignItems="center"
       padding="lg"
       gap="md"
-      backgroundColor="white"
+      backgroundColor="backgroundCard"
     >
-      <Text variant="lgHeading">Home</Text>
+      <Text variant="headingMd">Home</Text>
       {currentUser?.username && (
-        <Text variant="smParagraph" color="textSecondary">
+        <Text variant="bodySmDefault" color="textDefault">
           Hello @{currentUser.username}
         </Text>
       )}
@@ -202,7 +202,7 @@ export default function Home() {
         disableClose={needsProfile}
       >
         <Box flex={1} padding="lg" gap="lg">
-          <Text variant="mdLabel" color="textSecondary">
+          <Text variant="bodyMedium" color="textDefault">
             Create a profile
           </Text>
           <Box justifyContent="center" alignItems="center">
@@ -234,8 +234,8 @@ export default function Home() {
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between"
-          backgroundColor="white"
-          shadowColor="black"
+          backgroundColor="backgroundCard"
+          shadowColor="backgroundDefault"
           shadowOffset={{ width: 0, height: 2 }}
           shadowOpacity={0.1}
           shadowRadius={8}
@@ -245,18 +245,20 @@ export default function Home() {
             <Icon
               icon={Check}
               size="xs"
-              color={toastVariant === "error" ? "white" : "textSecondary"}
+              color={toastVariant === "error" ? "textDefault" : "textDefault"}
             />
             <Text
-              variant="smParagraph"
-              color={toastVariant === "error" ? "white" : "textSecondary"}
+              variant="bodySmDefault"
+              color={toastVariant === "error" ? "textDefault" : "textDefault"}
               style={{ flexShrink: 1 }}
             >
               {toastPrefix}
               {toastBold && (
                 <Text
-                  variant="smLabel"
-                  color={toastVariant === "error" ? "white" : "textSecondary"}
+                  variant="bodySmMedium"
+                  color={
+                    toastVariant === "error" ? "textDefault" : "textDefault"
+                  }
                   style={{ fontWeight: "700" }}
                 >
                   {toastBold}
@@ -277,7 +279,7 @@ export default function Home() {
             <Icon
               icon={X}
               size="xs"
-              color={toastVariant === "error" ? "white" : "textSecondary"}
+              color={toastVariant === "error" ? "textDefault" : "textDefault"}
             />
           </Pressable>
         </AnimatedBox>

@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   section: {
-    backgroundColor: "white",
+    backgroundColor: "backgroundCard",
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   logsSection: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "backgroundCard",
     borderRadius: 8,
     padding: 12,
   },

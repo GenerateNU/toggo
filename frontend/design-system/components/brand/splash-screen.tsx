@@ -5,14 +5,14 @@ export function SplashScreen() {
   return (
     <Box
       flex={1}
-      backgroundColor="white"
+      backgroundColor="backgroundCard"
       justifyContent="center"
       alignItems="center"
       padding="lg"
       paddingBottom="xl"
     >
       <Box gap="xs">
-        <Text variant="xxlHeading" color="textSecondary">
+        <Text variant="headingXl" color="textInverse">
           group trips shouldn't die in the group chat
         </Text>
       </Box>

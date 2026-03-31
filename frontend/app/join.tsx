@@ -77,9 +77,9 @@ export default function JoinScreen() {
       flex={1}
       justifyContent="center"
       alignItems="center"
-      backgroundColor="white"
+      backgroundColor="backgroundCard"
     >
-      <Text variant="mdParagraph" color="textQuaternary">
+      <Text variant="bodyDefault" color="textSubtle">
         Joining trip…
       </Text>
     </Box>

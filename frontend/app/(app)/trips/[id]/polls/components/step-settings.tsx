@@ -147,12 +147,12 @@ export default function StepSettings({
 
   return (
     <Box gap="lg">
-      <Text variant="xsLabel" color="textQuaternary">
+      <Text variant="bodyXsMedium" color="textSubtle">
         Settings
       </Text>
 
       <Box gap="sm">
-        <Text variant="xsLabel" color="textQuaternary">
+        <Text variant="bodyXsMedium" color="textSubtle">
           Tag this poll
         </Text>
         <Box flexDirection="row" flexWrap="wrap" gap="xs">
@@ -182,7 +182,7 @@ export default function StepSettings({
             />
           )}
           {availableCategories.length === 0 && (
-            <Text variant="xsParagraph" color="textQuaternary">
+            <Text variant="bodyXsDefault" color="textSubtle">
               No categories available
             </Text>
           )}
@@ -190,27 +190,27 @@ export default function StepSettings({
       </Box>
 
       <Box gap="sm">
-        <Text variant="xsLabel" color="textQuaternary">
+        <Text variant="bodyXsMedium" color="textSubtle">
           Options
         </Text>
         <Box gap="xxs">
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} flexDirection="column" gap="xxs">
-              <Text variant="xsHeading" color="textSecondary">
+              <Text variant="bodyXsStrong" color="textInverse">
                 Set a deadline
               </Text>
-              <Text variant="xxsParagraph" color="textQuaternary">
+              <Text variant="bodyXsDefault" color="textSubtle">
                 Auto-close and notify when time's up
               </Text>
             </Box>
             <Box
               flexDirection="row"
               alignItems="center"
-              backgroundColor="surfaceCard"
+              backgroundColor="backgroundCard"
               borderRadius="sm"
               style={{
                 borderWidth: 1,
-                borderColor: ColorPalette.borderPrimary,
+                borderColor: ColorPalette.borderDefault,
                 overflow: "hidden",
               }}
             >
@@ -226,8 +226,8 @@ export default function StepSettings({
                     style={{
                       fontSize: 11,
                       color: deadline
-                        ? ColorPalette.textSecondary
-                        : ColorPalette.textQuaternary,
+                        ? ColorPalette.textInverse
+                        : ColorPalette.textSubtle,
                     }}
                   >
                     {dateStr}
@@ -238,7 +238,7 @@ export default function StepSettings({
                 style={{
                   width: 1,
                   alignSelf: "stretch",
-                  backgroundColor: ColorPalette.borderPrimary,
+                  backgroundColor: ColorPalette.borderDefault,
                 }}
               />
               <Pressable
@@ -257,8 +257,8 @@ export default function StepSettings({
                     style={{
                       fontSize: 11,
                       color: hasTime
-                        ? ColorPalette.textSecondary
-                        : ColorPalette.textQuaternary,
+                        ? ColorPalette.textInverse
+                        : ColorPalette.textSubtle,
                     }}
                   >
                     {timeStr}
@@ -272,10 +272,10 @@ export default function StepSettings({
 
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} gap="xxs">
-              <Text variant="xsHeading" color="textSecondary">
+              <Text variant="bodyXsStrong" color="textInverse">
                 Send reminders
               </Text>
-              <Text variant="xxsParagraph" color="textQuaternary">
+              <Text variant="bodyXsDefault" color="textSubtle">
                 Notify members to vote
               </Text>
             </Box>
@@ -286,10 +286,10 @@ export default function StepSettings({
 
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} gap="xxs">
-              <Text variant="xsHeading" color="textSecondary">
+              <Text variant="bodyXsStrong" color="textInverse">
                 Anonymous
               </Text>
-              <Text variant="xxsParagraph" color="textQuaternary">
+              <Text variant="bodyXsDefault" color="textSubtle">
                 Hide who voted for what
               </Text>
             </Box>
@@ -300,7 +300,6 @@ export default function StepSettings({
 
       <DateRangePicker
         visible={datePickerVisible}
-        variant="single"
         onClose={() => setDatePickerVisible(false)}
         onSave={(range) => {
           setDatePickerVisible(false);

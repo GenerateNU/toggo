@@ -1,7 +1,7 @@
 import { Text } from "@/design-system/primitives/text";
+import { ColorPalette } from "@/design-system/tokens/color";
 import { useEffect, useMemo } from "react";
 import { Animated, Pressable, StyleSheet } from "react-native";
-import { ColorPalette } from "@/design-system/tokens/color";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -14,13 +14,14 @@ export type ToggleProps = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-const TRACK_WIDTH = 50;
-const TRACK_HEIGHT = 30;
-const THUMB_SIZE = 26;
-const THUMB_OFFSET = 2;
-const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - THUMB_OFFSET * 2;
-const TRACK_OFF_COLOR = ColorPalette.borderPrimary;
-const TRACK_ON_COLOR = ColorPalette.brandSecondary;
+const TRACK_WIDTH = 62;
+const TRACK_HEIGHT = 29;
+const THUMB_WIDTH = 35;
+const THUMB_HEIGHT = 23;
+const THUMB_OFFSET = 3;
+const THUMB_TRAVEL = TRACK_WIDTH - THUMB_WIDTH - THUMB_OFFSET * 2;
+const TRACK_OFF_COLOR = ColorPalette.borderDefault;
+const TRACK_ON_COLOR = ColorPalette.statusSuccess;
 
 export default function Toggle({
   label,
@@ -76,8 +77,8 @@ export default function Toggle({
     >
       {label && (
         <Text
-          variant="smLabel"
-          color={disabled ? "textDisabled" : "textSecondary"}
+          variant="bodySmMedium"
+          color={disabled ? "textDisabled" : "textInverse"}
           style={{ flex: 1 }}
         >
           {label}
@@ -124,12 +125,13 @@ const styles = StyleSheet.create({
   },
   thumb: {
     position: "absolute",
+    top: THUMB_OFFSET,
     left: THUMB_OFFSET,
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: ColorPalette.white,
-    shadowColor: ColorPalette.black,
+    width: THUMB_WIDTH,
+    height: THUMB_HEIGHT,
+    borderRadius: THUMB_HEIGHT / 2,
+    backgroundColor: ColorPalette.backgroundCard,
+    shadowColor: ColorPalette.backgroundDefault,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,
