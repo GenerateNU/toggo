@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 
 	"github.com/google/uuid"
@@ -21,11 +23,13 @@ var _ CategoryServiceInterface = (*CategoryService)(nil)
 
 type CategoryService struct {
 	*repository.Repository
+	publisher realtime.EventPublisher
 }
 
-func NewCategoryService(repo *repository.Repository) CategoryServiceInterface {
+func NewCategoryService(repo *repository.Repository, publisher realtime.EventPublisher) CategoryServiceInterface {
 	return &CategoryService{
 		Repository: repo,
+		publisher:  publisher,
 	}
 }
 
@@ -107,7 +111,23 @@ func (s *CategoryService) CreateCategory(ctx context.Context, tripID, userID uui
 		return nil, err
 	}
 
+	s.publishCategoryCreated(ctx, tripID.String(), userID.String(), created)
+
 	return s.toAPIResponse(created), nil
+}
+
+func (s *CategoryService) publishCategoryCreated(ctx context.Context, tripID, actorID string, category *models.Category) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(realtime.EventTopicCategoryCreated, tripID, category.Name, actorID, "", category)
+	if err != nil {
+		log.Printf("Failed to create category.created event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish category.created event: %v", err)
+	}
 }
 
 func (s *CategoryService) DeleteCategory(ctx context.Context, tripID, userID uuid.UUID, name string) error {

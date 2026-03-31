@@ -16,7 +16,8 @@ import (
 )
 
 type PollServiceInterface interface {
-	PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{})
+	PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data any)
+	PublishEventWithActor(ctx context.Context, topic realtime.EventTopic, tripID, entityID, actorID string, data any)
 	ValidateDeadline(deadline *time.Time) error
 	ValidatePollMinMaxOptions(options []models.CreatePollOptionRequest) error
 	CreatePollWithTx(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, []string, error)
@@ -49,12 +50,27 @@ func NewPollService(repo *repository.Repository, publisher realtime.EventPublish
 	}
 }
 
-// publishEvent publishes a realtime event; failures are logged but never block the caller.
-func (s *PollService) PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{}) {
+// PublishEvent publishes a realtime event; failures are logged but never block the caller.
+func (s *PollService) PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data any) {
 	if s.publisher == nil {
 		return
 	}
 	event, err := realtime.NewEvent(topic, tripID, data)
+	if err != nil {
+		log.Printf("Failed to create %s event: %v", topic, err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish %s event: %v", topic, err)
+	}
+}
+
+// PublishEventWithActor publishes a realtime event with actor attribution.
+func (s *PollService) PublishEventWithActor(ctx context.Context, topic realtime.EventTopic, tripID, entityID, actorID string, data any) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(topic, tripID, entityID, actorID, "", data)
 	if err != nil {
 		log.Printf("Failed to create %s event: %v", topic, err)
 		return
@@ -120,6 +136,12 @@ func (s *PollService) createPollTx(
 	created, err := s.repository.Poll.CreatePoll(ctx, tx, poll, options)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if len(categories) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, categories); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	categoryNames, err := s.repository.PollCategory.ReplaceCategoriesForPoll(
@@ -251,6 +273,12 @@ func (s *PollService) resolveCategoryUpdate(
 	}
 
 	values := *categories
+
+	if len(values) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, values); err != nil {
+			return nil, err
+		}
+	}
 
 	return s.repository.PollCategory.ReplaceCategoriesForPoll(
 		ctx,

@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "enum": ["airbnb", "booking_com", "tiktok", "instagram", "generic"],
+  "x-enum-varnames": [
+    "LinkTypeAirbnb",
+    "LinkTypeBookingCom",
+    "LinkTypeTikTok",
+    "LinkTypeInstagram",
+    "LinkTypeGeneric"
+  ],
+  "x-readme-ref-name": "models.LinkType"
+}

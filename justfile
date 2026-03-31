@@ -21,6 +21,10 @@ dev:
     @echo "Start Toggo development environment ✈️"
     {{ if os() == "windows" { "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'just dev-be'; just fdt" } else { "just dev-be & just dev-fe" } }}
 
+# Start Temporal dev server if not already running
+ensure-temporal:
+    {{ if os() == "windows" { "powershell -Command \"if (-not (Get-Process -Name 'temporal' -ErrorAction SilentlyContinue)) { Write-Host 'Starting Temporal dev server...'; Start-Process -NoNewWindow temporal -ArgumentList 'server', 'start-dev', '--ip', '0.0.0.0' } else { Write-Host 'Temporal is already running' }\"" } else { "if ! pgrep -f 'temporal server start-dev' > /dev/null 2>&1; then echo 'Starting Temporal dev server...'; temporal server start-dev --ip 0.0.0.0 & else echo 'Temporal is already running'; fi" } }}
+
 # Start only the database container
 up-db:
     cd backend {{ sep }} make db-up{{ suffix }}
@@ -67,6 +71,7 @@ install-be:
 
 # Start backend server
 dev-be:
+    just ensure-temporal
     cd backend {{ sep }} make dev{{ suffix }}
 
 # Run backend tests

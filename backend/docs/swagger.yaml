@@ -55,6 +55,12 @@ definitions:
         type: string
       estimated_price:
         type: number
+      going_count:
+        type: integer
+      going_users:
+        items:
+          $ref: '#/definitions/models.ActivityGoingUserResponse'
+        type: array
       id:
         type: string
       image_ids:
@@ -104,6 +110,15 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ActivityGoingUserResponse:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
         type: string
     type: object
   models.ActivityImageResponse:
@@ -183,11 +198,16 @@ definitions:
         type: string
       icon:
         type: string
-      is_hidden:
-        description: only present for admins
+      is_default:
         type: boolean
+      is_hidden:
+        type: boolean
+      label:
+        type: string
       name:
         type: string
+      position:
+        type: integer
       trip_id:
         type: string
       updated_at:
@@ -309,6 +329,26 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  models.CreateCategoryRequest:
+    properties:
+      icon:
+        maxLength: 255
+        type: string
+      label:
+        maxLength: 255
+        minLength: 1
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      trip_id:
+        type: string
+    required:
+    - label
+    - name
+    - trip_id
     type: object
   models.CreateCommentRequest:
     properties:
@@ -1425,6 +1465,30 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  realtime.Event:
+    properties:
+      actor_id:
+        type: string
+      actor_name:
+        type: string
+      data:
+        type: object
+      entity_id:
+        type: string
+      id:
+        type: string
+      timestamp:
+        type: string
+      topic:
+        type: string
+      trip_id:
+        type: string
+    type: object
+  realtime.UnreadCountResponse:
+    properties:
+      unread_count:
+        type: integer
     type: object
 host: localhost:8000
 info:
@@ -2953,6 +3017,107 @@ paths:
       summary: Parse link into activity data
       tags:
       - activities
+  /api/v1/trips/{tripID}/activity:
+    get:
+      description: Returns all unread events in the caller's trip feed. Events persist
+        until explicitly dismissed via the mark-read endpoint.
+      operationId: getTripActivityFeed
+      parameters:
+      - description: Trip ID (UUID)
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/realtime.Event'
+            type: array
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get trip activity feed
+      tags:
+      - activity-feed
+  /api/v1/trips/{tripID}/activity/{eventID}:
+    delete:
+      description: Removes a specific event from the caller's trip activity feed.
+      operationId: markActivityEventRead
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Event ID
+        in: path
+        name: eventID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Mark activity event as read
+      tags:
+      - activity-feed
+  /api/v1/trips/{tripID}/activity/unread-count:
+    get:
+      description: Returns the number of events in the caller's trip feed that have
+        not yet been marked as read.
+      operationId: getUnreadActivityCount
+      parameters:
+      - description: Trip ID (UUID)
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/realtime.UnreadCountResponse'
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get unread activity count
+      tags:
+      - activity-feed
   /api/v1/trips/{tripID}/categories:
     get:
       description: Retrieves all categories for a trip
@@ -2963,6 +3128,10 @@ paths:
         name: tripID
         required: true
         type: string
+      - description: Include hidden categories (admin only)
+        in: query
+        name: include_hidden
+        type: boolean
       produces:
       - application/json
       responses:
@@ -2991,6 +3160,95 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get categories by trip
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new custom category for a trip (any trip member)
+      operationId: createCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CategoryAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create category
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}:
+    delete:
+      description: Deletes a custom category from a trip (admin only, cannot delete
+        default categories)
+      operationId: deleteCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete category
       tags:
       - categories
   /api/v1/trips/{tripID}/categories/{name}/hide:

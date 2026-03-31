@@ -38,6 +38,7 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	VotePollRoutes(apiV1Group, routeParams)
 	RankPollRoutes(apiV1Group, routeParams)
 	SearchRoutes(apiV1Group, routeParams)
+	ActivityFeedRoutes(apiV1Group, routeParams)
 
 	// 404 handler for routes not matched
 	setUpNotFoundHandler(app)

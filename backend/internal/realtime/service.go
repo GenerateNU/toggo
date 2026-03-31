@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"log"
 	"toggo/internal/config"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // RealtimeService orchestrates the WebSocket gateway and Redis pub/sub infrastructure.
 type RealtimeService struct {
-	redisClient RedisClient
-	publisher   EventPublisher
-	hub         Hub
-	auth        Auth
-	handler     *WSHandler
+	goRedisClient *GoRedisClient
+	redisClient   RedisClient
+	publisher     EventPublisher
+	hub           Hub
+	auth          Auth
+	handler       *WSHandler
 }
 
 // NewRealtimeService initializes all realtime components from configuration.
 func NewRealtimeService(cfg *config.Configuration) (*RealtimeService, error) {
-	redisClient, err := NewRedisClient(
+	goRedisClient, err := NewRedisClient(
 		cfg.Redis.Address,
 		cfg.Redis.Password,
 		cfg.Redis.DB,
@@ -28,18 +31,25 @@ func NewRealtimeService(cfg *config.Configuration) (*RealtimeService, error) {
 		return nil, fmt.Errorf("failed to create redis client: %w", err)
 	}
 
-	publisher := NewRedisEventPublisher(redisClient)
-	hub := NewHub(redisClient)
+	publisher := NewRedisEventPublisher(goRedisClient)
+	hub := NewHub(goRedisClient)
 	auth := NewAuthMiddleware(cfg.Auth.JWTSecretKey)
 	handler := NewWSHandler(hub, auth)
 
 	return &RealtimeService{
-		redisClient: redisClient,
-		publisher:   publisher,
-		hub:         hub,
-		auth:        auth,
-		handler:     handler,
+		goRedisClient: goRedisClient,
+		redisClient:   goRedisClient,
+		publisher:     publisher,
+		hub:           hub,
+		auth:          auth,
+		handler:       handler,
 	}, nil
+}
+
+// GetUnderlyingRedisClient returns the underlying Redis client for components that
+// need direct access to Redis operations beyond pub/sub (e.g. the activity feed store).
+func (s *RealtimeService) GetUnderlyingRedisClient() *redis.Client {
+	return s.goRedisClient.GetClient()
 }
 
 // Start begins the hub's main event loop and Redis subscription.

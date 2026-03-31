@@ -17,11 +17,12 @@ type RouteParams struct {
 }
 
 type ServiceParams struct {
-	Repository     *repository.Repository
-	Config         *config.Configuration
-	EventPublisher realtime.EventPublisher
-	FileService    services.FileServiceInterface
-	PollService    services.PollServiceInterface
-	HTTPClient     *http.Client
-	TemporalClient client.Client
+	Repository          *repository.Repository
+	Config              *config.Configuration
+	EventPublisher      realtime.EventPublisher
+	FileService         services.FileServiceInterface
+	PollService         services.PollServiceInterface
+	ActivityFeedService services.ActivityFeedServiceInterface
+	HTTPClient          *http.Client
+	TemporalClient      client.Client
 }

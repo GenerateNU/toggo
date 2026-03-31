@@ -51,9 +51,9 @@ type CreatePitchRequest struct {
 }
 
 type UpdatePitchRequest struct {
-	Title       *string      `validate:"omitempty,min=1" json:"title"`
-	Description *string      `validate:"omitempty" json:"description"`
-	Duration    *int         `validate:"omitempty,gte=0" json:"duration"`
+	Title       *string `validate:"omitempty,min=1" json:"title"`
+	Description *string `validate:"omitempty" json:"description"`
+	Duration    *int    `validate:"omitempty,gte=0" json:"duration"`
 
 	// ImageIDs, when non-nil, fully replaces the pitch's image associations.
 	// Pass an empty slice to remove all images; omit the field to leave images unchanged.
@@ -61,16 +61,16 @@ type UpdatePitchRequest struct {
 }
 
 type PitchAPIResponse struct {
-	ID          uuid.UUID         `json:"id"`
-	TripID      uuid.UUID         `json:"trip_id"`
-	UserID      uuid.UUID         `json:"user_id"`
-	Title       string            `json:"title"`
-	Description string            `json:"description"`
-	AudioURL    string            `json:"audio_url"`
-	Duration    *int              `json:"duration,omitempty"`
-	Images      []PitchImageInfo  `json:"images,omitempty"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ID          uuid.UUID        `json:"id"`
+	TripID      uuid.UUID        `json:"trip_id"`
+	UserID      uuid.UUID        `json:"user_id"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	AudioURL    string           `json:"audio_url"`
+	Duration    *int             `json:"duration,omitempty"`
+	Images      []PitchImageInfo `json:"images,omitempty"`
+	CreatedAt   time.Time        `json:"created_at"`
+	UpdatedAt   time.Time        `json:"updated_at"`
 }
 
 type CreatePitchResponse struct {
