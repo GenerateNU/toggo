@@ -7,9 +7,9 @@ export default function Pitches() {
         flex={1}
         justifyContent="center"
         alignItems="center"
-        backgroundColor="white"
+        backgroundColor="backgroundCard"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="textInverse">
           Pitches Page
         </Text>
       </Box>

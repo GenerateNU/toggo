@@ -41,15 +41,15 @@ export default function TextField({
   const [focused, setFocused] = useState(false);
 
   const borderColor = error
-    ? ColorPalette.error
+    ? ColorPalette.statusError
     : focused
-      ? ColorPalette.black
-      : ColorPalette.borderPrimary;
+      ? ColorPalette.backgroundDefault
+      : ColorPalette.borderDefault;
 
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="xsLabel" color="textSecondary" style={styles.label}>
+        <Text variant="bodyXsMedium" color="textInverse" style={styles.label}>
           {label}
         </Text>
       )}
@@ -69,13 +69,13 @@ export default function TextField({
             {
               color: disabled
                 ? ColorPalette.textDisabled
-                : ColorPalette.textSecondary,
+                : ColorPalette.textInverse,
             },
           ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={ColorPalette.textQuaternary}
+          placeholderTextColor={ColorPalette.textSubtle}
           editable={!disabled}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -86,7 +86,7 @@ export default function TextField({
         />
       </Box>
       {error && (
-        <Text variant="xsLabel" style={styles.error}>
+        <Text variant="bodyXsMedium" style={styles.error}>
           {error}
         </Text>
       )}
@@ -107,9 +107,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
+    borderColor: ColorPalette.borderDefault,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.backgroundCard,
     paddingHorizontal: Layout.spacing.sm,
     minHeight: CoreSize.xl,
   },
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   inputRowDisabled: {
-    backgroundColor: ColorPalette.surfaceBackground,
+    backgroundColor: ColorPalette.backgroundSubtle,
     opacity: 0.6,
   },
   iconWrapper: {
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   error: {
-    color: ColorPalette.error,
+    color: ColorPalette.statusError,
     marginTop: Layout.spacing.xxs,
   },
 });

@@ -19,7 +19,7 @@ export type DashedBorderBoxProps = ViewProps & {
 
 export default function DashedBorderBox({
   children,
-  color = "borderPrimary",
+  color = "borderDefault",
   strokeWidth = 1,
   dashLength = 8,
   dashGap = 4,

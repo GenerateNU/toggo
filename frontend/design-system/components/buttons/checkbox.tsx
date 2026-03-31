@@ -43,7 +43,9 @@ const CheckboxMark = React.memo(({ checked, disabled }: CheckboxMarkProps) => (
       disabled && !checked && styles.boxDisabled,
     ]}
   >
-    {checked && <Check size={14} color={ColorPalette.white} strokeWidth={3} />}
+    {checked && (
+      <Check size={14} color={ColorPalette.backgroundCard} strokeWidth={3} />
+    )}
   </Box>
 ));
 CheckboxMark.displayName = "CheckboxMark";
@@ -69,8 +71,8 @@ export function Checkbox({
     >
       <CheckboxMark checked={checked} disabled={disabled} />
       <Text
-        variant="smLabel"
-        color={disabled ? "textDisabled" : "textSecondary"}
+        variant="bodySmMedium"
+        color={disabled ? "textDisabled" : "textInverse"}
       >
         {label}
       </Text>
@@ -98,8 +100,8 @@ export default function CheckboxGroup<T extends string = string>({
     <Box style={styles.container}>
       {label && (
         <Text
-          variant="smHeading"
-          color="textSecondary"
+          variant="bodySmStrong"
+          color="textInverse"
           style={styles.groupLabel}
         >
           {label}
@@ -143,15 +145,15 @@ const styles = StyleSheet.create({
     height: BOX_SIZE,
     borderRadius: CornerRadius.xs,
     borderWidth: 2,
-    borderColor: ColorPalette.borderPrimary,
+    borderColor: ColorPalette.borderDefault,
     alignItems: "center",
     justifyContent: "center",
   },
   boxChecked: {
-    backgroundColor: ColorPalette.black,
-    borderColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
+    borderColor: ColorPalette.backgroundDefault,
   },
   boxDisabled: {
-    borderColor: ColorPalette.borderSecondary,
+    borderColor: ColorPalette.borderSubtle,
   },
 });

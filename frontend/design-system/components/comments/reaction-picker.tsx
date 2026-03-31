@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     flexDirection: "row",
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.backgroundSubtle,
     borderRadius: CornerRadius.lg,
     paddingHorizontal: 10,
     paddingVertical: 3,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emojiButtonPressed: {
-    backgroundColor: ColorPalette.secondaryBackground,
+    backgroundColor: ColorPalette.backgroundSubtle,
   },
   emoji: {
     fontSize: 20,

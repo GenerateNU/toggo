@@ -79,12 +79,15 @@ export default function TimePicker({
         <Box style={styles.footer}>
           <Box flexDirection="row" style={styles.footerButtons}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
-              <Text variant="mdLabel" color="textSecondary">
+              <Text variant="bodyMedium" color="textDefault">
                 Cancel
               </Text>
             </Pressable>
             <Pressable style={styles.saveButton} onPress={handleSave}>
-              <Text variant="mdLabel" style={{ color: ColorPalette.white }}>
+              <Text
+                variant="bodyMedium"
+                style={{ color: ColorPalette.textDefault }}
+              >
                 Save Time
               </Text>
             </Pressable>
@@ -93,7 +96,7 @@ export default function TimePicker({
       }
     >
       <Box style={styles.header}>
-        <Text variant="mdHeading" color="textSecondary">
+        <Text variant="headingSm" color="textDefault">
           Select time
         </Text>
       </Box>
@@ -129,8 +132,8 @@ const styles = StyleSheet.create({
     paddingTop: Layout.spacing.xs,
     paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderPrimary,
-    backgroundColor: ColorPalette.white,
+    borderTopColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.backgroundCard,
   },
 
   footerButtons: {
@@ -145,8 +148,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
     borderWidth: 1,
-    borderColor: ColorPalette.borderPrimary,
-    backgroundColor: ColorPalette.white,
+    borderColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.backgroundCard,
   },
 
   saveButton: {
@@ -155,6 +158,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
-    backgroundColor: ColorPalette.black,
+    backgroundColor: ColorPalette.backgroundDefault,
   },
 });

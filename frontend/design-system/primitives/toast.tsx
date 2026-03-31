@@ -30,12 +30,12 @@ export default function Toast({
   return (
     <Box style={styles.toast}>
       <Box style={styles.checkCircle}>
-        <Check size={16} color={ColorPalette.textSecondary} strokeWidth={2.5} />
+        <Check size={16} color={ColorPalette.textInverse} strokeWidth={2.5} />
       </Box>
 
       <Text
-        variant="smLabel"
-        color="textSecondary"
+        variant="bodySmMedium"
+        color="textInverse"
         style={styles.message}
         numberOfLines={2}
       >
@@ -53,7 +53,7 @@ export default function Toast({
           }}
           hitSlop={8}
         >
-          <Text variant="smLabel" style={styles.actionLabel}>
+          <Text variant="bodySmMedium" style={styles.actionLabel}>
             {action.label}
           </Text>
         </Pressable>
@@ -61,7 +61,7 @@ export default function Toast({
 
       {showClose && !action && (
         <Pressable onPress={onClose} hitSlop={8} style={styles.closeButton}>
-          <X size={18} color={ColorPalette.textQuaternary} />
+          <X size={18} color={ColorPalette.textSubtle} />
         </Pressable>
       )}
     </Box>
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
   toast: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.backgroundCard,
     borderRadius: CornerRadius.md,
     paddingVertical: 14,
     paddingHorizontal: Layout.spacing.sm,
     gap: 12,
-    shadowColor: ColorPalette.black,
+    shadowColor: ColorPalette.backgroundDefault,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionLabel: {
-    color: ColorPalette.info,
+    color: ColorPalette.statusInfo,
     fontWeight: "600",
   },
   closeButton: {

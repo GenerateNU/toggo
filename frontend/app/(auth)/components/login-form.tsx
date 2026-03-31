@@ -68,8 +68,8 @@ export default function PhoneNumberForm() {
         <Box flex={1} justifyContent="space-between">
           <Box gap="md">
             {error && (
-              <Box backgroundColor="error" padding="xs" borderRadius="sm">
-                <Text variant="xsParagraph" color="white">
+              <Box backgroundColor="statusError" padding="xs" borderRadius="sm">
+                <Text variant="bodyXsDefault" color="textDefault">
                   {error}
                 </Text>
               </Box>
@@ -78,10 +78,12 @@ export default function PhoneNumberForm() {
             <Box gap="xs">
               <Box
                 flexDirection="row"
-                borderColor={formState.errors.phone ? "error" : "borderPrimary"}
+                borderColor={
+                  formState.errors.phone ? "statusError" : "borderDefault"
+                }
                 borderRadius="sm"
                 overflow="hidden"
-                backgroundColor="white"
+                backgroundColor="backgroundCard"
                 height={48}
                 gap="xxs"
               >
@@ -93,7 +95,7 @@ export default function PhoneNumberForm() {
                     width={70}
                     height="100%"
                     borderWidth={1}
-                    borderColor="borderPrimary"
+                    borderColor="borderDefault"
                     borderRadius="sm"
                   >
                     <CountryPicker
@@ -109,7 +111,7 @@ export default function PhoneNumberForm() {
                         marginBottom: 7,
                       }}
                     />
-                    <Icon icon={ChevronDown} size="xs" color="textQuaternary" />
+                    <Icon icon={ChevronDown} size="xs" color="textSubtle" />
                   </Box>
                 </Pressable>
 
@@ -118,7 +120,7 @@ export default function PhoneNumberForm() {
                   justifyContent="center"
                   paddingHorizontal="sm"
                   borderWidth={1}
-                  borderColor="borderPrimary"
+                  borderColor="borderDefault"
                   borderRadius="sm"
                 >
                   <Controller
@@ -142,7 +144,7 @@ export default function PhoneNumberForm() {
               </Box>
 
               {formState.errors.phone && (
-                <Text variant="xsParagraph" color="error">
+                <Text variant="bodyXsDefault" color="statusError">
                   {formState.errors.phone.message}
                 </Text>
               )}

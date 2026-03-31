@@ -15,7 +15,7 @@ const EmptyState = ({
     <Box flex={1} width="100%" gap="md" justifyContent="center">
       <Box width="100%" alignContent="center" gap="md">
         <Box width="100%" marginTop="md">
-          <Text variant="smDisplay">{title}</Text>
+          <Text variant="bodySmStrong">{title}</Text>
         </Box>
       </Box>
       {children}

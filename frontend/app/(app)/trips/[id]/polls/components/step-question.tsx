@@ -87,7 +87,7 @@ export default function StepQuestion({
 
       {!isYesNo && (
         <Box gap="xs">
-          <Text variant="xsLabel" color="textQuaternary">
+          <Text variant="bodyXsMedium" color="textSubtle">
             Options
           </Text>
 
@@ -99,12 +99,12 @@ export default function StepQuestion({
                     width: 24,
                     height: 24,
                     borderRadius: 12,
-                    backgroundColor: ColorPalette.secondaryBackground,
+                    backgroundColor: ColorPalette.backgroundSubtle,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text variant="xsLabel" color="textSecondary">
+                  <Text variant="bodyXsMedium" color="textInverse">
                     {i + 1}
                   </Text>
                 </Box>
@@ -122,7 +122,7 @@ export default function StepQuestion({
                     onPress={() => removeOption(i)}
                     style={{ padding: 4 }}
                   >
-                    <X size={16} color={ColorPalette.textSecondary} />
+                    <X size={16} color={ColorPalette.textInverse} />
                   </Pressable>
                 )}
               </Box>
@@ -138,10 +138,10 @@ export default function StepQuestion({
                     gap="xs"
                     style={{ height: 48 }}
                   >
-                    <Plus size={14} color={ColorPalette.textQuaternary} />
+                    <Plus size={14} color={ColorPalette.textSubtle} />
                     <Text
-                      variant="smParagraph"
-                      color="textQuaternary"
+                      variant="bodySmDefault"
+                      color="textSubtle"
                       numberOfLines={1}
                     >
                       Add option

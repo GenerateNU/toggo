@@ -97,17 +97,17 @@ export default function CreateActivity() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
+      <Box flex={1} backgroundColor="backgroundSubtle">
         <Box
           padding="lg"
           paddingTop="xl"
-          backgroundColor="surfaceCard"
+          backgroundColor="backgroundCard"
           gap="xs"
         >
-          <Text variant="smLabel" color="textQuaternary">
+          <Text variant="bodySmMedium" color="textSubtle">
             NEW
           </Text>
-          <Text variant="lgHeading" color="textSecondary">
+          <Text variant="headingMd" color="textInverse">
             Create Activity
           </Text>
         </Box>
@@ -115,47 +115,47 @@ export default function CreateActivity() {
         <ScrollView>
           <Box padding="sm" gap="md">
             <Box gap="xs">
-              <Text variant="smLabel" color="textQuaternary">
+              <Text variant="bodySmMedium" color="textSubtle">
                 NAME *
               </Text>
               <Box
-                backgroundColor="surfaceCard"
+                backgroundColor="backgroundCard"
                 borderRadius="sm"
                 borderWidth={1}
-                borderColor="borderPrimary"
+                borderColor="borderDefault"
                 padding="sm"
               >
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   placeholder="Activity name"
-                  placeholderTextColor={ColorPalette.textQuaternary}
-                  style={{ fontSize: 15, color: ColorPalette.textSecondary }}
+                  placeholderTextColor={ColorPalette.textSubtle}
+                  style={{ fontSize: 15, color: ColorPalette.textInverse }}
                 />
               </Box>
             </Box>
 
             <Box gap="xs">
-              <Text variant="smLabel" color="textQuaternary">
+              <Text variant="bodySmMedium" color="textSubtle">
                 DESCRIPTION
               </Text>
               <Box
-                backgroundColor="surfaceCard"
+                backgroundColor="backgroundCard"
                 borderRadius="sm"
                 borderWidth={1}
-                borderColor="borderPrimary"
+                borderColor="borderDefault"
                 padding="sm"
               >
                 <TextInput
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Optional description"
-                  placeholderTextColor={ColorPalette.textQuaternary}
+                  placeholderTextColor={ColorPalette.textSubtle}
                   multiline
                   numberOfLines={3}
                   style={{
                     fontSize: 15,
-                    color: ColorPalette.textSecondary,
+                    color: ColorPalette.textInverse,
                     minHeight: 72,
                     textAlignVertical: "top",
                   }}
@@ -164,7 +164,7 @@ export default function CreateActivity() {
             </Box>
 
             <Box gap="xs">
-              <Text variant="smLabel" color="textQuaternary">
+              <Text variant="bodySmMedium" color="textSubtle">
                 IMAGES ({imageUris.length}/5)
               </Text>
               <Box flexDirection="row" flexWrap="wrap" gap="xs">
@@ -186,12 +186,12 @@ export default function CreateActivity() {
                         width: 20,
                         height: 20,
                         borderRadius: 10,
-                        backgroundColor: ColorPalette.primaryBackground,
+                        backgroundColor: ColorPalette.backgroundDefault,
                         justifyContent: "center",
                         alignItems: "center",
                       }}
                     >
-                      <Text variant="smLabel" color="white">
+                      <Text variant="bodySmMedium" color="textInverse">
                         ×
                       </Text>
                     </Pressable>
@@ -205,12 +205,12 @@ export default function CreateActivity() {
                       height={80}
                       borderRadius="sm"
                       borderWidth={1}
-                      borderColor="borderPrimary"
-                      backgroundColor="surfaceCard"
+                      borderColor="borderDefault"
+                      backgroundColor="backgroundCard"
                       justifyContent="center"
                       alignItems="center"
                     >
-                      <Text variant="mdParagraph" color="textQuaternary">
+                      <Text variant="bodyDefault" color="textSubtle">
                         + Add
                       </Text>
                     </Box>
@@ -221,7 +221,7 @@ export default function CreateActivity() {
 
             {isSubmitting ? (
               <Box
-                backgroundColor="surfaceCard"
+                backgroundColor="backgroundCard"
                 borderRadius="sm"
                 padding="sm"
                 alignItems="center"
