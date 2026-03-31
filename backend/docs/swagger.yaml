@@ -2446,7 +2446,7 @@ paths:
   /api/v1/trips/{tripID}/activities:
     get:
       description: Retrieves paginated activities for a trip, optionally filtered
-        by category
+        by category and time of day
       operationId: getActivitiesByTripID
       parameters:
       - description: Trip ID
@@ -2457,6 +2457,10 @@ paths:
       - description: Filter by category name
         in: query
         name: category
+        type: string
+      - description: Filter by time of day (morning, afternoon, evening)
+        in: query
+        name: time_of_day
         type: string
       - description: Max items per page (default 20, max 100)
         in: query
