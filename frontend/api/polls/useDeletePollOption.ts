@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   DeletePollOptionMutationResponse,
   DeletePollOptionPathParams,
@@ -15,11 +20,6 @@ import type {
   DeletePollOption409,
   DeletePollOption500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const deletePollOptionMutationKey = () =>
@@ -40,7 +40,7 @@ export async function deletePollOption(
   tripID: DeletePollOptionPathParams["tripID"],
   pollId: DeletePollOptionPathParams["pollId"],
   optionId: DeletePollOptionPathParams["optionId"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -63,8 +63,8 @@ export async function deletePollOption(
   return res.data;
 }
 
-export function deletePollOptionMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function deletePollOptionMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deletePollOptionMutationKey();
   return mutationOptions<
@@ -82,7 +82,7 @@ export function deletePollOptionMutationOptions<TContext = unknown>(
       pollId: DeletePollOptionPathParams["pollId"];
       optionId: DeletePollOptionPathParams["optionId"];
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, optionId }) => {
@@ -115,7 +115,7 @@ export function useDeletePollOption<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

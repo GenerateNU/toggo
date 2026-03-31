@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "medium_url": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.PitchImageInfo"
+}

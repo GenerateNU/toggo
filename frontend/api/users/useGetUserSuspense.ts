@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import type {
   GetUserQueryResponse,
   GetUserPathParams,
@@ -12,12 +18,6 @@ import type {
   GetUser404,
   GetUser500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getUserSuspenseQueryKey = (userID: GetUserPathParams["userID"]) =>
@@ -34,7 +34,7 @@ export type GetUserSuspenseQueryKey = ReturnType<
  */
 export async function getUserSuspense(
   userID: GetUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -48,7 +48,7 @@ export async function getUserSuspense(
 
 export function getUserSuspenseQueryOptions(
   userID: GetUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getUserSuspenseQueryKey(userID);
   return queryOptions<
@@ -60,9 +60,7 @@ export function getUserSuspenseQueryOptions(
     enabled: !!userID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getUserSuspense(userID, config);
     },
   });
@@ -87,7 +85,7 @@ export function useGetUserSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

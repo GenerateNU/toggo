@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   DeleteUserMutationResponse,
   DeleteUserPathParams,
@@ -12,11 +17,6 @@ import type {
   DeleteUser404,
   DeleteUser500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const deleteUserMutationKey = () =>
@@ -31,7 +31,7 @@ export type DeleteUserMutationKey = ReturnType<typeof deleteUserMutationKey>;
  */
 export async function deleteUser(
   userID: DeleteUserPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -43,15 +43,15 @@ export async function deleteUser(
   return res.data;
 }
 
-export function deleteUserMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function deleteUserMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteUserMutationKey();
   return mutationOptions<
     DeleteUserMutationResponse,
     ResponseErrorConfig<DeleteUser400 | DeleteUser404 | DeleteUser500>,
     { userID: DeleteUserPathParams["userID"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ userID }) => {
@@ -73,7 +73,7 @@ export function useDeleteUser<TContext>(
       { userID: DeleteUserPathParams["userID"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

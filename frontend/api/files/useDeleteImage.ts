@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   DeleteImageMutationResponse,
   DeleteImagePathParams,
@@ -12,11 +17,6 @@ import type {
   DeleteImage404,
   DeleteImage500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const deleteImageMutationKey = () =>
@@ -31,7 +31,7 @@ export type DeleteImageMutationKey = ReturnType<typeof deleteImageMutationKey>;
  */
 export async function deleteImage(
   imageId: DeleteImagePathParams["imageId"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -43,15 +43,15 @@ export async function deleteImage(
   return res.data;
 }
 
-export function deleteImageMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function deleteImageMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteImageMutationKey();
   return mutationOptions<
     DeleteImageMutationResponse,
     ResponseErrorConfig<DeleteImage400 | DeleteImage404 | DeleteImage500>,
     { imageId: DeleteImagePathParams["imageId"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ imageId }) => {
@@ -73,7 +73,7 @@ export function useDeleteImage<TContext>(
       { imageId: DeleteImagePathParams["imageId"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

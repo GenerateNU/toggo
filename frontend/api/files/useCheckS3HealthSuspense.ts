@@ -4,17 +4,17 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
-import type {
-  CheckS3HealthQueryResponse,
-  CheckS3Health503,
-} from "../../types/types.gen.ts";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   QueryKey,
   QueryClient,
   UseSuspenseQueryOptions,
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
+import type {
+  CheckS3HealthQueryResponse,
+  CheckS3Health503,
+} from "../../types/types.gen.ts";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const checkS3HealthSuspenseQueryKey = () =>
@@ -30,7 +30,7 @@ export type CheckS3HealthSuspenseQueryKey = ReturnType<
  * {@link /api/v1/files/health}
  */
 export async function checkS3HealthSuspense(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -43,7 +43,7 @@ export async function checkS3HealthSuspense(
 }
 
 export function checkS3HealthSuspenseQueryOptions(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = checkS3HealthSuspenseQueryKey();
   return queryOptions<
@@ -54,9 +54,7 @@ export function checkS3HealthSuspenseQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return checkS3HealthSuspense(config);
     },
   });
@@ -80,7 +78,7 @@ export function useCheckS3HealthSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

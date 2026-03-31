@@ -1,67 +1,9 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import {
-  BedDouble,
-  Bike,
-  Car,
-  Compass,
-  Flame,
-  Gem,
-  Globe,
-  Landmark,
-  Mountain,
-  Music,
-  ShoppingBag,
-  Star,
-  Sun,
-  Ticket,
-  UtensilsCrossed,
-  type LucideIcon,
-} from "lucide-react-native";
+import { getCategoryIcon } from "@/utilities/category-icons";
+import { toPascalCase } from "@/utilities/string";
 import React from "react";
 import { PollType } from "./step-poll-type";
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  attraction: Landmark,
-  entertainment: Ticket,
-  food: UtensilsCrossed,
-  lodging: BedDouble,
-  transportation: Car,
-};
-
-const RANDOM_ICON_POOL: LucideIcon[] = [
-  Compass,
-  Mountain,
-  Globe,
-  Sun,
-  Music,
-  ShoppingBag,
-  Gem,
-  Star,
-  Bike,
-  Flame,
-];
-
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++)
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function getCategoryIcon(name: string): LucideIcon {
-  return (
-    CATEGORY_ICONS[name.toLowerCase()] ??
-    RANDOM_ICON_POOL[hashStr(name) % RANDOM_ICON_POOL.length]!
-  );
-}
-
-function toPascalCase(str: string) {
-  return str
-    .split(/\s+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(" ");
-}
 
 const POLL_TYPE_LABELS: Record<PollType, string> = {
   single: "Single Choice",

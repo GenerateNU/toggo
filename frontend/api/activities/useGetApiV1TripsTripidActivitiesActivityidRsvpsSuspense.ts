@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import type {
   GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse,
   GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams,
@@ -16,18 +22,12 @@ import type {
   GetApiV1TripsTripidActivitiesActivityidRsvps422,
   GetApiV1TripsTripidActivitiesActivityidRsvps500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryKey = (
   tripID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["tripID"],
   activityID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["activityID"],
-  params: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams = {},
+  params?: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
 ) =>
   [
     {
@@ -51,7 +51,7 @@ export async function getApiV1TripsTripidActivitiesActivityidRsvpsSuspense(
   tripID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["tripID"],
   activityID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["activityID"],
   params?: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -79,7 +79,7 @@ export function getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryOptions
   tripID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["tripID"],
   activityID: GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams["activityID"],
   params?: GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryKey(
     tripID,
@@ -102,9 +102,7 @@ export function getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryOptions
     enabled: !!(tripID && activityID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getApiV1TripsTripidActivitiesActivityidRsvpsSuspense(
         tripID,
         activityID,
@@ -144,7 +142,7 @@ export function useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

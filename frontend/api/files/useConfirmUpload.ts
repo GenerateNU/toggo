@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   ConfirmUploadMutationRequest,
   ConfirmUploadMutationResponse,
@@ -13,11 +18,6 @@ import type {
   ConfirmUpload422,
   ConfirmUpload500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const confirmUploadMutationKey = () =>
@@ -35,7 +35,7 @@ export type ConfirmUploadMutationKey = ReturnType<
 export async function confirmUpload(
   data: ConfirmUploadMutationRequest,
   config: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,9 +57,9 @@ export async function confirmUpload(
   return res.data;
 }
 
-export function confirmUploadMutationOptions<TContext = unknown>(
+export function confirmUploadMutationOptions(
   config: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = confirmUploadMutationKey();
@@ -69,7 +69,7 @@ export function confirmUploadMutationOptions<TContext = unknown>(
       ConfirmUpload400 | ConfirmUpload404 | ConfirmUpload422 | ConfirmUpload500
     >,
     { data: ConfirmUploadMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -97,7 +97,7 @@ export function useConfirmUpload<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<ConfirmUploadMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

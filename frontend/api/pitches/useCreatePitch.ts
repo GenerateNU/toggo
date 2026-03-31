@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   CreatePitchMutationRequest,
   CreatePitchMutationResponse,
@@ -14,11 +19,6 @@ import type {
   CreatePitch422,
   CreatePitch500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const createPitchMutationKey = () =>
@@ -27,7 +27,7 @@ export const createPitchMutationKey = () =>
 export type CreatePitchMutationKey = ReturnType<typeof createPitchMutationKey>;
 
 /**
- * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+ * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file.Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
  * @summary Create a pitch
  * {@link /api/v1/trips/:tripID/pitches}
  */
@@ -35,7 +35,7 @@ export async function createPitch(
   tripID: CreatePitchPathParams["tripID"],
   data: CreatePitchMutationRequest,
   config: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -57,9 +57,9 @@ export async function createPitch(
   return res.data;
 }
 
-export function createPitchMutationOptions<TContext = unknown>(
+export function createPitchMutationOptions(
   config: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createPitchMutationKey();
@@ -72,7 +72,7 @@ export function createPitchMutationOptions<TContext = unknown>(
       tripID: CreatePitchPathParams["tripID"];
       data: CreatePitchMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -82,7 +82,7 @@ export function createPitchMutationOptions<TContext = unknown>(
 }
 
 /**
- * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+ * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file.Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
  * @summary Create a pitch
  * {@link /api/v1/trips/:tripID/pitches}
  */
@@ -100,7 +100,7 @@ export function useCreatePitch<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreatePitchMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

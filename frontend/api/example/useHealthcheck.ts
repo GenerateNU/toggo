@@ -4,17 +4,17 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
-import type {
-  HealthcheckQueryResponse,
-  Healthcheck500,
-} from "../../types/types.gen.ts";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   QueryKey,
   QueryClient,
   QueryObserverOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
+import type {
+  HealthcheckQueryResponse,
+  Healthcheck500,
+} from "../../types/types.gen.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const healthcheckQueryKey = () => [{ url: "/healthcheck" }] as const;
@@ -27,7 +27,7 @@ export type HealthcheckQueryKey = ReturnType<typeof healthcheckQueryKey>;
  * {@link /healthcheck}
  */
 export async function healthcheck(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -40,7 +40,7 @@ export async function healthcheck(
 }
 
 export function healthcheckQueryOptions(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = healthcheckQueryKey();
   return queryOptions<
@@ -51,9 +51,7 @@ export function healthcheckQueryOptions(
   >({
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return healthcheck(config);
     },
   });
@@ -79,7 +77,7 @@ export function useHealthcheck<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

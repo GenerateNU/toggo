@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   CreatePollMutationRequest,
   CreatePollMutationResponse,
@@ -15,11 +20,6 @@ import type {
   CreatePoll422,
   CreatePoll500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const createPollMutationKey = () =>
@@ -36,7 +36,7 @@ export async function createPoll(
   tripID: CreatePollPathParams["tripID"],
   data: CreatePollMutationRequest,
   config: Partial<RequestConfig<CreatePollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -62,9 +62,9 @@ export async function createPoll(
   return res.data;
 }
 
-export function createPollMutationOptions<TContext = unknown>(
+export function createPollMutationOptions(
   config: Partial<RequestConfig<CreatePollMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createPollMutationKey();
@@ -78,7 +78,7 @@ export function createPollMutationOptions<TContext = unknown>(
       | CreatePoll500
     >,
     { tripID: CreatePollPathParams["tripID"]; data: CreatePollMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -110,7 +110,7 @@ export function useCreatePoll<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreatePollMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

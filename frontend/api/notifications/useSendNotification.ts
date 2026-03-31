@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   SendNotificationMutationRequest,
   SendNotificationMutationResponse,
@@ -12,11 +17,6 @@ import type {
   SendNotification422,
   SendNotification500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const sendNotificationMutationKey = () =>
@@ -34,7 +34,7 @@ export type SendNotificationMutationKey = ReturnType<
 export async function sendNotification(
   data: SendNotificationMutationRequest,
   config: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -56,9 +56,9 @@ export async function sendNotification(
   return res.data;
 }
 
-export function sendNotificationMutationOptions<TContext = unknown>(
+export function sendNotificationMutationOptions(
   config: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = sendNotificationMutationKey();
@@ -68,7 +68,7 @@ export function sendNotificationMutationOptions<TContext = unknown>(
       SendNotification400 | SendNotification422 | SendNotification500
     >,
     { data: SendNotificationMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -93,7 +93,7 @@ export function useSendNotification<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<SendNotificationMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

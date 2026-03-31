@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   RemoveCategoryFromActivityMutationResponse,
   RemoveCategoryFromActivityPathParams,
@@ -15,11 +20,6 @@ import type {
   RemoveCategoryFromActivity422,
   RemoveCategoryFromActivity500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const removeCategoryFromActivityMutationKey = () =>
@@ -42,7 +42,7 @@ export async function removeCategoryFromActivity(
   tripID: RemoveCategoryFromActivityPathParams["tripID"],
   activityID: RemoveCategoryFromActivityPathParams["activityID"],
   categoryName: RemoveCategoryFromActivityPathParams["categoryName"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -65,8 +65,8 @@ export async function removeCategoryFromActivity(
   return res.data;
 }
 
-export function removeCategoryFromActivityMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function removeCategoryFromActivityMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = removeCategoryFromActivityMutationKey();
   return mutationOptions<
@@ -84,7 +84,7 @@ export function removeCategoryFromActivityMutationOptions<TContext = unknown>(
       activityID: RemoveCategoryFromActivityPathParams["activityID"];
       categoryName: RemoveCategoryFromActivityPathParams["categoryName"];
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, activityID, categoryName }) => {
@@ -122,7 +122,7 @@ export function useRemoveCategoryFromActivity<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

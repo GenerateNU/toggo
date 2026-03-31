@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import type {
   ListPitchesQueryResponse,
   ListPitchesPathParams,
@@ -13,17 +19,11 @@ import type {
   ListPitches404,
   ListPitches500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const listPitchesSuspenseQueryKey = (
   tripID: ListPitchesPathParams["tripID"],
-  params: ListPitchesQueryParams = {},
+  params?: ListPitchesQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/pitches", params: { tripID: tripID } },
@@ -42,7 +42,7 @@ export type ListPitchesSuspenseQueryKey = ReturnType<
 export async function listPitchesSuspense(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -62,7 +62,7 @@ export async function listPitchesSuspense(
 export function listPitchesSuspenseQueryOptions(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = listPitchesSuspenseQueryKey(tripID, params);
   return queryOptions<
@@ -74,9 +74,7 @@ export function listPitchesSuspenseQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return listPitchesSuspense(tripID, params, config);
     },
   });
@@ -102,7 +100,7 @@ export function useListPitchesSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   DeleteTripMutationResponse,
   DeleteTripPathParams,
@@ -13,11 +18,6 @@ import type {
   DeleteTrip404,
   DeleteTrip500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const deleteTripMutationKey = () =>
@@ -32,7 +32,7 @@ export type DeleteTripMutationKey = ReturnType<typeof deleteTripMutationKey>;
  */
 export async function deleteTrip(
   tripID: DeleteTripPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -46,8 +46,8 @@ export async function deleteTrip(
   return res.data;
 }
 
-export function deleteTripMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function deleteTripMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = deleteTripMutationKey();
   return mutationOptions<
@@ -56,7 +56,7 @@ export function deleteTripMutationOptions<TContext = unknown>(
       DeleteTrip400 | DeleteTrip401 | DeleteTrip404 | DeleteTrip500
     >,
     { tripID: DeleteTripPathParams["tripID"] },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID }) => {
@@ -80,7 +80,7 @@ export function useDeleteTrip<TContext>(
       { tripID: DeleteTripPathParams["tripID"] },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

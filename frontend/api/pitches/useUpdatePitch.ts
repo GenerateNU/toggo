@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   UpdatePitchMutationRequest,
   UpdatePitchMutationResponse,
@@ -14,11 +19,6 @@ import type {
   UpdatePitch422,
   UpdatePitch500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const updatePitchMutationKey = () =>
@@ -27,16 +27,16 @@ export const updatePitchMutationKey = () =>
 export type UpdatePitchMutationKey = ReturnType<typeof updatePitchMutationKey>;
 
 /**
- * @description Updates pitch metadata (title, description, duration)
+ * @description Updates pitch metadata (title, description, duration).When image_ids is omitted from the request, existing image associations remain unchanged.When image_ids is an empty array, all image associations are removed.When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).The response includes images with presigned medium_url for each image.
  * @summary Update a pitch
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
 export async function updatePitch(
   tripID: UpdatePitchPathParams["tripID"],
   pitchID: UpdatePitchPathParams["pitchID"],
-  data: UpdatePitchMutationRequest,
+  data?: UpdatePitchMutationRequest,
   config: Partial<RequestConfig<UpdatePitchMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -58,9 +58,9 @@ export async function updatePitch(
   return res.data;
 }
 
-export function updatePitchMutationOptions<TContext = unknown>(
+export function updatePitchMutationOptions(
   config: Partial<RequestConfig<UpdatePitchMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = updatePitchMutationKey();
@@ -72,9 +72,9 @@ export function updatePitchMutationOptions<TContext = unknown>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data: UpdatePitchMutationRequest;
+      data?: UpdatePitchMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pitchID, data }) => {
@@ -84,7 +84,7 @@ export function updatePitchMutationOptions<TContext = unknown>(
 }
 
 /**
- * @description Updates pitch metadata (title, description, duration)
+ * @description Updates pitch metadata (title, description, duration).When image_ids is omitted from the request, existing image associations remain unchanged.When image_ids is an empty array, all image associations are removed.When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).The response includes images with presigned medium_url for each image.
  * @summary Update a pitch
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
@@ -98,12 +98,12 @@ export function useUpdatePitch<TContext>(
       {
         tripID: UpdatePitchPathParams["tripID"];
         pitchID: UpdatePitchPathParams["pitchID"];
-        data: UpdatePitchMutationRequest;
+        data?: UpdatePitchMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdatePitchMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {
@@ -119,7 +119,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data: UpdatePitchMutationRequest;
+      data?: UpdatePitchMutationRequest;
     },
     TContext
   >;
@@ -132,7 +132,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data: UpdatePitchMutationRequest;
+      data?: UpdatePitchMutationRequest;
     },
     TContext
   >(
@@ -150,7 +150,7 @@ export function useUpdatePitch<TContext>(
     {
       tripID: UpdatePitchPathParams["tripID"];
       pitchID: UpdatePitchPathParams["pitchID"];
-      data: UpdatePitchMutationRequest;
+      data?: UpdatePitchMutationRequest;
     },
     TContext
   >;

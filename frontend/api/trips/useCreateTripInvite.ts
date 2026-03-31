@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   CreateTripInviteMutationRequest,
   CreateTripInviteMutationResponse,
@@ -15,11 +20,6 @@ import type {
   CreateTripInvite422,
   CreateTripInvite500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const createTripInviteMutationKey = () =>
@@ -36,9 +36,9 @@ export type CreateTripInviteMutationKey = ReturnType<
  */
 export async function createTripInvite(
   tripID: CreateTripInvitePathParams["tripID"],
-  data: CreateTripInviteMutationRequest,
+  data?: CreateTripInviteMutationRequest,
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,9 +64,9 @@ export async function createTripInvite(
   return res.data;
 }
 
-export function createTripInviteMutationOptions<TContext = unknown>(
+export function createTripInviteMutationOptions(
   config: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = createTripInviteMutationKey();
@@ -81,9 +81,9 @@ export function createTripInviteMutationOptions<TContext = unknown>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data: CreateTripInviteMutationRequest;
+      data?: CreateTripInviteMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, data }) => {
@@ -110,12 +110,12 @@ export function useCreateTripInvite<TContext>(
       >,
       {
         tripID: CreateTripInvitePathParams["tripID"];
-        data: CreateTripInviteMutationRequest;
+        data?: CreateTripInviteMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CreateTripInviteMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {
@@ -137,7 +137,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data: CreateTripInviteMutationRequest;
+      data?: CreateTripInviteMutationRequest;
     },
     TContext
   >;
@@ -153,7 +153,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data: CreateTripInviteMutationRequest;
+      data?: CreateTripInviteMutationRequest;
     },
     TContext
   >(
@@ -174,7 +174,7 @@ export function useCreateTripInvite<TContext>(
     >,
     {
       tripID: CreateTripInvitePathParams["tripID"];
-      data: CreateTripInviteMutationRequest;
+      data?: CreateTripInviteMutationRequest;
     },
     TContext
   >;

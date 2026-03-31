@@ -4,29 +4,32 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
-import type {
-  GetCategoriesByTripIDQueryResponse,
-  GetCategoriesByTripIDPathParams,
-  GetCategoriesByTripID400,
-  GetCategoriesByTripID401,
-  GetCategoriesByTripID403,
-  GetCategoriesByTripID404,
-  GetCategoriesByTripID500,
-} from "../../types/types.gen.ts";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   QueryKey,
   QueryClient,
   UseSuspenseQueryOptions,
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
+import type {
+  GetCategoriesByTripIDQueryResponse,
+  GetCategoriesByTripIDPathParams,
+  GetCategoriesByTripIDQueryParams,
+  GetCategoriesByTripID400,
+  GetCategoriesByTripID401,
+  GetCategoriesByTripID403,
+  GetCategoriesByTripID404,
+  GetCategoriesByTripID500,
+} from "../../types/types.gen.ts";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getCategoriesByTripIDSuspenseQueryKey = (
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/categories", params: { tripID: tripID } },
+    ...(params ? [params] : []),
   ] as const;
 
 export type GetCategoriesByTripIDSuspenseQueryKey = ReturnType<
@@ -40,7 +43,8 @@ export type GetCategoriesByTripIDSuspenseQueryKey = ReturnType<
  */
 export async function getCategoriesByTripIDSuspense(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  params?: GetCategoriesByTripIDQueryParams,
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -57,6 +61,7 @@ export async function getCategoriesByTripIDSuspense(
   >({
     method: "GET",
     url: `/api/v1/trips/${tripID}/categories`,
+    params,
     ...requestConfig,
   });
   return res.data;
@@ -64,9 +69,10 @@ export async function getCategoriesByTripIDSuspense(
 
 export function getCategoriesByTripIDSuspenseQueryOptions(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  params?: GetCategoriesByTripIDQueryParams,
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getCategoriesByTripIDSuspenseQueryKey(tripID);
+  const queryKey = getCategoriesByTripIDSuspenseQueryKey(tripID, params);
   return queryOptions<
     GetCategoriesByTripIDQueryResponse,
     ResponseErrorConfig<
@@ -82,10 +88,8 @@ export function getCategoriesByTripIDSuspenseQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
-      return getCategoriesByTripIDSuspense(tripID, config);
+      config.signal = signal;
+      return getCategoriesByTripIDSuspense(tripID, params, config);
     },
   });
 }
@@ -100,6 +104,7 @@ export function useGetCategoriesByTripIDSuspense<
   TQueryKey extends QueryKey = GetCategoriesByTripIDSuspenseQueryKey,
 >(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
   options: {
     query?: Partial<
       UseSuspenseQueryOptions<
@@ -115,17 +120,18 @@ export function useGetCategoriesByTripIDSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
   const queryKey =
-    queryOptions?.queryKey ?? getCategoriesByTripIDSuspenseQueryKey(tripID);
+    queryOptions?.queryKey ??
+    getCategoriesByTripIDSuspenseQueryKey(tripID, params);
 
   const query = useSuspenseQuery(
     {
-      ...getCategoriesByTripIDSuspenseQueryOptions(tripID, config),
+      ...getCategoriesByTripIDSuspenseQueryOptions(tripID, params, config),
       queryKey,
       ...queryOptions,
     } as unknown as UseSuspenseQueryOptions,

@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   SendBulkNotificationMutationRequest,
   SendBulkNotificationMutationResponse,
@@ -12,11 +17,6 @@ import type {
   SendBulkNotification422,
   SendBulkNotification500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const sendBulkNotificationMutationKey = () =>
@@ -34,7 +34,7 @@ export type SendBulkNotificationMutationKey = ReturnType<
 export async function sendBulkNotification(
   data: SendBulkNotificationMutationRequest,
   config: Partial<RequestConfig<SendBulkNotificationMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -58,9 +58,9 @@ export async function sendBulkNotification(
   return res.data;
 }
 
-export function sendBulkNotificationMutationOptions<TContext = unknown>(
+export function sendBulkNotificationMutationOptions(
   config: Partial<RequestConfig<SendBulkNotificationMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = sendBulkNotificationMutationKey();
@@ -72,7 +72,7 @@ export function sendBulkNotificationMutationOptions<TContext = unknown>(
       | SendBulkNotification500
     >,
     { data: SendBulkNotificationMutationRequest },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ data }) => {
@@ -99,7 +99,7 @@ export function useSendBulkNotification<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<SendBulkNotificationMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

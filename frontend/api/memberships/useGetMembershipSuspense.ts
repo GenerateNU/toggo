@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import type {
   GetMembershipQueryResponse,
   GetMembershipPathParams,
@@ -13,12 +19,6 @@ import type {
   GetMembership404,
   GetMembership500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 
 export const getMembershipSuspenseQueryKey = (
@@ -44,7 +44,7 @@ export type GetMembershipSuspenseQueryKey = ReturnType<
 export async function getMembershipSuspense(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -65,7 +65,7 @@ export async function getMembershipSuspense(
 export function getMembershipSuspenseQueryOptions(
   tripID: GetMembershipPathParams["tripID"],
   userID: GetMembershipPathParams["userID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getMembershipSuspenseQueryKey(tripID, userID);
   return queryOptions<
@@ -79,9 +79,7 @@ export function getMembershipSuspenseQueryOptions(
     enabled: !!(tripID && userID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getMembershipSuspense(tripID, userID, config);
     },
   });
@@ -112,7 +110,7 @@ export function useGetMembershipSuspense<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

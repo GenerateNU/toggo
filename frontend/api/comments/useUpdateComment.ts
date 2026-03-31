@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   UpdateCommentMutationRequest,
   UpdateCommentMutationResponse,
@@ -15,11 +20,6 @@ import type {
   UpdateComment422,
   UpdateComment500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const updateCommentMutationKey = () =>
@@ -38,7 +38,7 @@ export async function updateComment(
   commentID: UpdateCommentPathParams["commentID"],
   data: UpdateCommentMutationRequest,
   config: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -64,9 +64,9 @@ export async function updateComment(
   return res.data;
 }
 
-export function updateCommentMutationOptions<TContext = unknown>(
+export function updateCommentMutationOptions(
   config: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = updateCommentMutationKey();
@@ -83,7 +83,7 @@ export function updateCommentMutationOptions<TContext = unknown>(
       commentID: UpdateCommentPathParams["commentID"];
       data: UpdateCommentMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ commentID, data }) => {
@@ -115,7 +115,7 @@ export function useUpdateComment<TContext>(
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<UpdateCommentMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {

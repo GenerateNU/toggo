@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   CastVoteMutationRequest,
   CastVoteMutationResponse,
@@ -16,11 +21,6 @@ import type {
   CastVote422,
   CastVote500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const castVoteMutationKey = () =>
@@ -36,9 +36,9 @@ export type CastVoteMutationKey = ReturnType<typeof castVoteMutationKey>;
 export async function castVote(
   tripID: CastVotePathParams["tripID"],
   pollId: CastVotePathParams["pollId"],
-  data: CastVoteMutationRequest,
+  data?: CastVoteMutationRequest,
   config: Partial<RequestConfig<CastVoteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
@@ -65,9 +65,9 @@ export async function castVote(
   return res.data;
 }
 
-export function castVoteMutationOptions<TContext = unknown>(
+export function castVoteMutationOptions(
   config: Partial<RequestConfig<CastVoteMutationRequest>> & {
-    client?: Client;
+    client?: typeof fetch;
   } = {},
 ) {
   const mutationKey = castVoteMutationKey();
@@ -84,9 +84,9 @@ export function castVoteMutationOptions<TContext = unknown>(
     {
       tripID: CastVotePathParams["tripID"];
       pollId: CastVotePathParams["pollId"];
-      data: CastVoteMutationRequest;
+      data?: CastVoteMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, pollId, data }) => {
@@ -115,12 +115,12 @@ export function useCastVote<TContext>(
       {
         tripID: CastVotePathParams["tripID"];
         pollId: CastVotePathParams["pollId"];
-        data: CastVoteMutationRequest;
+        data?: CastVoteMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<RequestConfig<CastVoteMutationRequest>> & {
-      client?: Client;
+      client?: typeof fetch;
     };
   } = {},
 ) {
@@ -141,7 +141,7 @@ export function useCastVote<TContext>(
     {
       tripID: CastVotePathParams["tripID"];
       pollId: CastVotePathParams["pollId"];
-      data: CastVoteMutationRequest;
+      data?: CastVoteMutationRequest;
     },
     TContext
   >;
@@ -159,7 +159,7 @@ export function useCastVote<TContext>(
     {
       tripID: CastVotePathParams["tripID"];
       pollId: CastVotePathParams["pollId"];
-      data: CastVoteMutationRequest;
+      data?: CastVoteMutationRequest;
     },
     TContext
   >(
@@ -182,7 +182,7 @@ export function useCastVote<TContext>(
     {
       tripID: CastVotePathParams["tripID"];
       pollId: CastVotePathParams["pollId"];
-      data: CastVoteMutationRequest;
+      data?: CastVoteMutationRequest;
     },
     TContext
   >;

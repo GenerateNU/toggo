@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  QueryObserverOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import type {
   GetPitchQueryResponse,
   GetPitchPathParams,
@@ -12,12 +18,6 @@ import type {
   GetPitch404,
   GetPitch500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  QueryObserverOptions,
-  UseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const getPitchQueryKey = (
@@ -34,14 +34,14 @@ export const getPitchQueryKey = (
 export type GetPitchQueryKey = ReturnType<typeof getPitchQueryKey>;
 
 /**
- * @description Returns a single pitch with a presigned URL for the audio file
+ * @description Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
  * @summary Get a pitch by ID
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
 export async function getPitch(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -60,7 +60,7 @@ export async function getPitch(
 export function getPitchQueryOptions(
   tripID: GetPitchPathParams["tripID"],
   pitchID: GetPitchPathParams["pitchID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = getPitchQueryKey(tripID, pitchID);
   return queryOptions<
@@ -72,16 +72,14 @@ export function getPitchQueryOptions(
     enabled: !!(tripID && pitchID),
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return getPitch(tripID, pitchID, config);
     },
   });
 }
 
 /**
- * @description Returns a single pitch with a presigned URL for the audio file
+ * @description Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
  * @summary Get a pitch by ID
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
@@ -102,7 +100,7 @@ export function useGetPitch<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

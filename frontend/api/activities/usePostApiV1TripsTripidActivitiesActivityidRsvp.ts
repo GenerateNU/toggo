@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
   PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse,
@@ -16,11 +21,6 @@ import type {
   PostApiV1TripsTripidActivitiesActivityidRsvp422,
   PostApiV1TripsTripidActivitiesActivityidRsvp500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const postApiV1TripsTripidActivitiesActivityidRsvpMutationKey = () =>
@@ -37,10 +37,10 @@ export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationKey =
 export async function postApiV1TripsTripidActivitiesActivityidRsvp(
   tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"],
   activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"],
-  data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
+  data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
   config: Partial<
     RequestConfig<PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest>
-  > & { client?: Client } = {},
+  > & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -66,12 +66,10 @@ export async function postApiV1TripsTripidActivitiesActivityidRsvp(
   return res.data;
 }
 
-export function postApiV1TripsTripidActivitiesActivityidRsvpMutationOptions<
-  TContext = unknown,
->(
+export function postApiV1TripsTripidActivitiesActivityidRsvpMutationOptions(
   config: Partial<
     RequestConfig<PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest>
-  > & { client?: Client } = {},
+  > & { client?: typeof fetch } = {},
 ) {
   const mutationKey = postApiV1TripsTripidActivitiesActivityidRsvpMutationKey();
   return mutationOptions<
@@ -87,9 +85,9 @@ export function postApiV1TripsTripidActivitiesActivityidRsvpMutationOptions<
     {
       tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"];
       activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"];
-      data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+      data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, activityID, data }) => {
@@ -123,13 +121,13 @@ export function usePostApiV1TripsTripidActivitiesActivityidRsvp<TContext>(
       {
         tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"];
         activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"];
-        data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+        data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
       },
       TContext
     > & { client?: QueryClient };
     client?: Partial<
       RequestConfig<PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest>
-    > & { client?: Client };
+    > & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};
@@ -154,7 +152,7 @@ export function usePostApiV1TripsTripidActivitiesActivityidRsvp<TContext>(
       {
         tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"];
         activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"];
-        data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+        data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
       },
       TContext
     >;
@@ -172,7 +170,7 @@ export function usePostApiV1TripsTripidActivitiesActivityidRsvp<TContext>(
     {
       tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"];
       activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"];
-      data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+      data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
     },
     TContext
   >(
@@ -195,7 +193,7 @@ export function usePostApiV1TripsTripidActivitiesActivityidRsvp<TContext>(
     {
       tripID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["tripID"];
       activityID: PostApiV1TripsTripidActivitiesActivityidRsvpPathParams["activityID"];
-      data: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
+      data?: PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest;
     },
     TContext
   >;

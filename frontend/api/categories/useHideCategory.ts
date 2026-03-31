@@ -4,7 +4,12 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
 import type {
   HideCategoryMutationResponse,
   HideCategoryPathParams,
@@ -14,11 +19,6 @@ import type {
   HideCategory404,
   HideCategory500,
 } from "../../types/types.gen.ts";
-import type {
-  UseMutationOptions,
-  UseMutationResult,
-  QueryClient,
-} from "@tanstack/react-query";
 import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const hideCategoryMutationKey = () =>
@@ -36,7 +36,7 @@ export type HideCategoryMutationKey = ReturnType<
 export async function hideCategory(
   tripID: HideCategoryPathParams["tripID"],
   name: HideCategoryPathParams["name"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -58,8 +58,8 @@ export async function hideCategory(
   return res.data;
 }
 
-export function hideCategoryMutationOptions<TContext = unknown>(
-  config: Partial<RequestConfig> & { client?: Client } = {},
+export function hideCategoryMutationOptions(
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const mutationKey = hideCategoryMutationKey();
   return mutationOptions<
@@ -75,7 +75,7 @@ export function hideCategoryMutationOptions<TContext = unknown>(
       tripID: HideCategoryPathParams["tripID"];
       name: HideCategoryPathParams["name"];
     },
-    TContext
+    typeof mutationKey
   >({
     mutationKey,
     mutationFn: async ({ tripID, name }) => {
@@ -106,7 +106,7 @@ export function useHideCategory<TContext>(
       },
       TContext
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { mutation = {}, client: config = {} } = options ?? {};

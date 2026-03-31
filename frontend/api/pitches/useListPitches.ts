@@ -4,7 +4,13 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
+import type {
+  QueryKey,
+  QueryClient,
+  QueryObserverOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import type {
   ListPitchesQueryResponse,
   ListPitchesPathParams,
@@ -13,17 +19,11 @@ import type {
   ListPitches404,
   ListPitches500,
 } from "../../types/types.gen.ts";
-import type {
-  QueryKey,
-  QueryClient,
-  QueryObserverOptions,
-  UseQueryResult,
-} from "@tanstack/react-query";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const listPitchesQueryKey = (
   tripID: ListPitchesPathParams["tripID"],
-  params: ListPitchesQueryParams = {},
+  params?: ListPitchesQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/pitches", params: { tripID: tripID } },
@@ -40,7 +40,7 @@ export type ListPitchesQueryKey = ReturnType<typeof listPitchesQueryKey>;
 export async function listPitches(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -60,7 +60,7 @@ export async function listPitches(
 export function listPitchesQueryOptions(
   tripID: ListPitchesPathParams["tripID"],
   params?: ListPitchesQueryParams,
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const queryKey = listPitchesQueryKey(tripID, params);
   return queryOptions<
@@ -72,9 +72,7 @@ export function listPitchesQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
+      config.signal = signal;
       return listPitches(tripID, params, config);
     },
   });
@@ -102,7 +100,7 @@ export function useListPitches<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};

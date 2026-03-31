@@ -4,29 +4,32 @@
  */
 
 import fetch from "../client";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
-import type {
-  GetCategoriesByTripIDQueryResponse,
-  GetCategoriesByTripIDPathParams,
-  GetCategoriesByTripID400,
-  GetCategoriesByTripID401,
-  GetCategoriesByTripID403,
-  GetCategoriesByTripID404,
-  GetCategoriesByTripID500,
-} from "../../types/types.gen.ts";
+import type { RequestConfig, ResponseErrorConfig } from "../client";
 import type {
   QueryKey,
   QueryClient,
   QueryObserverOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
+import type {
+  GetCategoriesByTripIDQueryResponse,
+  GetCategoriesByTripIDPathParams,
+  GetCategoriesByTripIDQueryParams,
+  GetCategoriesByTripID400,
+  GetCategoriesByTripID401,
+  GetCategoriesByTripID403,
+  GetCategoriesByTripID404,
+  GetCategoriesByTripID500,
+} from "../../types/types.gen.ts";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const getCategoriesByTripIDQueryKey = (
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
 ) =>
   [
     { url: "/api/v1/trips/:tripID/categories", params: { tripID: tripID } },
+    ...(params ? [params] : []),
   ] as const;
 
 export type GetCategoriesByTripIDQueryKey = ReturnType<
@@ -40,7 +43,8 @@ export type GetCategoriesByTripIDQueryKey = ReturnType<
  */
 export async function getCategoriesByTripID(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  params?: GetCategoriesByTripIDQueryParams,
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
   const { client: request = fetch, ...requestConfig } = config;
 
@@ -57,6 +61,7 @@ export async function getCategoriesByTripID(
   >({
     method: "GET",
     url: `/api/v1/trips/${tripID}/categories`,
+    params,
     ...requestConfig,
   });
   return res.data;
@@ -64,9 +69,10 @@ export async function getCategoriesByTripID(
 
 export function getCategoriesByTripIDQueryOptions(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
-  config: Partial<RequestConfig> & { client?: Client } = {},
+  params?: GetCategoriesByTripIDQueryParams,
+  config: Partial<RequestConfig> & { client?: typeof fetch } = {},
 ) {
-  const queryKey = getCategoriesByTripIDQueryKey(tripID);
+  const queryKey = getCategoriesByTripIDQueryKey(tripID, params);
   return queryOptions<
     GetCategoriesByTripIDQueryResponse,
     ResponseErrorConfig<
@@ -82,10 +88,8 @@ export function getCategoriesByTripIDQueryOptions(
     enabled: !!tripID,
     queryKey,
     queryFn: async ({ signal }) => {
-      if (!config.signal) {
-        config.signal = signal;
-      }
-      return getCategoriesByTripID(tripID, config);
+      config.signal = signal;
+      return getCategoriesByTripID(tripID, params, config);
     },
   });
 }
@@ -101,6 +105,7 @@ export function useGetCategoriesByTripID<
   TQueryKey extends QueryKey = GetCategoriesByTripIDQueryKey,
 >(
   tripID: GetCategoriesByTripIDPathParams["tripID"],
+  params?: GetCategoriesByTripIDQueryParams,
   options: {
     query?: Partial<
       QueryObserverOptions<
@@ -117,17 +122,17 @@ export function useGetCategoriesByTripID<
         TQueryKey
       >
     > & { client?: QueryClient };
-    client?: Partial<RequestConfig> & { client?: Client };
+    client?: Partial<RequestConfig> & { client?: typeof fetch };
   } = {},
 ) {
   const { query: queryConfig = {}, client: config = {} } = options ?? {};
   const { client: queryClient, ...queryOptions } = queryConfig;
   const queryKey =
-    queryOptions?.queryKey ?? getCategoriesByTripIDQueryKey(tripID);
+    queryOptions?.queryKey ?? getCategoriesByTripIDQueryKey(tripID, params);
 
   const query = useQuery(
     {
-      ...getCategoriesByTripIDQueryOptions(tripID, config),
+      ...getCategoriesByTripIDQueryOptions(tripID, params, config),
       queryKey,
       ...queryOptions,
     } as unknown as QueryObserverOptions,

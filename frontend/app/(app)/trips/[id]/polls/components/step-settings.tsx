@@ -10,68 +10,10 @@ import {
   Toggle,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import {
-  BedDouble,
-  Bike,
-  Car,
-  Compass,
-  Flame,
-  Gem,
-  Globe,
-  Landmark,
-  LucideIcon,
-  MoreHorizontal,
-  Mountain,
-  Music,
-  ShoppingBag,
-  Star,
-  Sun,
-  Ticket,
-  UtensilsCrossed,
-} from "lucide-react-native";
+import { getCategoryIcon } from "@/utilities/category-icons";
+import { MoreHorizontal } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable } from "react-native";
-
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  attraction: Landmark,
-  entertainment: Ticket,
-  food: UtensilsCrossed,
-  lodging: BedDouble,
-  transportation: Car,
-};
-
-const RANDOM_ICON_POOL: LucideIcon[] = [
-  Compass,
-  Mountain,
-  Globe,
-  Sun,
-  Music,
-  ShoppingBag,
-  Gem,
-  Star,
-  Bike,
-  Flame,
-];
-
-function hashStr(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++)
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
-
-function getCategoryIcon(rawName: string): LucideIcon {
-  return (
-    CATEGORY_ICONS[rawName.toLowerCase()] ??
-    RANDOM_ICON_POOL[hashStr(rawName) % RANDOM_ICON_POOL.length]!
-  );
-}
-
-const toPascalCase = (str: string) =>
-  str
-    .split(/\s+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(" ");
 
 interface StepSettingsProps {
   tripID: string;
@@ -157,16 +99,16 @@ export default function StepSettings({
         </Text>
         <Box flexDirection="row" flexWrap="wrap" gap="xs">
           {visibleCategories.map((cat) => {
-            const rawName = cat.name ?? "";
-            const label = toPascalCase(rawName);
-            const icon = getCategoryIcon(rawName);
+            const name = cat.name ?? "";
+            const label = cat.label ?? name;
+            const icon = getCategoryIcon(name);
             return (
               <Chip
-                key={rawName}
+                key={name}
                 label={label}
                 icon={icon}
-                selected={categories.includes(rawName)}
-                onPress={() => toggleCategory(rawName)}
+                selected={categories.includes(name)}
+                onPress={() => toggleCategory(name)}
               />
             );
           })}

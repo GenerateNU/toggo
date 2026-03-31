@@ -1,3 +1,4 @@
+import { useGetCategoriesByTripID } from "@/api/categories/useGetCategoriesByTripID";
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { Box, Button, Screen, Text, useToast } from "@/design-system";
 import * as Linking from "expo-linking";
@@ -5,6 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
 import { ActivityIndicator, Share } from "react-native";
 import CreateFAB from "./components/create-fab";
+import TabBar from "./components/tabs/tab-bar";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "./polls/components/create-poll-sheet";
@@ -17,6 +19,12 @@ export default function Trip() {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
   const toast = useToast();
+
+  const { data: categoryData, isLoading: categoriesLoading } =
+    useGetCategoriesByTripID(tripID!);
+  const categories = categoryData?.categories ?? [];
+  const [selectedTab, setSelectedTab] = useState<string | null>(null);
+  const activeTab = selectedTab ?? categories.find((c) => !c.is_hidden)?.name ?? "";
 
   const handleInvite = async () => {
     try {
@@ -66,6 +74,18 @@ export default function Trip() {
           <Text variant="lgHeading" color="textSecondary">
             {tripID}
           </Text>
+        </Box>
+
+        <Box paddingVertical="md">
+          <TabBar
+            categories={categories}
+            activeTab={activeTab}
+            onTabPress={setSelectedTab}
+            onEditPress={() => {
+              // TODO: open edit tabs modal
+            }}
+            loading={categoriesLoading}
+          />
         </Box>
 
         <Box padding="lg" gap="md">
