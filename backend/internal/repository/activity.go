@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -43,6 +44,7 @@ func (r *activityRepository) Create(ctx context.Context, activity *models.Activi
 		Returning("*").
 		Exec(ctx)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return activity, nil
@@ -52,6 +54,7 @@ func (r *activityRepository) Create(ctx context.Context, activity *models.Activi
 func (r *activityRepository) CreateActivityTx(ctx context.Context, tx bun.Tx, activity *models.Activity) (*models.Activity, error) {
 	_, err := tx.NewInsert().Model(activity).Returning("*").Exec(ctx)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	return activity, nil

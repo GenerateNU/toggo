@@ -795,8 +795,8 @@ func (_c *MockImageRepository_FindConfirmedByIDs_Call) Run(run func(ctx context.
 	return _c
 }
 
-func (_c *MockImageRepository_FindConfirmedByIDs_Call) Return(confirmedIDs []uuid.UUID, err error) *MockImageRepository_FindConfirmedByIDs_Call {
-	_c.Call.Return(confirmedIDs, err)
+func (_c *MockImageRepository_FindConfirmedByIDs_Call) Return(uUIDs []uuid.UUID, err error) *MockImageRepository_FindConfirmedByIDs_Call {
+	_c.Call.Return(uUIDs, err)
 	return _c
 }
 

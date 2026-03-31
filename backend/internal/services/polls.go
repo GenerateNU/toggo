@@ -138,6 +138,12 @@ func (s *PollService) createPollTx(
 		return nil, nil, err
 	}
 
+	if len(categories) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, categories); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	categoryNames, err := s.repository.PollCategory.ReplaceCategoriesForPoll(
 		ctx,
 		tx,
@@ -267,6 +273,12 @@ func (s *PollService) resolveCategoryUpdate(
 	}
 
 	values := *categories
+
+	if len(values) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, values); err != nil {
+			return nil, err
+		}
+	}
 
 	return s.repository.PollCategory.ReplaceCategoriesForPoll(
 		ctx,
