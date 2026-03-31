@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "properties": { "unread_count": { "type": "integer" } },
+  "x-readme-ref-name": "realtime.UnreadCountResponse"
+}

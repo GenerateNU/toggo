@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -71,4 +72,35 @@ type ActivityRSVPsPageResult struct {
 	RSVPs      []ActivityRSVPAPIResponse `json:"rsvps"`
 	NextCursor *string                   `json:"next_cursor,omitempty"`
 	Limit      int                       `json:"limit"`
+}
+
+// GoingUser is the DB-level shape returned from the going_users_json subquery.
+type GoingUser struct {
+	UserID            uuid.UUID `json:"user_id"`
+	Username          string    `json:"username"`
+	ProfilePictureKey *string   `json:"profile_picture_key,omitempty"`
+}
+
+// GoingUserList is a slice of GoingUser that knows how to scan itself from a
+// PostgreSQL JSON/JSONB column or subquery result.
+type GoingUserList []GoingUser
+
+func (g *GoingUserList) Scan(src any) error {
+	if src == nil {
+		*g = GoingUserList{}
+		return nil
+	}
+	b, ok := src.([]byte)
+	if !ok {
+		*g = GoingUserList{}
+		return nil
+	}
+	return json.Unmarshal(b, g)
+}
+
+// ActivityGoingUserResponse is the API-facing representation of a user who RSVPed "yes".
+type ActivityGoingUserResponse struct {
+	UserID            uuid.UUID `json:"user_id"`
+	Username          string    `json:"username"`
+	ProfilePictureURL *string   `json:"profile_picture_url,omitempty"`
 }

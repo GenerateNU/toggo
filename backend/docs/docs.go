@@ -1338,7 +1338,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/activities": {
             "get": {
-                "description": "Retrieves paginated activities for a trip, optionally filtered by category",
+                "description": "Retrieves paginated activities for a trip, optionally filtered by category and time of day",
                 "produces": [
                     "application/json"
                 ],
@@ -1359,6 +1359,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by category name",
                         "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by time of day (morning, afternoon, evening)",
+                        "name": "time_of_day",
                         "in": "query"
                     },
                     {
@@ -5056,6 +5062,15 @@ const docTemplate = `{
                 "estimated_price": {
                     "type": "number"
                 },
+                "going_count": {
+                    "type": "integer"
+                },
+                "going_users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityGoingUserResponse"
+                    }
+                },
                 "id": {
                     "type": "string"
                 },
@@ -5130,6 +5145,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityGoingUserResponse": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

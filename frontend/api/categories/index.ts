@@ -1,7 +1,17 @@
+export type { CreateCategoryMutationKey } from "./useCreateCategory.ts";
+export type { DeleteCategoryMutationKey } from "./useDeleteCategory.ts";
 export type { GetCategoriesByTripIDQueryKey } from "./useGetCategoriesByTripID.ts";
 export type { GetCategoriesByTripIDSuspenseQueryKey } from "./useGetCategoriesByTripIDSuspense.ts";
 export type { HideCategoryMutationKey } from "./useHideCategory.ts";
 export type { ShowCategoryMutationKey } from "./useShowCategory.ts";
+export { createCategory } from "./useCreateCategory.ts";
+export { createCategoryMutationKey } from "./useCreateCategory.ts";
+export { createCategoryMutationOptions } from "./useCreateCategory.ts";
+export { useCreateCategory } from "./useCreateCategory.ts";
+export { deleteCategory } from "./useDeleteCategory.ts";
+export { deleteCategoryMutationKey } from "./useDeleteCategory.ts";
+export { deleteCategoryMutationOptions } from "./useDeleteCategory.ts";
+export { useDeleteCategory } from "./useDeleteCategory.ts";
 export { getCategoriesByTripID } from "./useGetCategoriesByTripID.ts";
 export { getCategoriesByTripIDQueryKey } from "./useGetCategoriesByTripID.ts";
 export { getCategoriesByTripIDQueryOptions } from "./useGetCategoriesByTripID.ts";
