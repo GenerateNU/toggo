@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 
-	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
@@ -33,26 +32,7 @@ func NewCommentReactionService(repo *repository.Repository, fileService FileServ
 }
 
 func (s *CommentReactionService) ensureCommentVisibleToUser(ctx context.Context, commentID uuid.UUID, userID uuid.UUID) error {
-	// Comments are scoped to a trip, so reactions inherit the same membership visibility.
-	var tripID uuid.UUID
-	err := s.repository.GetDB().NewSelect().
-		TableExpr("comments AS c").
-		ColumnExpr("c.trip_id").
-		Where("c.id = ?", commentID).
-		Scan(ctx, &tripID)
-	if err != nil {
-		return err
-	}
-
-	isMember, err := s.repository.Membership.IsMember(ctx, tripID, userID)
-	if err != nil {
-		return err
-	}
-	if !isMember {
-		// Mirror TripMemberRequired: hide existence for non-members.
-		return errs.ErrNotFound
-	}
-	return nil
+	return s.repository.CommentReaction.EnsureCommentVisibleToUser(ctx, commentID, userID)
 }
 
 func (s *CommentReactionService) AddReaction(ctx context.Context, commentID uuid.UUID, userID uuid.UUID, req models.CreateCommentReactionRequest) (*models.CommentReaction, error) {

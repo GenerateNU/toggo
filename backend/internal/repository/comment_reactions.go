@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"toggo/internal/errs"
 	"toggo/internal/models"
 
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 )
 
 type CommentReactionRepository interface {
+	EnsureCommentVisibleToUser(ctx context.Context, commentID uuid.UUID, userID uuid.UUID) error
 	Create(ctx context.Context, reaction *models.CommentReaction) (*models.CommentReaction, error)
 	DeleteByUserEmoji(ctx context.Context, commentID uuid.UUID, userID uuid.UUID, emoji string) error
 	GetSummary(ctx context.Context, commentID uuid.UUID, currentUserID uuid.UUID) ([]models.CommentReactionSummary, error)
@@ -24,6 +26,27 @@ type commentReactionRepository struct {
 
 func NewCommentReactionRepository(db *bun.DB) CommentReactionRepository {
 	return &commentReactionRepository{db: db}
+}
+
+func (r *commentReactionRepository) EnsureCommentVisibleToUser(ctx context.Context, commentID uuid.UUID, userID uuid.UUID) error {
+	// Treat comment visibility as a DB concern:
+	// - the comment must exist
+	// - the user must be a member of the comment's trip
+	var one int
+	err := r.db.NewSelect().
+		TableExpr("comments AS c").
+		ColumnExpr("1").
+		Where("c.id = ?", commentID).
+		Where("EXISTS (SELECT 1 FROM memberships m WHERE m.user_id = ? AND m.trip_id = c.trip_id)", userID).
+		Limit(1).
+		Scan(ctx, &one)
+	if err != nil {
+		return err
+	}
+	if one != 1 {
+		return errs.ErrNotFound
+	}
+	return nil
 }
 
 func (r *commentReactionRepository) Create(ctx context.Context, reaction *models.CommentReaction) (*models.CommentReaction, error) {
