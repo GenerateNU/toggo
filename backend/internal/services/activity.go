@@ -378,8 +378,14 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		return nil, err
 	}
 
+	picURLMap := pagination.FetchFileURLs(ctx, s.fileService, []models.GoingUser(activity.GoingUsers), func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
 	apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+	apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, picURLMap)
+	apiResp.GoingCount = len(apiResp.GoingUsers)
 	return apiResp, nil
 }
 
@@ -388,6 +394,9 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 	if err != nil {
 		return nil, err
 	}
+
+	goingUserPicURLMap := s.batchFetchGoingUserPicURLs(ctx, activities)
+
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -398,9 +407,38 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
 		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+		apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, goingUserPicURLMap)
+		apiResp.GoingCount = len(apiResp.GoingUsers)
 		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities, nil
+}
+
+func (s *ActivityService) batchFetchGoingUserPicURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) map[string]string {
+	var allUsers []models.GoingUser
+	for _, a := range activities {
+		allUsers = append(allUsers, a.GoingUsers...)
+	}
+	return pagination.FetchFileURLs(ctx, s.fileService, allUsers, func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+}
+
+func resolveGoingUsers(users models.GoingUserList, picURLMap map[string]string) []models.ActivityGoingUserResponse {
+	if len(users) == 0 {
+		return []models.ActivityGoingUserResponse{}
+	}
+	responses := make([]models.ActivityGoingUserResponse, 0, len(users))
+	for _, u := range users {
+		resp := models.ActivityGoingUserResponse{UserID: u.UserID, Username: u.Username}
+		if u.ProfilePictureKey != nil && *u.ProfilePictureKey != "" {
+			if url, ok := picURLMap[*u.ProfilePictureKey]; ok {
+				resp.ProfilePictureURL = &url
+			}
+		}
+		responses = append(responses, resp)
+	}
+	return responses
 }
 
 func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) (map[uuid.UUID]string, error) {

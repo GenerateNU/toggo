@@ -5056,6 +5056,15 @@ const docTemplate = `{
                 "estimated_price": {
                     "type": "number"
                 },
+                "going_count": {
+                    "type": "integer"
+                },
+                "going_users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityGoingUserResponse"
+                    }
+                },
                 "id": {
                     "type": "string"
                 },
@@ -5130,6 +5139,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityGoingUserResponse": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

@@ -28,6 +28,19 @@ type ActivityRepository interface {
 
 var _ ActivityRepository = (*activityRepository)(nil)
 
+const goingUsersSubquery = `COALESCE((
+	SELECT json_agg(json_build_object(
+		'user_id', ar.user_id,
+		'username', ru.username,
+		'profile_picture_key', ri.file_key
+	))
+	FROM activity_rsvps ar
+	JOIN users ru ON ru.id = ar.user_id
+	LEFT JOIN images ri ON ri.image_id = ru.profile_picture
+		AND ri.size = 'small' AND ri.status = 'confirmed'
+	WHERE ar.activity_id = a.id AND ar.status = 'yes'
+), '[]') AS going_users_json`
+
 type activityRepository struct {
 	db *bun.DB
 }
@@ -66,12 +79,11 @@ func (r *activityRepository) Find(ctx context.Context, activityID uuid.UUID) (*m
 		ColumnExpr("u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
-		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
+		ColumnExpr("COALESCE((SELECT json_agg(ai.image_id) FROM activity_images ai WHERE ai.activity_id = a.id), '[]') AS image_keys").
+		ColumnExpr(goingUsersSubquery).
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
-		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
 		Where("a.id = ?", activityID).
-		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
 		Scan(ctx, activity)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -96,6 +108,7 @@ func (r *activityRepository) FindByTripID(
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
 		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
+		ColumnExpr(goingUsersSubquery).
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("LEFT JOIN activity_images AS ai ON ai.activity_id = a.id").
@@ -121,6 +134,7 @@ func (r *activityRepository) FindByCategoryName(
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
 		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
+		ColumnExpr(goingUsersSubquery).
 		Join("JOIN users AS u ON u.id = a.proposed_by").
 		Join("LEFT JOIN images AS img ON u.profile_picture IS NOT NULL AND img.image_id = u.profile_picture AND img.size = ? AND img.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
 		Join("JOIN activity_categories AS ac ON ac.activity_id = a.id").

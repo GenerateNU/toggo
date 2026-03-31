@@ -27,7 +27,11 @@ export const updatePitchMutationKey = () =>
 export type UpdatePitchMutationKey = ReturnType<typeof updatePitchMutationKey>;
 
 /**
- * @description Updates pitch metadata (title, description, duration)
+ * @description Updates pitch metadata (title, description, duration).
+ * When image_ids is omitted from the request, existing image associations remain unchanged.
+ * When image_ids is an empty array, all image associations are removed.
+ * When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+ * The response includes images with presigned medium_url for each image.
  * @summary Update a pitch
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
@@ -84,7 +88,11 @@ export function updatePitchMutationOptions<TContext = unknown>(
 }
 
 /**
- * @description Updates pitch metadata (title, description, duration)
+ * @description Updates pitch metadata (title, description, duration).
+ * When image_ids is omitted from the request, existing image associations remain unchanged.
+ * When image_ids is an empty array, all image associations are removed.
+ * When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+ * The response includes images with presigned medium_url for each image.
  * @summary Update a pitch
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
