@@ -88,6 +88,10 @@ export default function SearchLocationScreen() {
         place_id: prediction.place_id,
       });
       setSelectedLocation(res.data);
+    } catch (error) {
+      console.error("Failed to fetch place details:", error);
+      setIsSelectingPlace(false);
+      // Optionally show user-friendly error message
     } finally {
       setIsLoadingDetails(false);
     }
