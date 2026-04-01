@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -88,17 +87,15 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 
 	t.Run("extracts OG title and description", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(`<html><head>
+		const targetURL = "https://example.com/event"
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(200, `<html><head>
 				<meta property="og:title" content="Cool Event"/>
 				<meta property="og:description" content="A great time"/>
 				<meta property="og:image" content="https://cdn.example.com/img.jpg"/>
-			</head></html>`))
+			</head></html>`), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		result, err := svc.ParseLink(context.Background(), srv.URL)
+		result, err := svc.ParseLink(context.Background(), targetURL)
 
 		require.NoError(t, err)
 		assert.Equal(t, "Cool Event", result.Name)
@@ -107,18 +104,15 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 		require.NotNil(t, result.ThumbnailURL)
 		assert.Equal(t, "https://cdn.example.com/img.jpg", *result.ThumbnailURL)
 		assert.Equal(t, models.LinkTypeGeneric, result.SourceType)
-		assert.Equal(t, srv.URL, result.SourceURL)
+		assert.Equal(t, targetURL, result.SourceURL)
 	})
 
 	t.Run("falls back to title element when no OG tags", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(`<html><head><title>Page Title</title></head></html>`))
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(200, `<html><head><title>Page Title</title></head></html>`), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		result, err := svc.ParseLink(context.Background(), srv.URL)
+		result, err := svc.ParseLink(context.Background(), "https://example.com/page")
 
 		require.NoError(t, err)
 		assert.Equal(t, "Page Title", result.Name)
@@ -126,29 +120,24 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 
 	t.Run("uses raw URL as name when no metadata found", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(`<html><body>No metadata</body></html>`))
+		const targetURL = "https://example.com/no-meta"
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(200, `<html><body>No metadata</body></html>`), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		result, err := svc.ParseLink(context.Background(), srv.URL)
+		result, err := svc.ParseLink(context.Background(), targetURL)
 
 		require.NoError(t, err)
-		assert.Equal(t, srv.URL, result.Name)
+		assert.Equal(t, targetURL, result.Name)
 		assert.Nil(t, result.Description)
 		assert.Nil(t, result.ThumbnailURL)
 	})
 
 	t.Run("returns ErrUpstreamError on HTTP 4xx", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, "not found", http.StatusNotFound)
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(404, "not found"), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		_, err := svc.ParseLink(context.Background(), srv.URL)
+		_, err := svc.ParseLink(context.Background(), "https://example.com/not-found")
 
 		require.Error(t, err)
 		assert.True(t, errors.Is(err, services.ErrUpstreamError))
@@ -157,17 +146,14 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 
 	t.Run("JSON-LD takes priority over OG tags", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(`<html><head>
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(200, `<html><head>
 				<meta property="og:title" content="OG Title"/>
 			</head><body>
 				<script type="application/ld+json">{"name":"JSON-LD Title","description":"LD Desc","image":"https://cdn.example.com/ld.jpg"}</script>
-			</body></html>`))
+			</body></html>`), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		result, err := svc.ParseLink(context.Background(), srv.URL)
+		result, err := svc.ParseLink(context.Background(), "https://example.com/page")
 
 		require.NoError(t, err)
 		assert.Equal(t, "JSON-LD Title", result.Name)
@@ -177,16 +163,13 @@ func TestLinkParserService_ParseLink_Generic(t *testing.T) {
 
 	t.Run("Twitter card falls back when no OG tags", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, _ = w.Write([]byte(`<html><head>
+		svc := newLinkParserSvc(roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			return newHTMLResponse(200, `<html><head>
 				<meta name="twitter:title" content="Twitter Title"/>
 				<meta name="twitter:description" content="Twitter Desc"/>
-			</head></html>`))
+			</head></html>`), nil
 		}))
-		defer srv.Close()
-
-		svc := services.NewLinkParserServiceWithClient(srv.Client())
-		result, err := svc.ParseLink(context.Background(), srv.URL)
+		result, err := svc.ParseLink(context.Background(), "https://example.com/page")
 
 		require.NoError(t, err)
 		assert.Equal(t, "Twitter Title", result.Name)

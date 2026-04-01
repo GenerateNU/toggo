@@ -20,8 +20,8 @@ const ErrorState: React.FC<ErrorDisplayProps> = ({
     <Box flex={1} width="100%" justifyContent="center">
       <Box gap="md" marginBottom="md">
         {!isBottomSheet && <Box width={150} height={150} />}
-        <Text variant="smLabel">{title}</Text>
-        <Text variant="smDisplay">{description}</Text>
+        <Text variant="bodySmMedium">{title}</Text>
+        <Text variant="bodySmStrong">{description}</Text>
       </Box>
       {refresh && (
         <Button

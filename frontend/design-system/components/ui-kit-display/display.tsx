@@ -12,7 +12,13 @@ import Divider from "@/design-system/primitives/divider";
 import { Text } from "@/design-system/primitives/text";
 import { useToast } from "@/design-system/primitives/toast-manager";
 import { BorderWidth } from "@/design-system/tokens/border";
-import { ColorName, ColorPalette } from "@/design-system/tokens/color";
+import {
+  Blue,
+  Brand,
+  ColorName,
+  ColorPalette,
+  Gray,
+} from "@/design-system/tokens/color";
 import { CoreSize, CoreSizeKey } from "@/design-system/tokens/core-size";
 import {
   CornerRadius,
@@ -50,7 +56,7 @@ function Section({
 }) {
   return (
     <Box width="100%" gap="sm">
-      <Text variant="lgHeading">{title}</Text>
+      <Text variant="headingMd">{title}</Text>
       <Box width="100%" borderRadius="md" gap="sm">
         {children}
       </Box>
@@ -72,7 +78,11 @@ function Row({
       justifyContent="space-between"
       gap="sm"
     >
-      <Text variant="xsLabel" color="textSecondary" style={{ flexShrink: 1 }}>
+      <Text
+        variant="bodyXsMedium"
+        color="textInverse"
+        style={{ flexShrink: 1 }}
+      >
         {label}
       </Text>
       {children}
@@ -106,7 +116,7 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
   return (
     <TouchableOpacity onPress={play}>
       <Box gap="xs">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           {tokenKey} — {t.duration}ms · {t.easing}
         </Text>
         <AnimatedBox
@@ -223,8 +233,8 @@ export default function UIKit() {
   return (
     <Box gap="lg">
       <Box gap="xs">
-        <Text variant="xxlHeading">Design System</Text>
-        <Text variant="smParagraph" color="textQuaternary">
+        <Text variant="headingXl">Design System</Text>
+        <Text variant="bodySmDefault" color="textSubtle">
           Basic building blocks and tokens for consistent design across the app.
           Subjected to change.
         </Text>
@@ -243,14 +253,14 @@ export default function UIKit() {
 
         {/* Full width with label */}
         <View style={{ gap: 4 }}>
-          <Text variant="xsLabel" color="textQuaternary">
+          <Text variant="bodyXsMedium" color="textSubtle">
             3 of 5 complete
           </Text>
           <ProgressBarCurved percent={60} />
         </View>
       </Section>
       <Section title="Skeleton">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           shapes
         </Text>
         <Row label="rect">
@@ -265,6 +275,9 @@ export default function UIKit() {
       </Section>
 
       <Section title="Color">
+        <Text variant="bodyXsMedium" color="textInverse">
+          Semantic tokens
+        </Text>
         {(Object.keys(ColorPalette) as ColorName[]).map((key) => (
           <Row key={key} label={key}>
             <Box
@@ -272,11 +285,74 @@ export default function UIKit() {
               height={32}
               borderRadius="sm"
               borderWidth={1}
-              borderColor="borderPrimary"
+              borderColor="borderDefault"
               style={{ backgroundColor: ColorPalette[key] }}
             />
           </Row>
         ))}
+
+        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
+          Gray scale
+        </Text>
+        <Box flexDirection="row" flexWrap="wrap" gap="xs">
+          {Object.entries(Gray).map(([step, hex]) => (
+            <Box key={step} alignItems="center" gap="xs">
+              <Box
+                width={40}
+                height={40}
+                borderRadius="sm"
+                borderWidth={1}
+                borderColor="borderDefault"
+                style={{ backgroundColor: hex }}
+              />
+              <Text variant="bodyXsDefault" color="textInverse">
+                {step}
+              </Text>
+            </Box>
+          ))}
+        </Box>
+
+        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
+          Brand scale
+        </Text>
+        <Box flexDirection="row" flexWrap="wrap" gap="xs">
+          {Object.entries(Brand).map(([step, hex]) => (
+            <Box key={step} alignItems="center" gap="xs">
+              <Box
+                width={40}
+                height={40}
+                borderRadius="sm"
+                borderWidth={1}
+                borderColor="borderDefault"
+                style={{ backgroundColor: hex }}
+              />
+              <Text variant="bodyXsDefault" color="textInverse">
+                {step}
+              </Text>
+            </Box>
+          ))}
+        </Box>
+
+        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
+          Blue scale
+        </Text>
+        <Box flexDirection="row" flexWrap="wrap" gap="xs">
+          {Object.entries(Blue).map(([step, hex]) => (
+            <Box key={step} alignItems="center" gap="xs">
+              <Box
+                width={40}
+                height={40}
+                borderRadius="sm"
+                borderWidth={1}
+                borderColor="borderDefault"
+                style={{ backgroundColor: hex }}
+              />
+              <Text variant="bodyXsDefault" color="textInverse">
+                {step}
+              </Text>
+            </Box>
+          ))}
+        </Box>
       </Section>
 
       <Section title="Typography">
@@ -296,7 +372,7 @@ export default function UIKit() {
               width={48}
               height={48}
               borderRadius="sm"
-              backgroundColor="surfaceCard"
+              backgroundColor="backgroundCard"
               style={{ ...Elevation[key] }}
             />
           </Row>
@@ -348,7 +424,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Transition">
-        <Text variant="xsParagraph" color="textSecondary">
+        <Text variant="bodyXsDefault" color="textInverse">
           Tap each row to preview
         </Text>
         {(Object.keys(Transition) as TransitionKey[]).map((key) => (
@@ -370,7 +446,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Button">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           variants
         </Text>
         <Button layout="textOnly" label="Primary" variant="Primary" />
@@ -379,7 +455,7 @@ export default function UIKit() {
         <Button layout="textOnly" label="Quaternary" variant="Quaternary" />
         <Button layout="textOnly" label="Destructive" variant="Destructive" />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           sizes
         </Text>
         <Button
@@ -401,7 +477,7 @@ export default function UIKit() {
           size="large"
         />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           with icons
         </Text>
         <Button
@@ -418,7 +494,7 @@ export default function UIKit() {
           rightIcon={ArrowRight}
         />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           icon only
         </Text>
         <Box flexDirection="row" gap="sm">
@@ -442,7 +518,7 @@ export default function UIKit() {
           />
         </Box>
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="textInverse">
           states
         </Text>
         <Button
@@ -541,7 +617,7 @@ export default function UIKit() {
           onChangeText={validatePhone}
           error={phoneError}
           keyboardType="phone-pad"
-          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+          leftIcon={<Phone size={18} color={ColorPalette.textSubtle} />}
         />
 
         <TextField
@@ -550,7 +626,7 @@ export default function UIKit() {
           value=""
           onChangeText={() => {}}
           disabled
-          leftIcon={<Phone size={18} color={ColorPalette.textQuaternary} />}
+          leftIcon={<Phone size={18} color={ColorPalette.textSubtle} />}
         />
       </Section>
 
@@ -617,7 +693,7 @@ export default function UIKit() {
           variant="Secondary"
           onPress={() => setPickerVisible(true)}
         />
-        <Text variant="mdLabel">
+        <Text variant="bodyMedium">
           Selected Dates: {formatDate(selectedRange.start)} →{" "}
           {formatDate(selectedRange.end)}
         </Text>

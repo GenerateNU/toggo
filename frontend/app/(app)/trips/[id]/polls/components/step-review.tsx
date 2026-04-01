@@ -92,7 +92,7 @@ export default function StepReview({
 
   return (
     <Box gap="md">
-      <Text variant="xsLabel" color="textQuaternary">
+      <Text variant="bodyXsMedium" color="textSubtle">
         Review
       </Text>
 
@@ -100,7 +100,7 @@ export default function StepReview({
         borderRadius="md"
         padding="md"
         gap="md"
-        style={{ borderWidth: 1, borderColor: ColorPalette.borderPrimary }}
+        style={{ borderWidth: 1, borderColor: ColorPalette.borderDefault }}
       >
         <Box
           flexDirection="row"
@@ -113,7 +113,7 @@ export default function StepReview({
                 flexDirection="row"
                 alignItems="center"
                 borderRadius="full"
-                borderColor="borderPrimary"
+                borderColor="borderDefault"
                 style={{
                   borderWidth: 1,
                   gap: 5,
@@ -123,9 +123,9 @@ export default function StepReview({
               >
                 {React.createElement(getCategoryIcon(firstCat), {
                   size: 13,
-                  color: ColorPalette.textSecondary,
+                  color: ColorPalette.textInverse,
                 })}
-                <Text variant="xsLabel" color="textSecondary">
+                <Text variant="bodyXsMedium" color="textInverse">
                   {toPascalCase(firstCat)}
                 </Text>
               </Box>
@@ -133,14 +133,14 @@ export default function StepReview({
             {extraCount > 0 && (
               <Box
                 borderRadius="full"
-                borderColor="borderPrimary"
+                borderColor="borderDefault"
                 style={{
                   borderWidth: 1,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
                 }}
               >
-                <Text variant="xsLabel" color="textQuaternary">
+                <Text variant="bodyXsMedium" color="textSubtle">
                   +{extraCount}
                 </Text>
               </Box>
@@ -149,20 +149,20 @@ export default function StepReview({
 
           <Box
             borderRadius="full"
-            borderColor="borderPrimary"
+            borderColor="borderDefault"
             style={{
               borderWidth: 1,
               paddingHorizontal: 12,
               paddingVertical: 6,
             }}
           >
-            <Text variant="xsLabel" color="textSecondary">
+            <Text variant="bodyXsMedium" color="textDefault">
               {POLL_TYPE_LABELS[pollType]}
             </Text>
           </Box>
         </Box>
 
-        <Text variant="mdHeading" color="textSecondary">
+        <Text variant="headingSm" color="textDefault">
           {question}
         </Text>
 
@@ -170,17 +170,17 @@ export default function StepReview({
           {options.map((opt, i) => (
             <Box key={i} flexDirection="row" alignItems="center" gap="sm">
               <Box
-                backgroundColor="secondaryBackground"
+                backgroundColor="backgroundMuted"
                 borderRadius="lg"
                 alignItems="center"
                 justifyContent="center"
                 style={{ width: 32, height: 32 }}
               >
-                <Text variant="smLabel" color="textSecondary">
+                <Text variant="bodySmMedium" color="textDefault">
                   {i + 1}
                 </Text>
               </Box>
-              <Text variant="smParagraph" color="textSecondary">
+              <Text variant="bodySmDefault" color="textDefault">
                 {opt}
               </Text>
             </Box>
@@ -190,7 +190,7 @@ export default function StepReview({
         {(deadline || isAnonymous) && (
           <Box gap="xxs">
             {deadline && (
-              <Text variant="xsParagraph" color="textQuaternary">
+              <Text variant="bodyXsDefault" color="textSubtle">
                 Deadline:{" "}
                 {deadline.toLocaleDateString("en-US", {
                   month: "short",
@@ -202,7 +202,7 @@ export default function StepReview({
               </Text>
             )}
             {isAnonymous && (
-              <Text variant="xsParagraph" color="textQuaternary">
+              <Text variant="bodyXsDefault" color="textSubtle">
                 Anonymous voting
               </Text>
             )}

@@ -20,7 +20,7 @@ export type DividerProps = {
 export default function Divider({
   orientation = "horizontal",
   width = StyleSheet.hairlineWidth,
-  color = ColorPalette.borderPrimary,
+  color = ColorPalette.borderDefault,
   style,
 }: DividerProps) {
   const isHorizontal = orientation === "horizontal";

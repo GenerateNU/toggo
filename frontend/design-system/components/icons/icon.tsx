@@ -5,7 +5,7 @@ import { LucideProps } from "lucide-react-native";
 
 export function Icon({
   icon: IconComponent,
-  color = "iconPrimary",
+  color = "iconDefault",
   size = "md",
 }: {
   icon: React.ComponentType<LucideProps>;

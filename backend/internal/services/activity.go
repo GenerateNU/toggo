@@ -20,6 +20,7 @@ type ActivityServiceInterface interface {
 	GetActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) (*models.ActivityAPIResponse, error)
 	GetActivitiesByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
+	GetActivitiesWithFilters(ctx context.Context, tripID, userID uuid.UUID, params models.ActivityQueryParams, limit int, cursorToken string) (*models.ActivityCursorPageResult, error)
 	UpdateActivity(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.UpdateActivityRequest) (*models.ActivityAPIResponse, error)
 	DeleteActivity(ctx context.Context, tripID, activityID, userID uuid.UUID) error
 
@@ -73,6 +74,7 @@ func (s *ActivityService) CreateActivity(ctx context.Context, req models.CreateA
 			TripID:         req.TripID,
 			ProposedBy:     &userID,
 			Name:           req.Name,
+			TimeOfDay:      req.TimeOfDay,
 			ThumbnailURL:   req.ThumbnailURL,
 			MediaURL:       req.MediaURL,
 			Description:    req.Description,
@@ -174,26 +176,21 @@ func (s *ActivityService) GetActivity(ctx context.Context, tripID, activityID, u
 }
 
 func (s *ActivityService) GetActivitiesByTripID(ctx context.Context, tripID, userID uuid.UUID, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
-	cursor, err := pagination.ParseCursor(cursorToken)
-	if err != nil {
-		return nil, err
-	}
-
-	activities, nextCursor, err := s.Activity.FindByTripID(ctx, tripID, cursor, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	return s.buildActivityListResponse(ctx, activities, nextCursor, limit)
+	return s.GetActivitiesWithFilters(ctx, tripID, userID, models.ActivityQueryParams{}, limit, cursorToken)
 }
 
 func (s *ActivityService) GetActivitiesByCategory(ctx context.Context, tripID, userID uuid.UUID, categoryName string, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
+	cat := categoryName
+	return s.GetActivitiesWithFilters(ctx, tripID, userID, models.ActivityQueryParams{Category: &cat}, limit, cursorToken)
+}
+
+func (s *ActivityService) GetActivitiesWithFilters(ctx context.Context, tripID, userID uuid.UUID, params models.ActivityQueryParams, limit int, cursorToken string) (*models.ActivityCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
 		return nil, err
 	}
 
-	activities, nextCursor, err := s.Activity.FindByCategoryName(ctx, tripID, categoryName, cursor, limit)
+	activities, nextCursor, err := s.Activity.FindByActivityQueryParams(ctx, tripID, params, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -348,6 +345,7 @@ func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPicture
 		TripID:             activity.TripID,
 		ProposedBy:         activity.ProposedBy,
 		Name:               activity.Name,
+		TimeOfDay:          activity.TimeOfDay,
 		ThumbnailURL:       activity.ThumbnailURL,
 		MediaURL:           activity.MediaURL,
 		Description:        activity.Description,
@@ -378,8 +376,14 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		return nil, err
 	}
 
+	picURLMap := pagination.FetchFileURLs(ctx, s.fileService, []models.GoingUser(activity.GoingUsers), func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
 	apiResp := mapToAPIResponse(activity, proposerPictureURL)
 	apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+	apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, picURLMap)
+	apiResp.GoingCount = len(apiResp.GoingUsers)
 	return apiResp, nil
 }
 
@@ -388,6 +392,9 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 	if err != nil {
 		return nil, err
 	}
+
+	goingUserPicURLMap := s.batchFetchGoingUserPicURLs(ctx, activities)
+
 	apiActivities := make([]*models.ActivityAPIResponse, 0, len(activities))
 	for _, activity := range activities {
 		var proposerPictureURL *string
@@ -398,9 +405,38 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 		}
 		apiResp := mapToAPIResponse(activity, proposerPictureURL)
 		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
+		apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, goingUserPicURLMap)
+		apiResp.GoingCount = len(apiResp.GoingUsers)
 		apiActivities = append(apiActivities, apiResp)
 	}
 	return apiActivities, nil
+}
+
+func (s *ActivityService) batchFetchGoingUserPicURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) map[string]string {
+	var allUsers []models.GoingUser
+	for _, a := range activities {
+		allUsers = append(allUsers, a.GoingUsers...)
+	}
+	return pagination.FetchFileURLs(ctx, s.fileService, allUsers, func(u models.GoingUser) *string {
+		return u.ProfilePictureKey
+	}, models.ImageSizeSmall)
+}
+
+func resolveGoingUsers(users models.GoingUserList, picURLMap map[string]string) []models.ActivityGoingUserResponse {
+	if len(users) == 0 {
+		return []models.ActivityGoingUserResponse{}
+	}
+	responses := make([]models.ActivityGoingUserResponse, 0, len(users))
+	for _, u := range users {
+		resp := models.ActivityGoingUserResponse{UserID: u.UserID, Username: u.Username}
+		if u.ProfilePictureKey != nil && *u.ProfilePictureKey != "" {
+			if url, ok := picURLMap[*u.ProfilePictureKey]; ok {
+				resp.ProfilePictureURL = &url
+			}
+		}
+		responses = append(responses, resp)
+	}
+	return responses
 }
 
 func (s *ActivityService) batchFetchImageURLs(ctx context.Context, activities []*models.ActivityDatabaseResponse) (map[uuid.UUID]string, error) {

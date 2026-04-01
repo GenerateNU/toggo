@@ -44,7 +44,7 @@ export default function Trip() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
+      <Box flex={1} backgroundColor="backgroundSubtle">
         <CreatePollSheet
           ref={createPollSheetRef}
           tripID={tripID!}
@@ -57,19 +57,19 @@ export default function Trip() {
         <Box
           padding="lg"
           paddingTop="xl"
-          backgroundColor="surfaceCard"
+          backgroundColor="backgroundCard"
           gap="xs"
         >
-          <Text variant="smLabel" color="textQuaternary">
+          <Text variant="bodySmMedium" color="textSubtle">
             TRIP
           </Text>
-          <Text variant="lgHeading" color="textSecondary">
+          <Text variant="headingMd" color="textInverse">
             {tripID}
           </Text>
         </Box>
 
         <Box padding="lg" gap="md">
-          <Text variant="smLabel" color="textQuaternary">
+          <Text variant="bodySmMedium" color="textSubtle">
             VIEW
           </Text>
           <Box gap="sm">
@@ -116,7 +116,7 @@ export default function Trip() {
             />
           </Box>
 
-          <Text variant="smLabel" color="textQuaternary" marginTop="sm">
+          <Text variant="bodySmMedium" color="textSubtle" marginTop="sm">
             INVITE
           </Text>
           <Box gap="sm">
@@ -135,10 +135,14 @@ export default function Trip() {
               <ActivityIndicator size="small" />
             )}
             {inviteLink && (
-              <Box backgroundColor="surfaceCard" padding="sm" borderRadius="sm">
+              <Box
+                backgroundColor="backgroundCard"
+                padding="sm"
+                borderRadius="sm"
+              >
                 <Text
-                  variant="xsParagraph"
-                  color="textQuaternary"
+                  variant="bodyXsDefault"
+                  color="textSubtle"
                   numberOfLines={1}
                 >
                   {inviteLink}

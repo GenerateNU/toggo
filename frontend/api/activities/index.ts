@@ -9,6 +9,7 @@ export type { GetActivityCategoriesSuspenseQueryKey } from "./useGetActivityCate
 export type { GetActivitySuspenseQueryKey } from "./useGetActivitySuspense.ts";
 export type { GetApiV1TripsTripidActivitiesActivityidRsvpsQueryKey } from "./useGetApiV1TripsTripidActivitiesActivityidRsvps.ts";
 export type { GetApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryKey } from "./useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense.ts";
+export type { ParseActivityLinkMutationKey } from "./useParseActivityLink.ts";
 export type { PostApiV1TripsTripidActivitiesActivityidRsvpMutationKey } from "./usePostApiV1TripsTripidActivitiesActivityidRsvp.ts";
 export type { RemoveCategoryFromActivityMutationKey } from "./useRemoveCategoryFromActivity.ts";
 export type { UpdateActivityMutationKey } from "./useUpdateActivity.ts";
@@ -56,6 +57,10 @@ export { getApiV1TripsTripidActivitiesActivityidRsvpsSuspense } from "./useGetAp
 export { getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryKey } from "./useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense.ts";
 export { getApiV1TripsTripidActivitiesActivityidRsvpsSuspenseQueryOptions } from "./useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense.ts";
 export { useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense } from "./useGetApiV1TripsTripidActivitiesActivityidRsvpsSuspense.ts";
+export { parseActivityLink } from "./useParseActivityLink.ts";
+export { parseActivityLinkMutationKey } from "./useParseActivityLink.ts";
+export { parseActivityLinkMutationOptions } from "./useParseActivityLink.ts";
+export { useParseActivityLink } from "./useParseActivityLink.ts";
 export { postApiV1TripsTripidActivitiesActivityidRsvp } from "./usePostApiV1TripsTripidActivitiesActivityidRsvp.ts";
 export { postApiV1TripsTripidActivitiesActivityidRsvpMutationKey } from "./usePostApiV1TripsTripidActivitiesActivityidRsvp.ts";
 export { postApiV1TripsTripidActivitiesActivityidRsvpMutationOptions } from "./usePostApiV1TripsTripidActivitiesActivityidRsvp.ts";

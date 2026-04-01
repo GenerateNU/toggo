@@ -8,7 +8,7 @@ export default function LoginPage() {
     <Screen>
       <Box
         flex={1}
-        backgroundColor="white"
+        backgroundColor="backgroundCard"
         justifyContent="space-between"
         padding="lg"
         paddingBottom="xl"

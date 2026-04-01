@@ -92,7 +92,7 @@ export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
     <Box style={ABSOLUTE_FILL} pointerEvents="box-none">
       <AnimatedBox
         style={[ABSOLUTE_FILL, overlayStyle]}
-        backgroundColor="surfaceOverlay"
+        backgroundColor="backgroundOverlay"
         pointerEvents={open ? "auto" : "none"}
       >
         <Pressable style={ABSOLUTE_FILL} onPress={close} />

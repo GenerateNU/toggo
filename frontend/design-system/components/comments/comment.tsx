@@ -3,10 +3,10 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { withOpacity } from "../../utils/color";
 import { Smile } from "lucide-react-native";
 import { useRef } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { withOpacity } from "../../utils/color";
 import ReactionPicker from "./reaction-picker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -54,11 +54,11 @@ const ReactionBadge = ({
   >
     <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
     <Text
-      variant="xsLabel"
+      variant="bodyXsMedium"
       style={{
         color: reaction.reactedByMe
           ? ColorPalette.brandPrimary
-          : ColorPalette.textQuaternary,
+          : ColorPalette.textSubtle,
       }}
     >
       {reaction.count}
@@ -112,19 +112,19 @@ export default function Comment({
             {/* Header */}
             <Box flexDirection="row" alignItems="center" gap="xs">
               <Text
-                variant="smLabel"
-                color="textSecondary"
+                variant="bodySmMedium"
+                color="textInverse"
                 style={styles.authorName}
               >
                 {comment.authorName}
               </Text>
-              <Text variant="xsLabel" color="textQuaternary">
+              <Text variant="bodyXsMedium" color="textSubtle">
                 {comment.timestamp}
               </Text>
             </Box>
 
             {/* Body */}
-            <Text variant="smParagraph" color="textSecondary">
+            <Text variant="bodySmDefault" color="textInverse">
               {comment.body}
             </Text>
 
@@ -154,7 +154,7 @@ export default function Comment({
                     pressed && styles.addReactionButtonPressed,
                   ]}
                 >
-                  <Smile size={16} color={ColorPalette.textQuaternary} />
+                  <Smile size={16} color={ColorPalette.textSubtle} />
                 </Pressable>
               </Box>
             )}
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: CornerRadius.full,
-    backgroundColor: ColorPalette.surfaceBackground,
+    backgroundColor: ColorPalette.backgroundSubtle,
   },
   reactionBadgeActive: {
     backgroundColor: withOpacity(ColorPalette.brandPrimary, 0.12),
@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: ColorPalette.surfaceBackground,
+    backgroundColor: ColorPalette.backgroundSubtle,
   },
   addReactionButtonPressed: {
-    backgroundColor: ColorPalette.secondaryBackground,
+    backgroundColor: ColorPalette.backgroundMuted,
   },
 });

@@ -34,7 +34,7 @@ export const getPitchQueryKey = (
 export type GetPitchQueryKey = ReturnType<typeof getPitchQueryKey>;
 
 /**
- * @description Returns a single pitch with a presigned URL for the audio file
+ * @description Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
  * @summary Get a pitch by ID
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */
@@ -81,7 +81,7 @@ export function getPitchQueryOptions(
 }
 
 /**
- * @description Returns a single pitch with a presigned URL for the audio file
+ * @description Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
  * @summary Get a pitch by ID
  * {@link /api/v1/trips/:tripID/pitches/:pitchID}
  */

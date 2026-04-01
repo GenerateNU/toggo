@@ -41,24 +41,24 @@ export default function ActivityDetail() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
+      <Box flex={1} backgroundColor="backgroundSubtle">
         <Box
           padding="lg"
           paddingTop="xl"
-          backgroundColor="surfaceCard"
+          backgroundColor="backgroundCard"
           gap="xs"
         >
-          <Text variant="smLabel" color="textQuaternary">
+          <Text variant="bodySmMedium" color="textSubtle">
             ACTIVITY
           </Text>
-          <Text variant="lgHeading" color="textSecondary">
+          <Text variant="headingMd" color="textInverse">
             {activity?.name ?? "Activity Detail"}
           </Text>
         </Box>
 
         {isLoading && (
           <Box padding="lg">
-            <Text variant="mdParagraph" color="textQuaternary">
+            <Text variant="bodyDefault" color="textSubtle">
               Loading...
             </Text>
           </Box>
@@ -66,7 +66,7 @@ export default function ActivityDetail() {
 
         {isError && (
           <Box padding="lg">
-            <Text variant="mdParagraph" color="textQuaternary">
+            <Text variant="bodyDefault" color="textSubtle">
               Failed to load activity.
             </Text>
           </Box>
@@ -77,15 +77,15 @@ export default function ActivityDetail() {
             <Box padding="sm" gap="xs">
               {activity.description && (
                 <Box
-                  backgroundColor="surfaceCard"
+                  backgroundColor="backgroundCard"
                   borderRadius="md"
                   padding="md"
                   gap="xs"
                 >
-                  <Text variant="smLabel" color="textQuaternary">
+                  <Text variant="bodySmMedium" color="textSubtle">
                     DESCRIPTION
                   </Text>
-                  <Text variant="mdParagraph" color="textSecondary">
+                  <Text variant="bodyDefault" color="textInverse">
                     {activity.description}
                   </Text>
                 </Box>
@@ -93,12 +93,12 @@ export default function ActivityDetail() {
 
               {activity.image_ids && activity.image_ids.length > 0 && (
                 <Box
-                  backgroundColor="surfaceCard"
+                  backgroundColor="backgroundCard"
                   borderRadius="md"
                   padding="md"
                   gap="sm"
                 >
-                  <Text variant="smLabel" color="textQuaternary">
+                  <Text variant="bodySmMedium" color="textSubtle">
                     IMAGES ({activity.image_ids.length})
                   </Text>
                   <Box flexDirection="row" flexWrap="wrap" gap="xs">
@@ -121,16 +121,16 @@ export default function ActivityDetail() {
               )}
 
               <Box
-                backgroundColor="surfaceCard"
+                backgroundColor="backgroundCard"
                 borderRadius="md"
                 padding="md"
                 gap="sm"
               >
                 <Box gap="xs">
-                  <Text variant="smLabel" color="textQuaternary">
+                  <Text variant="bodySmMedium" color="textSubtle">
                     PROPOSED BY
                   </Text>
-                  <Text variant="mdParagraph" color="textSecondary">
+                  <Text variant="bodyDefault" color="textInverse">
                     {activity.proposer_username ?? activity.proposed_by ?? "—"}
                   </Text>
                 </Box>
@@ -138,12 +138,12 @@ export default function ActivityDetail() {
                 {activity.category_names &&
                   activity.category_names.length > 0 && (
                     <>
-                      <Box height={1} backgroundColor="borderPrimary" />
+                      <Box height={1} backgroundColor="borderDefault" />
                       <Box gap="xs">
-                        <Text variant="smLabel" color="textQuaternary">
+                        <Text variant="bodySmMedium" color="textSubtle">
                           CATEGORIES
                         </Text>
-                        <Text variant="mdParagraph" color="textSecondary">
+                        <Text variant="bodyDefault" color="textInverse">
                           {activity.category_names.join(", ")}
                         </Text>
                       </Box>
@@ -152,12 +152,12 @@ export default function ActivityDetail() {
 
                 {activity.location_name && (
                   <>
-                    <Box height={1} backgroundColor="borderPrimary" />
+                    <Box height={1} backgroundColor="borderDefault" />
                     <Box gap="xs">
-                      <Text variant="smLabel" color="textQuaternary">
+                      <Text variant="bodySmMedium" color="textSubtle">
                         LOCATION
                       </Text>
-                      <Text variant="mdParagraph" color="textSecondary">
+                      <Text variant="bodyDefault" color="textInverse">
                         {activity.location_name}
                       </Text>
                     </Box>
@@ -166,12 +166,12 @@ export default function ActivityDetail() {
 
                 {activity.estimated_price != null && (
                   <>
-                    <Box height={1} backgroundColor="borderPrimary" />
+                    <Box height={1} backgroundColor="borderDefault" />
                     <Box gap="xs">
-                      <Text variant="smLabel" color="textQuaternary">
+                      <Text variant="bodySmMedium" color="textSubtle">
                         ESTIMATED PRICE
                       </Text>
-                      <Text variant="mdParagraph" color="textSecondary">
+                      <Text variant="bodyDefault" color="textInverse">
                         {activity.estimated_price}
                       </Text>
                     </Box>

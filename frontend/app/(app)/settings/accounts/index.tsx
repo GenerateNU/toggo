@@ -13,9 +13,9 @@ export default function Accounts() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
+      <Box flex={1} backgroundColor="backgroundSubtle">
         <Box
-          backgroundColor="white"
+          backgroundColor="backgroundCard"
           padding="lg"
           alignItems="center"
           gap="md"
@@ -27,27 +27,27 @@ export default function Accounts() {
             variant="xxxl"
           />
           <Box alignItems="center" gap="xs">
-            <Text variant="xxlHeading" color="textSecondary">
+            <Text variant="headingXl" color="textInverse">
               {currentUser?.name ?? "—"}
             </Text>
-            <Text variant="mdParagraph" color="textQuaternary">
+            <Text variant="bodyDefault" color="textSubtle">
               @{currentUser?.username ?? "—"}
             </Text>
           </Box>
         </Box>
 
-        <Box backgroundColor="white">
+        <Box backgroundColor="backgroundCard">
           <InfoRow label="Name" value={currentUser?.name} />
-          <Box height={1} backgroundColor="borderPrimary" marginLeft="md" />
+          <Box height={1} backgroundColor="borderDefault" marginLeft="md" />
           <InfoRow
             label="Username"
             value={
               currentUser?.username ? `@${currentUser.username}` : undefined
             }
           />
-          <Box height={1} backgroundColor="borderPrimary" marginLeft="md" />
+          <Box height={1} backgroundColor="borderDefault" marginLeft="md" />
           <InfoRow label="Phone" value={currentUser?.phone_number} />
-          <Box height={1} backgroundColor="borderPrimary" marginLeft="md" />
+          <Box height={1} backgroundColor="borderDefault" marginLeft="md" />
           <InfoRow label="Timezone" value={currentUser?.timezone} />
         </Box>
       </Box>
@@ -64,10 +64,10 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
       paddingHorizontal="md"
       paddingVertical="sm"
     >
-      <Text variant="mdParagraph" color="textQuaternary">
+      <Text variant="bodyDefault" color="textSubtle">
         {label}
       </Text>
-      <Text variant="mdParagraph" color="textSecondary">
+      <Text variant="bodyDefault" color="textInverse">
         {value ?? "—"}
       </Text>
     </Box>
