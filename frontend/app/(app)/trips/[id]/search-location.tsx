@@ -6,7 +6,11 @@ import { Box, Icon, Screen, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { Camera, MapView, PointAnnotation } from "@maplibre/maplibre-react-native";
+import {
+  Camera,
+  MapView,
+  PointAnnotation,
+} from "@maplibre/maplibre-react-native";
 import { router } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -80,7 +84,9 @@ export default function SearchLocationScreen() {
     setQuery(prediction.description);
     setPredictions([]);
     try {
-      const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
+      const res = await getPlaceDetailsCustom({
+        place_id: prediction.place_id,
+      });
       setSelectedLocation(res.data);
     } finally {
       setIsLoadingDetails(false);
@@ -95,13 +101,6 @@ export default function SearchLocationScreen() {
     setQuery(text);
   };
 
-  const handleClearQuery = () => {
-    setIsSelectingPlace(false);
-    setQuery("");
-    setPredictions([]);
-    setSelectedLocation(null);
-  };
-
   const showPredictions = predictions.length > 0;
   const showMap = !!selectedLocation && !showPredictions;
 
@@ -111,7 +110,6 @@ export default function SearchLocationScreen() {
         <SearchHeader
           query={query}
           onChangeQuery={handleQueryChange}
-          onClear={handleClearQuery}
           onDismiss={() => router.back()}
           isLoading={isLoadingPredictions}
         />
@@ -125,10 +123,7 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <ActivityIndicator
-              size="large"
-              color={ColorPalette.brandPrimary}
-            />
+            <ActivityIndicator size="large" color={ColorPalette.brandPrimary} />
           </Box>
         ) : (
           <Box flex={1} backgroundColor="surfaceCard" />
@@ -143,13 +138,11 @@ export default function SearchLocationScreen() {
 function SearchHeader({
   query,
   onChangeQuery,
-  onClear,
   onDismiss,
   isLoading,
 }: {
   query: string;
   onChangeQuery: (text: string) => void;
-  onClear: () => void;
   onDismiss: () => void;
   isLoading: boolean;
 }) {
@@ -213,10 +206,7 @@ function PredictionsList({
       keyExtractor={(item) => item.place_id}
       keyboardShouldPersistTaps="handled"
       renderItem={({ item }) => (
-        <TouchableOpacity
-          onPress={() => onSelect(item)}
-          activeOpacity={0.6}
-        >
+        <TouchableOpacity onPress={() => onSelect(item)} activeOpacity={0.6}>
           <Box
             paddingHorizontal="lg"
             paddingVertical="md"
@@ -230,10 +220,7 @@ function PredictionsList({
         </TouchableOpacity>
       )}
       ItemSeparatorComponent={() => (
-        <Box
-          style={styles.separator}
-          backgroundColor="surfaceBackground"
-        />
+        <Box style={styles.separator} backgroundColor="surfaceBackground" />
       )}
       style={styles.predictionsList}
     />

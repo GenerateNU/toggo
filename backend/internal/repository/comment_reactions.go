@@ -130,4 +130,3 @@ func (r *commentReactionRepository) ListUsersForEmoji(ctx context.Context, comme
 
 	return users, nil
 }
-

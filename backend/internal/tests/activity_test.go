@@ -31,8 +31,8 @@ func createActivityWithTimeOfDay(t *testing.T, app *fiber.App, userID, tripID, n
 			Method: testkit.POST,
 			UserID: &userID,
 			Body: models.CreateActivityRequest{
-				TripID: uuid.MustParse(tripID),
-				Name:   name,
+				TripID:    uuid.MustParse(tripID),
+				Name:      name,
 				TimeOfDay: timeOfDay,
 			},
 		}).
