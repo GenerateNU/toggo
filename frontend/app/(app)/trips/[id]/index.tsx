@@ -75,6 +75,14 @@ export default function Trip() {
           <Box gap="sm">
             <Button
               layout="textOnly"
+              label="Search Location"
+              variant="Primary"
+              onPress={() =>
+                router.push(`/trips/${tripID}/search-location`)
+              }
+            />
+            <Button
+              layout="textOnly"
               label="See Dummy Activity"
               variant="Primary"
               onPress={() =>

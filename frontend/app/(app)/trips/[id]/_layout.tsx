@@ -55,6 +55,14 @@ const Layout = () => {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="search-location"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
+      />
     </Stack>
   );
 };
