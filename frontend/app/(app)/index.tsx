@@ -7,33 +7,23 @@ import {
   BottomSheet,
   Box,
   Button,
-  Icon,
   ImagePicker,
   Text,
 } from "@/design-system";
-import { AnimatedBox } from "@/design-system";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import { useCreateTrip } from "@/index";
 import { router, useLocalSearchParams } from "expo-router";
-import { Check, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable } from "react-native";
 
 export default function Home() {
   const { currentUser } = useUser();
+  const toast = useToast();
   const createTripMutation = useCreateTrip();
   const bottomSheetRef = useRef<any>(null);
   const pendingTripCode = useUserStore((s) => s.pendingTripCode);
   const setPendingTripCode = useUserStore((s) => s.setPendingTripCode);
 
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastPrefix, setToastPrefix] = useState("");
-  const [toastBold, setToastBold] = useState<string | null>(null);
-  const [toastSuffix, setToastSuffix] = useState("");
-  const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success",
-  );
-  const [toastOpacity] = useState(() => new Animated.Value(0));
 
   const { joinedTripName, joinError } = useLocalSearchParams<{
     joinedTripName?: string;
@@ -42,7 +32,6 @@ export default function Home() {
 
   const needsProfile = !currentUser?.username;
 
-  // Open bottom sheet when user has no profile
   useEffect(() => {
     if (needsProfile) {
       const t = setTimeout(() => {
@@ -52,67 +41,23 @@ export default function Home() {
     }
   }, [needsProfile]);
 
-  // Show toast with optional bold text
-  const triggerToast = (
-    message: string,
-    variant: "success" | "error" = "success",
-    boldText?: string,
-  ) => {
-    if (boldText) {
-      const idx = message.indexOf(boldText);
-      if (idx >= 0) {
-        setToastPrefix(message.slice(0, idx));
-        setToastBold(boldText);
-        setToastSuffix(message.slice(idx + boldText.length));
-      } else {
-        setToastPrefix(message);
-        setToastBold(null);
-        setToastSuffix("");
-      }
-    } else {
-      setToastPrefix(message);
-      setToastBold(null);
-      setToastSuffix("");
-    }
-    setToastVariant(variant);
-    setShowToast(true);
-    toastOpacity.setValue(0);
-    Animated.sequence([
-      Animated.timing(toastOpacity, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.delay(2500),
-      Animated.timing(toastOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setShowToast(false));
-  };
-
   useEffect(() => {
     if (joinedTripName) {
-      triggerToast(
-        `You've been added to ${joinedTripName}!`,
-        "success",
-        joinedTripName,
-      );
+      toast.show({ message: `You've been added to ${joinedTripName}!` });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinedTripName]);
 
   useEffect(() => {
     if (joinError) {
-      triggerToast(joinError, "error");
+      toast.show({ message: joinError });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinError]);
 
   const handleProfileCreated = async () => {
     bottomSheetRef.current?.close();
-    // Join pending trip if one was saved
+
     if (pendingTripCode) {
       try {
         const membership = await joinTripByInvite(pendingTripCode);
@@ -126,21 +71,16 @@ export default function Home() {
             // ignore — fallback to generic name
           }
         }
-        triggerToast(
-          `Profile created & added to ${tripName}!`,
-          "success",
-          tripName,
-        );
+        toast.show({ message: `Profile created & added to ${tripName}!` });
       } catch {
         setPendingTripCode(null);
-        triggerToast("Profile created!");
+        toast.show({ message: "Profile created!" });
       }
     } else {
-      triggerToast("Profile created!");
+      toast.show({ message: "Profile created!" });
     }
   };
 
-  // TODO: extract toast into its own component with context after Bart's component library
   return (
     <Box
       flex={1}
@@ -180,11 +120,7 @@ export default function Home() {
         variant="Primary"
         disabled={createTripMutation.isPending}
         onPress={async () => {
-          const data = {
-            name: "Spring Break",
-            budget_min: 1,
-            budget_max: 1000,
-          };
+          const data = { name: "Spring Break", budget_min: 1, budget_max: 1000 };
           try {
             const result = await createTripMutation.mutateAsync({ data });
             if (result?.id) {
@@ -220,70 +156,6 @@ export default function Home() {
           />
         </Box>
       </BottomSheet>
-
-      {showToast && (
-        <AnimatedBox
-          style={{ opacity: toastOpacity }}
-          position="absolute"
-          bottom={40}
-          left={20}
-          right={20}
-          borderRadius="sm"
-          paddingHorizontal="md"
-          paddingVertical="md"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between"
-          backgroundColor="backgroundCard"
-          shadowColor="backgroundDefault"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.1}
-          shadowRadius={8}
-          elevation={4}
-        >
-          <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>
-            <Icon
-              icon={Check}
-              size="xs"
-              color={toastVariant === "error" ? "textDefault" : "textDefault"}
-            />
-            <Text
-              variant="bodySmDefault"
-              color={toastVariant === "error" ? "textDefault" : "textDefault"}
-              style={{ flexShrink: 1 }}
-            >
-              {toastPrefix}
-              {toastBold && (
-                <Text
-                  variant="bodySmMedium"
-                  color={
-                    toastVariant === "error" ? "textDefault" : "textDefault"
-                  }
-                  style={{ fontWeight: "700" }}
-                >
-                  {toastBold}
-                </Text>
-              )}
-              {toastSuffix}
-            </Text>
-          </Box>
-          <Pressable
-            onPress={() => {
-              Animated.timing(toastOpacity, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-              }).start(() => setShowToast(false));
-            }}
-          >
-            <Icon
-              icon={X}
-              size="xs"
-              color={toastVariant === "error" ? "textDefault" : "textDefault"}
-            />
-          </Pressable>
-        </AnimatedBox>
-      )}
     </Box>
   );
 }

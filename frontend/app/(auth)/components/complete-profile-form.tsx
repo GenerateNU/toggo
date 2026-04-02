@@ -117,7 +117,7 @@ export default function CompleteProfileForm({
     <Box gap="md">
       {error && (
         <Box backgroundColor="statusError" padding="sm" borderRadius="sm">
-          <Text variant="bodySmDefault" color="textDefault">
+          <Text variant="bodySmDefault" color="statusError">
             {error}
           </Text>
         </Box>
@@ -128,7 +128,7 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textDefault">
+            <Text variant="bodySmMedium" color="textInverse">
               Full Name
             </Text>
             <Box
@@ -162,7 +162,7 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textDefault">
+            <Text variant="bodySmMedium" color="textInverse">
               Username
             </Text>
             <Box

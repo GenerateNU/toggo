@@ -41,12 +41,12 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <UserProvider>
               <NotificationProvider>
-                <PortalProvider>
-                  <StatusBar style="auto" />
-                  <ToastProvider>
+                <ToastProvider>
+                  <PortalProvider>
+                    <StatusBar style="auto" />
                     <Slot />
-                  </ToastProvider>
-                </PortalProvider>
+                  </PortalProvider>
+                </ToastProvider>
               </NotificationProvider>
             </UserProvider>
           </QueryClientProvider>
