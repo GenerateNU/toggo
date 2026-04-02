@@ -33,6 +33,16 @@
     "name": { "type": "string" },
     "proposed_by": { "type": "string" },
     "thumbnail_url": { "type": "string" },
+    "time_of_day": {
+      "type": "string",
+      "enum": ["morning", "afternoon", "evening"],
+      "x-enum-varnames": [
+        "ActivityTimeOfDayMorning",
+        "ActivityTimeOfDayAfternoon",
+        "ActivityTimeOfDayEvening"
+      ],
+      "x-readme-ref-name": "models.ActivityTimeOfDay"
+    },
     "trip_id": { "type": "string" },
     "updated_at": { "type": "string" }
   },

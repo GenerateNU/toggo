@@ -13,23 +13,16 @@ import type {
   AddCategoryToActivity500,
   AddCategoryToActivityMutationResponse,
   AddCategoryToActivityPathParams,
-  AddMember201,
-  AddMember400,
-  AddMember401,
-  AddMember422,
-  AddMember500,
-  AddMemberMutationRequest,
-  AddMemberMutationResponse,
-  CheckS3Health200,
-  CheckS3Health503,
-  CheckS3HealthQueryResponse,
-  ConfirmUpload200,
-  ConfirmUpload400,
-  ConfirmUpload404,
-  ConfirmUpload422,
-  ConfirmUpload500,
-  ConfirmUploadMutationRequest,
-  ConfirmUploadMutationResponse,
+  AddCommentReaction201,
+  AddCommentReaction400,
+  AddCommentReaction401,
+  AddCommentReaction404,
+  AddCommentReaction409,
+  AddCommentReaction422,
+  AddCommentReaction500,
+  AddCommentReactionMutationRequest,
+  AddCommentReactionMutationResponse,
+  AddCommentReactionPathParams,
   CreateComment201,
   CreateComment400,
   CreateComment401,
@@ -40,6 +33,7 @@ import type {
   CreateCommentMutationResponse,
   ErrsAPIError,
   ModelsDateRange,
+  ModelsActivityTimeOfDay,
   ModelsActivity,
   ModelsActivityGoingUserResponse,
   ModelsActivityImageResponse,
@@ -60,11 +54,17 @@ import type {
   ModelsEntityType,
   ModelsComment,
   ModelsCommentAPIResponse,
+  ModelsCommentReaction,
+  ModelsCommentReactionSummary,
+  ModelsCommentReactionUser,
+  ModelsCommentReactionUsersResponse,
+  ModelsCommentReactionsSummaryResponse,
   ModelsImageSize,
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
   ModelsCreateActivityRequest,
   ModelsCreateCategoryRequest,
+  ModelsCreateCommentReactionRequest,
   ModelsCreateCommentRequest,
   ModelsCreateMembershipRequest,
   ModelsCreatePitchRequest,
@@ -79,6 +79,7 @@ import type {
   ModelsCreateTripRequest,
   ModelsCreateUserRequest,
   ModelsDayTime,
+  ModelsDeleteCommentReactionRequest,
   ModelsGetFileResponse,
   ModelsGetFileAllSizesResponse,
   ModelsLinkType,
@@ -150,6 +151,39 @@ import type {
   UpdateCommentMutationRequest,
   UpdateCommentMutationResponse,
   UpdateCommentPathParams,
+  GetCommentReactionsSummary200,
+  GetCommentReactionsSummary400,
+  GetCommentReactionsSummary401,
+  GetCommentReactionsSummary404,
+  GetCommentReactionsSummary500,
+  GetCommentReactionsSummaryPathParams,
+  GetCommentReactionsSummaryQueryResponse,
+  RemoveCommentReaction204,
+  RemoveCommentReaction400,
+  RemoveCommentReaction401,
+  RemoveCommentReaction404,
+  RemoveCommentReaction422,
+  RemoveCommentReaction500,
+  RemoveCommentReactionMutationRequest,
+  RemoveCommentReactionMutationResponse,
+  RemoveCommentReactionPathParams,
+  GetCommentReactionUsers200,
+  GetCommentReactionUsers400,
+  GetCommentReactionUsers401,
+  GetCommentReactionUsers404,
+  GetCommentReactionUsers500,
+  GetCommentReactionUsersPathParams,
+  GetCommentReactionUsersQueryResponse,
+  ConfirmUpload200,
+  ConfirmUpload400,
+  ConfirmUpload404,
+  ConfirmUpload422,
+  ConfirmUpload500,
+  ConfirmUploadMutationRequest,
+  ConfirmUploadMutationResponse,
+  CheckS3Health200,
+  CheckS3Health503,
+  CheckS3HealthQueryResponse,
   CreateUploadURLs201,
   CreateUploadURLs400,
   CreateUploadURLs422,
@@ -174,6 +208,13 @@ import type {
   GetFile500,
   GetFilePathParams,
   GetFileQueryResponse,
+  AddMember201,
+  AddMember400,
+  AddMember401,
+  AddMember422,
+  AddMember500,
+  AddMemberMutationRequest,
+  AddMemberMutationResponse,
   SendNotification200,
   SendNotification400,
   SendNotification422,
@@ -708,6 +749,12 @@ export const modelsDateRangeSchema = z.object({
   start: z.optional(z.iso.date().describe("ISO 8601 date format (YYYY-MM-DD)")),
 }) as unknown as z.ZodType<ModelsDateRange>;
 
+export const modelsActivityTimeOfDaySchema = z.enum([
+  "morning",
+  "afternoon",
+  "evening",
+]) as unknown as z.ZodType<ModelsActivityTimeOfDay>;
+
 export const modelsActivitySchema = z.object({
   created_at: z.optional(z.string()),
   get dates() {
@@ -723,6 +770,9 @@ export const modelsActivitySchema = z.object({
   name: z.optional(z.string()),
   proposed_by: z.optional(z.string()),
   thumbnail_url: z.optional(z.string()),
+  get time_of_day() {
+    return modelsActivityTimeOfDaySchema.optional();
+  },
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivity>;
@@ -763,6 +813,9 @@ export const modelsActivityAPIResponseSchema = z.object({
   proposer_picture_url: z.optional(z.string()),
   proposer_username: z.optional(z.string()),
   thumbnail_url: z.optional(z.string()),
+  get time_of_day() {
+    return modelsActivityTimeOfDaySchema.optional();
+  },
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivityAPIResponse>;
@@ -894,6 +947,41 @@ export const modelsCommentAPIResponseSchema = z.object({
   username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsCommentAPIResponse>;
 
+export const modelsCommentReactionSchema = z.object({
+  comment_id: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  emoji: z.optional(z.string()),
+  id: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommentReaction>;
+
+export const modelsCommentReactionSummarySchema = z.object({
+  count: z.optional(z.int()),
+  emoji: z.optional(z.string()),
+  reacted_by_me: z.optional(z.boolean()),
+}) as unknown as z.ZodType<ModelsCommentReactionSummary>;
+
+export const modelsCommentReactionUserSchema = z.object({
+  profile_picture_url: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommentReactionUser>;
+
+export const modelsCommentReactionUsersResponseSchema = z.object({
+  comment_id: z.optional(z.string()),
+  emoji: z.optional(z.string()),
+  get users() {
+    return z.array(modelsCommentReactionUserSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsCommentReactionUsersResponse>;
+
+export const modelsCommentReactionsSummaryResponseSchema = z.object({
+  comment_id: z.optional(z.string()),
+  get reactions() {
+    return z.array(modelsCommentReactionSummarySchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsCommentReactionsSummaryResponse>;
+
 export const modelsImageSizeSchema = z.enum([
   "large",
   "medium",
@@ -929,6 +1017,9 @@ export const modelsCreateActivityRequestSchema = z.object({
   media_url: z.optional(z.string()),
   name: z.string().min(1).max(255),
   thumbnail_url: z.optional(z.string()),
+  get time_of_day() {
+    return modelsActivityTimeOfDaySchema.optional();
+  },
   trip_id: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsCreateActivityRequest>;
 
@@ -938,6 +1029,10 @@ export const modelsCreateCategoryRequestSchema = z.object({
   name: z.string().min(1).max(255),
   trip_id: z.string(),
 }) as unknown as z.ZodType<ModelsCreateCategoryRequest>;
+
+export const modelsCreateCommentReactionRequestSchema = z.object({
+  emoji: z.string().min(1),
+}) as unknown as z.ZodType<ModelsCreateCommentReactionRequest>;
 
 export const modelsCreateCommentRequestSchema = z.object({
   content: z.string().min(1),
@@ -1048,6 +1143,10 @@ export const modelsDayTimeSchema = z.object({
   day: z.optional(z.int()),
   time: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsDayTime>;
+
+export const modelsDeleteCommentReactionRequestSchema = z.object({
+  emoji: z.string().min(1),
+}) as unknown as z.ZodType<ModelsDeleteCommentReactionRequest>;
 
 export const modelsGetFileResponseSchema = z.object({
   contentType: z.optional(z.string()),
@@ -1520,7 +1619,11 @@ export const modelsTripInviteAPIResponseSchema = z.object({
 
 export const modelsUpdateActivityRequestSchema = z.object({
   get dates() {
-    return z.array(modelsDateRangeSchema).max(20).optional();
+    return z
+      .array(modelsDateRangeSchema)
+      .max(20)
+      .describe("Max 20 date ranges")
+      .optional();
   },
   description: z.optional(z.string()),
   estimated_price: z.optional(z.number().min(0)),
@@ -1531,6 +1634,9 @@ export const modelsUpdateActivityRequestSchema = z.object({
   media_url: z.optional(z.string()),
   name: z.optional(z.string().min(1).max(255)),
   thumbnail_url: z.optional(z.string()),
+  get time_of_day() {
+    return modelsActivityTimeOfDaySchema.optional();
+  },
 }) as unknown as z.ZodType<ModelsUpdateActivityRequest>;
 
 export const modelsUpdateCommentRequestSchema = z.object({
@@ -1777,6 +1883,213 @@ export const updateCommentMutationRequestSchema = z.lazy(
 export const updateCommentMutationResponseSchema = z.lazy(
   () => updateComment200Schema,
 ) as unknown as z.ZodType<UpdateCommentMutationResponse>;
+
+export const getCommentReactionsSummaryPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<GetCommentReactionsSummaryPathParams>;
+
+/**
+ * @description OK
+ */
+export const getCommentReactionsSummary200Schema = z.lazy(
+  () => modelsCommentReactionsSummaryResponseSchema,
+) as unknown as z.ZodType<GetCommentReactionsSummary200>;
+
+/**
+ * @description Bad Request
+ */
+export const getCommentReactionsSummary400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionsSummary400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getCommentReactionsSummary401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionsSummary401>;
+
+/**
+ * @description Not Found
+ */
+export const getCommentReactionsSummary404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionsSummary404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getCommentReactionsSummary500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionsSummary500>;
+
+export const getCommentReactionsSummaryQueryResponseSchema = z.lazy(
+  () => getCommentReactionsSummary200Schema,
+) as unknown as z.ZodType<GetCommentReactionsSummaryQueryResponse>;
+
+export const addCommentReactionPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<AddCommentReactionPathParams>;
+
+/**
+ * @description Created
+ */
+export const addCommentReaction201Schema = z.lazy(
+  () => modelsCommentReactionSchema,
+) as unknown as z.ZodType<AddCommentReaction201>;
+
+/**
+ * @description Bad Request
+ */
+export const addCommentReaction400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction400>;
+
+/**
+ * @description Unauthorized
+ */
+export const addCommentReaction401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction401>;
+
+/**
+ * @description Not Found
+ */
+export const addCommentReaction404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction404>;
+
+/**
+ * @description Conflict
+ */
+export const addCommentReaction409Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction409>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const addCommentReaction422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const addCommentReaction500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<AddCommentReaction500>;
+
+/**
+ * @description Create reaction request
+ */
+export const addCommentReactionMutationRequestSchema = z.lazy(
+  () => modelsCreateCommentReactionRequestSchema,
+) as unknown as z.ZodType<AddCommentReactionMutationRequest>;
+
+export const addCommentReactionMutationResponseSchema = z.lazy(
+  () => addCommentReaction201Schema,
+) as unknown as z.ZodType<AddCommentReactionMutationResponse>;
+
+export const removeCommentReactionPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+}) as unknown as z.ZodType<RemoveCommentReactionPathParams>;
+
+/**
+ * @description No Content
+ */
+export const removeCommentReaction204Schema =
+  z.any() as unknown as z.ZodType<RemoveCommentReaction204>;
+
+/**
+ * @description Bad Request
+ */
+export const removeCommentReaction400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveCommentReaction400>;
+
+/**
+ * @description Unauthorized
+ */
+export const removeCommentReaction401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveCommentReaction401>;
+
+/**
+ * @description Not Found
+ */
+export const removeCommentReaction404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveCommentReaction404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const removeCommentReaction422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveCommentReaction422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const removeCommentReaction500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveCommentReaction500>;
+
+/**
+ * @description Delete reaction request
+ */
+export const removeCommentReactionMutationRequestSchema = z.lazy(
+  () => modelsDeleteCommentReactionRequestSchema,
+) as unknown as z.ZodType<RemoveCommentReactionMutationRequest>;
+
+export const removeCommentReactionMutationResponseSchema = z.lazy(
+  () => removeCommentReaction204Schema,
+) as unknown as z.ZodType<RemoveCommentReactionMutationResponse>;
+
+export const getCommentReactionUsersPathParamsSchema = z.object({
+  commentID: z.string().describe("Comment ID"),
+  emoji: z.string().describe("Emoji (URL-encoded)"),
+}) as unknown as z.ZodType<GetCommentReactionUsersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getCommentReactionUsers200Schema = z.lazy(
+  () => modelsCommentReactionUsersResponseSchema,
+) as unknown as z.ZodType<GetCommentReactionUsers200>;
+
+/**
+ * @description Bad Request
+ */
+export const getCommentReactionUsers400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionUsers400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getCommentReactionUsers401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionUsers401>;
+
+/**
+ * @description Not Found
+ */
+export const getCommentReactionUsers404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionUsers404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getCommentReactionUsers500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetCommentReactionUsers500>;
+
+export const getCommentReactionUsersQueryResponseSchema = z.lazy(
+  () => getCommentReactionUsers200Schema,
+) as unknown as z.ZodType<GetCommentReactionUsersQueryResponse>;
 
 /**
  * @description OK
@@ -2652,6 +2965,18 @@ export const getActivitiesByTripIDPathParamsSchema = z.object({
 export const getActivitiesByTripIDQueryParamsSchema = z
   .object({
     category: z.optional(z.string().describe("Filter by category name")),
+    time_of_day: z.optional(
+      z
+        .string()
+        .describe("Filter by time of day (morning, afternoon, evening)"),
+    ),
+    date: z.optional(
+      z
+        .string()
+        .describe(
+          "Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day",
+        ),
+    ),
     limit: z.optional(
       z.coerce
         .number()

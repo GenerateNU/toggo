@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "comment_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "emoji": { "type": "string" },
+    "id": { "type": "string" },
+    "user_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.CommentReaction"
+}

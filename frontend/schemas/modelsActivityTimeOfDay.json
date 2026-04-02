@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "enum": ["morning", "afternoon", "evening"],
+  "x-enum-varnames": [
+    "ActivityTimeOfDayMorning",
+    "ActivityTimeOfDayAfternoon",
+    "ActivityTimeOfDayEvening"
+  ],
+  "x-readme-ref-name": "models.ActivityTimeOfDay"
+}

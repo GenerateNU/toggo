@@ -78,6 +78,14 @@ export default function Trip() {
               label="Search Location"
               variant="Primary"
               onPress={() => router.push(`/trips/${tripID}/search-location`)}
+              />
+            <Button
+              layout="textOnly"
+              label="Activities"
+              variant="Primary"
+              onPress={() =>
+                router.push({ pathname: `/trips/${tripID}/activities` })
+              }
             />
             <Button
               layout="textOnly"
@@ -125,7 +133,7 @@ export default function Trip() {
                   ? "Generating..."
                   : "Invite via Link"
               }
-              variant="Secondary"
+              variant="Primary"
               disabled={createInviteMutation.isPending}
               onPress={handleInvite}
             />

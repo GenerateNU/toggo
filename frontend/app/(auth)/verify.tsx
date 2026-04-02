@@ -16,7 +16,7 @@ export default function VerifyPage() {
       >
         <Box gap="xs">
           <Box width="auto" justifyContent="center" alignItems="center">
-            <Logo />
+            <Logo size="xl" />
           </Box>
           <Text variant="bodyMedium" color="textInverse">
             Enter Verification Code

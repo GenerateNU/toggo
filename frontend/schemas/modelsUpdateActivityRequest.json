@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "dates": {
+      "description": "Max 20 date ranges",
       "type": "array",
       "maxItems": 20,
       "items": {
@@ -35,7 +36,22 @@
     "location_name": { "type": "string", "maxLength": 500, "minLength": 1 },
     "media_url": { "type": "string" },
     "name": { "type": "string", "maxLength": 255, "minLength": 1 },
-    "thumbnail_url": { "type": "string" }
+    "thumbnail_url": { "type": "string" },
+    "time_of_day": {
+      "enum": ["morning", "afternoon", "evening"],
+      "allOf": [
+        {
+          "type": "string",
+          "enum": ["morning", "afternoon", "evening"],
+          "x-enum-varnames": [
+            "ActivityTimeOfDayMorning",
+            "ActivityTimeOfDayAfternoon",
+            "ActivityTimeOfDayEvening"
+          ],
+          "x-readme-ref-name": "models.ActivityTimeOfDay"
+        }
+      ]
+    }
   },
   "x-readme-ref-name": "models.UpdateActivityRequest"
 }

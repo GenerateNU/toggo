@@ -34,6 +34,8 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        $ref: '#/definitions/models.ActivityTimeOfDay'
       trip_id:
         type: string
       updated_at:
@@ -85,6 +87,8 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        $ref: '#/definitions/models.ActivityTimeOfDay'
       trip_id:
         type: string
       updated_at:
@@ -161,6 +165,16 @@ definitions:
           $ref: '#/definitions/models.ActivityRSVPAPIResponse'
         type: array
     type: object
+  models.ActivityTimeOfDay:
+    enum:
+    - morning
+    - afternoon
+    - evening
+    type: string
+    x-enum-varnames:
+    - ActivityTimeOfDayMorning
+    - ActivityTimeOfDayAfternoon
+    - ActivityTimeOfDayEvening
   models.AddCategoryResponse:
     properties:
       message:
@@ -263,6 +277,57 @@ definitions:
       username:
         type: string
     type: object
+  models.CommentReaction:
+    properties:
+      comment_id:
+        type: string
+      created_at:
+        type: string
+      emoji:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.CommentReactionSummary:
+    properties:
+      count:
+        type: integer
+      emoji:
+        type: string
+      reacted_by_me:
+        type: boolean
+    type: object
+  models.CommentReactionUser:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.CommentReactionUsersResponse:
+    properties:
+      comment_id:
+        type: string
+      emoji:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.CommentReactionUser'
+        type: array
+    type: object
+  models.CommentReactionsSummaryResponse:
+    properties:
+      comment_id:
+        type: string
+      reactions:
+        items:
+          $ref: '#/definitions/models.CommentReactionSummary'
+        type: array
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -325,6 +390,13 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        allOf:
+        - $ref: '#/definitions/models.ActivityTimeOfDay'
+        enum:
+        - morning
+        - afternoon
+        - evening
       trip_id:
         type: string
     required:
@@ -349,6 +421,14 @@ definitions:
     - label
     - name
     - trip_id
+    type: object
+  models.CreateCommentReactionRequest:
+    properties:
+      emoji:
+        minLength: 1
+        type: string
+    required:
+    - emoji
     type: object
   models.CreateCommentRequest:
     properties:
@@ -528,6 +608,14 @@ definitions:
         type: integer
       time:
         type: string
+    type: object
+  models.DeleteCommentReactionRequest:
+    properties:
+      emoji:
+        minLength: 1
+        type: string
+    required:
+    - emoji
     type: object
   models.EntityType:
     enum:
@@ -1274,6 +1362,7 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
+        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
         maxItems: 20
@@ -1308,6 +1397,13 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        allOf:
+        - $ref: '#/definitions/models.ActivityTimeOfDay'
+        enum:
+        - morning
+        - afternoon
+        - evening
     type: object
   models.UpdateCommentRequest:
     properties:
@@ -1619,6 +1715,179 @@ paths:
       summary: Update a comment
       tags:
       - comments
+  /api/v1/comments/{commentID}/reactions:
+    delete:
+      consumes:
+      - application/json
+      description: Removes the current user's emoji reaction from a comment
+      operationId: removeCommentReaction
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Delete reaction request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeleteCommentReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Remove a reaction from a comment
+      tags:
+      - comment-reactions
+    get:
+      description: Retrieves aggregated emoji reactions for a comment
+      operationId: getCommentReactionsSummary
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentReactionsSummaryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get reactions summary for a comment
+      tags:
+      - comment-reactions
+    post:
+      consumes:
+      - application/json
+      description: Adds an emoji reaction to a comment
+      operationId: addCommentReaction
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Create reaction request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCommentReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CommentReaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add a reaction to a comment
+      tags:
+      - comment-reactions
+  /api/v1/comments/{commentID}/reactions/{emoji}/users:
+    get:
+      description: Retrieves users who reacted with a specific emoji on a comment
+      operationId: getCommentReactionUsers
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Emoji (URL-encoded)
+        in: path
+        name: emoji
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentReactionUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get users who reacted with an emoji
+      tags:
+      - comment-reactions
   /api/v1/files/{imageId}:
     delete:
       description: Deletes all size variants of an image from S3 and the database
@@ -2446,7 +2715,7 @@ paths:
   /api/v1/trips/{tripID}/activities:
     get:
       description: Retrieves paginated activities for a trip, optionally filtered
-        by category and time of day
+        by category, time of day, and/or date
       operationId: getActivitiesByTripID
       parameters:
       - description: Trip ID
@@ -2461,6 +2730,11 @@ paths:
       - description: Filter by time of day (morning, afternoon, evening)
         in: query
         name: time_of_day
+        type: string
+      - description: Filter by calendar date (YYYY-MM-DD); activity must have a date
+          range containing this day
+        in: query
+        name: date
         type: string
       - description: Max items per page (default 20, max 100)
         in: query

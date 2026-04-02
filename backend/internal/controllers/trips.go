@@ -139,6 +139,7 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 		}
 		return err
 	}
+
 	return c.Status(http.StatusOK).JSON(result)
 }
 
