@@ -80,7 +80,7 @@ export default function Home() {
       toast.show({ message: "Profile created!" });
     }
   };
-
+  
   return (
     <Box
       flex={1}

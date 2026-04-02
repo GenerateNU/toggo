@@ -196,7 +196,7 @@ export default function CompleteProfileForm({
       <Button
         layout="textOnly"
         label="Create Account"
-        variant="Primary"
+        variant="Secondary"
         loading={isSubmitting}
         loadingLabel="Creating account..."
         disabled={!formState.isValid || isSubmitting}
