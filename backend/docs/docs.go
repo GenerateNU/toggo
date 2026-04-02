@@ -6488,9 +6488,15 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "start_date": {
+                    "type": "string"
                 }
             }
         },
@@ -7616,10 +7622,16 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7645,10 +7657,16 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7870,9 +7888,15 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "start_date": {
+                    "type": "string"
                 }
             }
         },

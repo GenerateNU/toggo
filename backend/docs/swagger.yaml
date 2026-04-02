@@ -582,8 +582,12 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        type: string
       name:
         minLength: 1
+        type: string
+      start_date:
         type: string
     required:
     - budget_max
@@ -1351,9 +1355,13 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        type: string
       id:
         type: string
       name:
+        type: string
+      start_date:
         type: string
       updated_at:
         type: string
@@ -1370,9 +1378,13 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        type: string
       id:
         type: string
       name:
+        type: string
+      start_date:
         type: string
       updated_at:
         type: string
@@ -1525,8 +1537,12 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        type: string
       name:
         minLength: 1
+        type: string
+      start_date:
         type: string
     type: object
   models.UpdateUserNotificationPreferencesRequest:
