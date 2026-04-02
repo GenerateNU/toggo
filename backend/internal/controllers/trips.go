@@ -140,7 +140,7 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusOK).JSON(result)
+	return c.Status(http.StatusOK).JSON(result)
 }
 
 // @Summary      Update a trip
