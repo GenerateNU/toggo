@@ -117,7 +117,7 @@ export default function CompleteProfileForm({
     <Box gap="md">
       {error && (
         <Box backgroundColor="statusError" padding="sm" borderRadius="sm">
-          <Text variant="bodySmDefault" color="statusError">
+          <Text variant="bodySmDefault" color="textDefault">
             {error}
           </Text>
         </Box>

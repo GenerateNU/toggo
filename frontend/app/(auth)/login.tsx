@@ -1,5 +1,6 @@
 import { AnimatedBox, Box, Button, Logo } from "@/design-system";
 import { Text } from "@/design-system/primitives/text";
+import { Layout } from "@/design-system/tokens/layout";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, ImageBackground, StyleSheet } from "react-native";
@@ -88,8 +89,8 @@ export default function LoginPage() {
         justifyContent="space-between"
         alignItems="center"
         style={{
-          paddingTop: insets.top + 16,
-          paddingBottom: insets.bottom + 24,
+          paddingTop: insets.top + Layout.spacing.sm,
+          paddingBottom: insets.bottom + Layout.spacing.md,
         }}
       >
         <Logo color="textDefault" size="xl" />

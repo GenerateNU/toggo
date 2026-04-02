@@ -1,9 +1,11 @@
-import { TextField } from "@/design-system";
+import { Divider, ErrorState, Icon, TextField } from "@/design-system";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
+import { ColorPalette } from "@/design-system/tokens/color";
+import { Layout } from "@/design-system/tokens/layout";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, Modal, Pressable, StyleSheet } from "react-native";
+import { FlatList, Modal, Pressable } from "react-native";
 import {
   Country,
   CountryCode,
@@ -17,6 +19,13 @@ export type CountryItem = {
   callingCode: string;
   flagEmoji: string;
 };
+
+interface CountryPickerSheetProps {
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (country: CountryItem) => void;
+  selectedCode: CountryCode;
+}
 
 const PRIORITY_CODES: CountryCode[] = ["US", "GB"];
 
@@ -41,11 +50,79 @@ function toCountryItem(country: Country): CountryItem | null {
   };
 }
 
-interface CountryPickerSheetProps {
-  visible: boolean;
-  onClose: () => void;
-  onSelect: (country: CountryItem) => void;
-  selectedCode: CountryCode;
+function SheetHeader({ onClose }: { onClose: () => void }) {
+  return (
+    <Box
+      flexDirection="row"
+      alignItems="center"
+      justifyContent="center"
+      paddingHorizontal="sm"
+      paddingTop="md"
+      paddingBottom="sm"
+    >
+      <Text variant="headingSm">Country</Text>
+      <Box position="absolute" right={Layout.spacing.md}>
+        <Pressable onPress={onClose}>
+          <Icon icon={X} size="xs" color="textInverse" />
+        </Pressable>
+      </Box>
+    </Box>
+  );
+}
+
+function CountryRow({
+  item,
+  isSelected,
+  onPress,
+}: {
+  item: CountryItem;
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress}>
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        paddingHorizontal="sm"
+        paddingVertical="xs"
+        backgroundColor={isSelected ? "backgroundSubtle" : undefined}
+      >
+        <Text
+          variant="bodyDefault"
+          marginRight="sm"
+          style={{ fontSize: 22, lineHeight: 28, includeFontPadding: false }}
+        >
+          {item.flagEmoji}
+        </Text>
+        <Box flex={1}>
+          <Text
+            variant="bodyDefault"
+            color="textInverse"
+            style={{ lineHeight: 20 }}
+          >
+            {item.name}
+          </Text>
+        </Box>
+        <Text
+          variant="bodyDefault"
+          color="textSubtle"
+          style={{ lineHeight: 20 }}
+        >
+          {item.callingCode}
+        </Text>
+      </Box>
+    </Pressable>
+  );
+}
+
+function RowSeparator() {
+  return (
+    <Divider
+      color={ColorPalette.borderSubtle}
+      style={{ marginVertical: 0, marginLeft: 52 }}
+    />
+  );
 }
 
 export default function CountryPickerSheet({
@@ -55,25 +132,28 @@ export default function CountryPickerSheet({
   selectedCode,
 }: CountryPickerSheetProps) {
   const [allCountries, setAllCountries] = useState<CountryItem[]>([]);
+  const [loadError, setLoadError] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    getAllCountries(FlagType.EMOJI, "common").then((raw) => {
-      const items = raw.flatMap((c) => {
-        const item = toCountryItem(c);
-        return item ? [item] : [];
-      });
+    getAllCountries(FlagType.EMOJI, "common")
+      .then((raw) => {
+        const items = raw.flatMap((c) => {
+          const item = toCountryItem(c);
+          return item ? [item] : [];
+        });
 
-      const priority = PRIORITY_CODES.flatMap((code) => {
-        const found = items.find((i) => i.cca2 === code);
-        return found ? [found] : [];
-      });
-      const rest = items
-        .filter((i) => !PRIORITY_CODES.includes(i.cca2))
-        .sort((a, b) => a.name.localeCompare(b.name));
+        const priority = PRIORITY_CODES.flatMap((code) => {
+          const found = items.find((i) => i.cca2 === code);
+          return found ? [found] : [];
+        });
+        const rest = items
+          .filter((i) => !PRIORITY_CODES.includes(i.cca2))
+          .sort((a, b) => a.name.localeCompare(b.name));
 
-      setAllCountries([...priority, ...rest]);
-    });
+        setAllCountries([...priority, ...rest]);
+      })
+      .catch(() => setLoadError(true));
   }, []);
 
   const filtered = useMemo(() => {
@@ -92,104 +172,52 @@ export default function CountryPickerSheet({
       onRequestClose={onClose}
     >
       <Box flex={1} backgroundColor="backgroundCard">
-        {/* Header */}
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="center"
-          paddingHorizontal="md"
-          paddingTop="md"
-          paddingBottom="sm"
-        >
-          <Text variant="headingSm">Country</Text>
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <X size={20} color="#000" />
-          </Pressable>
-        </Box>
+        <SheetHeader onClose={onClose} />
 
-        {/* Search */}
-        <Box paddingHorizontal="md" paddingBottom="sm">
-          <TextField
-            placeholder="Search for a country"
-            value={search}
-            onChangeText={setSearch}
-            leftIcon={<Search size={16} color="#aaa" />}
-            autoCapitalize="none"
-          />
-        </Box>
+        {loadError ? (
+          <Box
+            flex={1}
+            padding="lg"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <ErrorState
+              isBottomSheet
+              title="Couldn't load countries"
+              description="Something went wrong loading the country list. Please try again."
+            />
+          </Box>
+        ) : (
+          <>
+            <Box paddingHorizontal="sm" paddingBottom="sm">
+              <TextField
+                placeholder="Search for a country"
+                value={search}
+                onChangeText={setSearch}
+                leftIcon={<Search size={16} color={ColorPalette.textSubtle} />}
+                autoCapitalize="none"
+              />
+            </Box>
 
-        {/* List */}
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.cca2}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => {
-                onSelect(item);
-                onClose();
-              }}
-            >
-              <Box
-                flexDirection="row"
-                alignItems="center"
-                paddingHorizontal="md"
-                paddingVertical="xs"
-                style={
-                  item.cca2 === selectedCode ? styles.selectedRow : undefined
-                }
-              >
-                <Text variant="bodyDefault" style={styles.flag}>
-                  {item.flagEmoji}
-                </Text>
-                <Text
-                  variant="bodyDefault"
-                  color="textInverse"
-                  style={[styles.countryName, styles.alignedText]}
-                >
-                  {item.name}
-                </Text>
-                <Text
-                  variant="bodyDefault"
-                  color="textSubtle"
-                  style={styles.alignedText}
-                >
-                  {item.callingCode}
-                </Text>
-              </Box>
-            </Pressable>
-          )}
-          ItemSeparatorComponent={() => (
-            <Box style={styles.separator} backgroundColor="borderSubtle" />
-          )}
-        />
+            <FlatList
+              data={filtered}
+              keyExtractor={(item) => item.cca2}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <CountryRow
+                  item={item}
+                  isSelected={item.cca2 === selectedCode}
+                  onPress={() => {
+                    onSelect(item);
+                    onClose();
+                  }}
+                />
+              )}
+              ItemSeparatorComponent={RowSeparator}
+            />
+          </>
+        )}
       </Box>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  closeButton: {
-    position: "absolute",
-    right: 16,
-  },
-  flag: {
-    fontSize: 22,
-    lineHeight: 28,
-    marginRight: 12,
-    includeFontPadding: false,
-  },
-  countryName: {
-    flex: 1,
-  },
-  selectedRow: {
-    backgroundColor: "#f0f0f0",
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 52,
-  },
-  alignedText: {
-    lineHeight: 20,
-  },
-});

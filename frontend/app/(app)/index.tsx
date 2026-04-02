@@ -44,7 +44,7 @@ export default function Home() {
 
   useEffect(() => {
     if (joinError) {
-      toast.show({ message: joinError });
+      toast.show({ message: "We couldn't join that trip. Please try again." });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinError]);
@@ -68,7 +68,9 @@ export default function Home() {
         toast.show({ message: `Profile created & added to ${tripName}!` });
       } catch {
         setPendingTripCode(null);
-        toast.show({ message: "Profile created!" });
+        toast.show({
+          message: "Profile created, but we couldn't add you to the trip.",
+        });
       }
     } else {
       toast.show({ message: "Profile created!" });

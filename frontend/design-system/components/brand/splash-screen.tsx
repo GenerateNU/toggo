@@ -1,7 +1,6 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { Dimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Logo } from "./logo";
 
 const { width, height } = Dimensions.get("window");
@@ -21,13 +20,13 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
     <Box
       paddingVertical="xs"
       paddingHorizontal="sm"
+      borderRadius="xl"
+      marginVertical="xs"
+      position="relative"
+      alignSelf={isMe ? "flex-end" : "flex-start"}
       style={{
-        borderRadius: 28,
         maxWidth: "70%",
-        position: "relative",
-        marginVertical: 5,
         backgroundColor: bubbleColor,
-        alignSelf: isMe ? "flex-end" : "flex-start",
         marginLeft: isMe ? "15%" : "5%",
         marginRight: isMe ? "5%" : "15%",
       }}
@@ -37,26 +36,27 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
       </Text>
 
       <Box
+        position="absolute"
+        width={20}
+        height={25}
+        bottom={0}
+        backgroundColor="textLink"
+        borderBottomLeftRadius={isMe ? "xl" : "none"}
+        borderBottomRightRadius={isMe ? "none" : "xl"}
         style={{
-          position: "absolute",
           backgroundColor: bubbleColor,
-          width: 20,
-          height: 25,
-          bottom: 0,
-          borderBottomLeftRadius: isMe ? 25 : 0,
-          borderBottomRightRadius: isMe ? 0 : 25,
           ...(isMe ? { right: -10 } : { left: -10 }),
         }}
       />
       <Box
+        position="absolute"
+        width={20}
+        height={35}
+        bottom={-6}
+        backgroundColor="backgroundCard"
+        borderBottomLeftRadius={isMe ? "xl" : "none"}
+        borderBottomRightRadius={isMe ? "none" : "xl"}
         style={{
-          position: "absolute",
-          backgroundColor: "#fff",
-          width: 20,
-          height: 35,
-          bottom: -6,
-          borderBottomLeftRadius: isMe ? 18 : 0,
-          borderBottomRightRadius: isMe ? 0 : 18,
           ...(isMe ? { right: -20 } : { left: -20 }),
         }}
       />
@@ -65,17 +65,8 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
 }
 
 export function SplashScreen() {
-  const insets = useSafeAreaInsets();
-
   return (
-    <Box
-      flex={1}
-      style={{
-        paddingTop: insets.top,
-        paddingBottom: insets.bottom,
-        backgroundColor: "#fff",
-      }}
-    >
+    <Box flex={1} backgroundColor="backgroundCard">
       <Box
         position="absolute"
         style={{ top: height * 0.27, right: width * 0.1 }}

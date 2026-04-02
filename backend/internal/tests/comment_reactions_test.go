@@ -312,4 +312,3 @@ func TestCommentReactions(t *testing.T) {
 			AssertStatus(http.StatusNotFound)
 	})
 }
-
