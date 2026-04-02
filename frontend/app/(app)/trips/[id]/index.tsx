@@ -78,7 +78,7 @@ export default function Trip() {
               label="Search Location"
               variant="Primary"
               onPress={() => router.push(`/trips/${tripID}/search-location`)}
-              />
+            />
             <Button
               layout="textOnly"
               label="Activities"
