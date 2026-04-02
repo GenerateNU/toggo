@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "comment_id": { "type": "string" },
+    "reactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "emoji": { "type": "string" },
+          "reacted_by_me": { "type": "boolean" }
+        },
+        "x-readme-ref-name": "models.CommentReactionSummary"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.CommentReactionsSummaryResponse"
+}

@@ -198,6 +198,264 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/comments/{commentID}/reactions": {
+            "get": {
+                "description": "Retrieves aggregated emoji reactions for a comment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Get reactions summary for a comment",
+                "operationId": "getCommentReactionsSummary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReactionsSummaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Adds an emoji reaction to a comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Add a reaction to a comment",
+                "operationId": "addCommentReaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create reaction request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCommentReactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes the current user's emoji reaction from a comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Remove a reaction from a comment",
+                "operationId": "removeCommentReaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Delete reaction request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeleteCommentReactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/comments/{commentID}/reactions/{emoji}/users": {
+            "get": {
+                "description": "Retrieves users who reacted with a specific emoji on a comment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Get users who reacted with an emoji",
+                "operationId": "getCommentReactionUsers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Emoji (URL-encoded)",
+                        "name": "emoji",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReactionUsersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/confirm": {
             "post": {
                 "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
@@ -1338,7 +1596,7 @@ const docTemplate = `{
         },
         "/api/v1/trips/{tripID}/activities": {
             "get": {
-                "description": "Retrieves paginated activities for a trip, optionally filtered by category and time of day",
+                "description": "Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date",
                 "produces": [
                     "application/json"
                 ],
@@ -1365,6 +1623,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filter by time of day (morning, afternoon, evening)",
                         "name": "time_of_day",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day",
+                        "name": "date",
                         "in": "query"
                     },
                     {
@@ -5030,6 +5294,9 @@ const docTemplate = `{
                 "thumbnail_url": {
                     "type": "string"
                 },
+                "time_of_day": {
+                    "$ref": "#/definitions/models.ActivityTimeOfDay"
+                },
                 "trip_id": {
                     "type": "string"
                 },
@@ -5106,6 +5373,9 @@ const docTemplate = `{
                 },
                 "thumbnail_url": {
                     "type": "string"
+                },
+                "time_of_day": {
+                    "$ref": "#/definitions/models.ActivityTimeOfDay"
                 },
                 "trip_id": {
                     "type": "string"
@@ -5224,6 +5494,19 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "models.ActivityTimeOfDay": {
+            "type": "string",
+            "enum": [
+                "morning",
+                "afternoon",
+                "evening"
+            ],
+            "x-enum-varnames": [
+                "ActivityTimeOfDayMorning",
+                "ActivityTimeOfDayAfternoon",
+                "ActivityTimeOfDayEvening"
+            ]
         },
         "models.AddCategoryResponse": {
             "type": "object",
@@ -5381,6 +5664,85 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CommentReaction": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CommentReactionSummary": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "reacted_by_me": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.CommentReactionUser": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CommentReactionUsersResponse": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentReactionUser"
+                    }
+                }
+            }
+        },
+        "models.CommentReactionsSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentReactionSummary"
+                    }
+                }
+            }
+        },
         "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
@@ -5474,6 +5836,18 @@ const docTemplate = `{
                 "thumbnail_url": {
                     "type": "string"
                 },
+                "time_of_day": {
+                    "enum": [
+                        "morning",
+                        "afternoon",
+                        "evening"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ActivityTimeOfDay"
+                        }
+                    ]
+                },
                 "trip_id": {
                     "type": "string"
                 }
@@ -5503,6 +5877,18 @@ const docTemplate = `{
                 },
                 "trip_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CreateCommentReactionRequest": {
+            "type": "object",
+            "required": [
+                "emoji"
+            ],
+            "properties": {
+                "emoji": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -5767,6 +6153,18 @@ const docTemplate = `{
                 },
                 "time": {
                     "type": "string"
+                }
+            }
+        },
+        "models.DeleteCommentReactionRequest": {
+            "type": "object",
+            "required": [
+                "emoji"
+            ],
+            "properties": {
+                "emoji": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -6872,6 +7270,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "dates": {
+                    "description": "Max 20 date ranges",
                     "type": "array",
                     "maxItems": 20,
                     "items": {
@@ -6917,6 +7316,18 @@ const docTemplate = `{
                 },
                 "thumbnail_url": {
                     "type": "string"
+                },
+                "time_of_day": {
+                    "enum": [
+                        "morning",
+                        "afternoon",
+                        "evening"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ActivityTimeOfDay"
+                        }
+                    ]
                 }
             }
         },
