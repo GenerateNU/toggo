@@ -17,8 +17,9 @@ export function TripCard({ trip }: TripCardProps) {
       <Box
         flexDirection="row"
         alignItems="center"
-        backgroundColor="backgroundCard"
         marginHorizontal="sm"
+        borderWidth={1}
+        borderColor="borderSubtle"
         borderRadius="sm"
         paddingHorizontal="md"
         paddingVertical="md"
