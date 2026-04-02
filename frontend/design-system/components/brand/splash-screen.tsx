@@ -70,9 +70,16 @@ export function SplashScreen() {
   return (
     <Box
       flex={1}
-      style={{ paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: "#fff" }}
+      style={{
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        backgroundColor: "#fff",
+      }}
     >
-      <Box position="absolute" style={{ top: height * 0.27, right: width * 0.1 }}>
+      <Box
+        position="absolute"
+        style={{ top: height * 0.27, right: width * 0.1 }}
+      >
         <IMessageBubble text="Wait I'm so down" isMe />
       </Box>
 
@@ -83,17 +90,28 @@ export function SplashScreen() {
         alignItems="center"
         style={{ top: "46%" }}
       >
-        <Text variant="headingSm" color="textInverse" textAlign="center" marginBottom="sm">
+        <Text
+          variant="headingSm"
+          color="textInverse"
+          textAlign="center"
+          marginBottom="sm"
+        >
           {"group trips shouldn't\ndie in the group chat"}
         </Text>
         <Logo />
       </Box>
 
-      <Box position="absolute" style={{ bottom: height * 0.30, left: width * 0.05 }}>
+      <Box
+        position="absolute"
+        style={{ bottom: height * 0.3, left: width * 0.05 }}
+      >
         <IMessageBubble text="where tho" />
       </Box>
 
-      <Box position="absolute" style={{ bottom: height * 0.22, right: width * 0.05 }}>
+      <Box
+        position="absolute"
+        style={{ bottom: height * 0.22, right: width * 0.05 }}
+      >
         <IMessageBubble text="is this happening" isMe />
       </Box>
     </Box>

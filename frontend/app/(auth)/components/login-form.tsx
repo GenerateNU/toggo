@@ -85,7 +85,11 @@ export default function PhoneNumberForm() {
           <Box flex={1} justifyContent="space-between">
             <Box gap="md">
               {error && (
-                <Box backgroundColor="statusError" padding="xs" borderRadius="sm">
+                <Box
+                  backgroundColor="statusError"
+                  padding="xs"
+                  borderRadius="sm"
+                >
                   <Text variant="bodyXsDefault" color="textDefault">
                     {error}
                   </Text>
@@ -119,7 +123,11 @@ export default function PhoneNumberForm() {
                       <Text variant="bodyDefault" style={{ lineHeight: 20 }}>
                         {selectedCountry.flagEmoji}
                       </Text>
-                      <Text variant="bodyXsDefault" color="textSubtle" style={{ lineHeight: 20 }}>
+                      <Text
+                        variant="bodyXsDefault"
+                        color="textSubtle"
+                        style={{ lineHeight: 20 }}
+                      >
                         {selectedCountry.callingCode}
                       </Text>
                       <Icon icon={ChevronDown} size="xs" color="textSubtle" />

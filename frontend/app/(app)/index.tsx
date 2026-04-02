@@ -3,13 +3,7 @@ import { getTrip } from "@/api/trips/useGetTrip";
 import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
-import {
-  BottomSheet,
-  Box,
-  Button,
-  ImagePicker,
-  Text,
-} from "@/design-system";
+import { BottomSheet, Box, Button, ImagePicker, Text } from "@/design-system";
 import { useToast } from "@/design-system/primitives/toast-manager";
 import { useCreateTrip } from "@/index";
 import { router, useLocalSearchParams } from "expo-router";
@@ -80,7 +74,7 @@ export default function Home() {
       toast.show({ message: "Profile created!" });
     }
   };
-  
+
   return (
     <Box
       flex={1}
@@ -120,7 +114,11 @@ export default function Home() {
         variant="Primary"
         disabled={createTripMutation.isPending}
         onPress={async () => {
-          const data = { name: "Spring Break", budget_min: 1, budget_max: 1000 };
+          const data = {
+            name: "Spring Break",
+            budget_min: 1,
+            budget_max: 1000,
+          };
           try {
             const result = await createTripMutation.mutateAsync({ data });
             if (result?.id) {

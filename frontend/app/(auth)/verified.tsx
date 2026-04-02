@@ -33,13 +33,29 @@ export default function VerifiedPage() {
   }, [router]);
 
   return (
-    <Box flex={1} backgroundColor="backgroundCard" style={{ overflow: "hidden" }}>
-      <Box style={{ position: "absolute", top: PATH_CONTAINER_TOP, left: PATH_OFFSET_X }}>
+    <Box
+      flex={1}
+      backgroundColor="backgroundCard"
+      style={{ overflow: "hidden" }}
+    >
+      <Box
+        style={{
+          position: "absolute",
+          top: PATH_CONTAINER_TOP,
+          left: PATH_OFFSET_X,
+        }}
+      >
         <PathSvg width={PATH_WIDTH} height={PATH_HEIGHT} />
         <Box style={{ position: "absolute", left: PLANE_X, top: PLANE_Y }}>
           <PlaneSvg width={46} height={30} />
         </Box>
-        <Box style={{ position: "absolute", left: PAPER_PLANE_X, top: PAPER_PLANE_Y }}>
+        <Box
+          style={{
+            position: "absolute",
+            left: PAPER_PLANE_X,
+            top: PAPER_PLANE_Y,
+          }}
+        >
           <PaperPlaneSvg width={37} height={30} />
         </Box>
       </Box>

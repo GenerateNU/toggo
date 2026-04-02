@@ -92,69 +92,77 @@ export default function CountryPickerSheet({
       onRequestClose={onClose}
     >
       <Box flex={1} backgroundColor="backgroundCard">
-          {/* Header */}
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="center"
-            paddingHorizontal="md"
-            paddingTop="md"
-            paddingBottom="sm"
-          >
-            <Text variant="headingSm">Country</Text>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <X size={20} color="#000" />
-            </Pressable>
-          </Box>
+        {/* Header */}
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="center"
+          paddingHorizontal="md"
+          paddingTop="md"
+          paddingBottom="sm"
+        >
+          <Text variant="headingSm">Country</Text>
+          <Pressable onPress={onClose} style={styles.closeButton}>
+            <X size={20} color="#000" />
+          </Pressable>
+        </Box>
 
-          {/* Search */}
-          <Box paddingHorizontal="md" paddingBottom="sm">
-            <TextField
-              placeholder="Search for a country"
-              value={search}
-              onChangeText={setSearch}
-              leftIcon={<Search size={16} color="#aaa" />}
-              autoCapitalize="none"
-            />
-          </Box>
-
-          {/* List */}
-          <FlatList
-            data={filtered}
-            keyExtractor={(item) => item.cca2}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <Box
-                  flexDirection="row"
-                  alignItems="center"
-                  paddingHorizontal="md"
-                  paddingVertical="xs"
-                  style={
-                    item.cca2 === selectedCode ? styles.selectedRow : undefined
-                  }
-                >
-                  <Text variant="bodyDefault" style={styles.flag}>
-                    {item.flagEmoji}
-                  </Text>
-                  <Text variant="bodyDefault" color="textInverse" style={[styles.countryName, styles.alignedText]}>
-                    {item.name}
-                  </Text>
-                  <Text variant="bodyDefault" color="textSubtle" style={styles.alignedText}>
-                    {item.callingCode}
-                  </Text>
-                </Box>
-              </Pressable>
-            )}
-            ItemSeparatorComponent={() => (
-              <Box style={styles.separator} backgroundColor="borderSubtle" />
-            )}
+        {/* Search */}
+        <Box paddingHorizontal="md" paddingBottom="sm">
+          <TextField
+            placeholder="Search for a country"
+            value={search}
+            onChangeText={setSearch}
+            leftIcon={<Search size={16} color="#aaa" />}
+            autoCapitalize="none"
           />
+        </Box>
+
+        {/* List */}
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.cca2}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => {
+                onSelect(item);
+                onClose();
+              }}
+            >
+              <Box
+                flexDirection="row"
+                alignItems="center"
+                paddingHorizontal="md"
+                paddingVertical="xs"
+                style={
+                  item.cca2 === selectedCode ? styles.selectedRow : undefined
+                }
+              >
+                <Text variant="bodyDefault" style={styles.flag}>
+                  {item.flagEmoji}
+                </Text>
+                <Text
+                  variant="bodyDefault"
+                  color="textInverse"
+                  style={[styles.countryName, styles.alignedText]}
+                >
+                  {item.name}
+                </Text>
+                <Text
+                  variant="bodyDefault"
+                  color="textSubtle"
+                  style={styles.alignedText}
+                >
+                  {item.callingCode}
+                </Text>
+              </Box>
+            </Pressable>
+          )}
+          ItemSeparatorComponent={() => (
+            <Box style={styles.separator} backgroundColor="borderSubtle" />
+          )}
+        />
       </Box>
     </Modal>
   );

@@ -29,7 +29,8 @@ export default function LoginPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       const isFrontA = frontSlotRef.current === "A";
-      const nextImageIndex = nextImageIndexRef.current % BACKGROUND_IMAGES.length;
+      const nextImageIndex =
+        nextImageIndexRef.current % BACKGROUND_IMAGES.length;
 
       Animated.parallel([
         Animated.timing(opacityA, {
@@ -86,7 +87,10 @@ export default function LoginPage() {
         paddingHorizontal="lg"
         justifyContent="space-between"
         alignItems="center"
-        style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
+        style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: insets.bottom + 24,
+        }}
       >
         <Logo color="textDefault" size="xl" />
 
