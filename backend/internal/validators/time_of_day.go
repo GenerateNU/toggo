@@ -26,4 +26,3 @@ func IsAllowedActivityTimeOfDay(timeOfDay string) bool {
 	}
 	return false
 }
-

@@ -1,22 +1,31 @@
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
+import { useTripsList } from "@/api/trips/custom/useTripsList";
 import { getTrip } from "@/api/trips/useGetTrip";
 import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
 import {
+  AnimatedBox,
   BottomSheet,
   Box,
-  Button,
   Icon,
   ImagePicker,
   Text,
 } from "@/design-system";
-import { AnimatedBox } from "@/design-system";
+import { ColorPalette } from "@/design-system/tokens/color";
 import { useCreateTrip } from "@/index";
+import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { router, useLocalSearchParams } from "expo-router";
-import { Check, X } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable } from "react-native";
+import { Check, Plus, X } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  FlatList,
+  Pressable,
+  StyleSheet,
+} from "react-native";
+import { TripCard } from "./trips/[id]/components/trip-card";
 
 export default function Home() {
   const { currentUser } = useUser();
@@ -34,6 +43,44 @@ export default function Home() {
     "success",
   );
   const [toastOpacity] = useState(() => new Animated.Value(0));
+
+  // ─── Trips list ────────────────────────────────────────────────────────────
+
+  const {
+    trips,
+    isLoading: isLoadingTrips,
+    isLoadingMore: isLoadingMoreTrips,
+    fetchMore: fetchMoreTrips,
+    prependTrip,
+  } = useTripsList();
+
+  const handleCreateTrip = useCallback(async () => {
+    try {
+      const result = await createTripMutation.mutateAsync({
+        data: { name: "Spring Break", budget_min: 1, budget_max: 1000 },
+      });
+      if (result?.id) {
+        prependTrip(result);
+      }
+    } catch (e) {
+      console.log("Error creating trip", e);
+    }
+  }, [createTripMutation, prependTrip]);
+
+  const renderTripItem = useCallback(
+    ({ item }: { item: ModelsTripAPIResponse }) => <TripCard trip={item} />,
+    [],
+  );
+
+  const renderTripFooter = useCallback(
+    () =>
+      isLoadingMoreTrips ? (
+        <Box paddingVertical="sm" alignItems="center">
+          <ActivityIndicator size="small" color={ColorPalette.textSubtle} />
+        </Box>
+      ) : null,
+    [isLoadingMoreTrips],
+  );
 
   const { joinedTripName, joinError } = useLocalSearchParams<{
     joinedTripName?: string;
@@ -142,58 +189,108 @@ export default function Home() {
 
   // TODO: extract toast into its own component with context after Bart's component library
   return (
-    <Box
-      flex={1}
-      justifyContent="center"
-      alignItems="center"
-      padding="lg"
-      gap="md"
-      backgroundColor="backgroundCard"
-    >
-      <Text variant="headingMd">Home</Text>
-      {currentUser?.username && (
-        <Text variant="bodySmDefault" color="textDefault">
-          Hello @{currentUser.username}
-        </Text>
-      )}
-      <Button
-        layout="textOnly"
-        label="Settings"
-        variant="Primary"
-        onPress={() => router.push("/settings")}
-      />
-      <Button
-        layout="textOnly"
-        label="Proof of Concept"
-        variant="Primary"
-        onPress={() => router.push("/testing")}
-      />
-      <Button
-        layout="textOnly"
-        label="Design System"
-        variant="Primary"
-        onPress={() => router.push("/ui-kit")}
-      />
-      <Button
-        layout="textOnly"
-        label={createTripMutation.isPending ? "Creating..." : "Create Trip"}
-        variant="Primary"
-        disabled={createTripMutation.isPending}
-        onPress={async () => {
-          const data = {
-            name: "Spring Break",
-            budget_min: 1,
-            budget_max: 1000,
-          };
-          try {
-            const result = await createTripMutation.mutateAsync({ data });
-            if (result?.id) {
-              router.push(`/trips/${result.id}`);
-            }
-          } catch (e) {
-            console.log("Error creating trip", e);
-          }
-        }}
+    <Box flex={1} backgroundColor="backgroundSubtle">
+      <FlatList
+        data={trips}
+        keyExtractor={(item) => item.id ?? ""}
+        renderItem={renderTripItem}
+        onEndReached={fetchMoreTrips}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={renderTripFooter}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <Box gap="md">
+            {/* Header */}
+            <Box
+              backgroundColor="backgroundCard"
+              padding="lg"
+              paddingTop="xl"
+              gap="xs"
+            >
+              <Text variant="headingMd" color="textInverse">
+                Home
+              </Text>
+              {currentUser?.username && (
+                <Text variant="bodySmDefault" color="textSubtle">
+                  @{currentUser.username}
+                </Text>
+              )}
+            </Box>
+
+            <Box
+              flexDirection="row"
+              flexWrap="wrap"
+              gap="xs"
+              paddingHorizontal="sm"
+            >
+              {[
+                { label: "Settings", path: "/settings" },
+                { label: "Proof of Concept", path: "/testing" },
+                { label: "Design System", path: "/ui-kit" },
+              ].map(({ label, path }) => (
+                <Pressable
+                  key={path}
+                  onPress={() => router.push(path as any)}
+                  style={({ pressed }) => [
+                    styles.chip,
+                    pressed && styles.chipPressed,
+                  ]}
+                >
+                  <Text variant="bodyXsMedium" color="textSubtle">
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
+            </Box>
+
+            {/* Trips header row */}
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+              paddingHorizontal="sm"
+              paddingTop="xs"
+            >
+              <Text variant="bodySmMedium" color="textSubtle">
+                MY TRIPS
+              </Text>
+              <Pressable
+                onPress={handleCreateTrip}
+                disabled={createTripMutation.isPending}
+                style={({ pressed }) => [
+                  styles.createButton,
+                  pressed && styles.createButtonPressed,
+                ]}
+              >
+                {createTripMutation.isPending ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={ColorPalette.textInverse}
+                  />
+                ) : (
+                  <Plus size={14} color={ColorPalette.textInverse} />
+                )}
+                <Text variant="bodyXsMedium" color="textInverse">
+                  New Trip
+                </Text>
+              </Pressable>
+            </Box>
+
+            {isLoadingTrips && (
+              <Box alignItems="center" paddingVertical="md">
+                <ActivityIndicator color={ColorPalette.textSubtle} />
+              </Box>
+            )}
+
+            {!isLoadingTrips && trips.length === 0 && (
+              <Box alignItems="center" paddingVertical="md">
+                <Text variant="bodySmDefault" color="textSubtle">
+                  No trips yet — tap New Trip to create one
+                </Text>
+              </Box>
+            )}
+          </Box>
+        }
       />
 
       <BottomSheet
@@ -287,3 +384,31 @@ export default function Home() {
     </Box>
   );
 }
+
+const styles = StyleSheet.create({
+  listContent: {
+    paddingBottom: 40,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: ColorPalette.backgroundCard,
+  },
+  chipPressed: {
+    opacity: 0.7,
+  },
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: ColorPalette.brandPrimary,
+  },
+  createButtonPressed: {
+    opacity: 0.75,
+  },
+});

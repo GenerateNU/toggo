@@ -34,7 +34,7 @@ type CommentReactionSummary struct {
 
 // CommentReactionsSummaryResponse contains aggregated reactions for a comment.
 type CommentReactionsSummaryResponse struct {
-	CommentID uuid.UUID               `json:"comment_id"`
+	CommentID uuid.UUID                `json:"comment_id"`
 	Reactions []CommentReactionSummary `json:"reactions"`
 }
 
@@ -47,8 +47,7 @@ type CommentReactionUser struct {
 
 // CommentReactionUsersResponse contains the list of users who reacted with a specific emoji on a comment.
 type CommentReactionUsersResponse struct {
-	CommentID uuid.UUID              `json:"comment_id"`
-	Emoji     string                 `json:"emoji"`
-	Users     []CommentReactionUser  `json:"users"`
+	CommentID uuid.UUID             `json:"comment_id"`
+	Emoji     string                `json:"emoji"`
+	Users     []CommentReactionUser `json:"users"`
 }
-

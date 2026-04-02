@@ -75,6 +75,14 @@ export default function Trip() {
           <Box gap="sm">
             <Button
               layout="textOnly"
+              label="Activities"
+              variant="Primary"
+              onPress={() =>
+                router.push({ pathname: `/trips/${tripID}/activities` })
+              }
+            />
+            <Button
+              layout="textOnly"
               label="See Dummy Activity"
               variant="Primary"
               onPress={() =>
@@ -119,7 +127,7 @@ export default function Trip() {
                   ? "Generating..."
                   : "Invite via Link"
               }
-              variant="Secondary"
+              variant="Primary"
               disabled={createInviteMutation.isPending}
               onPress={handleInvite}
             />
