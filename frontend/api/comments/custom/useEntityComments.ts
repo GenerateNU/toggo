@@ -18,8 +18,6 @@ import type {
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function formatRelativeTime(isoString?: string): string {
   if (!isoString) return "just now";
   const diffSeconds = Math.floor(
@@ -63,8 +61,6 @@ async function attachReactions(
   }));
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type UseEntityCommentsParams = {
   tripID: string;
   entityType: ModelsEntityType;
@@ -86,8 +82,6 @@ export const commentsQueryKey = (
   entityType: ModelsEntityType,
   entityID: string,
 ) => ["comments", tripID, entityType, entityID] as const;
-
-// ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useEntityComments({
   tripID,
