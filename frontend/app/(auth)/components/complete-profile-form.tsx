@@ -128,7 +128,7 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textDefault">
+            <Text variant="bodySmMedium" color="textInverse">
               Full Name
             </Text>
             <Box
@@ -162,7 +162,7 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textDefault">
+            <Text variant="bodySmMedium" color="textInverse">
               Username
             </Text>
             <Box
@@ -196,7 +196,7 @@ export default function CompleteProfileForm({
       <Button
         layout="textOnly"
         label="Create Account"
-        variant="Primary"
+        variant="Secondary"
         loading={isSubmitting}
         loadingLabel="Creating account..."
         disabled={!formState.isValid || isSubmitting}

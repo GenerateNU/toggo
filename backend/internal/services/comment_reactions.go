@@ -108,4 +108,3 @@ func (s *CommentReactionService) GetReactionUsers(ctx context.Context, commentID
 		Users:     users,
 	}, nil
 }
-

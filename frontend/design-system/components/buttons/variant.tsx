@@ -78,6 +78,14 @@ export const ButtonVariants = {
     borderWidth: "none",
     contentColor: "textDefault",
   },
+  PrimaryBrand: {
+    ...baseButton,
+    width: "100%",
+    backgroundColor: "brandPrimary",
+    borderRadius: "lg",
+    borderWidth: "none",
+    contentColor: "textDefault",
+  },
   Secondary: {
     ...baseButton,
     width: "100%",
@@ -185,6 +193,10 @@ export const DisabledVariantStyle: Record<
 > = {
   Primary: {
     backgroundColor: "backgroundDisabled",
+    contentColor: "textDisabled",
+  },
+  PrimaryBrand: {
+    backgroundColor: "brandPrimarySubtle",
     contentColor: "textDisabled",
   },
   Secondary: {
