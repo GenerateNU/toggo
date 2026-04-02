@@ -3,13 +3,13 @@ import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet"
 import { HomeHeader } from "@/app/(app)/components/home-header";
 import { NavChips } from "@/app/(app)/components/nav-chips";
 import { TripsSectionHeader } from "@/app/(app)/components/trips-section-header";
-import { useInviteHandlers } from "@/app/(app)/hooks/useInviteHandlers";
 import { useUser } from "@/contexts/user";
 import { Box, EmptyState, ErrorState, SkeletonRect } from "@/design-system";
 import ResourceView, {
   type Resource,
 } from "@/design-system/components/high-order/resource-view";
 import { Layout } from "@/design-system/tokens/layout";
+import { useDeeplinkInvite } from "@/hooks/useDeeplinkInvite";
 import { useCreateTrip } from "@/index";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { useCallback, useEffect, useRef } from "react";
@@ -30,7 +30,7 @@ export default function Home() {
   const { currentUser } = useUser();
   const createTripMutation = useCreateTrip();
   const bottomSheetRef = useRef<any>(null);
-  const { handleProfileCreated } = useInviteHandlers();
+  const { handleProfileCreated } = useDeeplinkInvite();
 
   const needsProfile = !currentUser?.username;
 
@@ -60,7 +60,7 @@ export default function Home() {
         prependTrip(result);
       }
     } catch {
-      // handled silently — mutation error state covers feedback
+      // handled silently, mutation error state covers feedback
     }
   }, [createTripMutation, prependTrip]);
 

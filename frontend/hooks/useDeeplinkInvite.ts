@@ -5,7 +5,7 @@ import { useToast } from "@/design-system/primitives/toast-manager";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
 
-export function useInviteHandlers() {
+export function useDeeplinkInvite() {
   const toast = useToast();
   const pendingTripCode = useUserStore((s) => s.pendingTripCode);
   const setPendingTripCode = useUserStore((s) => s.setPendingTripCode);
