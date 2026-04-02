@@ -79,7 +79,7 @@ export function SplashScreen() {
         left={0}
         right={0}
         alignItems="center"
-        style={{ top: "46%" }}
+        style={{ top: "40%" }}
       >
         <Text
           variant="headingSm"

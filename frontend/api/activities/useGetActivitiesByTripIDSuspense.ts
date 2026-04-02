@@ -37,7 +37,7 @@ export type GetActivitiesByTripIDSuspenseQueryKey = ReturnType<
 >;
 
 /**
- * @description Retrieves paginated activities for a trip, optionally filtered by category
+ * @description Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date
  * @summary Get activities by trip
  * {@link /api/v1/trips/:tripID/activities}
  */
@@ -97,7 +97,7 @@ export function getActivitiesByTripIDSuspenseQueryOptions(
 }
 
 /**
- * @description Retrieves paginated activities for a trip, optionally filtered by category
+ * @description Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date
  * @summary Get activities by trip
  * {@link /api/v1/trips/:tripID/activities}
  */

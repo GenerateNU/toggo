@@ -89,7 +89,7 @@ func (ctrl *PitchController) ListPitches(c *fiber.Ctx) error {
 	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
-	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params.CursorPaginationParams)
 
 	result, err := ctrl.pitchService.List(c.Context(), tripID, limit, cursorToken)
 	if err != nil {

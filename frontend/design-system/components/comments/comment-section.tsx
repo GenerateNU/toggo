@@ -7,6 +7,7 @@ import { Layout, ModalHandle } from "@/design-system/tokens/layout";
 import { X } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Modal,
@@ -28,6 +29,9 @@ export type CommentSectionProps = {
   currentUserName: string;
   currentUserAvatar?: string;
   currentUserSeed?: string;
+  isLoading?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
   onSubmitComment: (comment: CommentData) => Promise<void>;
   onReact: (commentId: string, emoji: string) => void;
 };
@@ -40,14 +44,26 @@ const INPUT_PADDING_VERTICAL = 10;
 
 // ─── Empty State ─────────────────────────────────────────────────────────────
 
-const EmptyState = () => (
-  <Box style={styles.emptyContainer}>
-    <Text style={styles.emptyEmoji}>📮</Text>
-    <Text variant="bodySmDefault" color="textSubtle">
-      No comments yet... be the first
-    </Text>
-  </Box>
-);
+const EmptyState = ({ loading }: { loading: boolean }) =>
+  loading ? (
+    <Box style={styles.emptyContainer}>
+      <ActivityIndicator color={ColorPalette.textSubtle} />
+    </Box>
+  ) : (
+    <Box style={styles.emptyContainer}>
+      <Text style={styles.emptyEmoji}>📮</Text>
+      <Text variant="bodySmDefault" color="textSubtle">
+        No comments yet... be the first
+      </Text>
+    </Box>
+  );
+
+const LoadMoreFooter = ({ loading }: { loading: boolean }) =>
+  loading ? (
+    <Box style={styles.loadMoreFooter}>
+      <ActivityIndicator size="small" color={ColorPalette.textSubtle} />
+    </Box>
+  ) : null;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -59,6 +75,9 @@ export default function CommentSection({
   currentUserName,
   currentUserAvatar,
   currentUserSeed,
+  isLoading = false,
+  isLoadingMore = false,
+  onLoadMore,
   onSubmitComment,
   onReact,
 }: CommentSectionProps) {
@@ -144,7 +163,20 @@ export default function CommentSection({
     ],
   );
 
-  const keyExtractor = useCallback((item: CommentData) => item.id, []);
+  const keyExtractor = useCallback(
+    (item: CommentData, index: number) => item.id || String(index),
+    [],
+  );
+
+  const renderEmpty = useCallback(
+    () => <EmptyState loading={isLoading} />,
+    [isLoading],
+  );
+
+  const renderFooter = useCallback(
+    () => <LoadMoreFooter loading={isLoadingMore} />,
+    [isLoadingMore],
+  );
 
   return (
     <Modal
@@ -156,7 +188,7 @@ export default function CommentSection({
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 65 : 0}
       >
         {/* Header */}
         <Box style={styles.header}>
@@ -189,7 +221,10 @@ export default function CommentSection({
             styles.listContent,
             comments.length === 0 && styles.listContentEmpty,
           ]}
-          ListEmptyComponent={EmptyState}
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          onEndReached={onLoadMore}
+          onEndReachedThreshold={0.3}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         />
@@ -205,8 +240,8 @@ export default function CommentSection({
               onChangeText={setInputText}
               returnKeyType="default"
               multiline
+              scrollEnabled={false}
               maxLength={500}
-              textAlignVertical="top"
             />
             {inputText.trim().length > 0 && !isSubmitting && (
               <Pressable
@@ -304,10 +339,15 @@ const styles = StyleSheet.create({
   },
   emptyEmoji: {
     fontSize: CoreSize.xl,
+    lineHeight: CoreSize.xl + 16,
+  },
+  loadMoreFooter: {
+    paddingVertical: Layout.spacing.sm,
+    alignItems: "center",
   },
   inputBar: {
     gap: 6,
-    paddingHorizontal: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.sm,
     paddingTop: 10,
     paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -323,8 +363,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: INPUT_FONT_SIZE,
     lineHeight: INPUT_LINE_HEIGHT,
-    paddingTop: INPUT_PADDING_VERTICAL,
-    paddingBottom: INPUT_PADDING_VERTICAL,
+    paddingVertical: INPUT_PADDING_VERTICAL,
     paddingHorizontal: 14,
     borderRadius: CornerRadius.md,
     borderWidth: 1,
