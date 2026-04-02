@@ -929,10 +929,18 @@ export type ModelsCreateTripRequest = {
    */
   currency?: string;
   /**
+   * @type string | undefined
+   */
+  end_date?: string;
+  /**
    * @minLength 1
    * @type string
    */
   name: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
 };
 
 export type ModelsCreateUserRequest = {
@@ -1814,11 +1822,19 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  end_date?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
   /**
    * @type string | undefined
    */
@@ -1936,11 +1952,19 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  end_date?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
   /**
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
   /**
    * @type string | undefined
    */
@@ -2152,10 +2176,18 @@ export type ModelsUpdateTripRequest = {
    */
   currency?: string;
   /**
+   * @type string | undefined
+   */
+  end_date?: string;
+  /**
    * @minLength 1
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
 };
 
 export type ModelsUpdateUserRequest = {
