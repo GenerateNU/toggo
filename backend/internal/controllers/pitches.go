@@ -66,6 +66,40 @@ func (ctrl *PitchController) CreatePitch(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(resp)
 }
 
+// @Summary      Confirm pitch audio upload
+// @Description  Verifies that the audio file was successfully uploaded to S3 and notifies trip members.
+// @Description  Must be called by the pitch creator after the presigned PUT upload completes.
+// @Tags         pitches
+// @Param        tripID  path string true "Trip ID"
+// @Param        pitchID path string true "Pitch ID"
+// @Success      204 "No Content"
+// @Failure      400 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload [post]
+// @ID           confirmPitchUpload
+func (ctrl *PitchController) ConfirmPitchUpload(c *fiber.Ctx) error {
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return err
+	}
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	pitchID, err := validators.ValidateID(c.Params("pitchID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	if err := ctrl.pitchService.ConfirmUpload(c.Context(), tripID, pitchID, userID); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusNoContent)
+}
+
 // @Summary      Get all pitches for a trip
 // @Description  Returns pitches for the trip with cursor-based pagination
 // @Tags         pitches

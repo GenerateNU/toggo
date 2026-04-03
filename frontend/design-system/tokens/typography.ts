@@ -1,4 +1,5 @@
 export const FontSize = {
+  xxs: 10,
   xs: 12,
   sm: 14,
   md: 16,
@@ -75,6 +76,10 @@ export const Typography = {
   bodyXsDefault: createTypography({ size: "xs", family: "regular" }),
   bodyXsMedium: createTypography({ size: "xs", family: "medium" }),
   bodyXsStrong: createTypography({ size: "xs", family: "semiBold" }),
+
+  bodyXxsDefault: createTypography({ size: "xxs", family: "regular" }),
+  bodyXxsMedium: createTypography({ size: "xxs", family: "medium" }),
+  bodyXxsStrong: createTypography({ size: "xxs", family: "semiBold" }),
 
   // Logo (Zain ExtraBold)
   logoXl: createTypography({ size: "xl", family: "logo", letterSpacing: -1 }),

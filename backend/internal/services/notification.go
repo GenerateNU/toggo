@@ -13,18 +13,21 @@ import (
 type NotificationService interface {
 	SendNotification(ctx context.Context, req models.SendNotificationRequest) error
 	SendNotificationBatch(ctx context.Context, req models.SendBulkNotificationRequest) (*models.NotificationResponse, error)
+	NotifyTripMembers(ctx context.Context, tripID uuid.UUID, excludeUserID uuid.UUID, preference models.NotificationPreference, title, body string, data map[string]interface{}) error
 }
 
 // expoNotificationService implements NotificationService using Expo API
 type expoNotificationService struct {
-	userRepo   repository.UserRepository
-	expoClient ExpoClient
+	userRepo       repository.UserRepository
+	membershipRepo repository.MembershipRepository
+	expoClient     ExpoClient
 }
 
-func NewNotificationService(userRepo repository.UserRepository, expoClient ExpoClient) NotificationService {
+func NewNotificationService(userRepo repository.UserRepository, membershipRepo repository.MembershipRepository, expoClient ExpoClient) NotificationService {
 	return &expoNotificationService{
-		userRepo:   userRepo,
-		expoClient: expoClient,
+		userRepo:       userRepo,
+		membershipRepo: membershipRepo,
+		expoClient:     expoClient,
 	}
 }
 
@@ -119,4 +122,25 @@ func (s *expoNotificationService) SendNotificationBatch(ctx context.Context, req
 	}
 
 	return response, nil
+}
+
+// NotifyTripMembers sends a push notification to all trip members who have the given
+// notification preference enabled, excluding the actor (excludeUserID).
+func (s *expoNotificationService) NotifyTripMembers(ctx context.Context, tripID uuid.UUID, excludeUserID uuid.UUID, preference models.NotificationPreference, title, body string, data map[string]interface{}) error {
+	userIDs, err := s.membershipRepo.FindUserIDsWithNotificationPreference(ctx, tripID, preference, excludeUserID)
+	if err != nil {
+		return fmt.Errorf("failed to get members with preference: %w", err)
+	}
+
+	if len(userIDs) == 0 {
+		return nil
+	}
+
+	_, err = s.SendNotificationBatch(ctx, models.SendBulkNotificationRequest{
+		UserIDs: userIDs,
+		Title:   title,
+		Body:    body,
+		Data:    data,
+	})
+	return err
 }

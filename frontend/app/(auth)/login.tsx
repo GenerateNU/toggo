@@ -110,7 +110,7 @@ export default function LoginPage() {
           <Button
             layout="textOnly"
             label="Log in or create an account"
-            variant="PrimaryBrand"
+            variant="Primary"
             onPress={() => router.push("/(auth)/phone")}
           />
         </Box>

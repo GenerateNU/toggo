@@ -1048,6 +1048,18 @@ export type ModelsMembership = {
    */
   is_admin?: boolean;
   /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
+  /**
    * @type string | undefined
    */
   trip_id?: string;
@@ -1084,6 +1096,18 @@ export type ModelsMembershipAPIResponse = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
   /**
    * @type string | undefined
    */
@@ -2050,6 +2074,21 @@ export type ModelsUpdateMembershipRequest = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+};
+
+export type ModelsUpdateNotificationPreferencesRequest = {
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
 };
 
 export type ModelsUpdatePitchRequest = {
@@ -4951,6 +4990,76 @@ export type DemoteFromAdminMutation = {
     | DemoteFromAdmin401
     | DemoteFromAdmin404
     | DemoteFromAdmin500;
+};
+
+export type UpdateNotificationPreferencesPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description User ID
+   * @type string
+   */
+  userID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateNotificationPreferences200 = ModelsMembership;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateNotificationPreferences400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type UpdateNotificationPreferences403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateNotificationPreferences404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateNotificationPreferences422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateNotificationPreferences500 = ErrsAPIError;
+
+/**
+ * @description Notification preferences
+ */
+export type UpdateNotificationPreferencesMutationRequest =
+  ModelsUpdateNotificationPreferencesRequest;
+
+export type UpdateNotificationPreferencesMutationResponse =
+  UpdateNotificationPreferences200;
+
+export type UpdateNotificationPreferencesMutation = {
+  Response: UpdateNotificationPreferences200;
+  Request: UpdateNotificationPreferencesMutationRequest;
+  PathParams: UpdateNotificationPreferencesPathParams;
+  Errors:
+    | UpdateNotificationPreferences400
+    | UpdateNotificationPreferences401
+    | UpdateNotificationPreferences403
+    | UpdateNotificationPreferences404
+    | UpdateNotificationPreferences422
+    | UpdateNotificationPreferences500;
 };
 
 export type PromoteToAdminPathParams = {

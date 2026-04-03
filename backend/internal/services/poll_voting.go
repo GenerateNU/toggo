@@ -29,15 +29,17 @@ type PollVotingServiceInterface interface {
 var _ PollVotingServiceInterface = (*PollVotingService)(nil)
 
 type PollVotingService struct {
-	repository  *repository.Repository
-	pollService PollServiceInterface
+	repository          *repository.Repository
+	pollService         PollServiceInterface
+	notificationService NotificationService
 }
 
 // NewPollVotingService creates a poll voting service with the given repository and event publisher.
-func NewPollVotingService(repo *repository.Repository, pollService PollServiceInterface) PollVotingServiceInterface {
+func NewPollVotingService(repo *repository.Repository, pollService PollServiceInterface, notificationService NotificationService) PollVotingServiceInterface {
 	return &PollVotingService{
-		repository:  repo,
-		pollService: pollService,
+		repository:          repo,
+		pollService:         pollService,
+		notificationService: notificationService,
 	}
 }
 
@@ -78,8 +80,27 @@ func (s *PollVotingService) CreateVotePoll(
 	)
 
 	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollCreated, tripID.String(), created.ID.String(), userID.String(), resp)
+	go s.notifyNewPoll(tripID, userID)
 
 	return resp, nil
+}
+
+func (s *PollVotingService) notifyNewPoll(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	err := s.notificationService.NotifyTripMembers(
+		context.Background(),
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewPoll,
+		"New poll",
+		"A new poll has been created for your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new poll notification: %v", err)
+	}
 }
 
 // GetPoll returns a single poll with vote counts and the requesting user's vote state.

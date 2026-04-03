@@ -126,6 +126,7 @@ import type {
   ModelsUpdateActivityRequest,
   ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
+  ModelsUpdateNotificationPreferencesRequest,
   ModelsUpdatePitchRequest,
   ModelsUpdatePollWithCategoriesRequest,
   ModelsUpdateTripRequest,
@@ -505,6 +506,16 @@ import type {
   DemoteFromAdmin500,
   DemoteFromAdminMutationResponse,
   DemoteFromAdminPathParams,
+  UpdateNotificationPreferences200,
+  UpdateNotificationPreferences400,
+  UpdateNotificationPreferences401,
+  UpdateNotificationPreferences403,
+  UpdateNotificationPreferences404,
+  UpdateNotificationPreferences422,
+  UpdateNotificationPreferences500,
+  UpdateNotificationPreferencesMutationRequest,
+  UpdateNotificationPreferencesMutationResponse,
+  UpdateNotificationPreferencesPathParams,
   PromoteToAdmin200,
   PromoteToAdmin400,
   PromoteToAdmin401,
@@ -1183,6 +1194,9 @@ export const modelsMembershipSchema = z.object({
   budget_min: z.optional(z.int()),
   created_at: z.optional(z.string()),
   is_admin: z.optional(z.boolean()),
+  notify_new_comments: z.optional(z.boolean()),
+  notify_new_pitches: z.optional(z.boolean()),
+  notify_new_polls: z.optional(z.boolean()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
   user_id: z.optional(z.string()),
@@ -1194,6 +1208,9 @@ export const modelsMembershipAPIResponseSchema = z.object({
   budget_min: z.optional(z.int()),
   created_at: z.optional(z.string()),
   is_admin: z.optional(z.boolean()),
+  notify_new_comments: z.optional(z.boolean()),
+  notify_new_pitches: z.optional(z.boolean()),
+  notify_new_polls: z.optional(z.boolean()),
   profile_picture_url: z.optional(z.string()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
@@ -1648,6 +1665,12 @@ export const modelsUpdateMembershipRequestSchema = z.object({
   budget_min: z.optional(z.int().min(0)),
   is_admin: z.optional(z.boolean()),
 }) as unknown as z.ZodType<ModelsUpdateMembershipRequest>;
+
+export const modelsUpdateNotificationPreferencesRequestSchema = z.object({
+  notify_new_comments: z.optional(z.boolean()),
+  notify_new_pitches: z.optional(z.boolean()),
+  notify_new_polls: z.optional(z.boolean()),
+}) as unknown as z.ZodType<ModelsUpdateNotificationPreferencesRequest>;
 
 export const modelsUpdatePitchRequestSchema = z.object({
   description: z.optional(z.string()),
@@ -4322,6 +4345,71 @@ export const demoteFromAdmin500Schema = z.lazy(
 export const demoteFromAdminMutationResponseSchema = z.lazy(
   () => demoteFromAdmin200Schema,
 ) as unknown as z.ZodType<DemoteFromAdminMutationResponse>;
+
+export const updateNotificationPreferencesPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  userID: z.string().describe("User ID"),
+}) as unknown as z.ZodType<UpdateNotificationPreferencesPathParams>;
+
+/**
+ * @description OK
+ */
+export const updateNotificationPreferences200Schema = z.lazy(
+  () => modelsMembershipSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences200>;
+
+/**
+ * @description Bad Request
+ */
+export const updateNotificationPreferences400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences400>;
+
+/**
+ * @description Unauthorized
+ */
+export const updateNotificationPreferences401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences401>;
+
+/**
+ * @description Forbidden
+ */
+export const updateNotificationPreferences403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences403>;
+
+/**
+ * @description Not Found
+ */
+export const updateNotificationPreferences404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const updateNotificationPreferences422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const updateNotificationPreferences500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferences500>;
+
+/**
+ * @description Notification preferences
+ */
+export const updateNotificationPreferencesMutationRequestSchema = z.lazy(
+  () => modelsUpdateNotificationPreferencesRequestSchema,
+) as unknown as z.ZodType<UpdateNotificationPreferencesMutationRequest>;
+
+export const updateNotificationPreferencesMutationResponseSchema = z.lazy(
+  () => updateNotificationPreferences200Schema,
+) as unknown as z.ZodType<UpdateNotificationPreferencesMutationResponse>;
 
 export const promoteToAdminPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

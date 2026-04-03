@@ -289,6 +289,63 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      Update notification preferences
+// @Description  Updates the notification preferences for a membership (self only)
+// @Tags         memberships
+// @Accept       json
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        userID path string true "User ID"
+// @Param        request body models.UpdateNotificationPreferencesRequest true "Notification preferences"
+// @Success      200 {object} models.Membership
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/memberships/{userID}/notification-preferences [patch]
+// @ID           updateNotificationPreferences
+func (ctrl *MembershipController) UpdateNotificationPreferences(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := validators.ValidateID(c.Params("userID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+	if authUserUUID != userID {
+		return errs.Forbidden()
+	}
+
+	var req models.UpdateNotificationPreferencesRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	membership, err := ctrl.membershipService.UpdateNotificationPreferences(c.Context(), userID, tripID, req)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(membership)
+}
+
 // @Summary      Demote admin to member
 // @Description  Demotes an admin to regular member role
 // @Tags         memberships

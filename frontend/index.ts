@@ -56,6 +56,7 @@ export type { JoinTripByInviteMutationKey } from "./api/memberships/useJoinTripB
 export type { PromoteToAdminMutationKey } from "./api/memberships/usePromoteToAdmin.ts";
 export type { RemoveMemberMutationKey } from "./api/memberships/useRemoveMember.ts";
 export type { UpdateMembershipMutationKey } from "./api/memberships/useUpdateMembership.ts";
+export type { UpdateNotificationPreferencesMutationKey } from "./api/memberships/useUpdateNotificationPreferences.ts";
 export type { SendBulkNotificationMutationKey } from "./api/notifications/useSendBulkNotification.ts";
 export type { SendNotificationMutationKey } from "./api/notifications/useSendNotification.ts";
 export type { CreatePitchMutationKey } from "./api/pitches/useCreatePitch.ts";
@@ -343,6 +344,10 @@ export { updateMembership } from "./api/memberships/useUpdateMembership.ts";
 export { updateMembershipMutationKey } from "./api/memberships/useUpdateMembership.ts";
 export { updateMembershipMutationOptions } from "./api/memberships/useUpdateMembership.ts";
 export { useUpdateMembership } from "./api/memberships/useUpdateMembership.ts";
+export { updateNotificationPreferences } from "./api/memberships/useUpdateNotificationPreferences.ts";
+export { updateNotificationPreferencesMutationKey } from "./api/memberships/useUpdateNotificationPreferences.ts";
+export { updateNotificationPreferencesMutationOptions } from "./api/memberships/useUpdateNotificationPreferences.ts";
+export { useUpdateNotificationPreferences } from "./api/memberships/useUpdateNotificationPreferences.ts";
 export { sendBulkNotification } from "./api/notifications/useSendBulkNotification.ts";
 export { sendBulkNotificationMutationKey } from "./api/notifications/useSendBulkNotification.ts";
 export { sendBulkNotificationMutationOptions } from "./api/notifications/useSendBulkNotification.ts";

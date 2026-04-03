@@ -1,7 +1,8 @@
 import { Box } from "@/design-system/primitives/box";
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import React from "react";
+import { Icon } from "../icons/icon";
 
 interface BackButtonProps {
   onPress?: () => void;
@@ -17,7 +18,7 @@ export const BackButton: React.FC<BackButtonProps> = ({ onPress }) => {
       alignItems="center"
       justifyContent="center"
     >
-      <ChevronLeft size={32} color="#000" />
+      <Icon icon={ArrowLeft} size="sm" color="black" />
     </Box>
   );
 };
