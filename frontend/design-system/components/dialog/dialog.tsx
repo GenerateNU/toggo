@@ -2,7 +2,7 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import React from "react";
-import { Modal, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import { Modal, Pressable, TouchableOpacity } from "react-native";
 
 export type DialogActionStyle = "default" | "destructive" | "navigate";
 
@@ -41,8 +41,24 @@ export function Dialog({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.card} onPress={() => {}}>
+      <Pressable
+        onPress={onClose}
+        style={{
+          flex: 1,
+          backgroundColor: ColorPalette.backgroundOverlay,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 40,
+        }}
+      >
+        <Pressable
+          onPress={() => {}}
+          style={{
+            backgroundColor: ColorPalette.white,
+            borderRadius: 20,
+            width: "100%",
+          }}
+        >
           {(title || message) && (
             <Box
               paddingHorizontal="md"
@@ -93,20 +109,5 @@ export function Dialog({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: ColorPalette.backgroundOverlay,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  card: {
-    backgroundColor: ColorPalette.white,
-    borderRadius: 20,
-    width: "100%",
-  },
-});
 
 export default Dialog;
