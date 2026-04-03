@@ -74,8 +74,10 @@ func (s *RankPollService) notifyNewPoll(tripID uuid.UUID, actorID uuid.UUID) {
 	if s.notificationService == nil {
 		return
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), notificationTimeout)
+	defer cancel()
 	err := s.notificationService.NotifyTripMembers(
-		context.Background(),
+		ctx,
 		tripID,
 		actorID,
 		models.NotificationPreferenceNewPoll,

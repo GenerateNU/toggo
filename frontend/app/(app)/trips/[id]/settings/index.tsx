@@ -174,11 +174,12 @@ export default function TripSettings() {
   };
 
   const confirmLeaveTrip = async () => {
+    if (!tripID || !currentUser) return;
     setLeaveDialog(null);
     try {
       await removeMemberMutation.mutateAsync({
-        tripID: tripID!,
-        userID: currentUser!.id,
+        tripID,
+        userID: currentUser.id,
       });
       router.replace("/");
     } catch {
@@ -191,9 +192,10 @@ export default function TripSettings() {
   };
 
   const confirmDeleteTrip = async () => {
+    if (!tripID) return;
     setDeleteDialog(false);
     try {
-      await deleteTripMutation.mutateAsync({ tripID: tripID! });
+      await deleteTripMutation.mutateAsync({ tripID });
       router.replace("/");
     } catch {
       toast.show({ message: "Couldn't delete the trip. Please try again." });

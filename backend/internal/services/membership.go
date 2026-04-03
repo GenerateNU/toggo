@@ -78,6 +78,9 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 			UpdatedAt:         existingMembership.UpdatedAt,
 		}, nil
 	}
+	if !errors.Is(err, errs.ErrNotFound) {
+		return nil, err
+	}
 
 	// Create membership
 	membership := &models.Membership{

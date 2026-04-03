@@ -15,6 +15,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
 )
 
@@ -161,19 +162,27 @@ func (s *PitchService) ConfirmUpload(ctx context.Context, tripID, pitchID, userI
 		Key:    aws.String(pitch.AudioS3Key),
 	})
 	if err != nil {
-		return errs.BadRequest(errors.New("audio file not found in storage; upload may not have completed"))
+		var notFound *s3types.NotFound
+		if errors.As(err, &notFound) {
+			return errs.BadRequest(errors.New("audio file not found in storage; upload may not have completed"))
+		}
+		return fmt.Errorf("check audio upload: %w", err)
 	}
 
 	go s.notifyNewPitch(tripID, userID)
 	return nil
 }
 
+const notificationTimeout = 30 * time.Second
+
 func (s *PitchService) notifyNewPitch(tripID uuid.UUID, actorID uuid.UUID) {
 	if s.notificationService == nil {
 		return
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), notificationTimeout)
+	defer cancel()
 	err := s.notificationService.NotifyTripMembers(
-		context.Background(),
+		ctx,
 		tripID,
 		actorID,
 		models.NotificationPreferenceNewPitch,
