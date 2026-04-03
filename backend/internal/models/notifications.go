@@ -27,7 +27,7 @@ type CreateNotificationPreferencesRequest struct {
 	DeadlineReminders  *bool `json:"deadline_reminders"`
 }
 
-type UpdateNotificationPreferencesRequest struct {
+type UpdateUserNotificationPreferencesRequest struct {
 	PushEnabled        *bool `validate:"omitempty" json:"push_enabled"`
 	UpcomingTrip       *bool `validate:"omitempty" json:"upcoming_trip"`
 	VotingReminders    *bool `validate:"omitempty" json:"voting_reminders"`

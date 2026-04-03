@@ -15,7 +15,7 @@ import (
 type NotificationPreferencesRepository interface {
 	Create(ctx context.Context, prefs *models.NotificationPreferences) (*models.NotificationPreferences, error)
 	Find(ctx context.Context, userID uuid.UUID) (*models.NotificationPreferences, error)
-	Update(ctx context.Context, userID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.NotificationPreferences, error)
+	Update(ctx context.Context, userID uuid.UUID, req *models.UpdateUserNotificationPreferencesRequest) (*models.NotificationPreferences, error)
 	Delete(ctx context.Context, userID uuid.UUID) error
 	Upsert(ctx context.Context, prefs *models.NotificationPreferences) (*models.NotificationPreferences, error)
 }
@@ -56,7 +56,7 @@ func (r *notificationPreferencesRepository) Find(ctx context.Context, userID uui
 	return prefs, nil
 }
 
-func (r *notificationPreferencesRepository) Update(ctx context.Context, userID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.NotificationPreferences, error) {
+func (r *notificationPreferencesRepository) Update(ctx context.Context, userID uuid.UUID, req *models.UpdateUserNotificationPreferencesRequest) (*models.NotificationPreferences, error) {
 	updateQuery := r.db.NewUpdate().
 		Model(&models.NotificationPreferences{}).
 		Where("user_id = ?", userID)

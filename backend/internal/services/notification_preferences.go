@@ -12,7 +12,7 @@ import (
 type NotificationPreferencesServiceInterface interface {
 	GetPreferences(ctx context.Context, userID uuid.UUID) (*models.NotificationPreferences, error)
 	CreatePreferences(ctx context.Context, userID uuid.UUID, req models.CreateNotificationPreferencesRequest) (*models.NotificationPreferences, error)
-	UpdatePreferences(ctx context.Context, userID uuid.UUID, req models.UpdateNotificationPreferencesRequest) (*models.NotificationPreferences, error)
+	UpdatePreferences(ctx context.Context, userID uuid.UUID, req models.UpdateUserNotificationPreferencesRequest) (*models.NotificationPreferences, error)
 	DeletePreferences(ctx context.Context, userID uuid.UUID) error
 	GetOrCreateDefaultPreferences(ctx context.Context, userID uuid.UUID) (*models.NotificationPreferences, error)
 }
@@ -64,7 +64,7 @@ func (s *NotificationPreferencesService) CreatePreferences(ctx context.Context, 
 	return s.NotificationPreferences.Create(ctx, prefs)
 }
 
-func (s *NotificationPreferencesService) UpdatePreferences(ctx context.Context, userID uuid.UUID, req models.UpdateNotificationPreferencesRequest) (*models.NotificationPreferences, error) {
+func (s *NotificationPreferencesService) UpdatePreferences(ctx context.Context, userID uuid.UUID, req models.UpdateUserNotificationPreferencesRequest) (*models.NotificationPreferences, error) {
 	return s.NotificationPreferences.Update(ctx, userID, &req)
 }
 

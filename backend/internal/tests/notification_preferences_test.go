@@ -126,7 +126,7 @@ func TestNotificationPreferencesLifecycle(t *testing.T) {
 				Route:  "/api/v1/users/me/notification-preferences",
 				Method: testkit.PATCH,
 				UserID: &userID,
-				Body: models.UpdateNotificationPreferencesRequest{
+				Body: models.UpdateUserNotificationPreferencesRequest{
 					PushEnabled:     &pushEnabled,
 					VotingReminders: &votingReminders,
 				},
@@ -148,7 +148,7 @@ func TestNotificationPreferencesLifecycle(t *testing.T) {
 				Route:  "/api/v1/users/me/notification-preferences",
 				Method: testkit.PATCH,
 				UserID: &userID,
-				Body: models.UpdateNotificationPreferencesRequest{
+				Body: models.UpdateUserNotificationPreferencesRequest{
 					PushEnabled: &pushEnabled,
 				},
 			}).
@@ -359,7 +359,7 @@ func TestNotificationPreferencesEdgeCases(t *testing.T) {
 				Route:  "/api/v1/users/me/notification-preferences",
 				Method: testkit.PATCH,
 				UserID: &userID,
-				Body: models.UpdateNotificationPreferencesRequest{
+				Body: models.UpdateUserNotificationPreferencesRequest{
 					PushEnabled:        &allFalse,
 					UpcomingTrip:       &allFalse,
 					VotingReminders:    &allFalse,
@@ -383,7 +383,7 @@ func TestNotificationPreferencesEdgeCases(t *testing.T) {
 				Route:  "/api/v1/users/me/notification-preferences",
 				Method: testkit.PATCH,
 				UserID: &userID,
-				Body: models.UpdateNotificationPreferencesRequest{
+				Body: models.UpdateUserNotificationPreferencesRequest{
 					PushEnabled:        &allTrue,
 					UpcomingTrip:       &allTrue,
 					VotingReminders:    &allTrue,

@@ -471,6 +471,21 @@ definitions:
     - trip_id
     - user_id
     type: object
+  models.CreateNotificationPreferencesRequest:
+    properties:
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      voting_reminders:
+        type: boolean
+    type: object
   models.CreatePitchRequest:
     properties:
       content_length:
@@ -758,6 +773,27 @@ definitions:
         type: string
       user_id:
         type: string
+    type: object
+  models.NotificationPreferences:
+    properties:
+      created_at:
+        type: string
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      voting_reminders:
+        type: boolean
     type: object
   models.NotificationResponse:
     properties:
@@ -1492,6 +1528,21 @@ definitions:
       name:
         minLength: 1
         type: string
+    type: object
+  models.UpdateUserNotificationPreferencesRequest:
+    properties:
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      voting_reminders:
+        type: boolean
     type: object
   models.UpdateUserRequest:
     properties:
@@ -3896,7 +3947,7 @@ paths:
       consumes:
       - application/json
       description: Updates the notification preferences for a membership (self only)
-      operationId: updateNotificationPreferences
+      operationId: updateMembershipNotificationPreferences
       parameters:
       - description: Trip ID
         in: path
@@ -4195,6 +4246,45 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Update a pitch
+      tags:
+      - pitches
+  /api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload:
+    post:
+      description: |-
+        Verifies that the audio file was successfully uploaded to S3 and notifies trip members.
+        Must be called by the pitch creator after the presigned PUT upload completes.
+      operationId: confirmPitchUpload
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Confirm pitch audio upload
       tags:
       - pitches
   /api/v1/trips/{tripID}/rank-polls:
@@ -5181,6 +5271,156 @@ paths:
       summary: Get current user
       tags:
       - users
+  /api/v1/users/me/notification-preferences:
+    delete:
+      description: Deletes notification preferences for the authenticated user
+      operationId: deleteNotificationPreferences
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete notification preferences
+      tags:
+      - notification-preferences
+    get:
+      description: Retrieves the notification preferences for the authenticated user
+      operationId: getNotificationPreferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get notification preferences
+      tags:
+      - notification-preferences
+    patch:
+      consumes:
+      - application/json
+      description: Updates notification preferences for the authenticated user
+      operationId: updateNotificationPreferences
+      parameters:
+      - description: Update notification preferences request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update notification preferences
+      tags:
+      - notification-preferences
+    post:
+      consumes:
+      - application/json
+      description: Creates notification preferences for the authenticated user
+      operationId: createNotificationPreferences
+      parameters:
+      - description: Create notification preferences request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create notification preferences
+      tags:
+      - notification-preferences
+  /api/v1/users/me/notification-preferences/default:
+    post:
+      description: Returns existing preferences or creates default preferences for
+        the authenticated user
+      operationId: getOrCreateDefaultNotificationPreferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get or create default notification preferences
+      tags:
+      - notification-preferences
   /healthcheck:
     get:
       description: Returns OK if the server is running and database is healthy

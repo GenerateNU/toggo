@@ -89,7 +89,7 @@ func (n *NotificationPreferencesController) CreatePreferences(c *fiber.Ctx) erro
 // @Tags         notification-preferences
 // @Accept       json
 // @Produce      json
-// @Param        request body models.UpdateNotificationPreferencesRequest true "Update notification preferences request"
+// @Param        request body models.UpdateUserNotificationPreferencesRequest true "Update notification preferences request"
 // @Success      200 {object} models.NotificationPreferences
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
@@ -104,7 +104,7 @@ func (n *NotificationPreferencesController) UpdatePreferences(c *fiber.Ctx) erro
 		return err
 	}
 
-	var req models.UpdateNotificationPreferencesRequest
+	var req models.UpdateUserNotificationPreferencesRequest
 	if err := c.BodyParser(&req); err != nil {
 		return errs.InvalidJSON()
 	}
