@@ -18,7 +18,9 @@
       "bundleIdentifier": "com.generateneutoggo.frontend",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"],
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
         "NSCameraUsageDescription": "Allow this app to access your camera to take photos.",
         "NSPhotoLibraryUsageDescription": "Allow this app to access your photos."
       }
@@ -34,8 +36,13 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "CAMERA",
         "READ_MEDIA_IMAGES"
-      ]
+      ],
+      "package": "com.generateneutoggo.frontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
