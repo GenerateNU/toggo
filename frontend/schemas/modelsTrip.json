@@ -6,10 +6,10 @@
     "cover_image_id": { "type": "string" },
     "created_at": { "type": "string" },
     "currency": { "type": "string" },
-    "end_date": { "type": "string" },
+    "end_date": { "type": "string", "format": "date-time" },
     "id": { "type": "string" },
     "name": { "type": "string" },
-    "start_date": { "type": "string" },
+    "start_date": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string" }
   },
   "x-readme-ref-name": "models.Trip"
