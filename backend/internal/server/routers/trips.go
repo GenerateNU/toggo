@@ -30,10 +30,11 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	})
 	pitchController := controllers.NewPitchController(pitchService, routeParams.Validator)
 
+	linkParser := services.NewLinkParserServiceWithClient(routeParams.ServiceParams.HTTPClient)
 	linkService := services.NewPitchLinkService(
 		routeParams.ServiceParams.Repository.PitchLink,
 		routeParams.ServiceParams.Repository.Pitch,
-		routeParams.ServiceParams.HTTPClient,
+		linkParser,
 	)
 	linkController := controllers.NewPitchLinkController(linkService, routeParams.Validator)
 

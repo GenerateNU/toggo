@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"toggo/internal/errs"
 	"toggo/internal/models"
@@ -86,86 +85,67 @@ func (m *mockPitchRepoForLinks) GetImagesForPitches(ctx context.Context, pitchID
 	return nil, nil
 }
 
-// -- OG metadata tests --
+type mockLinkParser struct {
+	mock.Mock
+}
 
-func TestPitchLinks_OGMetadataExtraction(t *testing.T) {
-	t.Run("extracts og:title, og:description, og:image", func(t *testing.T) {
+func (m *mockLinkParser) ParseLink(ctx context.Context, rawURL string) (*models.ParsedActivityData, error) {
+	args := m.Called(ctx, rawURL)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.ParsedActivityData), args.Error(1)
+}
+
+// -- Link parser integration tests --
+
+func TestPitchLinks_LinkParserIntegration(t *testing.T) {
+	t.Run("stores title, description and thumbnail from parser", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/html")
-			_, _ = w.Write([]byte(`<!DOCTYPE html>
-<html>
-<head>
-  <meta property="og:title" content="My Page Title" />
-  <meta property="og:description" content="A great description" />
-  <meta property="og:image" content="https://example.com/image.png" />
-</head>
-<body><p>content</p></body>
-</html>`))
-		}))
-		defer srv.Close()
-
 		linkRepo := &mockPitchLinkRepo{}
 		pitchRepo := &mockPitchRepoForLinks{}
+		parser := &mockLinkParser{}
 		tripID, pitchID, userID := uuid.New(), uuid.New(), uuid.New()
+		desc := "A great description"
+		thumb := "https://example.com/image.png"
 
 		pitchRepo.On("FindByIDAndTripID", mock.Anything, pitchID, tripID).
 			Return(&models.PitchDatabaseResponse{ID: pitchID, UserID: userID}, nil)
+		parser.On("ParseLink", mock.Anything, "https://example.com").
+			Return(&models.ParsedActivityData{
+				Name:         "My Page Title",
+				Description:  &desc,
+				ThumbnailURL: &thumb,
+			}, nil)
 		linkRepo.On("Create", mock.Anything, mock.MatchedBy(func(l *models.PitchLink) bool {
 			return l.Title != nil && *l.Title == "My Page Title" &&
 				l.Description != nil && *l.Description == "A great description" &&
 				l.ThumbnailURL != nil && *l.ThumbnailURL == "https://example.com/image.png"
 		})).Return(&models.PitchLink{ID: uuid.New()}, nil)
 
-		svc := services.NewPitchLinkService(linkRepo, pitchRepo, srv.Client())
-		_, err := svc.AddLink(context.Background(), tripID, pitchID, userID, models.CreatePitchLinkRequest{URL: srv.URL})
+		svc := services.NewPitchLinkService(linkRepo, pitchRepo, parser)
+		_, err := svc.AddLink(context.Background(), tripID, pitchID, userID, models.CreatePitchLinkRequest{URL: "https://example.com"})
 		assert.NoError(t, err)
 		linkRepo.AssertExpectations(t)
 	})
 
-	t.Run("falls back to <title> tag when og:title is absent", func(t *testing.T) {
+	t.Run("still creates link when parser returns an error", func(t *testing.T) {
 		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/html")
-			_, _ = w.Write([]byte(`<html><head><title>Fallback Title</title></head><body></body></html>`))
-		}))
-		defer srv.Close()
-
 		linkRepo := &mockPitchLinkRepo{}
 		pitchRepo := &mockPitchRepoForLinks{}
+		parser := &mockLinkParser{}
 		tripID, pitchID, userID := uuid.New(), uuid.New(), uuid.New()
 
 		pitchRepo.On("FindByIDAndTripID", mock.Anything, pitchID, tripID).
 			Return(&models.PitchDatabaseResponse{ID: pitchID, UserID: userID}, nil)
-		linkRepo.On("Create", mock.Anything, mock.MatchedBy(func(l *models.PitchLink) bool {
-			return l.Title != nil && *l.Title == "Fallback Title"
-		})).Return(&models.PitchLink{ID: uuid.New()}, nil)
-
-		svc := services.NewPitchLinkService(linkRepo, pitchRepo, srv.Client())
-		_, err := svc.AddLink(context.Background(), tripID, pitchID, userID, models.CreatePitchLinkRequest{URL: srv.URL})
-		assert.NoError(t, err)
-		linkRepo.AssertExpectations(t)
-	})
-
-	t.Run("still creates link when OG fetch fails", func(t *testing.T) {
-		t.Parallel()
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusInternalServerError)
-		}))
-		defer srv.Close()
-
-		linkRepo := &mockPitchLinkRepo{}
-		pitchRepo := &mockPitchRepoForLinks{}
-		tripID, pitchID, userID := uuid.New(), uuid.New(), uuid.New()
-
-		pitchRepo.On("FindByIDAndTripID", mock.Anything, pitchID, tripID).
-			Return(&models.PitchDatabaseResponse{ID: pitchID, UserID: userID}, nil)
+		parser.On("ParseLink", mock.Anything, "https://example.com").
+			Return(nil, errors.New("fetch failed"))
 		linkRepo.On("Create", mock.Anything, mock.MatchedBy(func(l *models.PitchLink) bool {
 			return l.Title == nil && l.Description == nil && l.ThumbnailURL == nil
 		})).Return(&models.PitchLink{ID: uuid.New()}, nil)
 
-		svc := services.NewPitchLinkService(linkRepo, pitchRepo, srv.Client())
-		_, err := svc.AddLink(context.Background(), tripID, pitchID, userID, models.CreatePitchLinkRequest{URL: srv.URL})
+		svc := services.NewPitchLinkService(linkRepo, pitchRepo, parser)
+		_, err := svc.AddLink(context.Background(), tripID, pitchID, userID, models.CreatePitchLinkRequest{URL: "https://example.com"})
 		assert.NoError(t, err)
 		linkRepo.AssertExpectations(t)
 	})
