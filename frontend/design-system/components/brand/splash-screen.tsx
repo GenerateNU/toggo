@@ -31,7 +31,7 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
         marginRight: isMe ? "5%" : "15%",
       }}
     >
-      <Text variant="bodyDefault" color={isMe ? "textDefault" : "textInverse"}>
+      <Text variant="bodyDefault" color={isMe ? "white" : "gray900"}>
         {text}
       </Text>
 
@@ -40,7 +40,7 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
         width={20}
         height={25}
         bottom={0}
-        backgroundColor="textLink"
+        backgroundColor="blue500"
         borderBottomLeftRadius={isMe ? "xl" : "none"}
         borderBottomRightRadius={isMe ? "none" : "xl"}
         style={{
@@ -53,7 +53,7 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
         width={20}
         height={35}
         bottom={-6}
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
         borderBottomLeftRadius={isMe ? "xl" : "none"}
         borderBottomRightRadius={isMe ? "none" : "xl"}
         style={{
@@ -66,7 +66,7 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
 
 export function SplashScreen() {
   return (
-    <Box flex={1} backgroundColor="backgroundCard">
+    <Box flex={1} backgroundColor="white">
       <Box
         position="absolute"
         style={{ top: height * 0.27, right: width * 0.1 }}
@@ -83,7 +83,7 @@ export function SplashScreen() {
       >
         <Text
           variant="headingSm"
-          color="textInverse"
+          color="gray900"
           textAlign="center"
           marginBottom="sm"
         >

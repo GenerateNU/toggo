@@ -44,7 +44,7 @@ const CheckboxMark = React.memo(({ checked, disabled }: CheckboxMarkProps) => (
     ]}
   >
     {checked && (
-      <Check size={14} color={ColorPalette.backgroundCard} strokeWidth={3} />
+      <Check size={14} color={ColorPalette.white} strokeWidth={3} />
     )}
   </Box>
 ));
@@ -72,7 +72,7 @@ export function Checkbox({
       <CheckboxMark checked={checked} disabled={disabled} />
       <Text
         variant="bodySmMedium"
-        color={disabled ? "textDisabled" : "textInverse"}
+        color={disabled ? "gray400" : "gray900"}
       >
         {label}
       </Text>
@@ -101,7 +101,7 @@ export default function CheckboxGroup<T extends string = string>({
       {label && (
         <Text
           variant="bodySmStrong"
-          color="textInverse"
+          color="gray900"
           style={styles.groupLabel}
         >
           {label}
@@ -145,15 +145,15 @@ const styles = StyleSheet.create({
     height: BOX_SIZE,
     borderRadius: CornerRadius.xs,
     borderWidth: 2,
-    borderColor: ColorPalette.borderDefault,
+    borderColor: ColorPalette.gray300,
     alignItems: "center",
     justifyContent: "center",
   },
   boxChecked: {
-    backgroundColor: ColorPalette.backgroundDefault,
-    borderColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.gray900,
+    borderColor: ColorPalette.gray900,
   },
   boxDisabled: {
-    borderColor: ColorPalette.borderSubtle,
+    borderColor: ColorPalette.gray100,
   },
 });

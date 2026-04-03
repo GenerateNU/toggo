@@ -9,41 +9,41 @@ export default function PollDetail() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="backgroundSubtle">
+      <Box flex={1} backgroundColor="gray50">
         <Box
           padding="lg"
           paddingTop="xl"
-          backgroundColor="backgroundCard"
+          backgroundColor="white"
           gap="xs"
         >
-          <Text variant="bodySmMedium" color="textSubtle">
+          <Text variant="bodySmMedium" color="gray500">
             POLL
           </Text>
-          <Text variant="headingMd" color="textInverse">
+          <Text variant="headingMd" color="gray900">
             Poll Detail
           </Text>
         </Box>
         <Box padding="lg" gap="sm">
           <Box
-            backgroundColor="backgroundCard"
+            backgroundColor="white"
             borderRadius="md"
             padding="md"
             gap="sm"
           >
             <Box gap="xs">
-              <Text variant="bodySmMedium" color="textSubtle">
+              <Text variant="bodySmMedium" color="gray500">
                 POLL ID
               </Text>
-              <Text variant="bodyDefault" color="textInverse">
+              <Text variant="bodyDefault" color="gray900">
                 {pollID}
               </Text>
             </Box>
-            <Box height={1} backgroundColor="borderDefault" />
+            <Box height={1} backgroundColor="gray300" />
             <Box gap="xs">
-              <Text variant="bodySmMedium" color="textSubtle">
+              <Text variant="bodySmMedium" color="gray500">
                 TRIP ID
               </Text>
-              <Text variant="bodyDefault" color="textInverse">
+              <Text variant="bodyDefault" color="gray900">
                 {tripID}
               </Text>
             </Box>

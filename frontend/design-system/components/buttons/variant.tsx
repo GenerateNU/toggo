@@ -58,7 +58,6 @@ interface ButtonVariantStyle {
   contentColor: ColorName;
 }
 
-// ─── Base ─────────────────────────────────────────────────────────────────────
 
 const baseButton = {
   alignItems: "center",
@@ -67,32 +66,23 @@ const baseButton = {
   paddingHorizontal: "md",
 } as const;
 
-// ─── Variants ─────────────────────────────────────────────────────────────────
 
 export const ButtonVariants = {
   Primary: {
     ...baseButton,
     width: "100%",
-    backgroundColor: "backgroundDefault",
+    backgroundColor: "brand500",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textDefault",
-  },
-  PrimaryBrand: {
-    ...baseButton,
-    width: "100%",
-    backgroundColor: "brandPrimary",
-    borderRadius: "lg",
-    borderWidth: "none",
-    contentColor: "textDefault",
+    contentColor: "white",
   },
   Secondary: {
     ...baseButton,
     width: "100%",
-    backgroundColor: "backgroundSubtle",
+    backgroundColor: "gray50",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textInverse",
+    contentColor: "gray900",
   },
   Tertiary: {
     ...baseButton,
@@ -100,7 +90,7 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textInverse",
+    contentColor: "gray900",
   },
   Quaternary: {
     ...baseButton,
@@ -108,7 +98,7 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textSubtle",
+    contentColor: "gray500",
   },
   Destructive: {
     ...baseButton,
@@ -116,7 +106,7 @@ export const ButtonVariants = {
     backgroundColor: "statusError",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textDefault",
+    contentColor: "white",
   },
   IconPrimary: {
     alignItems: "center",
@@ -124,10 +114,10 @@ export const ButtonVariants = {
     minHeight: "xl",
     paddingHorizontal: "md",
     width: "auto",
-    backgroundColor: "backgroundIconDefault",
+    backgroundColor: "brand500",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textDefault",
+    contentColor: "white",
   },
   IconSecondary: {
     alignItems: "center",
@@ -135,10 +125,10 @@ export const ButtonVariants = {
     minHeight: "xl",
     paddingHorizontal: "md",
     width: "auto",
-    backgroundColor: "backgroundIconSubtle",
+    backgroundColor: "gray50",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textInverse",
+    contentColor: "gray900",
   },
   IconTertiary: {
     alignItems: "center",
@@ -149,7 +139,7 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "iconSubtle",
+    contentColor: "gray500",
   },
   Outline: {
     ...baseButton,
@@ -157,8 +147,8 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "lg",
     borderWidth: "thin",
-    borderColor: "borderDefault",
-    contentColor: "textInverse",
+    borderColor: "gray300",
+    contentColor: "gray900",
   },
   Dashed: {
     ...baseButton,
@@ -166,8 +156,8 @@ export const ButtonVariants = {
     backgroundColor: "transparent",
     borderRadius: "lg",
     borderWidth: "thin",
-    borderColor: "borderDefault",
-    contentColor: "textSubtle",
+    borderColor: "gray300",
+    contentColor: "gray500",
   },
   IconCircular: {
     alignItems: "center",
@@ -175,10 +165,10 @@ export const ButtonVariants = {
     minHeight: "md",
     paddingHorizontal: "sm",
     width: "auto",
-    backgroundColor: "backgroundIconDefault",
+    backgroundColor: "gray900",
     borderRadius: "full",
     borderWidth: "none",
-    contentColor: "textDefault",
+    contentColor: "white",
   },
 } as const satisfies Record<string, ButtonVariantStyle>;
 
@@ -192,46 +182,42 @@ export const DisabledVariantStyle: Record<
   }
 > = {
   Primary: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
-  },
-  PrimaryBrand: {
-    backgroundColor: "brandPrimarySubtle",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   Secondary: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
-  Tertiary: { backgroundColor: "transparent", contentColor: "textDisabled" },
-  Quaternary: { backgroundColor: "transparent", contentColor: "textDisabled" },
+  Tertiary: { backgroundColor: "transparent", contentColor: "gray400" },
+  Quaternary: { backgroundColor: "transparent", contentColor: "gray400" },
   Destructive: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconPrimary: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconSecondary: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconTertiary: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   Outline: {
     backgroundColor: "transparent",
-    contentColor: "textDisabled",
+    contentColor: "gray400",
   },
   Dashed: {
     backgroundColor: "transparent",
-    contentColor: "textDisabled",
+    contentColor: "gray400",
   },
   IconCircular: {
-    backgroundColor: "backgroundDisabled",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
 };
 
@@ -270,12 +256,12 @@ export function resolveButtonStyle(
 
 export function getButtonTextColor(background: ColorName): ColorName {
   const hex = ColorPalette[background]?.replace("#", "");
-  if (!hex || hex.length < 6) return "textDefault";
+  if (!hex || hex.length < 6) return "white";
 
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
 
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 186 ? "textInverse" : "textDefault";
+  return luminance > 186 ? "gray900" : "white";
 }

@@ -79,14 +79,14 @@ export default function TimePicker({
         <Box style={styles.footer}>
           <Box flexDirection="row" style={styles.footerButtons}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
-              <Text variant="bodyMedium" color="textDefault">
+              <Text variant="bodyMedium" color="white">
                 Cancel
               </Text>
             </Pressable>
             <Pressable style={styles.saveButton} onPress={handleSave}>
               <Text
                 variant="bodyMedium"
-                style={{ color: ColorPalette.textDefault }}
+                style={{ color: ColorPalette.white }}
               >
                 Save Time
               </Text>
@@ -96,7 +96,7 @@ export default function TimePicker({
       }
     >
       <Box style={styles.header}>
-        <Text variant="headingSm" color="textDefault">
+        <Text variant="headingSm" color="white">
           Select time
         </Text>
       </Box>
@@ -132,8 +132,8 @@ const styles = StyleSheet.create({
     paddingTop: Layout.spacing.xs,
     paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderDefault,
-    backgroundColor: ColorPalette.backgroundCard,
+    borderTopColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.white,
   },
 
   footerButtons: {
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
     borderWidth: 1,
-    borderColor: ColorPalette.borderDefault,
-    backgroundColor: ColorPalette.backgroundCard,
+    borderColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.white,
   },
 
   saveButton: {
@@ -158,6 +158,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: CornerRadius.md,
-    backgroundColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.gray900,
   },
 });

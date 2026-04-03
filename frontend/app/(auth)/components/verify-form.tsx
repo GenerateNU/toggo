@@ -84,9 +84,9 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
           flex={1}
           aspectRatio={0.8}
           borderWidth={2}
-          borderColor={hasError ? "statusError" : "borderDefault"}
+          borderColor={hasError ? "statusError" : "gray300"}
           borderRadius="sm"
-          backgroundColor="backgroundCard"
+          backgroundColor="white"
           justifyContent="center"
           alignItems="center"
         >
@@ -269,11 +269,11 @@ export default function OTPVerificationForm() {
 
             <Box alignItems="center">
               {canResend ? (
-                <Text variant="bodySmDefault" color="textSubtle">
+                <Text variant="bodySmDefault" color="gray500">
                   Didn't receive a code?{" "}
                   <Text
                     variant="bodySmMedium"
-                    color="textDefault"
+                    color="white"
                     onPress={!isPending ? handleResendOTP : undefined}
                     style={{ fontWeight: "600" }}
                   >
@@ -281,7 +281,7 @@ export default function OTPVerificationForm() {
                   </Text>
                 </Text>
               ) : (
-                <Text variant="bodySmDefault" color="textSubtle">
+                <Text variant="bodySmDefault" color="gray500">
                   Didn't receive a code? Resend in {timer}s
                 </Text>
               )}

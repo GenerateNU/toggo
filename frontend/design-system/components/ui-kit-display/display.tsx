@@ -13,11 +13,8 @@ import { Text } from "@/design-system/primitives/text";
 import { useToast } from "@/design-system/primitives/toast-manager";
 import { BorderWidth } from "@/design-system/tokens/border";
 import {
-  Blue,
-  Brand,
   ColorName,
   ColorPalette,
-  Gray,
 } from "@/design-system/tokens/color";
 import { CoreSize, CoreSizeKey } from "@/design-system/tokens/core-size";
 import {
@@ -80,7 +77,7 @@ function Row({
     >
       <Text
         variant="bodyXsMedium"
-        color="textInverse"
+        color="gray900"
         style={{ flexShrink: 1 }}
       >
         {label}
@@ -116,14 +113,14 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
   return (
     <TouchableOpacity onPress={play}>
       <Box gap="xs">
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           {tokenKey} — {t.duration}ms · {t.easing}
         </Text>
         <AnimatedBox
           width={32}
           height={32}
           borderRadius="sm"
-          backgroundColor="brandPrimary"
+          backgroundColor="brand500"
           style={{ transform: [{ translateX }] }}
         />
       </Box>
@@ -234,7 +231,7 @@ export default function UIKit() {
     <Box gap="lg">
       <Box gap="xs">
         <Text variant="headingXl">Design System</Text>
-        <Text variant="bodySmDefault" color="textSubtle">
+        <Text variant="bodySmDefault" color="gray500">
           Basic building blocks and tokens for consistent design across the app.
           Subjected to change.
         </Text>
@@ -253,14 +250,14 @@ export default function UIKit() {
 
         {/* Full width with label */}
         <View style={{ gap: 4 }}>
-          <Text variant="bodyXsMedium" color="textSubtle">
+          <Text variant="bodyXsMedium" color="gray500">
             3 of 5 complete
           </Text>
           <ProgressBarCurved percent={60} />
         </View>
       </Section>
       <Section title="Skeleton">
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           shapes
         </Text>
         <Row label="rect">
@@ -275,7 +272,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Color">
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           Semantic tokens
         </Text>
         {(Object.keys(ColorPalette) as ColorName[]).map((key) => (
@@ -285,74 +282,11 @@ export default function UIKit() {
               height={32}
               borderRadius="sm"
               borderWidth={1}
-              borderColor="borderDefault"
+              borderColor="gray300"
               style={{ backgroundColor: ColorPalette[key] }}
             />
           </Row>
         ))}
-
-        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
-          Gray scale
-        </Text>
-        <Box flexDirection="row" flexWrap="wrap" gap="xs">
-          {Object.entries(Gray).map(([step, hex]) => (
-            <Box key={step} alignItems="center" gap="xs">
-              <Box
-                width={40}
-                height={40}
-                borderRadius="sm"
-                borderWidth={1}
-                borderColor="borderDefault"
-                style={{ backgroundColor: hex }}
-              />
-              <Text variant="bodyXsDefault" color="textInverse">
-                {step}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-
-        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
-          Brand scale
-        </Text>
-        <Box flexDirection="row" flexWrap="wrap" gap="xs">
-          {Object.entries(Brand).map(([step, hex]) => (
-            <Box key={step} alignItems="center" gap="xs">
-              <Box
-                width={40}
-                height={40}
-                borderRadius="sm"
-                borderWidth={1}
-                borderColor="borderDefault"
-                style={{ backgroundColor: hex }}
-              />
-              <Text variant="bodyXsDefault" color="textInverse">
-                {step}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-
-        <Text variant="bodyXsMedium" color="textInverse" marginTop="sm">
-          Blue scale
-        </Text>
-        <Box flexDirection="row" flexWrap="wrap" gap="xs">
-          {Object.entries(Blue).map(([step, hex]) => (
-            <Box key={step} alignItems="center" gap="xs">
-              <Box
-                width={40}
-                height={40}
-                borderRadius="sm"
-                borderWidth={1}
-                borderColor="borderDefault"
-                style={{ backgroundColor: hex }}
-              />
-              <Text variant="bodyXsDefault" color="textInverse">
-                {step}
-              </Text>
-            </Box>
-          ))}
-        </Box>
       </Section>
 
       <Section title="Typography">
@@ -372,7 +306,7 @@ export default function UIKit() {
               width={48}
               height={48}
               borderRadius="sm"
-              backgroundColor="backgroundCard"
+              backgroundColor="white"
               style={{ ...Elevation[key] }}
             />
           </Row>
@@ -384,7 +318,7 @@ export default function UIKit() {
           <Row key={`coresize-${key}`} label={`${key} — ${CoreSize[key]}px`}>
             <Box
               height={16}
-              backgroundColor="brandPrimary"
+              backgroundColor="brand500"
               borderRadius="xs"
               style={{ width: CoreSize[key] }}
             />
@@ -398,7 +332,7 @@ export default function UIKit() {
             <Box
               width={48}
               height={48}
-              backgroundColor="brandPrimary"
+              backgroundColor="brand500"
               style={{ borderRadius: CornerRadius[key] }}
             />
           </Row>
@@ -424,7 +358,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Transition">
-        <Text variant="bodyXsDefault" color="textInverse">
+        <Text variant="bodyXsDefault" color="gray900">
           Tap each row to preview
         </Text>
         {(Object.keys(Transition) as TransitionKey[]).map((key) => (
@@ -446,7 +380,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Button">
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           variants
         </Text>
         <Button layout="textOnly" label="Primary" variant="Primary" />
@@ -455,7 +389,7 @@ export default function UIKit() {
         <Button layout="textOnly" label="Quaternary" variant="Quaternary" />
         <Button layout="textOnly" label="Destructive" variant="Destructive" />
 
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           sizes
         </Text>
         <Button
@@ -477,7 +411,7 @@ export default function UIKit() {
           size="large"
         />
 
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           with icons
         </Text>
         <Button
@@ -494,7 +428,7 @@ export default function UIKit() {
           rightIcon={ArrowRight}
         />
 
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           icon only
         </Text>
         <Box flexDirection="row" gap="sm">
@@ -518,7 +452,7 @@ export default function UIKit() {
           />
         </Box>
 
-        <Text variant="bodyXsMedium" color="textInverse">
+        <Text variant="bodyXsMedium" color="gray900">
           states
         </Text>
         <Button
@@ -617,7 +551,7 @@ export default function UIKit() {
           onChangeText={validatePhone}
           error={phoneError}
           keyboardType="phone-pad"
-          leftIcon={<Phone size={18} color={ColorPalette.textSubtle} />}
+          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
         />
 
         <TextField
@@ -626,7 +560,7 @@ export default function UIKit() {
           value=""
           onChangeText={() => {}}
           disabled
-          leftIcon={<Phone size={18} color={ColorPalette.textSubtle} />}
+          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
         />
       </Section>
 
@@ -709,7 +643,7 @@ export default function UIKit() {
       <Section title="Dividers">
         <Divider width={1} />
         <Text>some content</Text>
-        <Divider color={ColorPalette.brandPrimary} width={3} />
+        <Divider color={ColorPalette.brand500} width={3} />
       </Section>
 
       <Section title="Comments & Reactions">

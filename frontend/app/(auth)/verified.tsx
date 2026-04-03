@@ -35,7 +35,7 @@ export default function VerifiedPage() {
   return (
     <Box
       flex={1}
-      backgroundColor="backgroundCard"
+      backgroundColor="white"
       style={{ overflow: "hidden" }}
     >
       <Box
@@ -72,17 +72,17 @@ export default function VerifiedPage() {
         gap="xs"
       >
         <Box
-          backgroundColor="backgroundCard"
+          backgroundColor="white"
           paddingHorizontal="xxs"
           paddingVertical="sm"
           borderRadius="md"
           alignItems="center"
           gap="xs"
         >
-          <Text variant="headingMd" color="textInverse" textAlign="center">
+          <Text variant="headingMd" color="gray900" textAlign="center">
             You've been verified
           </Text>
-          <Text variant="bodyDefault" color="textInverse" textAlign="center">
+          <Text variant="bodyDefault" color="gray900" textAlign="center">
             Plan or join a trip now!
           </Text>
         </Box>

@@ -63,7 +63,7 @@ function SheetHeader({ onClose }: { onClose: () => void }) {
       <Text variant="headingSm">Country</Text>
       <Box position="absolute" right={Layout.spacing.md}>
         <Pressable onPress={onClose}>
-          <Icon icon={X} size="xs" color="textInverse" />
+          <Icon icon={X} size="xs" color="gray900" />
         </Pressable>
       </Box>
     </Box>
@@ -86,7 +86,7 @@ function CountryRow({
         alignItems="center"
         paddingHorizontal="sm"
         paddingVertical="xs"
-        backgroundColor={isSelected ? "backgroundSubtle" : undefined}
+        backgroundColor={isSelected ? "gray50" : undefined}
       >
         <Text
           variant="bodyDefault"
@@ -98,7 +98,7 @@ function CountryRow({
         <Box flex={1}>
           <Text
             variant="bodyDefault"
-            color="textInverse"
+            color="gray900"
             style={{ lineHeight: 20 }}
           >
             {item.name}
@@ -106,7 +106,7 @@ function CountryRow({
         </Box>
         <Text
           variant="bodyDefault"
-          color="textSubtle"
+          color="gray500"
           style={{ lineHeight: 20 }}
         >
           {item.callingCode}
@@ -119,7 +119,7 @@ function CountryRow({
 function RowSeparator() {
   return (
     <Divider
-      color={ColorPalette.borderSubtle}
+      color={ColorPalette.gray100}
       style={{ marginVertical: 0, marginLeft: 52 }}
     />
   );
@@ -171,7 +171,7 @@ export default function CountryPickerSheet({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <Box flex={1} backgroundColor="backgroundCard">
+      <Box flex={1} backgroundColor="white">
         <SheetHeader onClose={onClose} />
 
         {loadError ? (
@@ -194,7 +194,7 @@ export default function CountryPickerSheet({
                 placeholder="Search for a country"
                 value={search}
                 onChangeText={setSearch}
-                leftIcon={<Search size={16} color={ColorPalette.textSubtle} />}
+                leftIcon={<Search size={16} color={ColorPalette.gray500} />}
                 autoCapitalize="none"
               />
             </Box>

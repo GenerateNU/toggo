@@ -117,7 +117,7 @@ export default function CompleteProfileForm({
     <Box gap="md">
       {error && (
         <Box backgroundColor="statusError" padding="sm" borderRadius="sm">
-          <Text variant="bodySmDefault" color="textDefault">
+          <Text variant="bodySmDefault" color="white">
             {error}
           </Text>
         </Box>
@@ -128,17 +128,17 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textInverse">
+            <Text variant="bodySmMedium" color="gray900">
               Full Name
             </Text>
             <Box
               borderWidth={1}
               borderColor={
-                formState.errors.name ? "statusError" : "borderDefault"
+                formState.errors.name ? "statusError" : "gray300"
               }
               borderRadius="sm"
               padding="sm"
-              backgroundColor="backgroundCard"
+              backgroundColor="white"
             >
               <TextInput
                 placeholder="John Doe"
@@ -162,17 +162,17 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="bodySmMedium" color="textInverse">
+            <Text variant="bodySmMedium" color="gray900">
               Username
             </Text>
             <Box
               borderWidth={1}
               borderColor={
-                formState.errors.username ? "statusError" : "borderDefault"
+                formState.errors.username ? "statusError" : "gray300"
               }
               borderRadius="sm"
               padding="sm"
-              backgroundColor="backgroundCard"
+              backgroundColor="white"
             >
               <TextInput
                 placeholder="john_doe"

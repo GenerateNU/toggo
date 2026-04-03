@@ -62,7 +62,7 @@ export default function ProgressBarCurved({
   size = 120,
   strokeWidth = 10,
   fillColor = ColorPalette.statusProgress,
-  trackColor = ColorPalette.backgroundSubtle,
+  trackColor = ColorPalette.gray50,
   duration = 800,
   style,
 }: ProgressBarCurvedProps) {

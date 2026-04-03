@@ -24,8 +24,8 @@ export default function Chip({
   icon: Icon,
 }: ChipProps) {
   const iconColor = selected
-    ? ColorPalette.textDefault
-    : ColorPalette.textInverse;
+    ? ColorPalette.white
+    : ColorPalette.gray900;
 
   return (
     <Pressable onPress={onPress} disabled={disabled}>
@@ -38,10 +38,10 @@ export default function Chip({
           paddingVertical: 6,
           borderRadius: 9999,
           borderWidth: selected ? 0 : 1,
-          borderColor: ColorPalette.borderDefault,
+          borderColor: ColorPalette.gray300,
           backgroundColor: selected
-            ? ColorPalette.backgroundDefault
-            : ColorPalette.backgroundCard,
+            ? ColorPalette.gray900
+            : ColorPalette.white,
           opacity: disabled ? 0.5 : 1,
         }}
       >

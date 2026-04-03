@@ -147,12 +147,12 @@ export default function StepSettings({
 
   return (
     <Box gap="lg">
-      <Text variant="bodyXsMedium" color="textSubtle">
+      <Text variant="bodyXsMedium" color="gray500">
         Settings
       </Text>
 
       <Box gap="sm">
-        <Text variant="bodyXsMedium" color="textSubtle">
+        <Text variant="bodyXsMedium" color="gray500">
           Tag this poll
         </Text>
         <Box flexDirection="row" flexWrap="wrap" gap="xs">
@@ -182,7 +182,7 @@ export default function StepSettings({
             />
           )}
           {availableCategories.length === 0 && (
-            <Text variant="bodyXsDefault" color="textSubtle">
+            <Text variant="bodyXsDefault" color="gray500">
               No categories available
             </Text>
           )}
@@ -190,27 +190,27 @@ export default function StepSettings({
       </Box>
 
       <Box gap="sm">
-        <Text variant="bodyXsMedium" color="textSubtle">
+        <Text variant="bodyXsMedium" color="gray500">
           Options
         </Text>
         <Box gap="xxs">
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} flexDirection="column" gap="xxs">
-              <Text variant="bodyXsStrong" color="textInverse">
+              <Text variant="bodyXsStrong" color="gray900">
                 Set a deadline
               </Text>
-              <Text variant="bodyXsDefault" color="textSubtle">
+              <Text variant="bodyXsDefault" color="gray500">
                 Auto-close and notify when time's up
               </Text>
             </Box>
             <Box
               flexDirection="row"
               alignItems="center"
-              backgroundColor="backgroundCard"
+              backgroundColor="white"
               borderRadius="sm"
               style={{
                 borderWidth: 1,
-                borderColor: ColorPalette.borderDefault,
+                borderColor: ColorPalette.gray300,
                 overflow: "hidden",
               }}
             >
@@ -226,8 +226,8 @@ export default function StepSettings({
                     style={{
                       fontSize: 11,
                       color: deadline
-                        ? ColorPalette.textInverse
-                        : ColorPalette.textSubtle,
+                        ? ColorPalette.gray900
+                        : ColorPalette.gray500,
                     }}
                   >
                     {dateStr}
@@ -238,7 +238,7 @@ export default function StepSettings({
                 style={{
                   width: 1,
                   alignSelf: "stretch",
-                  backgroundColor: ColorPalette.borderDefault,
+                  backgroundColor: ColorPalette.gray300,
                 }}
               />
               <Pressable
@@ -257,8 +257,8 @@ export default function StepSettings({
                     style={{
                       fontSize: 11,
                       color: hasTime
-                        ? ColorPalette.textInverse
-                        : ColorPalette.textSubtle,
+                        ? ColorPalette.gray900
+                        : ColorPalette.gray500,
                     }}
                   >
                     {timeStr}
@@ -272,10 +272,10 @@ export default function StepSettings({
 
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} gap="xxs">
-              <Text variant="bodyXsStrong" color="textInverse">
+              <Text variant="bodyXsStrong" color="gray900">
                 Send reminders
               </Text>
-              <Text variant="bodyXsDefault" color="textSubtle">
+              <Text variant="bodyXsDefault" color="gray500">
                 Notify members to vote
               </Text>
             </Box>
@@ -286,10 +286,10 @@ export default function StepSettings({
 
           <Box flexDirection="row" alignItems="center" gap="sm">
             <Box flex={1} gap="xxs">
-              <Text variant="bodyXsStrong" color="textInverse">
+              <Text variant="bodyXsStrong" color="gray900">
                 Anonymous
               </Text>
-              <Text variant="bodyXsDefault" color="textSubtle">
+              <Text variant="bodyXsDefault" color="gray500">
                 Hide who voted for what
               </Text>
             </Box>

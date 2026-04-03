@@ -57,8 +57,8 @@ const ReactionBadge = ({
       variant="bodyXsMedium"
       style={{
         color: reaction.reactedByMe
-          ? ColorPalette.brandPrimary
-          : ColorPalette.textSubtle,
+          ? ColorPalette.brand500
+          : ColorPalette.gray500,
       }}
     >
       {reaction.count}
@@ -113,18 +113,18 @@ export default function Comment({
             <Box flexDirection="row" alignItems="center" gap="xs">
               <Text
                 variant="bodySmMedium"
-                color="textInverse"
+                color="gray900"
                 style={styles.authorName}
               >
                 {comment.authorName}
               </Text>
-              <Text variant="bodyXsMedium" color="textSubtle">
+              <Text variant="bodyXsMedium" color="gray500">
                 {comment.timestamp}
               </Text>
             </Box>
 
             {/* Body */}
-            <Text variant="bodySmDefault" color="textInverse">
+            <Text variant="bodySmDefault" color="gray900">
               {comment.body}
             </Text>
 
@@ -154,7 +154,7 @@ export default function Comment({
                     pressed && styles.addReactionButtonPressed,
                   ]}
                 >
-                  <Smile size={16} color={ColorPalette.textSubtle} />
+                  <Smile size={16} color={ColorPalette.gray500} />
                 </Pressable>
               </Box>
             )}
@@ -203,12 +203,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: CornerRadius.full,
-    backgroundColor: ColorPalette.backgroundSubtle,
+    backgroundColor: ColorPalette.gray50,
   },
   reactionBadgeActive: {
-    backgroundColor: withOpacity(ColorPalette.brandPrimary, 0.12),
+    backgroundColor: withOpacity(ColorPalette.brand500, 0.12),
     borderWidth: 1,
-    borderColor: ColorPalette.brandPrimary,
+    borderColor: ColorPalette.brand500,
   },
   reactionEmoji: {
     fontSize: 14,
@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: ColorPalette.backgroundSubtle,
+    backgroundColor: ColorPalette.gray50,
   },
   addReactionButtonPressed: {
-    backgroundColor: ColorPalette.backgroundMuted,
+    backgroundColor: ColorPalette.gray200,
   },
 });

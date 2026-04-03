@@ -97,17 +97,17 @@ export default function CreateActivity() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="backgroundSubtle">
+      <Box flex={1} backgroundColor="gray50">
         <Box
           padding="lg"
           paddingTop="xl"
-          backgroundColor="backgroundCard"
+          backgroundColor="white"
           gap="xs"
         >
-          <Text variant="bodySmMedium" color="textSubtle">
+          <Text variant="bodySmMedium" color="gray500">
             NEW
           </Text>
-          <Text variant="headingMd" color="textInverse">
+          <Text variant="headingMd" color="gray900">
             Create Activity
           </Text>
         </Box>
@@ -115,47 +115,47 @@ export default function CreateActivity() {
         <ScrollView>
           <Box padding="sm" gap="md">
             <Box gap="xs">
-              <Text variant="bodySmMedium" color="textSubtle">
+              <Text variant="bodySmMedium" color="gray500">
                 NAME *
               </Text>
               <Box
-                backgroundColor="backgroundCard"
+                backgroundColor="white"
                 borderRadius="sm"
                 borderWidth={1}
-                borderColor="borderDefault"
+                borderColor="gray300"
                 padding="sm"
               >
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   placeholder="Activity name"
-                  placeholderTextColor={ColorPalette.textSubtle}
-                  style={{ fontSize: 15, color: ColorPalette.textInverse }}
+                  placeholderTextColor={ColorPalette.gray500}
+                  style={{ fontSize: 15, color: ColorPalette.gray900 }}
                 />
               </Box>
             </Box>
 
             <Box gap="xs">
-              <Text variant="bodySmMedium" color="textSubtle">
+              <Text variant="bodySmMedium" color="gray500">
                 DESCRIPTION
               </Text>
               <Box
-                backgroundColor="backgroundCard"
+                backgroundColor="white"
                 borderRadius="sm"
                 borderWidth={1}
-                borderColor="borderDefault"
+                borderColor="gray300"
                 padding="sm"
               >
                 <TextInput
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Optional description"
-                  placeholderTextColor={ColorPalette.textSubtle}
+                  placeholderTextColor={ColorPalette.gray500}
                   multiline
                   numberOfLines={3}
                   style={{
                     fontSize: 15,
-                    color: ColorPalette.textInverse,
+                    color: ColorPalette.gray900,
                     minHeight: 72,
                     textAlignVertical: "top",
                   }}
@@ -164,7 +164,7 @@ export default function CreateActivity() {
             </Box>
 
             <Box gap="xs">
-              <Text variant="bodySmMedium" color="textSubtle">
+              <Text variant="bodySmMedium" color="gray500">
                 IMAGES ({imageUris.length}/5)
               </Text>
               <Box flexDirection="row" flexWrap="wrap" gap="xs">
@@ -186,12 +186,12 @@ export default function CreateActivity() {
                         width: 20,
                         height: 20,
                         borderRadius: 10,
-                        backgroundColor: ColorPalette.backgroundDefault,
+                        backgroundColor: ColorPalette.gray900,
                         justifyContent: "center",
                         alignItems: "center",
                       }}
                     >
-                      <Text variant="bodySmMedium" color="textInverse">
+                      <Text variant="bodySmMedium" color="gray900">
                         ×
                       </Text>
                     </Pressable>
@@ -205,12 +205,12 @@ export default function CreateActivity() {
                       height={80}
                       borderRadius="sm"
                       borderWidth={1}
-                      borderColor="borderDefault"
-                      backgroundColor="backgroundCard"
+                      borderColor="gray300"
+                      backgroundColor="white"
                       justifyContent="center"
                       alignItems="center"
                     >
-                      <Text variant="bodyDefault" color="textSubtle">
+                      <Text variant="bodyDefault" color="gray500">
                         + Add
                       </Text>
                     </Box>
@@ -221,7 +221,7 @@ export default function CreateActivity() {
 
             {isSubmitting ? (
               <Box
-                backgroundColor="backgroundCard"
+                backgroundColor="white"
                 borderRadius="sm"
                 padding="sm"
                 alignItems="center"

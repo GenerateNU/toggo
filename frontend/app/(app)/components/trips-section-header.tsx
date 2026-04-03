@@ -20,7 +20,7 @@ export function TripsSectionHeader({
       paddingHorizontal="sm"
       paddingTop="xs"
     >
-      <Text variant="bodySmMedium" color="textSubtle">
+      <Text variant="bodySmMedium" color="gray500">
         MY TRIPS
       </Text>
       <Pressable
@@ -35,14 +35,14 @@ export function TripsSectionHeader({
           paddingHorizontal="sm"
           paddingVertical="xxs"
           borderRadius="xl"
-          backgroundColor="brandPrimary"
+          backgroundColor="brand500"
         >
           {isCreating ? (
-            <ActivityIndicator size="small" color={ColorPalette.textInverse} />
+            <ActivityIndicator size="small" color={ColorPalette.gray900} />
           ) : (
-            <Plus size={14} color={ColorPalette.textInverse} />
+            <Plus size={14} color={ColorPalette.gray900} />
           )}
-          <Text variant="bodyXsMedium" color="textInverse">
+          <Text variant="bodyXsMedium" color="gray900">
             New Trip
           </Text>
         </Box>

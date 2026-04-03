@@ -4,7 +4,7 @@ import { ScrollView } from "react-native";
 export default function Home() {
   return (
     <Screen>
-      <Box flex={1} backgroundColor="backgroundCard">
+      <Box flex={1} backgroundColor="white">
         <ScrollView
           contentContainerStyle={{
             paddingTop: 32,

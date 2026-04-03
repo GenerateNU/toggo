@@ -17,9 +17,9 @@ export default function Settings() {
         alignItems="center"
         padding="lg"
         gap="md"
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
       >
-        <Text variant="headingMd" color="textInverse">
+        <Text variant="headingMd" color="gray900">
           Settings
         </Text>
         <Button

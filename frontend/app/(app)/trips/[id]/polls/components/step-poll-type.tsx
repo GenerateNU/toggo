@@ -58,7 +58,7 @@ export default function StepPollType({
 
   return (
     <Box gap="sm">
-      <Text variant="bodyXsMedium" color="textSubtle">
+      <Text variant="bodyXsMedium" color="gray500">
         Type
       </Text>
       <Box gap="sm">
@@ -76,35 +76,35 @@ export default function StepPollType({
                     flex={1}
                     padding="sm"
                     borderRadius="md"
-                    backgroundColor="backgroundCard"
+                    backgroundColor="white"
                     alignItems="center"
                     gap="xs"
                     style={{
                       minHeight: CARD_MIN_HEIGHT,
                       borderWidth: isSelected ? 2 : 1,
                       borderColor: isSelected
-                        ? ColorPalette.backgroundDefault
-                        : ColorPalette.borderDefault,
+                        ? ColorPalette.gray900
+                        : ColorPalette.gray300,
                     }}
                   >
                     <Icon
                       size={20}
                       color={
                         isSelected
-                          ? ColorPalette.textInverse
-                          : ColorPalette.textSubtle
+                          ? ColorPalette.gray900
+                          : ColorPalette.gray500
                       }
                     />
                     <Text
                       variant="bodySmMedium"
-                      color="textInverse"
+                      color="gray900"
                       numberOfLines={1}
                     >
                       {label}
                     </Text>
                     <Text
                       variant="bodyXsDefault"
-                      color="textSubtle"
+                      color="gray500"
                       numberOfLines={1}
                     >
                       {subtitle}

@@ -21,9 +21,9 @@ export function NavChips() {
             paddingHorizontal="sm"
             paddingVertical="xxs"
             borderRadius="xl"
-            backgroundColor="backgroundSubtle"
+            backgroundColor="gray50"
           >
-            <Text variant="bodyXsMedium" color="textSubtle">
+            <Text variant="bodyXsMedium" color="gray500">
               {label}
             </Text>
           </Box>
