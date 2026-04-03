@@ -15,6 +15,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const notificationTimeout = 30 * time.Second
+
 type RankPollServiceInterface interface {
 	CreateRankPoll(ctx context.Context, tripID uuid.UUID, userID uuid.UUID, req models.CreatePollRequest) (*models.RankPollAPIResponse, error)
 	UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.RankPollAPIResponse, error)

@@ -209,6 +209,9 @@ func TestPitchList(t *testing.T) {
 		first := items[0].(map[string]any)
 		assert.Equal(t, "P1", first["title"])
 		assert.Contains(t, first, "audio_url")
+		assert.NotEmpty(t, first["username"])
+		assert.EqualValues(t, 0, first["comment_count"])
+		assert.IsType(t, []any{}, first["comment_previews"])
 	})
 
 	t.Run("invalid trip ID returns 400", func(t *testing.T) {
@@ -247,6 +250,9 @@ func TestPitchGet(t *testing.T) {
 		assert.Equal(t, "GetMe", resp["title"])
 		assert.Equal(t, pitchID, resp["id"])
 		assert.Contains(t, resp, "audio_url")
+		assert.NotEmpty(t, resp["username"])
+		assert.EqualValues(t, 0, resp["comment_count"])
+		assert.IsType(t, []any{}, resp["comment_previews"])
 	})
 
 	t.Run("not found returns 404", func(t *testing.T) {
@@ -788,6 +794,89 @@ func TestPitchImages(t *testing.T) {
 		mediumURL := img["medium_url"].(string)
 		assert.Contains(t, mediumURL, "medium/test-images/pitch-")
 		assert.Contains(t, mediumURL, "http") // presigned URL
+	})
+}
+
+func TestPitchEnrichedResponse(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	userID := createTestUser(t, app, "EnrichUser", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
+	tripID := createTestTrip(t, app, userID, "EnrichTrip", 100, 500)
+
+	t.Run("get and list include username, comment_count, comment_previews", func(t *testing.T) {
+		requireS3(t)
+		pitchID, _ := createPitch(t, app, userID, tripID, "Enriched", "audio/mpeg")
+
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		assert.NotEmpty(t, getResp["username"])
+		assert.Equal(t, userID, getResp["user_id"])
+		assert.EqualValues(t, 0, getResp["comment_count"])
+		previews, ok := getResp["comment_previews"].([]any)
+		require.True(t, ok)
+		assert.Len(t, previews, 0)
+
+		listResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches",
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+		items := listResp["items"].([]any)
+		var found map[string]any
+		for _, item := range items {
+			p := item.(map[string]any)
+			if p["id"].(string) == pitchID {
+				found = p
+				break
+			}
+		}
+		require.NotNil(t, found, "pitch not found in list")
+		assert.NotEmpty(t, found["username"])
+		assert.EqualValues(t, 0, found["comment_count"])
+		assert.IsType(t, []any{}, found["comment_previews"])
+	})
+
+	t.Run("get pitch includes links field", func(t *testing.T) {
+		requireS3(t)
+		pitchID, _ := createPitch(t, app, userID, tripID, "WithLinks", "audio/mpeg")
+
+		// Add a link.
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID + "/links",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body:   map[string]any{"url": "https://example.com"},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		getResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + tripID + "/pitches/" + pitchID,
+				Method: testkit.GET,
+				UserID: &userID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		links, ok := getResp["links"].([]any)
+		require.True(t, ok, "links field should be present when pitch has links")
+		require.Len(t, links, 1)
+		link := links[0].(map[string]any)
+		assert.Equal(t, "https://example.com", link["url"])
 	})
 }
 

@@ -60,17 +60,53 @@ type UpdatePitchRequest struct {
 	ImageIDs *[]uuid.UUID `validate:"omitempty,max=5" json:"image_ids,omitempty"`
 }
 
+type PitchDatabaseResponse struct {
+	ID                uuid.UUID `bun:"id"`
+	TripID            uuid.UUID `bun:"trip_id"`
+	UserID            uuid.UUID `bun:"user_id"`
+	Title             string    `bun:"title"`
+	Description       string    `bun:"description"`
+	AudioS3Key        string    `bun:"audio_s3_key"`
+	Duration          *int      `bun:"duration"`
+	CreatedAt         time.Time `bun:"created_at"`
+	UpdatedAt         time.Time `bun:"updated_at"`
+	Username          string    `bun:"username"`
+	ProfilePictureKey *string   `bun:"profile_picture_key"`
+}
+
+type CommenterPreview struct {
+	UserID            uuid.UUID `json:"user_id"`
+	Username          string    `json:"username"`
+	ProfilePictureURL *string   `json:"profile_picture_url,omitempty"`
+}
+
+type PitchCommenterDB struct {
+	UserID            uuid.UUID `bun:"user_id"`
+	Username          string    `bun:"commenter_username"`
+	ProfilePictureKey *string   `bun:"commenter_pfp_key"`
+}
+
+type PitchCommentStats struct {
+	Count    int
+	Previews []PitchCommenterDB
+}
+
 type PitchAPIResponse struct {
-	ID          uuid.UUID        `json:"id"`
-	TripID      uuid.UUID        `json:"trip_id"`
-	UserID      uuid.UUID        `json:"user_id"`
-	Title       string           `json:"title"`
-	Description string           `json:"description"`
-	AudioURL    string           `json:"audio_url"`
-	Duration    *int             `json:"duration,omitempty"`
-	Images      []PitchImageInfo `json:"images,omitempty"`
-	CreatedAt   time.Time        `json:"created_at"`
-	UpdatedAt   time.Time        `json:"updated_at"`
+	ID                uuid.UUID          `json:"id"`
+	TripID            uuid.UUID          `json:"trip_id"`
+	UserID            uuid.UUID          `json:"user_id"`
+	Username          string             `json:"username,omitempty"`
+	ProfilePictureURL *string            `json:"profile_picture_url,omitempty"`
+	Title             string             `json:"title"`
+	Description       string             `json:"description"`
+	AudioURL          string             `json:"audio_url"`
+	Duration          *int               `json:"duration,omitempty"`
+	Images            []PitchImageInfo   `json:"images,omitempty"`
+	Links             []*PitchLink       `json:"links,omitempty"`
+	CommentCount      int                `json:"comment_count"`
+	CommentPreviews   []CommenterPreview `json:"comment_previews"`
+	CreatedAt         time.Time          `json:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at"`
 }
 
 type CreatePitchResponse struct {

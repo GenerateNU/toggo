@@ -19,15 +19,23 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 
 	awsCfg := routeParams.ServiceParams.Config.AWS
 	pitchService := services.NewPitchService(services.PitchServiceConfig{
-		PresignClient:       awsCfg.PresignClient,
-		S3Client:            awsCfg.S3Client,
-		PitchRepo:           routeParams.ServiceParams.Repository.Pitch,
-		MembershipRepo:      routeParams.ServiceParams.Repository.Membership,
-		ImageRepo:           routeParams.ServiceParams.Repository.Image,
-		BucketName:          awsCfg.BucketName,
-		NotificationService: routeParams.ServiceParams.NotificationService,
+		PresignClient:  awsCfg.PresignClient,
+		S3Client:       awsCfg.S3Client,
+		PitchRepo:      routeParams.ServiceParams.Repository.Pitch,
+		MembershipRepo: routeParams.ServiceParams.Repository.Membership,
+		ImageRepo:      routeParams.ServiceParams.Repository.Image,
+		CommentRepo:    routeParams.ServiceParams.Repository.Comment,
+		PitchLinkRepo:  routeParams.ServiceParams.Repository.PitchLink,
+		BucketName:     awsCfg.BucketName,
 	})
 	pitchController := controllers.NewPitchController(pitchService, routeParams.Validator)
+
+	linkService := services.NewPitchLinkService(
+		routeParams.ServiceParams.Repository.PitchLink,
+		routeParams.ServiceParams.Repository.Pitch,
+		routeParams.ServiceParams.HTTPClient,
+	)
+	linkController := controllers.NewPitchLinkController(linkService, routeParams.Validator)
 
 	// /api/v1/trips
 	tripGroup := apiGroup.Group("/trips")
@@ -49,6 +57,11 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	tripIDGroup.Patch("/pitches/:pitchID", pitchController.UpdatePitch)
 	tripIDGroup.Delete("/pitches/:pitchID", pitchController.DeletePitch)
 	tripIDGroup.Post("/pitches/:pitchID/confirm-upload", pitchController.ConfirmPitchUpload)
+
+	// /api/v1/trips/:tripID/pitches/:pitchID/links
+	tripIDGroup.Post("/pitches/:pitchID/links", linkController.AddLink)
+	tripIDGroup.Get("/pitches/:pitchID/links", linkController.GetLinks)
+	tripIDGroup.Delete("/pitches/:pitchID/links/:linkID", linkController.DeleteLink)
 
 	return tripGroup
 }

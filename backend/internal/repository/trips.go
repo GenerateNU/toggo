@@ -64,7 +64,7 @@ func (r *tripRepository) FindWithCoverImage(ctx context.Context, id uuid.UUID) (
 	tripData := &models.TripDatabaseResponse{}
 	err := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
@@ -113,7 +113,7 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID
 func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("JOIN memberships AS m ON m.trip_id = t.id").
@@ -161,6 +161,10 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 
 	if req.Currency != nil {
 		updateQuery = updateQuery.Set("currency = ?", *req.Currency)
+	}
+
+	if req.PitchDeadline != nil {
+		updateQuery = updateQuery.Set("pitch_deadline = ?", *req.PitchDeadline)
 	}
 
 	result, err := updateQuery.Exec(ctx)

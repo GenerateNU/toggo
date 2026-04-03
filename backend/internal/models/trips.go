@@ -7,30 +7,33 @@ import (
 )
 
 type Trip struct {
-	ID           uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
-	Name         string     `bun:"name" json:"name"`
-	CoverImageID *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
-	BudgetMin    int        `bun:"budget_min" json:"budget_min"`
-	BudgetMax    int        `bun:"budget_max" json:"budget_max"`
-	Currency     string     `bun:"currency" json:"currency"`
-	CreatedAt    time.Time  `bun:"created_at,nullzero" json:"created_at"`
-	UpdatedAt    time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
+	ID            uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
+	Name          string     `bun:"name" json:"name"`
+	CoverImageID  *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
+	BudgetMin     int        `bun:"budget_min" json:"budget_min"`
+	BudgetMax     int        `bun:"budget_max" json:"budget_max"`
+	Currency      string     `bun:"currency" json:"currency"`
+	PitchDeadline *time.Time `bun:"pitch_deadline" json:"pitch_deadline,omitempty"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt     time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 type CreateTripRequest struct {
-	Name         string     `validate:"required,min=1" json:"name"`
-	BudgetMin    int        `json:"budget_min" validate:"required,gte=0"`
-	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
-	BudgetMax    int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
-	Currency     string     `json:"currency" validate:"omitempty,iso4217"`
+	Name          string     `validate:"required,min=1" json:"name"`
+	BudgetMin     int        `json:"budget_min" validate:"required,gte=0"`
+	CoverImageID  *uuid.UUID `json:"cover_image_id,omitempty"`
+	BudgetMax     int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
+	Currency      string     `json:"currency" validate:"omitempty,iso4217"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
 }
 
 type UpdateTripRequest struct {
-	Name         *string    `validate:"omitempty,min=1" json:"name"`
-	BudgetMin    *int       `json:"budget_min" validate:"omitempty,gte=0"`
-	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
-	BudgetMax    *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
-	Currency     *string    `json:"currency" validate:"omitempty,iso4217"`
+	Name          *string    `validate:"omitempty,min=1" json:"name"`
+	BudgetMin     *int       `json:"budget_min" validate:"omitempty,gte=0"`
+	CoverImageID  *uuid.UUID `json:"cover_image_id,omitempty"`
+	BudgetMax     *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
+	Currency      *string    `json:"currency" validate:"omitempty,iso4217"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
 }
 
 // TripPageResult holds an offset-paginated list of trips and metadata.
@@ -59,17 +62,19 @@ type TripDatabaseResponse struct {
 	BudgetMin     int        `bun:"budget_min"`
 	BudgetMax     int        `bun:"budget_max"`
 	Currency      string     `bun:"currency"`
+	PitchDeadline *time.Time `bun:"pitch_deadline"`
 	CreatedAt     time.Time  `bun:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at"`
 }
 
 type TripAPIResponse struct {
-	ID            uuid.UUID `json:"id"`
-	Name          string    `json:"name"`
-	CoverImageURL *string   `json:"cover_image_url"`
-	BudgetMin     int       `json:"budget_min"`
-	BudgetMax     int       `json:"budget_max"`
-	Currency      string    `json:"currency"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID            uuid.UUID  `json:"id"`
+	Name          string     `json:"name"`
+	CoverImageURL *string    `json:"cover_image_url"`
+	BudgetMin     int        `json:"budget_min"`
+	BudgetMax     int        `json:"budget_max"`
+	Currency      string     `json:"currency"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
 }
