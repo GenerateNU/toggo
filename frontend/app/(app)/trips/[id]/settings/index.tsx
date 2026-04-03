@@ -87,7 +87,7 @@ export default function TripSettings() {
   const queryClient = useQueryClient();
 
   const { data: trip, isLoading: isLoadingTrip } = useGetTrip(tripID!);
-  const { data: membersData } = useGetTripMembers(tripID!);
+  const { data: membersData, isLoading: isLoadingMembers } = useGetTripMembers(tripID!);
   const { data: myMembership } = useGetMembership(
     tripID!,
     currentUser?.id ?? "",
@@ -309,7 +309,9 @@ export default function TripSettings() {
               variant="Secondary"
               onPress={handleLeaveTrip}
               disabled={
-                removeMemberMutation.isPending || deleteTripMutation.isPending
+                isLoadingMembers ||
+                removeMemberMutation.isPending ||
+                deleteTripMutation.isPending
               }
             />
             {isAdmin && (

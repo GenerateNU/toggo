@@ -345,6 +345,10 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 		}
 	}
 
+	notifyNewPitches := membership.NotifyNewPitches
+	notifyNewPolls := membership.NotifyNewPolls
+	notifyNewComments := membership.NotifyNewComments
+
 	return &models.MembershipAPIResponse{
 		UserID:            membership.UserID,
 		TripID:            membership.TripID,
@@ -354,9 +358,9 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 		BudgetMin:         membership.BudgetMin,
 		BudgetMax:         membership.BudgetMax,
 		Availability:      membership.Availability,
-		NotifyNewPitches:  membership.NotifyNewPitches,
-		NotifyNewPolls:    membership.NotifyNewPolls,
-		NotifyNewComments: membership.NotifyNewComments,
+		NotifyNewPitches:  &notifyNewPitches,
+		NotifyNewPolls:    &notifyNewPolls,
+		NotifyNewComments: &notifyNewComments,
 		Username:          membership.Username,
 		ProfilePictureURL: profilePictureURL,
 	}, nil
@@ -383,9 +387,6 @@ func (s *MembershipService) convertToAPIMemberships(memberships []*models.Member
 			BudgetMin:         membership.BudgetMin,
 			BudgetMax:         membership.BudgetMax,
 			Availability:      membership.Availability,
-			NotifyNewPitches:  membership.NotifyNewPitches,
-			NotifyNewPolls:    membership.NotifyNewPolls,
-			NotifyNewComments: membership.NotifyNewComments,
 			Username:          membership.Username,
 			ProfilePictureURL: profilePictureURL,
 		})

@@ -83,9 +83,9 @@ type MembershipAPIResponse struct {
 	BudgetMin         int                     `json:"budget_min"`
 	BudgetMax         int                     `json:"budget_max"`
 	Availability      *map[string]interface{} `json:"availability,omitempty"`
-	NotifyNewPitches  bool                    `json:"notify_new_pitches"`
-	NotifyNewPolls    bool                    `json:"notify_new_polls"`
-	NotifyNewComments bool                    `json:"notify_new_comments"`
+	NotifyNewPitches  *bool                   `json:"notify_new_pitches,omitempty"`
+	NotifyNewPolls    *bool                   `json:"notify_new_polls,omitempty"`
+	NotifyNewComments *bool                   `json:"notify_new_comments,omitempty"`
 	Username          string                  `json:"username"`
 	ProfilePictureURL *string                 `json:"profile_picture_url"`
 }
