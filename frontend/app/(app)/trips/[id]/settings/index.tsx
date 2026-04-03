@@ -87,7 +87,9 @@ export default function TripSettings() {
   const queryClient = useQueryClient();
 
   const { data: trip, isLoading: isLoadingTrip } = useGetTrip(tripID!);
-  const { data: membersData, isLoading: isLoadingMembers } = useGetTripMembers(tripID!);
+  const { data: membersData, isLoading: isLoadingMembers } = useGetTripMembers(
+    tripID!,
+  );
   const { data: myMembership } = useGetMembership(
     tripID!,
     currentUser?.id ?? "",
