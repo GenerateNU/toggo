@@ -22,8 +22,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Crown } from "lucide-react-native";
 import { Alert, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share } from "react-native";
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
 function MemberRowSkeleton() {
   return (
     <Box flexDirection="row" alignItems="center" paddingHorizontal="md" paddingVertical="sm" gap="md">
