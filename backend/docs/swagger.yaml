@@ -696,6 +696,12 @@ definitions:
         type: string
       is_admin:
         type: boolean
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
+        type: boolean
       trip_id:
         type: string
       updated_at:
@@ -715,6 +721,12 @@ definitions:
       created_at:
         type: string
       is_admin:
+        type: boolean
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
         type: boolean
       profile_picture_url:
         type: string
@@ -1422,6 +1434,15 @@ definitions:
         minimum: 0
         type: integer
       is_admin:
+        type: boolean
+    type: object
+  models.UpdateNotificationPreferencesRequest:
+    properties:
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
         type: boolean
     type: object
   models.UpdatePitchRequest:
@@ -3868,6 +3889,63 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Demote admin to member
+      tags:
+      - memberships
+  /api/v1/trips/{tripID}/memberships/{userID}/notification-preferences:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the notification preferences for a membership (self only)
+      operationId: updateNotificationPreferences
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Notification preferences
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update notification preferences
       tags:
       - memberships
   /api/v1/trips/{tripID}/memberships/{userID}/promote:

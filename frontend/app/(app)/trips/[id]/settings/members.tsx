@@ -38,7 +38,7 @@ function MemberRowSkeleton() {
       paddingVertical="sm"
       gap="md"
     >
-      <SkeletonCircle size="md" />
+      <SkeletonCircle size="lg" />
       <Box flex={1} gap="xs">
         <SkeletonRect width="half" height="xs" />
         <SkeletonRect width="quarter" height="xs" />
@@ -63,19 +63,24 @@ function MemberRow({
   return (
     <Box
       flexDirection="row"
-      alignItems="flex-start"
+      alignItems="center"
       paddingHorizontal="md"
-      paddingVertical="sm"
-      gap="md"
+      paddingVertical="xs"
+      gap="sm"
     >
       <Avatar
         profilePhoto={member.profile_picture_url}
         seed={member.user_id}
-        variant="md"
+        variant="lg"
       />
       <Box flex={1} gap="xxs">
-        <Box flexDirection="row" alignItems="center" gap="xs">
-          <Text variant="bodySmMedium" color="gray900">
+        <Box flexDirection="row" alignItems="center" gap="xs" flexShrink={1}>
+          <Text
+            variant="bodySmMedium"
+            color="gray900"
+            numberOfLines={1}
+            style={{ flexShrink: 1 }}
+          >
             {member.username ?? "Unknown"}
           </Text>
           {isCurrentUser && (
@@ -102,7 +107,7 @@ function MemberRow({
           onPress={onPromote}
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
-          <Text variant="bodyXsMedium" color="statusInfo">
+          <Text variant="bodyXsStrong" color="statusInfo">
             Make Admin
           </Text>
         </Pressable>
@@ -110,8 +115,6 @@ function MemberRow({
     </Box>
   );
 }
-
-// ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MembersSettings() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
@@ -231,6 +234,7 @@ export default function MembersSettings() {
         borderWidth={1}
         borderColor="gray100"
         overflow="hidden"
+        paddingVertical="xs"
       >
         {members.map((member, index) => (
           <Box key={member.user_id}>

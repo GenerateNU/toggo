@@ -19,11 +19,12 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 
 	awsCfg := routeParams.ServiceParams.Config.AWS
 	pitchService := services.NewPitchService(services.PitchServiceConfig{
-		PresignClient:  awsCfg.PresignClient,
-		PitchRepo:      routeParams.ServiceParams.Repository.Pitch,
-		MembershipRepo: routeParams.ServiceParams.Repository.Membership,
-		ImageRepo:      routeParams.ServiceParams.Repository.Image,
-		BucketName:     awsCfg.BucketName,
+		PresignClient:       awsCfg.PresignClient,
+		PitchRepo:           routeParams.ServiceParams.Repository.Pitch,
+		MembershipRepo:      routeParams.ServiceParams.Repository.Membership,
+		ImageRepo:           routeParams.ServiceParams.Repository.Image,
+		BucketName:          awsCfg.BucketName,
+		NotificationService: routeParams.ServiceParams.NotificationService,
 	})
 	pitchController := controllers.NewPitchController(pitchService, routeParams.Validator)
 

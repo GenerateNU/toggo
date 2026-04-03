@@ -32,6 +32,7 @@ func MembershipRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fibe
 	tripMembershipIDGroup.Get("", membershipController.GetLatestMembership)
 	tripMembershipIDGroup.Patch("", membershipController.UpdateMembership)
 	tripMembershipIDGroup.Delete("", membershipController.RemoveMember)
+	tripMembershipIDGroup.Patch("/notification-preferences", membershipController.UpdateNotificationPreferences)
 
 	return membershipGroup
 }

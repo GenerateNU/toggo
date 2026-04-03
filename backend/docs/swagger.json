@@ -3300,6 +3300,91 @@
                 }
             }
         },
+        "/api/v1/trips/{tripID}/memberships/{userID}/notification-preferences": {
+            "patch": {
+                "description": "Updates the notification preferences for a membership (self only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memberships"
+                ],
+                "summary": "Update notification preferences",
+                "operationId": "updateNotificationPreferences",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Notification preferences",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Membership"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/memberships/{userID}/promote": {
             "post": {
                 "description": "Promotes a member to admin role",
@@ -6275,6 +6360,15 @@
                 "is_admin": {
                     "type": "boolean"
                 },
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
+                    "type": "boolean"
+                },
                 "trip_id": {
                     "type": "string"
                 },
@@ -6303,6 +6397,15 @@
                     "type": "string"
                 },
                 "is_admin": {
+                    "type": "boolean"
+                },
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
                     "type": "boolean"
                 },
                 "profile_picture_url": {
@@ -7349,6 +7452,20 @@
                     "minimum": 0
                 },
                 "is_admin": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UpdateNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
                     "type": "boolean"
                 }
             }

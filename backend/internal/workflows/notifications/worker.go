@@ -14,7 +14,7 @@ func StartNotificationWorker(c client.Client, repo repository.Repository, expoCl
 
 	w.RegisterWorkflow(ScheduledNotificationWorkflow)
 
-	notificationService := services.NewNotificationService(repo.User, expoClient)
+	notificationService := services.NewNotificationService(repo.User, repo.Membership, expoClient)
 
 	w.RegisterActivity(&NotificationActivities{
 		PollRepo:           repo.Poll,

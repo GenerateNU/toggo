@@ -13,6 +13,7 @@ func VotePollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	pollService := services.NewPollVotingService(
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.PollService,
+		routeParams.ServiceParams.NotificationService,
 	)
 
 	votePollController := controllers.NewVotePollController(

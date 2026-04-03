@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 	"toggo/internal/errs"
@@ -32,21 +33,23 @@ type PitchServiceInterface interface {
 var _ PitchServiceInterface = (*PitchService)(nil)
 
 type PitchService struct {
-	presignClient  interfaces.S3PresignClient
-	pitchRepo      repository.PitchRepository
-	membershipRepo repository.MembershipRepository
-	imageRepo      repository.ImageRepository
-	bucketName     string
-	urlExpiration  time.Duration
+	presignClient       interfaces.S3PresignClient
+	pitchRepo           repository.PitchRepository
+	membershipRepo      repository.MembershipRepository
+	imageRepo           repository.ImageRepository
+	bucketName          string
+	urlExpiration       time.Duration
+	notificationService NotificationService
 }
 
 type PitchServiceConfig struct {
-	PresignClient  interfaces.S3PresignClient
-	PitchRepo      repository.PitchRepository
-	MembershipRepo repository.MembershipRepository
-	ImageRepo      repository.ImageRepository
-	BucketName     string
-	URLExpiration  time.Duration
+	PresignClient       interfaces.S3PresignClient
+	PitchRepo           repository.PitchRepository
+	MembershipRepo      repository.MembershipRepository
+	ImageRepo           repository.ImageRepository
+	BucketName          string
+	URLExpiration       time.Duration
+	NotificationService NotificationService
 }
 
 func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
@@ -55,12 +58,13 @@ func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
 		expiration = 15 * time.Minute
 	}
 	return &PitchService{
-		presignClient:  cfg.PresignClient,
-		pitchRepo:      cfg.PitchRepo,
-		membershipRepo: cfg.MembershipRepo,
-		imageRepo:      cfg.ImageRepo,
-		bucketName:     cfg.BucketName,
-		urlExpiration:  expiration,
+		presignClient:       cfg.PresignClient,
+		pitchRepo:           cfg.PitchRepo,
+		membershipRepo:      cfg.MembershipRepo,
+		imageRepo:           cfg.ImageRepo,
+		bucketName:          cfg.BucketName,
+		urlExpiration:       expiration,
+		notificationService: cfg.NotificationService,
 	}
 }
 
@@ -128,11 +132,32 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 		return nil, err
 	}
 	apiPitch := pitchToAPIResponse(created, "", images)
+
+	go s.notifyNewPitch(tripID, userID)
+
 	return &models.CreatePitchResponse{
 		Pitch:     apiPitch,
 		UploadURL: presigned.URL,
 		ExpiresAt: expiresAt,
 	}, nil
+}
+
+func (s *PitchService) notifyNewPitch(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	err := s.notificationService.NotifyTripMembers(
+		context.Background(),
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewPitch,
+		"New pitch",
+		"A new pitch has been added to your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new pitch notification: %v", err)
+	}
 }
 
 // GetByID returns a pitch by id and trip id with presigned URLs for audio and images.

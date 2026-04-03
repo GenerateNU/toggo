@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -17,11 +18,13 @@ type MembershipRepository interface {
 	FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error)
 	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error)
 	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
+	FindUserIDsWithNotificationPreference(ctx context.Context, tripID uuid.UUID, preference models.NotificationPreference, excludeUserID uuid.UUID) ([]uuid.UUID, error)
 	IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
 	CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error)
 	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
+	UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.Membership, error)
 	Delete(ctx context.Context, userID, tripID uuid.UUID) error
 }
 
@@ -53,6 +56,7 @@ func (r *membershipRepository) Find(ctx context.Context, userID, tripID uuid.UUI
 	err := r.db.NewSelect().
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("m.notify_new_pitches, m.notify_new_polls, m.notify_new_comments").
 		ColumnExpr("u.username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
@@ -76,6 +80,7 @@ func (r *membershipRepository) FindByTripID(ctx context.Context, tripID uuid.UUI
 	err := r.db.NewSelect().
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("m.notify_new_pitches, m.notify_new_polls, m.notify_new_comments").
 		ColumnExpr("u.username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
@@ -100,6 +105,7 @@ func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripI
 	query := r.db.NewSelect().
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id, m.trip_id, m.is_admin, m.created_at, m.updated_at, m.budget_min, m.budget_max, m.availability").
+		ColumnExpr("m.notify_new_pitches, m.notify_new_polls, m.notify_new_comments").
 		ColumnExpr("u.username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
@@ -140,6 +146,26 @@ func (r *membershipRepository) FindByUserID(ctx context.Context, userID uuid.UUI
 		return nil, err
 	}
 	return memberships, nil
+}
+
+// FindUserIDsWithNotificationPreference returns user IDs of trip members who have the given
+// notification preference enabled, excluding the specified user.
+func (r *membershipRepository) FindUserIDsWithNotificationPreference(ctx context.Context, tripID uuid.UUID, preference models.NotificationPreference, excludeUserID uuid.UUID) ([]uuid.UUID, error) {
+	col, err := notificationPreferenceColumn(preference)
+	if err != nil {
+		return nil, err
+	}
+
+	var userIDs []uuid.UUID
+	scanErr := r.db.NewSelect().
+		TableExpr("memberships").
+		ColumnExpr("user_id").
+		Where("trip_id = ? AND user_id != ? AND "+col+" = TRUE", tripID, excludeUserID).
+		Scan(ctx, &userIDs)
+	if scanErr != nil {
+		return nil, scanErr
+	}
+	return userIDs, nil
 }
 
 // IsMember checks if a user is a member of a trip
@@ -233,6 +259,49 @@ func (r *membershipRepository) Update(ctx context.Context, userID, tripID uuid.U
 	return updatedMembership, nil
 }
 
+// UpdateNotificationPreferences updates the notification preference flags for a membership.
+func (r *membershipRepository) UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.Membership, error) {
+	updateQuery := r.db.NewUpdate().
+		Model(&models.Membership{}).
+		Where("user_id = ? AND trip_id = ?", userID, tripID)
+
+	if req.NotifyNewPitches != nil {
+		updateQuery = updateQuery.Set("notify_new_pitches = ?", *req.NotifyNewPitches)
+	}
+
+	if req.NotifyNewPolls != nil {
+		updateQuery = updateQuery.Set("notify_new_polls = ?", *req.NotifyNewPolls)
+	}
+
+	if req.NotifyNewComments != nil {
+		updateQuery = updateQuery.Set("notify_new_comments = ?", *req.NotifyNewComments)
+	}
+
+	result, err := updateQuery.Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	if rowsAffected == 0 {
+		return nil, errs.ErrNotFound
+	}
+
+	updated := &models.Membership{}
+	if err := r.db.NewSelect().
+		Model(updated).
+		Where("user_id = ? AND trip_id = ?", userID, tripID).
+		Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+}
+
 // Delete removes a membership (idempotent)
 func (r *membershipRepository) Delete(ctx context.Context, userID, tripID uuid.UUID) error {
 	_, err := r.db.NewDelete().
@@ -242,4 +311,17 @@ func (r *membershipRepository) Delete(ctx context.Context, userID, tripID uuid.U
 
 	// Idempotent - don't error if already deleted
 	return err
+}
+
+func notificationPreferenceColumn(preference models.NotificationPreference) (string, error) {
+	switch preference {
+	case models.NotificationPreferenceNewPitch:
+		return "notify_new_pitches", nil
+	case models.NotificationPreferenceNewPoll:
+		return "notify_new_polls", nil
+	case models.NotificationPreferenceNewComment:
+		return "notify_new_comments", nil
+	default:
+		return "", fmt.Errorf("unknown notification preference: %s", preference)
+	}
 }
