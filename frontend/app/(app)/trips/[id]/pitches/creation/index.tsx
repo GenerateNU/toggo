@@ -4,12 +4,7 @@ export default function CreatePitch() {
   return (
     <Screen>
       <Box flex={1} backgroundColor="gray50">
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="white"
-          gap="xs"
-        >
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
           <Text variant="bodySmMedium" color="gray500">
             NEW
           </Text>
@@ -18,12 +13,7 @@ export default function CreatePitch() {
           </Text>
         </Box>
         <Box padding="lg" gap="sm">
-          <Box
-            backgroundColor="white"
-            borderRadius="md"
-            padding="md"
-            gap="xs"
-          >
+          <Box backgroundColor="white" borderRadius="md" padding="md" gap="xs">
             <Text variant="bodySmMedium" color="gray500">
               STATUS
             </Text>

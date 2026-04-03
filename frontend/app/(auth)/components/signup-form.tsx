@@ -73,9 +73,7 @@ export default function SignupForm() {
             </Text>
             <Box
               borderWidth={1}
-              borderColor={
-                formState.errors.phone ? "statusError" : "gray300"
-              }
+              borderColor={formState.errors.phone ? "statusError" : "gray300"}
               borderRadius="sm"
               padding="sm"
               backgroundColor="white"

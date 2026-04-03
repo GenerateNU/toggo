@@ -180,11 +180,7 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text
-          variant="bodySmStrong"
-          color="white"
-          style={styles.monthLabel}
-        >
+        <Text variant="bodySmStrong" color="white" style={styles.monthLabel}>
           {formatMonth(year, month)}
         </Text>
 
@@ -364,9 +360,7 @@ export default function DateRangePicker({
               <Text
                 variant="bodySmMedium"
                 style={{
-                  color: hasRange
-                    ? ColorPalette.gray900
-                    : ColorPalette.gray500,
+                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
                 }}
               >
                 {formatShortDate(range.start)}
@@ -445,9 +439,7 @@ export default function DateRangePicker({
               <Text
                 variant="bodyMedium"
                 style={{
-                  color: hasRange
-                    ? ColorPalette.gray900
-                    : ColorPalette.gray400,
+                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray400,
                 }}
               >
                 Clear
@@ -465,10 +457,7 @@ export default function DateRangePicker({
               ]}
               disabled={!hasRange}
             >
-              <Text
-                variant="bodyMedium"
-                style={{ color: ColorPalette.white }}
-              >
+              <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
                 Save Dates
               </Text>
             </Pressable>

@@ -43,9 +43,7 @@ const CheckboxMark = React.memo(({ checked, disabled }: CheckboxMarkProps) => (
       disabled && !checked && styles.boxDisabled,
     ]}
   >
-    {checked && (
-      <Check size={14} color={ColorPalette.white} strokeWidth={3} />
-    )}
+    {checked && <Check size={14} color={ColorPalette.white} strokeWidth={3} />}
   </Box>
 ));
 CheckboxMark.displayName = "CheckboxMark";
@@ -70,10 +68,7 @@ export function Checkbox({
       accessibilityState={{ checked, disabled }}
     >
       <CheckboxMark checked={checked} disabled={disabled} />
-      <Text
-        variant="bodySmMedium"
-        color={disabled ? "gray400" : "gray900"}
-      >
+      <Text variant="bodySmMedium" color={disabled ? "gray400" : "gray900"}>
         {label}
       </Text>
     </Pressable>
@@ -99,11 +94,7 @@ export default function CheckboxGroup<T extends string = string>({
   return (
     <Box style={styles.container}>
       {label && (
-        <Text
-          variant="bodySmStrong"
-          color="gray900"
-          style={styles.groupLabel}
-        >
+        <Text variant="bodySmStrong" color="gray900" style={styles.groupLabel}>
           {label}
         </Text>
       )}

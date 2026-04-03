@@ -104,11 +104,7 @@ function CountryRow({
             {item.name}
           </Text>
         </Box>
-        <Text
-          variant="bodyDefault"
-          color="gray500"
-          style={{ lineHeight: 20 }}
-        >
+        <Text variant="bodyDefault" color="gray500" style={{ lineHeight: 20 }}>
           {item.callingCode}
         </Text>
       </Box>

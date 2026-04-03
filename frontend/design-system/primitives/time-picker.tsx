@@ -84,10 +84,7 @@ export default function TimePicker({
               </Text>
             </Pressable>
             <Pressable style={styles.saveButton} onPress={handleSave}>
-              <Text
-                variant="bodyMedium"
-                style={{ color: ColorPalette.white }}
-              >
+              <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
                 Save Time
               </Text>
             </Pressable>

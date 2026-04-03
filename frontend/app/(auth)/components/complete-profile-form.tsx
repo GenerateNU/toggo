@@ -133,9 +133,7 @@ export default function CompleteProfileForm({
             </Text>
             <Box
               borderWidth={1}
-              borderColor={
-                formState.errors.name ? "statusError" : "gray300"
-              }
+              borderColor={formState.errors.name ? "statusError" : "gray300"}
               borderRadius="sm"
               padding="sm"
               backgroundColor="white"

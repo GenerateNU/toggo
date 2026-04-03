@@ -7,7 +7,13 @@ import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
 import { Camera, ImageIcon, Pencil, Trash2, X } from "lucide-react-native";
 import React, { useRef } from "react";
-import { Alert, Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export type ImagePickerVariant = "circular" | "rectangular";
 

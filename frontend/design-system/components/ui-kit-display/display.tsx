@@ -12,10 +12,7 @@ import Divider from "@/design-system/primitives/divider";
 import { Text } from "@/design-system/primitives/text";
 import { useToast } from "@/design-system/primitives/toast-manager";
 import { BorderWidth } from "@/design-system/tokens/border";
-import {
-  ColorName,
-  ColorPalette,
-} from "@/design-system/tokens/color";
+import { ColorName, ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize, CoreSizeKey } from "@/design-system/tokens/core-size";
 import {
   CornerRadius,
@@ -75,11 +72,7 @@ function Row({
       justifyContent="space-between"
       gap="sm"
     >
-      <Text
-        variant="bodyXsMedium"
-        color="gray900"
-        style={{ flexShrink: 1 }}
-      >
+      <Text variant="bodyXsMedium" color="gray900" style={{ flexShrink: 1 }}>
         {label}
       </Text>
       {children}

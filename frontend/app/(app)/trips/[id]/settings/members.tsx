@@ -20,11 +20,24 @@ import type { ModelsMembershipAPIResponse } from "@/types/types.gen";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams } from "expo-router";
 import { Crown } from "lucide-react-native";
-import { Alert, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, Share } from "react-native";
+import {
+  Alert,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  Share,
+} from "react-native";
 
 function MemberRowSkeleton() {
   return (
-    <Box flexDirection="row" alignItems="center" paddingHorizontal="md" paddingVertical="sm" gap="md">
+    <Box
+      flexDirection="row"
+      alignItems="center"
+      paddingHorizontal="md"
+      paddingVertical="sm"
+      gap="md"
+    >
       <SkeletonCircle size="md" />
       <Box flex={1} gap="xs">
         <SkeletonRect width="half" height="xs" />
@@ -41,10 +54,25 @@ type MemberRowProps = {
   onPromote: () => void;
 };
 
-function MemberRow({ member, isCurrentUser, canPromote, onPromote }: MemberRowProps) {
+function MemberRow({
+  member,
+  isCurrentUser,
+  canPromote,
+  onPromote,
+}: MemberRowProps) {
   return (
-    <Box flexDirection="row" alignItems="flex-start" paddingHorizontal="md" paddingVertical="sm" gap="md">
-      <Avatar profilePhoto={member.profile_picture_url} seed={member.user_id} variant="md" />
+    <Box
+      flexDirection="row"
+      alignItems="flex-start"
+      paddingHorizontal="md"
+      paddingVertical="sm"
+      gap="md"
+    >
+      <Avatar
+        profilePhoto={member.profile_picture_url}
+        seed={member.user_id}
+        variant="md"
+      />
       <Box flex={1} gap="xxs">
         <Box flexDirection="row" alignItems="center" gap="xs">
           <Text variant="bodySmMedium" color="gray900">
@@ -70,7 +98,10 @@ function MemberRow({ member, isCurrentUser, canPromote, onPromote }: MemberRowPr
         )}
       </Box>
       {canPromote && !member.is_admin && (
-        <Pressable onPress={onPromote} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
+        <Pressable
+          onPress={onPromote}
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
           <Text variant="bodyXsMedium" color="statusInfo">
             Make Admin
           </Text>
@@ -87,8 +118,12 @@ export default function MembersSettings() {
   const { currentUser } = useUser();
   const toast = useToast();
 
-  const { members, isLoading, isLoadingMore, fetchMore } = useMembersList(tripID);
-  const { data: myMembership } = useGetMembership(tripID!, currentUser?.id ?? "");
+  const { members, isLoading, isLoadingMore, fetchMore } =
+    useMembersList(tripID);
+  const { data: myMembership } = useGetMembership(
+    tripID!,
+    currentUser?.id ?? "",
+  );
   const promoteToAdminMutation = usePromoteToAdmin();
   const createInviteMutation = useCreateTripInvite();
 
@@ -103,13 +138,21 @@ export default function MembersSettings() {
 
   const handleInvite = async () => {
     try {
-      const invite = await createInviteMutation.mutateAsync({ tripID: tripID!, data: {} });
+      const invite = await createInviteMutation.mutateAsync({
+        tripID: tripID!,
+        data: {},
+      });
       const code = invite.code;
       if (!code) return;
       const deepLink = Linking.createURL("join", { queryParams: { code } });
-      await Share.share({ message: `Join my trip on Toggo! ${deepLink}`, url: deepLink });
+      await Share.share({
+        message: `Join my trip on Toggo! ${deepLink}`,
+        url: deepLink,
+      });
     } catch {
-      toast.show({ message: "Couldn't generate invite link. Please try again." });
+      toast.show({
+        message: "Couldn't generate invite link. Please try again.",
+      });
     }
   };
 
@@ -123,10 +166,17 @@ export default function MembersSettings() {
           text: "Make Admin",
           onPress: async () => {
             try {
-              await promoteToAdminMutation.mutateAsync({ tripID: tripID!, userID: member.user_id! });
-              toast.show({ message: `${member.username ?? "Member"} is now an admin.` });
+              await promoteToAdminMutation.mutateAsync({
+                tripID: tripID!,
+                userID: member.user_id!,
+              });
+              toast.show({
+                message: `${member.username ?? "Member"} is now an admin.`,
+              });
             } catch {
-              toast.show({ message: "Couldn't update admin. Please try again." });
+              toast.show({
+                message: "Couldn't update admin. Please try again.",
+              });
             }
           },
         },
@@ -136,8 +186,19 @@ export default function MembersSettings() {
 
   if (isLoading) {
     return (
-      <Box flex={1} backgroundColor="white" paddingTop="md" paddingHorizontal="md">
-        <Box backgroundColor="white" borderRadius="sm" borderWidth={1} borderColor="gray100" overflow="hidden">
+      <Box
+        flex={1}
+        backgroundColor="white"
+        paddingTop="md"
+        paddingHorizontal="md"
+      >
+        <Box
+          backgroundColor="white"
+          borderRadius="sm"
+          borderWidth={1}
+          borderColor="gray100"
+          overflow="hidden"
+        >
           {[1, 2, 3].map((i) => (
             <Box key={i}>
               <MemberRowSkeleton />
@@ -164,7 +225,13 @@ export default function MembersSettings() {
       onScroll={handleScroll}
       scrollEventThrottle={200}
     >
-      <Box backgroundColor="white" borderRadius="sm" borderWidth={1} borderColor="gray100" overflow="hidden">
+      <Box
+        backgroundColor="white"
+        borderRadius="sm"
+        borderWidth={1}
+        borderColor="gray100"
+        overflow="hidden"
+      >
         {members.map((member, index) => (
           <Box key={member.user_id}>
             <MemberRow
@@ -185,7 +252,11 @@ export default function MembersSettings() {
       </Box>
       <Button
         layout="textOnly"
-        label={createInviteMutation.isPending ? "Generating link..." : "Add New Member"}
+        label={
+          createInviteMutation.isPending
+            ? "Generating link..."
+            : "Add New Member"
+        }
         variant="Secondary"
         disabled={createInviteMutation.isPending}
         onPress={handleInvite}

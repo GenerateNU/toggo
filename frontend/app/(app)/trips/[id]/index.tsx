@@ -55,12 +55,7 @@ export default function Trip() {
             })
           }
         />
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="white"
-          gap="xs"
-        >
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
           <Box
             flexDirection="row"
             alignItems="center"
@@ -148,16 +143,8 @@ export default function Trip() {
               <ActivityIndicator size="small" />
             )}
             {inviteLink && (
-              <Box
-                backgroundColor="white"
-                padding="sm"
-                borderRadius="sm"
-              >
-                <Text
-                  variant="bodyXsDefault"
-                  color="gray500"
-                  numberOfLines={1}
-                >
+              <Box backgroundColor="white" padding="sm" borderRadius="sm">
+                <Text variant="bodyXsDefault" color="gray500" numberOfLines={1}>
                   {inviteLink}
                 </Text>
               </Box>

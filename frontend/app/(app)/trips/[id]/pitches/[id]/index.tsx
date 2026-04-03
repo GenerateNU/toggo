@@ -10,12 +10,7 @@ export default function PitchDetail() {
   return (
     <Screen>
       <Box flex={1} backgroundColor="gray50">
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="white"
-          gap="xs"
-        >
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
           <Text variant="bodySmMedium" color="gray500">
             PITCH
           </Text>
@@ -24,12 +19,7 @@ export default function PitchDetail() {
           </Text>
         </Box>
         <Box padding="lg" gap="sm">
-          <Box
-            backgroundColor="white"
-            borderRadius="md"
-            padding="md"
-            gap="sm"
-          >
+          <Box backgroundColor="white" borderRadius="md" padding="md" gap="sm">
             <Box gap="xs">
               <Text variant="bodySmMedium" color="gray500">
                 PITCH ID

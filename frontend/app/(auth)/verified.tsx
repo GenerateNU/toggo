@@ -33,11 +33,7 @@ export default function VerifiedPage() {
   }, [router]);
 
   return (
-    <Box
-      flex={1}
-      backgroundColor="white"
-      style={{ overflow: "hidden" }}
-    >
+    <Box flex={1} backgroundColor="white" style={{ overflow: "hidden" }}>
       <Box
         style={{
           position: "absolute",

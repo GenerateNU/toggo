@@ -33,7 +33,9 @@ export default function EditTripName() {
           currency: trip?.currency,
         },
       });
-      await queryClient.invalidateQueries({ queryKey: getTripQueryKey(tripID!) });
+      await queryClient.invalidateQueries({
+        queryKey: getTripQueryKey(tripID!),
+      });
       toast.show({ message: "Trip name updated." });
       router.back();
     } catch {

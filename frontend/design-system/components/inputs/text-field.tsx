@@ -67,9 +67,7 @@ export default function TextField({
             styles.input,
             disabled && styles.inputDisabled,
             {
-              color: disabled
-                ? ColorPalette.gray400
-                : ColorPalette.gray900,
+              color: disabled ? ColorPalette.gray400 : ColorPalette.gray900,
             },
           ]}
           value={value}

@@ -21,12 +21,7 @@ export default function ActivityDetail() {
   return (
     <Screen>
       <Box flex={1} backgroundColor="gray50">
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="white"
-          gap="xs"
-        >
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
           <Text variant="bodySmMedium" color="gray500">
             ACTIVITY
           </Text>

@@ -58,14 +58,12 @@ interface ButtonVariantStyle {
   contentColor: ColorName;
 }
 
-
 const baseButton = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: "xl",
   paddingHorizontal: "md",
 } as const;
-
 
 export const ButtonVariants = {
   Primary: {

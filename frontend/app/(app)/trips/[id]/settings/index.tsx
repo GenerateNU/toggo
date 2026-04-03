@@ -96,7 +96,10 @@ export default function TripSettings() {
 
   const { data: trip, isLoading: isLoadingTrip } = useGetTrip(tripID!);
   const { data: membersData } = useGetTripMembers(tripID!);
-  const { data: myMembership } = useGetMembership(tripID!, currentUser?.id ?? "");
+  const { data: myMembership } = useGetMembership(
+    tripID!,
+    currentUser?.id ?? "",
+  );
 
   const removeMemberMutation = useRemoveMember();
   const deleteTripMutation = useDeleteTrip();
@@ -109,7 +112,8 @@ export default function TripSettings() {
     (m) => m.is_admin && m.user_id !== currentUser?.id,
   );
 
-  const isCoverUploading = uploadImageMutation.isPending || updateTripMutation.isPending;
+  const isCoverUploading =
+    uploadImageMutation.isPending || updateTripMutation.isPending;
 
   const handleCoverImageChange = async (uri: string | null) => {
     if (!uri) return;
@@ -168,7 +172,9 @@ export default function TripSettings() {
             });
             router.replace("/");
           } catch {
-            toast.show({ message: "Couldn't leave the trip. Please try again." });
+            toast.show({
+              message: "Couldn't leave the trip. Please try again.",
+            });
           }
         },
       },
@@ -186,7 +192,9 @@ export default function TripSettings() {
             await deleteTripMutation.mutateAsync({ tripID: tripID! });
             router.replace("/");
           } catch {
-            toast.show({ message: "Couldn't delete the trip. Please try again." });
+            toast.show({
+              message: "Couldn't delete the trip. Please try again.",
+            });
           }
         },
       },
@@ -215,15 +223,24 @@ export default function TripSettings() {
           <Text variant="bodyMedium" color="gray900">
             General
           </Text>
-          <Box paddingVertical="xs" backgroundColor="gray25" borderRadius="sm" overflow="hidden">
+          <Box
+            paddingVertical="xs"
+            backgroundColor="gray25"
+            borderRadius="sm"
+            overflow="hidden"
+          >
             <SettingsRow
               label="Trip Name"
               value={isLoadingTrip ? "Loading..." : trip?.name}
-              onPress={() => router.push(`/trips/${tripID}/settings/edit-name` as any)}
+              onPress={() =>
+                router.push(`/trips/${tripID}/settings/edit-name` as any)
+              }
             />
             <Divider />
             <Pressable
-              onPress={() => router.push(`/trips/${tripID}/settings/members` as any)}
+              onPress={() =>
+                router.push(`/trips/${tripID}/settings/members` as any)
+              }
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
               <Box
@@ -288,7 +305,12 @@ export default function TripSettings() {
           <Text variant="bodyMedium" color="gray900">
             Notifications
           </Text>
-          <Box paddingVertical="sm" backgroundColor="gray25" borderRadius="sm" overflow="hidden">
+          <Box
+            paddingVertical="sm"
+            backgroundColor="gray25"
+            borderRadius="sm"
+            overflow="hidden"
+          >
             <NotificationRow
               label="New Pitches"
               value={notifPitches}
@@ -316,7 +338,9 @@ export default function TripSettings() {
             label="Leave Trip"
             variant="Secondary"
             onPress={handleLeaveTrip}
-            disabled={removeMemberMutation.isPending || deleteTripMutation.isPending}
+            disabled={
+              removeMemberMutation.isPending || deleteTripMutation.isPending
+            }
           />
           {isAdmin && (
             <Button
@@ -325,12 +349,13 @@ export default function TripSettings() {
               label="Delete Trip"
               variant="Destructive"
               onPress={handleDeleteTrip}
-              disabled={removeMemberMutation.isPending || deleteTripMutation.isPending}
+              disabled={
+                removeMemberMutation.isPending || deleteTripMutation.isPending
+              }
             />
           )}
         </Box>
       </Box>
     </ScrollView>
-
   );
 }

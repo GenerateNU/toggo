@@ -90,9 +90,7 @@ export default function StepPollType({
                     <Icon
                       size={20}
                       color={
-                        isSelected
-                          ? ColorPalette.gray900
-                          : ColorPalette.gray500
+                        isSelected ? ColorPalette.gray900 : ColorPalette.gray500
                       }
                     />
                     <Text
