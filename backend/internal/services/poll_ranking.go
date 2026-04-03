@@ -63,7 +63,9 @@ func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, 
 
 	resp := s.toRankPollAPIResponse(created, categoryNames)
 	s.pollService.PublishEvent(ctx, realtime.EventTopicPollCreated, tripID.String(), resp)
-	go s.notifyNewPoll(tripID, userID)
+	if created.ShouldNotifyMembers {
+		go s.notifyNewPoll(tripID, userID)
+	}
 
 	return resp, nil
 }

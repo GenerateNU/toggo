@@ -20,6 +20,7 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	awsCfg := routeParams.ServiceParams.Config.AWS
 	pitchService := services.NewPitchService(services.PitchServiceConfig{
 		PresignClient:       awsCfg.PresignClient,
+		S3Client:            awsCfg.S3Client,
 		PitchRepo:           routeParams.ServiceParams.Repository.Pitch,
 		MembershipRepo:      routeParams.ServiceParams.Repository.Membership,
 		ImageRepo:           routeParams.ServiceParams.Repository.Image,
@@ -47,6 +48,7 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 	tripIDGroup.Get("/pitches/:pitchID", pitchController.GetPitch)
 	tripIDGroup.Patch("/pitches/:pitchID", pitchController.UpdatePitch)
 	tripIDGroup.Delete("/pitches/:pitchID", pitchController.DeletePitch)
+	tripIDGroup.Post("/pitches/:pitchID/confirm-upload", pitchController.ConfirmPitchUpload)
 
 	return tripGroup
 }

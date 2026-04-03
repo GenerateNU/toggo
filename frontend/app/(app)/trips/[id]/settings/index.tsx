@@ -1,5 +1,8 @@
 import { useUploadImage } from "@/api/files/custom/useImageUpload";
-import { useGetMembership } from "@/api/memberships/useGetMembership";
+import {
+  getMembershipQueryKey,
+  useGetMembership,
+} from "@/api/memberships/useGetMembership";
 import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { useRemoveMember } from "@/api/memberships/useRemoveMember";
 import { useUpdateNotificationPreferences } from "@/api/memberships/useUpdateNotificationPreferences";
@@ -90,16 +93,6 @@ export default function TripSettings() {
     currentUser?.id ?? "",
   );
 
-  const [notifPitches, setNotifPitches] = useState(
-    () => myMembership?.notify_new_pitches ?? true,
-  );
-  const [notifPolls, setNotifPolls] = useState(
-    () => myMembership?.notify_new_polls ?? true,
-  );
-  const [notifComments, setNotifComments] = useState(
-    () => myMembership?.notify_new_comments ?? true,
-  );
-
   const [leaveDialog, setLeaveDialog] = useState<
     "confirm" | "assign-admin" | null
   >(null);
@@ -124,17 +117,18 @@ export default function TripSettings() {
     field: "notify_new_pitches" | "notify_new_polls" | "notify_new_comments",
     value: boolean,
   ) => {
-    if (field === "notify_new_pitches") setNotifPitches(value);
-    if (field === "notify_new_polls") setNotifPolls(value);
-    if (field === "notify_new_comments") setNotifComments(value);
+    if (!tripID || !currentUser) return;
+
+    const queryKey = getMembershipQueryKey(tripID, currentUser.id);
+    queryClient.setQueryData(queryKey, (prev: typeof myMembership) =>
+      prev ? { ...prev, [field]: value } : prev,
+    );
 
     updateNotifPrefsMutation.mutate(
-      { tripID: tripID!, userID: currentUser!.id, data: { [field]: value } },
+      { tripID, userID: currentUser.id, data: { [field]: value } },
       {
         onError: () => {
-          if (field === "notify_new_pitches") setNotifPitches(!value);
-          if (field === "notify_new_polls") setNotifPolls(!value);
-          if (field === "notify_new_comments") setNotifComments(!value);
+          queryClient.invalidateQueries({ queryKey });
           toast.show({
             message:
               "Couldn't update notification preference. Please try again.",
@@ -287,19 +281,19 @@ export default function TripSettings() {
             >
               <NotificationRow
                 label="New Pitches"
-                value={notifPitches}
+                value={myMembership?.notify_new_pitches ?? true}
                 onChange={(v) => handleNotifChange("notify_new_pitches", v)}
               />
               <Divider />
               <NotificationRow
                 label="New Polls"
-                value={notifPolls}
+                value={myMembership?.notify_new_polls ?? true}
                 onChange={(v) => handleNotifChange("notify_new_polls", v)}
               />
               <Divider />
               <NotificationRow
                 label="Comments"
-                value={notifComments}
+                value={myMembership?.notify_new_comments ?? true}
                 onChange={(v) => handleNotifChange("notify_new_comments", v)}
               />
             </Box>

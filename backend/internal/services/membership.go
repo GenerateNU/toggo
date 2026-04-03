@@ -65,14 +65,17 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 	existingMembership, err := s.Membership.Find(ctx, req.UserID, req.TripID)
 	if err == nil {
 		return &models.Membership{
-			UserID:       existingMembership.UserID,
-			TripID:       existingMembership.TripID,
-			IsAdmin:      existingMembership.IsAdmin,
-			BudgetMin:    existingMembership.BudgetMin,
-			BudgetMax:    existingMembership.BudgetMax,
-			Availability: existingMembership.Availability,
-			CreatedAt:    existingMembership.CreatedAt,
-			UpdatedAt:    existingMembership.UpdatedAt,
+			UserID:            existingMembership.UserID,
+			TripID:            existingMembership.TripID,
+			IsAdmin:           existingMembership.IsAdmin,
+			BudgetMin:         existingMembership.BudgetMin,
+			BudgetMax:         existingMembership.BudgetMax,
+			Availability:      existingMembership.Availability,
+			NotifyNewPitches:  existingMembership.NotifyNewPitches,
+			NotifyNewPolls:    existingMembership.NotifyNewPolls,
+			NotifyNewComments: existingMembership.NotifyNewComments,
+			CreatedAt:         existingMembership.CreatedAt,
+			UpdatedAt:         existingMembership.UpdatedAt,
 		}, nil
 	}
 
@@ -115,14 +118,17 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 	existingMembership, err := s.Membership.Find(ctx, userID, invite.TripID)
 	if err == nil {
 		return &models.Membership{
-			UserID:       existingMembership.UserID,
-			TripID:       existingMembership.TripID,
-			IsAdmin:      existingMembership.IsAdmin,
-			BudgetMin:    existingMembership.BudgetMin,
-			BudgetMax:    existingMembership.BudgetMax,
-			Availability: existingMembership.Availability,
-			CreatedAt:    existingMembership.CreatedAt,
-			UpdatedAt:    existingMembership.UpdatedAt,
+			UserID:            existingMembership.UserID,
+			TripID:            existingMembership.TripID,
+			IsAdmin:           existingMembership.IsAdmin,
+			BudgetMin:         existingMembership.BudgetMin,
+			BudgetMax:         existingMembership.BudgetMax,
+			Availability:      existingMembership.Availability,
+			NotifyNewPitches:  existingMembership.NotifyNewPitches,
+			NotifyNewPolls:    existingMembership.NotifyNewPolls,
+			NotifyNewComments: existingMembership.NotifyNewComments,
+			CreatedAt:         existingMembership.CreatedAt,
+			UpdatedAt:         existingMembership.UpdatedAt,
 		}, nil
 	}
 	if !errors.Is(err, errs.ErrNotFound) {
@@ -152,14 +158,17 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 				return nil, findErr
 			}
 			return &models.Membership{
-				UserID:       existingMembership.UserID,
-				TripID:       existingMembership.TripID,
-				IsAdmin:      existingMembership.IsAdmin,
-				BudgetMin:    existingMembership.BudgetMin,
-				BudgetMax:    existingMembership.BudgetMax,
-				Availability: existingMembership.Availability,
-				CreatedAt:    existingMembership.CreatedAt,
-				UpdatedAt:    existingMembership.UpdatedAt,
+				UserID:            existingMembership.UserID,
+				TripID:            existingMembership.TripID,
+				IsAdmin:           existingMembership.IsAdmin,
+				BudgetMin:         existingMembership.BudgetMin,
+				BudgetMax:         existingMembership.BudgetMax,
+				Availability:      existingMembership.Availability,
+				NotifyNewPitches:  existingMembership.NotifyNewPitches,
+				NotifyNewPolls:    existingMembership.NotifyNewPolls,
+				NotifyNewComments: existingMembership.NotifyNewComments,
+				CreatedAt:         existingMembership.CreatedAt,
+				UpdatedAt:         existingMembership.UpdatedAt,
 			}, nil
 		}
 		return nil, err
@@ -314,6 +323,9 @@ func (s *MembershipService) GetMemberCount(ctx context.Context, tripID uuid.UUID
 }
 
 func (s *MembershipService) UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateNotificationPreferencesRequest) (*models.Membership, error) {
+	if req.NotifyNewPitches == nil && req.NotifyNewPolls == nil && req.NotifyNewComments == nil {
+		return nil, errs.BadRequest(errors.New("at least one notification preference must be provided"))
+	}
 	_, err := s.Membership.Find(ctx, userID, tripID)
 	if err != nil {
 		return nil, err

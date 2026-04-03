@@ -2,7 +2,12 @@ import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { Elevation } from "@/design-system/tokens/elevation";
+import { CoreSize } from "@/design-system/tokens/core-size";
+import { Layout } from "@/design-system/tokens/layout";
 import React from "react";
+
+const AVATAR_OVERLAP = -Layout.spacing.xs;
+const OVERFLOW_BADGE_SIZE = CoreSize.sm;
 
 export interface AvatarStackMember {
   userId: string;
@@ -37,7 +42,7 @@ export const AvatarStack: React.FC<AvatarStackProps> = ({
             key={m.userId}
             borderRadius="full"
             style={{
-              marginLeft: i === 0 ? 0 : -8,
+              marginLeft: i === 0 ? 0 : AVATAR_OVERLAP,
               zIndex: visible.length - i,
               ...Elevation.xs,
             }}
@@ -51,13 +56,13 @@ export const AvatarStack: React.FC<AvatarStackProps> = ({
         ))}
         {overflow > 0 && (
           <Box
-            width={24}
-            height={24}
+            width={OVERFLOW_BADGE_SIZE}
+            height={OVERFLOW_BADGE_SIZE}
             borderRadius="full"
             backgroundColor="white"
             justifyContent="center"
             alignItems="center"
-            style={{ marginLeft: -8, ...Elevation.xs }}
+            style={{ marginLeft: AVATAR_OVERLAP, ...Elevation.xs }}
           >
             <Text variant="bodyXxsMedium" color="gray600">
               +{overflow}

@@ -1,8 +1,12 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { Layout } from "@/design-system/tokens/layout";
 import React from "react";
 import { Modal, Pressable, TouchableOpacity } from "react-native";
+
+const DIALOG_HORIZONTAL_PADDING = Layout.spacing.xl;
+const DIALOG_BORDER_RADIUS = 20;
 
 export type DialogActionStyle = "default" | "destructive" | "navigate";
 
@@ -48,14 +52,14 @@ export function Dialog({
           backgroundColor: ColorPalette.backgroundOverlay,
           justifyContent: "center",
           alignItems: "center",
-          paddingHorizontal: 40,
+          paddingHorizontal: DIALOG_HORIZONTAL_PADDING,
         }}
       >
         <Pressable
           onPress={() => {}}
           style={{
             backgroundColor: ColorPalette.white,
-            borderRadius: 20,
+            borderRadius: DIALOG_BORDER_RADIUS,
             width: "100%",
           }}
         >

@@ -24,6 +24,7 @@ const MaxPitchAudioSize = 50 * 1024 * 1024
 // PitchServiceInterface defines business logic for trip pitches (create, get, list, update, delete).
 type PitchServiceInterface interface {
 	Create(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePitchRequest) (*models.CreatePitchResponse, error)
+	ConfirmUpload(ctx context.Context, tripID, pitchID, userID uuid.UUID) error
 	GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (*models.PitchAPIResponse, error)
 	List(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.PitchCursorPageResult, error)
 	Update(ctx context.Context, tripID, pitchID, userID uuid.UUID, req models.UpdatePitchRequest) (*models.PitchAPIResponse, error)
@@ -34,6 +35,7 @@ var _ PitchServiceInterface = (*PitchService)(nil)
 
 type PitchService struct {
 	presignClient       interfaces.S3PresignClient
+	s3Client            interfaces.S3Client
 	pitchRepo           repository.PitchRepository
 	membershipRepo      repository.MembershipRepository
 	imageRepo           repository.ImageRepository
@@ -44,6 +46,7 @@ type PitchService struct {
 
 type PitchServiceConfig struct {
 	PresignClient       interfaces.S3PresignClient
+	S3Client            interfaces.S3Client
 	PitchRepo           repository.PitchRepository
 	MembershipRepo      repository.MembershipRepository
 	ImageRepo           repository.ImageRepository
@@ -59,6 +62,7 @@ func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
 	}
 	return &PitchService{
 		presignClient:       cfg.PresignClient,
+		s3Client:            cfg.S3Client,
 		pitchRepo:           cfg.PitchRepo,
 		membershipRepo:      cfg.MembershipRepo,
 		imageRepo:           cfg.ImageRepo,
@@ -133,13 +137,35 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 	apiPitch := pitchToAPIResponse(created, "", images)
 
-	go s.notifyNewPitch(tripID, userID)
-
 	return &models.CreatePitchResponse{
 		Pitch:     apiPitch,
 		UploadURL: presigned.URL,
 		ExpiresAt: expiresAt,
 	}, nil
+}
+
+// ConfirmUpload verifies that the audio file was successfully uploaded to S3 and
+// sends a notification to trip members. Must be called by the pitch creator after
+// the presigned PUT upload completes.
+func (s *PitchService) ConfirmUpload(ctx context.Context, tripID, pitchID, userID uuid.UUID) error {
+	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
+	if err != nil {
+		return err
+	}
+	if pitch.UserID != userID {
+		return errs.Forbidden()
+	}
+
+	_, err = s.s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(s.bucketName),
+		Key:    aws.String(pitch.AudioS3Key),
+	})
+	if err != nil {
+		return errs.BadRequest(errors.New("audio file not found in storage; upload may not have completed"))
+	}
+
+	go s.notifyNewPitch(tripID, userID)
+	return nil
 }
 
 func (s *PitchService) notifyNewPitch(tripID uuid.UUID, actorID uuid.UUID) {
