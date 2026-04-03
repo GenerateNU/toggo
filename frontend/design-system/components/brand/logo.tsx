@@ -14,7 +14,7 @@ interface LogoProps {
   size?: LogoSize;
 }
 
-export function Logo({ color = "brandPrimary", size = "xxl" }: LogoProps) {
+export function Logo({ color = "brand500", size = "xxl" }: LogoProps) {
   return (
     <Text variant={sizeToVariant[size]} color={color}>
       toggo

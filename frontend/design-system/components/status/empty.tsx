@@ -21,18 +21,18 @@ const EmptyState = ({
         width={48}
         height={48}
         borderRadius="full"
-        backgroundColor="backgroundSubtle"
+        backgroundColor="gray50"
         alignItems="center"
         justifyContent="center"
       >
-        <Inbox size={22} color={ColorPalette.textSubtle} />
+        <Inbox size={22} color={ColorPalette.gray500} />
       </Box>
       <Box alignItems="center" gap="xs">
-        <Text variant="bodySmMedium" color="textInverse" textAlign="center">
+        <Text variant="bodySmMedium" color="gray900" textAlign="center">
           {title}
         </Text>
         {description && (
-          <Text variant="bodyXsDefault" color="textSubtle" textAlign="center">
+          <Text variant="bodyXsDefault" color="gray500" textAlign="center">
             {description}
           </Text>
         )}

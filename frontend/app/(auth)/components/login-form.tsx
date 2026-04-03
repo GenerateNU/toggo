@@ -90,7 +90,7 @@ export default function PhoneNumberForm() {
                   padding="xs"
                   borderRadius="sm"
                 >
-                  <Text variant="bodyXsDefault" color="textDefault">
+                  <Text variant="bodyXsDefault" color="white">
                     {error}
                   </Text>
                 </Box>
@@ -100,11 +100,11 @@ export default function PhoneNumberForm() {
                 <Box
                   flexDirection="row"
                   borderColor={
-                    formState.errors.phone ? "statusError" : "borderDefault"
+                    formState.errors.phone ? "statusError" : "gray300"
                   }
                   borderRadius="sm"
                   overflow="hidden"
-                  backgroundColor="backgroundCard"
+                  backgroundColor="white"
                   height={48}
                   gap="xxs"
                 >
@@ -116,7 +116,7 @@ export default function PhoneNumberForm() {
                       paddingHorizontal="xs"
                       height="100%"
                       borderWidth={1}
-                      borderColor="borderDefault"
+                      borderColor="gray300"
                       borderRadius="sm"
                       gap="xxs"
                     >
@@ -125,12 +125,12 @@ export default function PhoneNumberForm() {
                       </Text>
                       <Text
                         variant="bodyXsDefault"
-                        color="textSubtle"
+                        color="gray500"
                         style={{ lineHeight: 20 }}
                       >
                         {selectedCountry.callingCode}
                       </Text>
-                      <Icon icon={ChevronDown} size="xs" color="textSubtle" />
+                      <Icon icon={ChevronDown} size="xs" color="gray500" />
                     </Box>
                   </Pressable>
 
@@ -139,7 +139,7 @@ export default function PhoneNumberForm() {
                     justifyContent="center"
                     paddingHorizontal="sm"
                     borderWidth={1}
-                    borderColor="borderDefault"
+                    borderColor="gray300"
                     borderRadius="sm"
                   >
                     <Controller

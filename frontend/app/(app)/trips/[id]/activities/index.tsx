@@ -66,7 +66,7 @@ export default function Activities() {
     () =>
       isLoadingMore ? (
         <Box paddingVertical="sm" alignItems="center">
-          <ActivityIndicator size="small" color={ColorPalette.textSubtle} />
+          <ActivityIndicator size="small" color={ColorPalette.gray500} />
         </Box>
       ) : null,
     [isLoadingMore],
@@ -75,22 +75,22 @@ export default function Activities() {
   const renderItem = useCallback(
     ({ item }: { item: ModelsActivity }) => (
       <Box
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
         borderRadius="md"
         padding="md"
         gap="sm"
         marginHorizontal="sm"
       >
-        <Text variant="headingSm" color="textInverse" numberOfLines={1}>
+        <Text variant="headingSm" color="gray900" numberOfLines={1}>
           {item.name ?? "Unnamed Activity"}
         </Text>
         {item.description ? (
-          <Text variant="bodySmDefault" color="textSubtle" numberOfLines={2}>
+          <Text variant="bodySmDefault" color="gray500" numberOfLines={2}>
             {item.description}
           </Text>
         ) : null}
 
-        <Box height={1} backgroundColor="borderSubtle" />
+        <Box height={1} backgroundColor="gray100" />
 
         <Pressable
           onPress={() => setActiveActivityId(item.id ?? null)}
@@ -100,8 +100,8 @@ export default function Activities() {
           ]}
           accessibilityLabel="Open comments"
         >
-          <MessageCircle size={16} color={ColorPalette.textSubtle} />
-          <Text variant="bodyXsMedium" color="textSubtle">
+          <MessageCircle size={16} color={ColorPalette.gray500} />
+          <Text variant="bodyXsMedium" color="gray500">
             Comments
           </Text>
         </Pressable>
@@ -112,7 +112,7 @@ export default function Activities() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="backgroundSubtle">
+      <Box flex={1} backgroundColor="gray50">
         <FlatList
           data={activities}
           keyExtractor={(item) => item.id ?? ""}
@@ -126,10 +126,10 @@ export default function Activities() {
               <Box
                 padding="lg"
                 paddingTop="xl"
-                backgroundColor="backgroundCard"
+                backgroundColor="white"
                 gap="xs"
               >
-                <Text variant="headingMd" color="textInverse">
+                <Text variant="headingMd" color="gray900">
                   Activities
                 </Text>
               </Box>
@@ -145,25 +145,25 @@ export default function Activities() {
                 {isCreating ? (
                   <ActivityIndicator
                     size="small"
-                    color={ColorPalette.textInverse}
+                    color={ColorPalette.gray900}
                   />
                 ) : (
-                  <Plus size={18} color={ColorPalette.textInverse} />
+                  <Plus size={18} color={ColorPalette.gray900} />
                 )}
-                <Text variant="bodySmMedium" color="textInverse">
+                <Text variant="bodySmMedium" color="gray900">
                   Create Activity
                 </Text>
               </Pressable>
 
               {isLoading && (
                 <Box alignItems="center" paddingVertical="md">
-                  <ActivityIndicator color={ColorPalette.textSubtle} />
+                  <ActivityIndicator color={ColorPalette.gray500} />
                 </Box>
               )}
 
               {!isLoading && activities.length === 0 && (
                 <Box alignItems="center" paddingVertical="md">
-                  <Text variant="bodySmDefault" color="textSubtle">
+                  <Text variant="bodySmDefault" color="gray500">
                     No activities yet
                   </Text>
                 </Box>
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: ColorPalette.brandPrimary,
+    backgroundColor: ColorPalette.brand500,
   },
   createButtonPressed: {
     opacity: 0.75,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: ColorPalette.backgroundSubtle,
+    backgroundColor: ColorPalette.gray50,
   },
   commentButtonPressed: {
     opacity: 0.7,

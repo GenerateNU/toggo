@@ -6,7 +6,7 @@ export default function PhonePage() {
     <Screen>
       <Box
         flex={1}
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
         justifyContent="space-between"
         padding="lg"
         paddingBottom="xl"
@@ -16,7 +16,7 @@ export default function PhonePage() {
           <Box width="auto" justifyContent="center" alignItems="center">
             <Logo size="xl" />
           </Box>
-          <Text variant="bodyMedium" color="textInverse">
+          <Text variant="bodyMedium" color="gray900">
             Enter your phone number
           </Text>
         </Box>

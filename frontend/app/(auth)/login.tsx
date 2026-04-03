@@ -93,15 +93,15 @@ export default function LoginPage() {
           paddingBottom: insets.bottom + Layout.spacing.md,
         }}
       >
-        <Logo color="textDefault" size="xl" />
+        <Logo color="white" size="xl" />
 
         <Box flexDirection="row" alignItems="flex-end" justifyContent="center">
           <Box opacity={0.7}>
-            <Text variant="logoXxl" color="textDefault">
+            <Text variant="logoXxl" color="white">
               ready, set,{" "}
             </Text>
           </Box>
-          <Text variant="logoXxl" color="textDefault">
+          <Text variant="logoXxl" color="white">
             toggo
           </Text>
         </Box>

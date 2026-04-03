@@ -92,7 +92,7 @@ export default function StepReview({
 
   return (
     <Box gap="md">
-      <Text variant="bodyXsMedium" color="textSubtle">
+      <Text variant="bodyXsMedium" color="gray500">
         Review
       </Text>
 
@@ -100,7 +100,7 @@ export default function StepReview({
         borderRadius="md"
         padding="md"
         gap="md"
-        style={{ borderWidth: 1, borderColor: ColorPalette.borderDefault }}
+        style={{ borderWidth: 1, borderColor: ColorPalette.gray300 }}
       >
         <Box
           flexDirection="row"
@@ -113,7 +113,7 @@ export default function StepReview({
                 flexDirection="row"
                 alignItems="center"
                 borderRadius="full"
-                borderColor="borderDefault"
+                borderColor="gray300"
                 style={{
                   borderWidth: 1,
                   gap: 5,
@@ -123,9 +123,9 @@ export default function StepReview({
               >
                 {React.createElement(getCategoryIcon(firstCat), {
                   size: 13,
-                  color: ColorPalette.textInverse,
+                  color: ColorPalette.gray900,
                 })}
-                <Text variant="bodyXsMedium" color="textInverse">
+                <Text variant="bodyXsMedium" color="gray900">
                   {toPascalCase(firstCat)}
                 </Text>
               </Box>
@@ -133,14 +133,14 @@ export default function StepReview({
             {extraCount > 0 && (
               <Box
                 borderRadius="full"
-                borderColor="borderDefault"
+                borderColor="gray300"
                 style={{
                   borderWidth: 1,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
                 }}
               >
-                <Text variant="bodyXsMedium" color="textSubtle">
+                <Text variant="bodyXsMedium" color="gray500">
                   +{extraCount}
                 </Text>
               </Box>
@@ -149,20 +149,20 @@ export default function StepReview({
 
           <Box
             borderRadius="full"
-            borderColor="borderDefault"
+            borderColor="gray300"
             style={{
               borderWidth: 1,
               paddingHorizontal: 12,
               paddingVertical: 6,
             }}
           >
-            <Text variant="bodyXsMedium" color="textDefault">
+            <Text variant="bodyXsMedium" color="white">
               {POLL_TYPE_LABELS[pollType]}
             </Text>
           </Box>
         </Box>
 
-        <Text variant="headingSm" color="textDefault">
+        <Text variant="headingSm" color="white">
           {question}
         </Text>
 
@@ -170,17 +170,17 @@ export default function StepReview({
           {options.map((opt, i) => (
             <Box key={i} flexDirection="row" alignItems="center" gap="sm">
               <Box
-                backgroundColor="backgroundMuted"
+                backgroundColor="gray200"
                 borderRadius="lg"
                 alignItems="center"
                 justifyContent="center"
                 style={{ width: 32, height: 32 }}
               >
-                <Text variant="bodySmMedium" color="textDefault">
+                <Text variant="bodySmMedium" color="white">
                   {i + 1}
                 </Text>
               </Box>
-              <Text variant="bodySmDefault" color="textDefault">
+              <Text variant="bodySmDefault" color="white">
                 {opt}
               </Text>
             </Box>
@@ -190,7 +190,7 @@ export default function StepReview({
         {(deadline || isAnonymous) && (
           <Box gap="xxs">
             {deadline && (
-              <Text variant="bodyXsDefault" color="textSubtle">
+              <Text variant="bodyXsDefault" color="gray500">
                 Deadline:{" "}
                 {deadline.toLocaleDateString("en-US", {
                   month: "short",
@@ -202,7 +202,7 @@ export default function StepReview({
               </Text>
             )}
             {isAnonymous && (
-              <Text variant="bodyXsDefault" color="textSubtle">
+              <Text variant="bodyXsDefault" color="gray500">
                 Anonymous voting
               </Text>
             )}

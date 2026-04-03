@@ -1,7 +1,8 @@
 import { Box, Icon, Text } from "@/design-system";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
+import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import { ChevronRight, ImageIcon } from "lucide-react-native";
 import { Pressable } from "react-native";
 
 type TripCardProps = {
@@ -19,21 +20,48 @@ export function TripCard({ trip }: TripCardProps) {
         alignItems="center"
         marginHorizontal="sm"
         borderWidth={1}
-        borderColor="borderSubtle"
+        borderColor="gray100"
         borderRadius="sm"
-        paddingHorizontal="md"
-        paddingVertical="md"
-        gap="sm"
+        backgroundColor="white"
+        overflow="hidden"
+        gap="md"
       >
-        <Box flex={1} gap="xs">
-          <Text variant="bodySmMedium" color="textInverse" numberOfLines={1}>
+        <Box
+          width={72}
+          height={72}
+          backgroundColor="gray50"
+          alignItems="center"
+          justifyContent="center"
+          overflow="hidden"
+        >
+          {trip.cover_image_url ? (
+            <Image
+              source={{ uri: trip.cover_image_url }}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+            />
+          ) : (
+            <Icon icon={ImageIcon} size="sm" color="gray500" />
+          )}
+        </Box>
+
+        <Box flex={1} gap="xxs">
+          <Text variant="bodySmMedium" color="gray900" numberOfLines={1}>
             {trip.name ?? "Unnamed Trip"}
           </Text>
-          <Text variant="bodyXsMedium" color="textSubtle" numberOfLines={1}>
+          <Text
+            variant="bodyXsDefault"
+            color="gray500"
+            numberOfLines={1}
+            style={{ fontFamily: "monospace" }}
+          >
             {trip.id}
           </Text>
         </Box>
-        <Icon icon={ChevronRight} size="xs" color="textSubtle" />
+
+        <Box paddingRight="md">
+          <Icon icon={ChevronRight} size="xs" color="gray500" />
+        </Box>
       </Box>
     </Pressable>
   );

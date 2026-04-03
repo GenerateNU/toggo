@@ -47,12 +47,12 @@ const INPUT_PADDING_VERTICAL = 10;
 const EmptyState = ({ loading }: { loading: boolean }) =>
   loading ? (
     <Box style={styles.emptyContainer}>
-      <ActivityIndicator color={ColorPalette.textSubtle} />
+      <ActivityIndicator color={ColorPalette.gray500} />
     </Box>
   ) : (
     <Box style={styles.emptyContainer}>
       <Text style={styles.emptyEmoji}>📮</Text>
-      <Text variant="bodySmDefault" color="textSubtle">
+      <Text variant="bodySmDefault" color="gray500">
         No comments yet... be the first
       </Text>
     </Box>
@@ -61,7 +61,7 @@ const EmptyState = ({ loading }: { loading: boolean }) =>
 const LoadMoreFooter = ({ loading }: { loading: boolean }) =>
   loading ? (
     <Box style={styles.loadMoreFooter}>
-      <ActivityIndicator size="small" color={ColorPalette.textSubtle} />
+      <ActivityIndicator size="small" color={ColorPalette.gray500} />
     </Box>
   ) : null;
 
@@ -199,7 +199,7 @@ export default function CommentSection({
           >
             <View style={styles.handle} />
           </Pressable>
-          <Text variant="bodySmStrong" color="textDefault" style={styles.title}>
+          <Text variant="bodySmStrong" color="white" style={styles.title}>
             Comments
           </Text>
           <Pressable
@@ -208,7 +208,7 @@ export default function CommentSection({
             hitSlop={16}
             accessibilityLabel="Close comments"
           >
-            <X size={24} color={ColorPalette.textSubtle} />
+            <X size={24} color={ColorPalette.gray500} />
           </Pressable>
         </Box>
 
@@ -235,7 +235,7 @@ export default function CommentSection({
             <TextInput
               style={styles.input}
               placeholder="Add a comment"
-              placeholderTextColor={ColorPalette.textSubtle}
+              placeholderTextColor={ColorPalette.gray500}
               value={inputText}
               onChangeText={setInputText}
               returnKeyType="default"
@@ -253,7 +253,7 @@ export default function CommentSection({
               >
                 <Text
                   variant="bodySmMedium"
-                  style={{ color: ColorPalette.textDefault }}
+                  style={{ color: ColorPalette.white }}
                 >
                   Send
                 </Text>
@@ -263,7 +263,7 @@ export default function CommentSection({
               <Box style={styles.sendButton}>
                 <Text
                   variant="bodySmMedium"
-                  style={{ color: ColorPalette.textDefault }}
+                  style={{ color: ColorPalette.white }}
                 >
                   ...
                 </Text>
@@ -297,7 +297,7 @@ export default function CommentSection({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ColorPalette.backgroundCard,
+    backgroundColor: ColorPalette.white,
     borderTopLeftRadius: CornerRadius.lg,
     borderTopRightRadius: CornerRadius.lg,
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   handle: {
     ...ModalHandle,
-    backgroundColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.gray300,
   },
   title: {
     textAlign: "center",
@@ -351,8 +351,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderSubtle,
-    backgroundColor: ColorPalette.backgroundCard,
+    borderTopColor: ColorPalette.gray100,
+    backgroundColor: ColorPalette.white,
   },
   inputRow: {
     flexDirection: "row",
@@ -367,25 +367,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: CornerRadius.md,
     borderWidth: 1,
-    borderColor: ColorPalette.borderDefault,
-    color: ColorPalette.textInverse,
+    borderColor: ColorPalette.gray300,
+    color: ColorPalette.gray900,
   },
   sendButton: {
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: 10,
     borderRadius: CornerRadius.md,
-    backgroundColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.gray900,
     marginBottom: Platform.OS === "ios" ? 0 : 1,
   },
   sendButtonPressed: {
     opacity: 0.85,
   },
   charCount: {
-    color: ColorPalette.textSubtle,
+    color: ColorPalette.gray500,
     textAlign: "right",
   },
   charCountUrgent: {
-    color: ColorPalette.brandPrimary,
+    color: ColorPalette.brand500,
   },
   errorText: {
     color: ColorPalette.statusError,

@@ -9,7 +9,7 @@ export default function VerifyPage() {
     <Screen>
       <Box
         flex={1}
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
         justifyContent="space-between"
         padding="lg"
         gap="sm"
@@ -18,11 +18,11 @@ export default function VerifyPage() {
           <Box width="auto" justifyContent="center" alignItems="center">
             <Logo size="xl" />
           </Box>
-          <Text variant="bodyMedium" color="textInverse">
+          <Text variant="bodyMedium" color="gray900">
             Enter Verification Code
           </Text>
           {phone && (
-            <Text variant="bodySmDefault" color="textInverse">
+            <Text variant="bodySmDefault" color="gray900">
               We have sent the code to {phone}
             </Text>
           )}

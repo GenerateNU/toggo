@@ -22,7 +22,7 @@ export function CreateProfileSheet({
       disableClose={needsProfile}
     >
       <Box flex={1} padding="lg" gap="lg">
-        <Text variant="bodyMedium" color="textDefault">
+        <Text variant="bodyMedium" color="white">
           Create a profile
         </Text>
         <Box justifyContent="center" alignItems="center">

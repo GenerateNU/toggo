@@ -43,13 +43,13 @@ export default function TextField({
   const borderColor = error
     ? ColorPalette.statusError
     : focused
-      ? ColorPalette.backgroundDefault
-      : ColorPalette.borderDefault;
+      ? ColorPalette.gray900
+      : ColorPalette.gray300;
 
   return (
     <Box style={styles.container}>
       {label && (
-        <Text variant="bodyXsMedium" color="textInverse" style={styles.label}>
+        <Text variant="bodyXsMedium" color="gray900" style={styles.label}>
           {label}
         </Text>
       )}
@@ -67,15 +67,13 @@ export default function TextField({
             styles.input,
             disabled && styles.inputDisabled,
             {
-              color: disabled
-                ? ColorPalette.textDisabled
-                : ColorPalette.textInverse,
+              color: disabled ? ColorPalette.gray400 : ColorPalette.gray900,
             },
           ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={ColorPalette.textSubtle}
+          placeholderTextColor={ColorPalette.gray500}
           editable={!disabled}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -107,9 +105,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: ColorPalette.borderDefault,
+    borderColor: ColorPalette.gray300,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.backgroundCard,
+    backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     minHeight: CoreSize.xl,
   },
@@ -117,7 +115,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   inputRowDisabled: {
-    backgroundColor: ColorPalette.backgroundSubtle,
+    backgroundColor: ColorPalette.gray50,
     opacity: 0.6,
   },
   iconWrapper: {

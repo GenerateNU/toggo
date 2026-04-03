@@ -30,12 +30,12 @@ export default function Toast({
   return (
     <Box style={styles.toast}>
       <Box style={styles.checkCircle}>
-        <Check size={16} color={ColorPalette.textInverse} strokeWidth={2.5} />
+        <Check size={16} color={ColorPalette.gray900} strokeWidth={2.5} />
       </Box>
 
       <Text
         variant="bodySmMedium"
-        color="textInverse"
+        color="gray900"
         style={styles.message}
         numberOfLines={2}
       >
@@ -61,7 +61,7 @@ export default function Toast({
 
       {showClose && !action && (
         <Pressable onPress={onClose} hitSlop={8} style={styles.closeButton}>
-          <X size={18} color={ColorPalette.textSubtle} />
+          <X size={18} color={ColorPalette.gray500} />
         </Pressable>
       )}
     </Box>
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
   toast: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: ColorPalette.backgroundCard,
+    backgroundColor: ColorPalette.white,
     borderRadius: CornerRadius.md,
     paddingVertical: 14,
     paddingHorizontal: Layout.spacing.sm,
     gap: 12,
-    shadowColor: ColorPalette.backgroundDefault,
+    shadowColor: ColorPalette.gray900,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
