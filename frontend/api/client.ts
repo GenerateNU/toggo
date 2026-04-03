@@ -41,6 +41,11 @@ export const getAuthToken = async (): Promise<string | null> => {
 };
 
 const resolveBaseUrl = (): string => {
+  const configuredUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
   const constants = Constants as Record<string, any>;
   const debuggerHost =
     constants.expoConfig?.hostUri ??
@@ -58,11 +63,17 @@ const resolveBaseUrl = (): string => {
     return `${protocol}//${hostname}:8000`;
   }
 
-  if (Platform.OS === "android") {
+  if (Platform.OS === "android" && __DEV__) {
     return "http://10.0.2.2:8000";
   }
 
-  return "http://localhost:8000";
+  if (__DEV__) {
+    return "http://localhost:8000";
+  }
+
+  throw new Error(
+    "API base URL is not configured. Set EXPO_PUBLIC_API_BASE_URL in your environment.",
+  );
 };
 
 const BASE_URL = resolveBaseUrl();
