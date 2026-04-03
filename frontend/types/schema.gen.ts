@@ -59,6 +59,7 @@ import type {
   ModelsCommentReactionUser,
   ModelsCommentReactionUsersResponse,
   ModelsCommentReactionsSummaryResponse,
+  ModelsCommenterPreview,
   ModelsImageSize,
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
@@ -69,6 +70,7 @@ import type {
   ModelsCreateMembershipRequest,
   ModelsCreatePitchRequest,
   ModelsPitchImageInfo,
+  ModelsPitchLink,
   ModelsPitchAPIResponse,
   ModelsCreatePitchResponse,
   ModelsOptionType,
@@ -558,6 +560,13 @@ import type {
   UpdatePitchMutationRequest,
   UpdatePitchMutationResponse,
   UpdatePitchPathParams,
+  ConfirmPitchUpload204,
+  ConfirmPitchUpload400,
+  ConfirmPitchUpload403,
+  ConfirmPitchUpload404,
+  ConfirmPitchUpload500,
+  ConfirmPitchUploadMutationResponse,
+  ConfirmPitchUploadPathParams,
   CreateRankPoll201,
   CreateRankPoll400,
   CreateRankPoll401,
@@ -993,6 +1002,12 @@ export const modelsCommentReactionsSummaryResponseSchema = z.object({
   },
 }) as unknown as z.ZodType<ModelsCommentReactionsSummaryResponse>;
 
+export const modelsCommenterPreviewSchema = z.object({
+  profile_picture_url: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommenterPreview>;
+
 export const modelsImageSizeSchema = z.enum([
   "large",
   "medium",
@@ -1075,8 +1090,24 @@ export const modelsPitchImageInfoSchema = z.object({
   medium_url: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPitchImageInfo>;
 
+export const modelsPitchLinkSchema = z.object({
+  added_by: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  description: z.optional(z.string()),
+  domain: z.optional(z.string()),
+  id: z.optional(z.string()),
+  pitch_id: z.optional(z.string()),
+  thumbnail_url: z.optional(z.string()),
+  title: z.optional(z.string()),
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPitchLink>;
+
 export const modelsPitchAPIResponseSchema = z.object({
   audio_url: z.optional(z.string()),
+  comment_count: z.optional(z.int()),
+  get comment_previews() {
+    return z.array(modelsCommenterPreviewSchema).optional();
+  },
   created_at: z.optional(z.string()),
   description: z.optional(z.string()),
   duration: z.optional(z.int()),
@@ -1084,10 +1115,15 @@ export const modelsPitchAPIResponseSchema = z.object({
   get images() {
     return z.array(modelsPitchImageInfoSchema).optional();
   },
+  get links() {
+    return z.array(modelsPitchLinkSchema).optional();
+  },
+  profile_picture_url: z.optional(z.string()),
   title: z.optional(z.string()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
   user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPitchAPIResponse>;
 
 export const modelsCreatePitchResponseSchema = z.object({
@@ -1142,6 +1178,7 @@ export const modelsCreateTripRequestSchema = z.object({
   cover_image_id: z.optional(z.string()),
   currency: z.optional(z.string()),
   name: z.string().min(1),
+  pitch_deadline: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsCreateTripRequest>;
 
 export const modelsCreateUserRequestSchema = z.object({
@@ -1565,6 +1602,7 @@ export const modelsTripAPIResponseSchema = z.object({
   currency: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  pitch_deadline: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripAPIResponse>;
 
@@ -1612,6 +1650,7 @@ export const modelsTripSchema = z.object({
   currency: z.optional(z.string()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  pitch_deadline: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTrip>;
 
@@ -1699,6 +1738,7 @@ export const modelsUpdateTripRequestSchema = z.object({
   cover_image_id: z.optional(z.string()),
   currency: z.optional(z.string()),
   name: z.optional(z.string().min(1)),
+  pitch_deadline: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 
 export const modelsUpdateUserRequestSchema = z.object({
@@ -4678,6 +4718,49 @@ export const updatePitchMutationRequestSchema = z.lazy(
 export const updatePitchMutationResponseSchema = z.lazy(
   () => updatePitch200Schema,
 ) as unknown as z.ZodType<UpdatePitchMutationResponse>;
+
+export const confirmPitchUploadPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pitchID: z.string().describe("Pitch ID"),
+}) as unknown as z.ZodType<ConfirmPitchUploadPathParams>;
+
+/**
+ * @description No Content
+ */
+export const confirmPitchUpload204Schema =
+  z.any() as unknown as z.ZodType<ConfirmPitchUpload204>;
+
+/**
+ * @description Bad Request
+ */
+export const confirmPitchUpload400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmPitchUpload400>;
+
+/**
+ * @description Forbidden
+ */
+export const confirmPitchUpload403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmPitchUpload403>;
+
+/**
+ * @description Not Found
+ */
+export const confirmPitchUpload404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmPitchUpload404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const confirmPitchUpload500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ConfirmPitchUpload500>;
+
+export const confirmPitchUploadMutationResponseSchema = z.lazy(
+  () => confirmPitchUpload204Schema,
+) as unknown as z.ZodType<ConfirmPitchUploadMutationResponse>;
 
 export const createRankPollPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

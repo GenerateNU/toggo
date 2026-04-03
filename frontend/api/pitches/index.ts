@@ -1,3 +1,4 @@
+export type { ConfirmPitchUploadMutationKey } from "./useConfirmPitchUpload.ts";
 export type { CreatePitchMutationKey } from "./useCreatePitch.ts";
 export type { DeletePitchMutationKey } from "./useDeletePitch.ts";
 export type { GetPitchQueryKey } from "./useGetPitch.ts";
@@ -5,6 +6,10 @@ export type { GetPitchSuspenseQueryKey } from "./useGetPitchSuspense.ts";
 export type { ListPitchesQueryKey } from "./useListPitches.ts";
 export type { ListPitchesSuspenseQueryKey } from "./useListPitchesSuspense.ts";
 export type { UpdatePitchMutationKey } from "./useUpdatePitch.ts";
+export { confirmPitchUpload } from "./useConfirmPitchUpload.ts";
+export { confirmPitchUploadMutationKey } from "./useConfirmPitchUpload.ts";
+export { confirmPitchUploadMutationOptions } from "./useConfirmPitchUpload.ts";
+export { useConfirmPitchUpload } from "./useConfirmPitchUpload.ts";
 export { createPitch } from "./useCreatePitch.ts";
 export { createPitchMutationKey } from "./useCreatePitch.ts";
 export { createPitchMutationOptions } from "./useCreatePitch.ts";

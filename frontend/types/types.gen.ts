@@ -570,6 +570,21 @@ export type ModelsCommentReactionsSummaryResponse = {
   reactions?: ModelsCommentReactionSummary[];
 };
 
+export type ModelsCommenterPreview = {
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
 export const modelsImageSize = {
   ImageSizeLarge: "large",
   ImageSizeMedium: "medium",
@@ -779,11 +794,58 @@ export type ModelsPitchImageInfo = {
   medium_url?: string;
 };
 
+export type ModelsPitchLink = {
+  /**
+   * @type string | undefined
+   */
+  added_by?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  domain?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_id?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  title?: string;
+  /**
+   * @type string | undefined
+   */
+  url?: string;
+};
+
 export type ModelsPitchAPIResponse = {
   /**
    * @type string | undefined
    */
   audio_url?: string;
+  /**
+   * @type integer | undefined
+   */
+  comment_count?: number;
+  /**
+   * @type array | undefined
+   */
+  comment_previews?: ModelsCommenterPreview[];
   /**
    * @type string | undefined
    */
@@ -805,6 +867,14 @@ export type ModelsPitchAPIResponse = {
    */
   images?: ModelsPitchImageInfo[];
   /**
+   * @type array | undefined
+   */
+  links?: ModelsPitchLink[];
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
    * @type string | undefined
    */
   title?: string;
@@ -820,6 +890,10 @@ export type ModelsPitchAPIResponse = {
    * @type string | undefined
    */
   user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
 };
 
 export type ModelsCreatePitchResponse = {
@@ -933,6 +1007,10 @@ export type ModelsCreateTripRequest = {
    * @type string
    */
   name: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
 };
 
 export type ModelsCreateUserRequest = {
@@ -1822,6 +1900,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  pitch_deadline?: string;
+  /**
+   * @type string | undefined
+   */
   updated_at?: string;
 };
 
@@ -1941,6 +2023,10 @@ export type ModelsTrip = {
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
   /**
    * @type string | undefined
    */
@@ -2156,6 +2242,10 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   name?: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
 };
 
 export type ModelsUpdateUserRequest = {
@@ -5343,6 +5433,56 @@ export type UpdatePitchMutation = {
   Request: UpdatePitchMutationRequest;
   PathParams: UpdatePitchPathParams;
   Errors: UpdatePitch400 | UpdatePitch404 | UpdatePitch422 | UpdatePitch500;
+};
+
+export type ConfirmPitchUploadPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Pitch ID
+   * @type string
+   */
+  pitchID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ConfirmPitchUpload204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ConfirmPitchUpload400 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ConfirmPitchUpload403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ConfirmPitchUpload404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ConfirmPitchUpload500 = ErrsAPIError;
+
+export type ConfirmPitchUploadMutationResponse = ConfirmPitchUpload204;
+
+export type ConfirmPitchUploadMutation = {
+  Response: ConfirmPitchUpload204;
+  PathParams: ConfirmPitchUploadPathParams;
+  Errors:
+    | ConfirmPitchUpload400
+    | ConfirmPitchUpload403
+    | ConfirmPitchUpload404
+    | ConfirmPitchUpload500;
 };
 
 export type CreateRankPollPathParams = {

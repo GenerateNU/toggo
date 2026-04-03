@@ -328,6 +328,15 @@ definitions:
           $ref: '#/definitions/models.CommentReactionSummary'
         type: array
     type: object
+  models.CommenterPreview:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -569,6 +578,8 @@ definitions:
         type: string
       name:
         minLength: 1
+        type: string
+      pitch_deadline:
         type: string
     required:
     - budget_max
@@ -858,6 +869,12 @@ definitions:
     properties:
       audio_url:
         type: string
+      comment_count:
+        type: integer
+      comment_previews:
+        items:
+          $ref: '#/definitions/models.CommenterPreview'
+        type: array
       created_at:
         type: string
       description:
@@ -870,6 +887,12 @@ definitions:
         items:
           $ref: '#/definitions/models.PitchImageInfo'
         type: array
+      links:
+        items:
+          $ref: '#/definitions/models.PitchLink'
+        type: array
+      profile_picture_url:
+        type: string
       title:
         type: string
       trip_id:
@@ -877,6 +900,8 @@ definitions:
       updated_at:
         type: string
       user_id:
+        type: string
+      username:
         type: string
     type: object
   models.PitchCursorPageResult:
@@ -895,6 +920,27 @@ definitions:
       id:
         type: string
       medium_url:
+        type: string
+    type: object
+  models.PitchLink:
+    properties:
+      added_by:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      pitch_id:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      url:
         type: string
     type: object
   models.PlaceDetailsRequest:
@@ -1319,6 +1365,8 @@ definitions:
         type: string
       name:
         type: string
+      pitch_deadline:
+        type: string
       updated_at:
         type: string
     type: object
@@ -1337,6 +1385,8 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      pitch_deadline:
         type: string
       updated_at:
         type: string
@@ -1491,6 +1541,8 @@ definitions:
         type: string
       name:
         minLength: 1
+        type: string
+      pitch_deadline:
         type: string
     type: object
   models.UpdateUserRequest:
@@ -4195,6 +4247,45 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Update a pitch
+      tags:
+      - pitches
+  /api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload:
+    post:
+      description: |-
+        Verifies that the audio file was successfully uploaded to S3 and notifies trip members.
+        Must be called by the pitch creator after the presigned PUT upload completes.
+      operationId: confirmPitchUpload
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Confirm pitch audio upload
       tags:
       - pitches
   /api/v1/trips/{tripID}/rank-polls:

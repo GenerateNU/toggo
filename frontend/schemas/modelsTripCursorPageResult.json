@@ -13,6 +13,7 @@
           "currency": { "type": "string" },
           "id": { "type": "string" },
           "name": { "type": "string" },
+          "pitch_deadline": { "type": "string" },
           "updated_at": { "type": "string" }
         },
         "x-readme-ref-name": "models.TripAPIResponse"

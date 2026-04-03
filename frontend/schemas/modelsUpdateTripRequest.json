@@ -5,7 +5,8 @@
     "budget_min": { "type": "integer", "minimum": 0 },
     "cover_image_id": { "type": "string" },
     "currency": { "type": "string" },
-    "name": { "type": "string", "minLength": 1 }
+    "name": { "type": "string", "minLength": 1 },
+    "pitch_deadline": { "type": "string" }
   },
   "x-readme-ref-name": "models.UpdateTripRequest"
 }

@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "added_by": { "type": "string" },
+    "created_at": { "type": "string" },
+    "description": { "type": "string" },
+    "domain": { "type": "string" },
+    "id": { "type": "string" },
+    "pitch_id": { "type": "string" },
+    "thumbnail_url": { "type": "string" },
+    "title": { "type": "string" },
+    "url": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.PitchLink"
+}

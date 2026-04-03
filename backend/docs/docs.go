@@ -3749,6 +3749,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload": {
+            "post": {
+                "description": "Verifies that the audio file was successfully uploaded to S3 and notifies trip members.\nMust be called by the pitch creator after the presigned PUT upload completes.",
+                "tags": [
+                    "pitches"
+                ],
+                "summary": "Confirm pitch audio upload",
+                "operationId": "confirmPitchUpload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pitch ID",
+                        "name": "pitchID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/rank-polls": {
             "post": {
                 "description": "Creates a new ranking poll with initial options",
@@ -5828,6 +5883,20 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CommenterPreview": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
@@ -6190,6 +6259,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "pitch_deadline": {
+                    "type": "string"
                 }
             }
         },
@@ -6613,6 +6685,15 @@ const docTemplate = `{
                 "audio_url": {
                     "type": "string"
                 },
+                "comment_count": {
+                    "type": "integer"
+                },
+                "comment_previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommenterPreview"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -6631,6 +6712,15 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.PitchImageInfo"
                     }
                 },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PitchLink"
+                    }
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -6641,6 +6731,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -6669,6 +6762,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "medium_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PitchLink": {
+            "type": "object",
+            "properties": {
+                "added_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pitch_id": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -7289,6 +7414,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "pitch_deadline": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -7316,6 +7444,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "pitch_deadline": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7540,6 +7671,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "pitch_deadline": {
+                    "type": "string"
                 }
             }
         },

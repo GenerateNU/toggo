@@ -59,6 +59,7 @@ export type { UpdateMembershipMutationKey } from "./memberships/useUpdateMembers
 export type { UpdateNotificationPreferencesMutationKey } from "./memberships/useUpdateNotificationPreferences.ts";
 export type { SendBulkNotificationMutationKey } from "./notifications/useSendBulkNotification.ts";
 export type { SendNotificationMutationKey } from "./notifications/useSendNotification.ts";
+export type { ConfirmPitchUploadMutationKey } from "./pitches/useConfirmPitchUpload.ts";
 export type { CreatePitchMutationKey } from "./pitches/useCreatePitch.ts";
 export type { DeletePitchMutationKey } from "./pitches/useDeletePitch.ts";
 export type { GetPitchQueryKey } from "./pitches/useGetPitch.ts";
@@ -356,6 +357,10 @@ export { sendNotification } from "./notifications/useSendNotification.ts";
 export { sendNotificationMutationKey } from "./notifications/useSendNotification.ts";
 export { sendNotificationMutationOptions } from "./notifications/useSendNotification.ts";
 export { useSendNotification } from "./notifications/useSendNotification.ts";
+export { confirmPitchUpload } from "./pitches/useConfirmPitchUpload.ts";
+export { confirmPitchUploadMutationKey } from "./pitches/useConfirmPitchUpload.ts";
+export { confirmPitchUploadMutationOptions } from "./pitches/useConfirmPitchUpload.ts";
+export { useConfirmPitchUpload } from "./pitches/useConfirmPitchUpload.ts";
 export { createPitch } from "./pitches/useCreatePitch.ts";
 export { createPitchMutationKey } from "./pitches/useCreatePitch.ts";
 export { createPitchMutationOptions } from "./pitches/useCreatePitch.ts";
