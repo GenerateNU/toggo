@@ -248,7 +248,7 @@ export default function HomeScreen() {
                     profilePhotoUri={profile.profilePhotoUri}
                     seed={profile.seed}
                     profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings/accounts")}
+                    onPressProfile={() => router.push("/settings")}
                     onPressCreateTrip={handleCreateTrip}
                   />
                   {tripsQueryEnabled && tripsQuery.isPending ? (
@@ -315,7 +315,7 @@ export default function HomeScreen() {
                     profilePhotoUri={profile.profilePhotoUri}
                     seed={profile.seed}
                     profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings/accounts")}
+                    onPressProfile={() => router.push("/settings")}
                     onPressCreateTrip={handleCreateTrip}
                   />
                   {tripsQueryEnabled && tripsQuery.isPending ? (
