@@ -52,6 +52,16 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
+          name="join-trip-code"
+          options={{
+            headerTransparent: true,
+            headerShown: true,
+            headerTitle: "",
+            headerShadowVisible: false,
+            headerLeft: () => <BackButton />,
+          }}
+        />
+        <Stack.Screen
           name="trips"
           options={{
             headerTransparent: true,
