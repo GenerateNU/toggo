@@ -22,27 +22,21 @@ const Layout = () => {
       <Stack.Screen
         name="index"
         options={{
-          headerShown: true,
-          headerTitle: "",
-          headerTransparent: true,
+          headerShown: false,
           gestureEnabled: false,
         }}
       />
       <Stack.Screen
         name="accounts"
         options={{
-          headerShown: true,
-          headerTitle: "",
-          headerTransparent: true,
+          headerShown: false,
           gestureEnabled: false,
         }}
       />
       <Stack.Screen
         name="notifications"
         options={{
-          headerShown: true,
-          headerTitle: "",
-          headerTransparent: true,
+          headerShown: false,
           gestureEnabled: false,
         }}
       />
