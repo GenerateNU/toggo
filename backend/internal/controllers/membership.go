@@ -305,7 +305,7 @@ func (ctrl *MembershipController) PromoteToAdmin(c *fiber.Ctx) error {
 // @Failure      422 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID}/notification-preferences [patch]
-// @ID           updateNotificationPreferences
+// @ID           updateMembershipNotificationPreferences
 func (ctrl *MembershipController) UpdateNotificationPreferences(c *fiber.Ctx) error {
 	tripID, err := validators.ValidateID(c.Params("tripID"))
 	if err != nil {

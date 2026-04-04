@@ -31,6 +31,7 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	TripRoutes(apiV1Group, routeParams)
 	MembershipRoutes(apiV1Group, routeParams)
 	NotificationRoutes(apiV1Group, routeParams)
+	NotificationPreferencesRoutes(apiV1Group, routeParams)
 	FileRoutes(apiV1Group, routeParams)
 	CommentRoutes(apiV1Group, routeParams)
 	ActivityRoutes(apiV1Group, routeParams)
