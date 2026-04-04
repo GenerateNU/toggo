@@ -186,9 +186,11 @@ function RankPollRow({
   tripId: string;
   onRanked: () => void;
 }) {
-  const { data, isLoading } = useGetRankPollResults(tripId, poll.id ?? "", {
-    query: { enabled: !!(tripId && poll.id) },
-  });
+  const { data, isLoading, isError, refetch } = useGetRankPollResults(
+    tripId,
+    poll.id ?? "",
+    { query: { enabled: !!(tripId && poll.id) } },
+  );
 
   if (isLoading) {
     return (
@@ -200,6 +202,13 @@ function RankPollRow({
         style={styles.loadingCard}
       >
         <ActivityIndicator color={ColorPalette.brand500} />
+      </Box>
+    );
+  }
+  if (isError) {
+    return (
+      <Box backgroundColor="white" borderRadius="md" style={styles.loadingCard}>
+        <ErrorState title="Couldn't load poll" refresh={refetch} />
       </Box>
     );
   }

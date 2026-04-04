@@ -1,6 +1,7 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { Check } from "lucide-react-native";
 import { StyleSheet } from "react-native";
 
@@ -37,8 +38,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: ColorPalette.black,
     borderRadius: CornerRadius.md,
-    padding: 8,
-    gap: 15,
+    padding: Layout.spacing.xs,
+    gap: Layout.spacing.sm,
   },
   iconWrapper: {
     width: ICON_SIZE,
@@ -51,6 +52,6 @@ const styles = StyleSheet.create({
   },
   textBlock: {
     flex: 1,
-    gap: 2,
+    gap: Layout.spacing.xxs,
   },
 });

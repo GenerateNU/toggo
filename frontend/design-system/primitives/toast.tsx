@@ -12,6 +12,7 @@ import { Layout } from "../tokens/layout";
 export type ToastProps = {
   message: string;
   subtitle?: string;
+  variant?: "pollSent" | "default";
   action?: {
     label: string;
     onPress: () => void;
@@ -107,7 +108,7 @@ function DefaultToast({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Toast(props: ToastProps) {
-  if (props.subtitle !== undefined) {
+  if (props.variant === "pollSent" || props.subtitle !== undefined) {
     return <PollSentToast {...props} />;
   }
   return <DefaultToast {...props} />;
@@ -158,8 +159,8 @@ const styles = StyleSheet.create({
     borderRadius: CornerRadius.md,
     borderWidth: 1,
     borderColor: ColorPalette.gray200,
-    padding: 8,
-    gap: 15,
+    padding: Layout.spacing.xs,
+    gap: Layout.spacing.sm,
   },
   pollSentIcon: {
     width: ICON_SIZE,
@@ -171,9 +172,9 @@ const styles = StyleSheet.create({
   },
   pollSentText: {
     flex: 1,
-    gap: 2,
+    gap: Layout.spacing.xxs,
   },
   pollSentSubtitle: {
-    color: "#857c7c",
+    color: ColorPalette.gray500,
   },
 });

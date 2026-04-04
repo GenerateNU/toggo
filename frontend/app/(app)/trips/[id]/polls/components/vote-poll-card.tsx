@@ -100,7 +100,7 @@ export default function VotePollCard({
   const toast = useToast();
 
   const toggleOption = (optionId: string) => {
-    if (closed) return;
+    if (closed || castVote.isPending) return;
     if (isMulti) {
       setSelectedIds((prev) =>
         prev.includes(optionId)
@@ -114,16 +114,21 @@ export default function VotePollCard({
 
   const handleSubmit = async () => {
     if (!poll.id || closed) return;
-    await castVote.mutateAsync({
-      tripID: tripId,
-      pollId: poll.id,
-      data: { option_ids: selectedIds },
-    });
-    toast.show({
-      message: hasVoted ? "Vote updated!" : "Poll Sent!",
-      subtitle: "Your trip will get a notification to vote.",
-    });
-    onVoted?.();
+    try {
+      await castVote.mutateAsync({
+        tripID: tripId,
+        pollId: poll.id,
+        data: { option_ids: selectedIds },
+      });
+      toast.show({
+        variant: "pollSent",
+        message: hasVoted ? "Vote updated!" : "Poll Sent!",
+        subtitle: "Your trip will get a notification to vote.",
+      });
+      onVoted?.();
+    } catch {
+      toast.show({ message: "Failed to submit vote. Please try again." });
+    }
   };
 
   const totalVotes =
@@ -180,7 +185,7 @@ export default function VotePollCard({
               <Pressable
                 key={optionId}
                 onPress={() => toggleOption(optionId)}
-                disabled={closed}
+                disabled={closed || castVote.isPending}
                 style={[
                   styles.optionRow,
                   isSelected

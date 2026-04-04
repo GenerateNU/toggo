@@ -217,18 +217,26 @@ export default function RankPollCard({
   const handleSubmit = async () => {
     const pollId = poll.poll_id;
     if (!pollId || closed) return;
-    await submitRanking.mutateAsync({
-      tripID: tripId,
-      pollId,
-      data: {
-        rankings: options.map((opt, i) => ({ option_id: opt.id, rank: i + 1 })),
-      },
-    });
-    toast.show({
-      message: hasVoted ? "Ranking updated!" : "Poll Sent!",
-      subtitle: "Your trip will get a notification to vote.",
-    });
-    onRanked?.();
+    try {
+      await submitRanking.mutateAsync({
+        tripID: tripId,
+        pollId,
+        data: {
+          rankings: options.map((opt, i) => ({
+            option_id: opt.id,
+            rank: i + 1,
+          })),
+        },
+      });
+      toast.show({
+        variant: "pollSent",
+        message: hasVoted ? "Ranking updated!" : "Poll Sent!",
+        subtitle: "Your trip will get a notification to vote.",
+      });
+      onRanked?.();
+    } catch {
+      toast.show({ message: "Failed to submit ranking. Please try again." });
+    }
   };
 
   const hasVoted = poll.user_has_voted ?? false;

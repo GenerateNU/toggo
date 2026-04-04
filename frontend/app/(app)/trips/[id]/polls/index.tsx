@@ -1,8 +1,4 @@
-import { getAuthToken } from "@/api/client";
-import {
-  getPollsByTripIDQueryKey,
-  useGetPollsByTripID,
-} from "@/api/polls/useGetPollsByTripID";
+import { useGetPollsByTripID } from "@/api/polls/useGetPollsByTripID";
 import {
   getRankPollResultsQueryKey,
   useGetRankPollResults,
@@ -11,12 +7,10 @@ import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
 import {
   Box,
-  Button,
   Divider,
   ErrorState,
   Screen,
   Text,
-  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import {
@@ -52,79 +46,7 @@ const resolveHost = (): string => {
 };
 
 const HOST = resolveHost();
-const BASE_URL = `http://${HOST}:8000`;
 const WS_URL = `ws://${HOST}:8000/ws`;
-
-// ─── Dummy poll definitions ───────────────────────────────────────────────────
-
-const DUMMY_POLLS = [
-  {
-    question: "Which destination should we visit?",
-    poll_type: "single",
-    options: [
-      { option_type: "custom", name: "Paris" },
-      { option_type: "custom", name: "Tokyo" },
-      { option_type: "custom", name: "New York" },
-      { option_type: "custom", name: "Sydney" },
-    ],
-    is_anonymous: false,
-    should_notify_members: false,
-  },
-  {
-    question: "Which activities do you want to do?",
-    poll_type: "multi",
-    options: [
-      { option_type: "custom", name: "Snorkeling" },
-      { option_type: "custom", name: "Hiking" },
-      { option_type: "custom", name: "Kayaking" },
-      { option_type: "custom", name: "Diving" },
-    ],
-    is_anonymous: false,
-    should_notify_members: false,
-  },
-  {
-    question: "Should we book the hotels now?",
-    poll_type: "single",
-    options: [
-      { option_type: "custom", name: "Yes" },
-      { option_type: "custom", name: "No" },
-    ],
-    is_anonymous: false,
-    should_notify_members: false,
-  },
-] as const;
-
-const DUMMY_RANK_POLL = {
-  question: "Rank your preferred accommodation types",
-  poll_type: "rank",
-  options: [
-    { option_type: "custom", name: "Hotel" },
-    { option_type: "custom", name: "Airbnb" },
-    { option_type: "custom", name: "Hostel" },
-    { option_type: "custom", name: "Resort" },
-  ],
-  is_anonymous: false,
-  should_notify_members: false,
-} as const;
-
-// ─── API helper ───────────────────────────────────────────────────────────────
-
-async function apiPost(path: string, body: unknown, token: string) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  try {
-    return { ok: res.ok, data: JSON.parse(text) };
-  } catch {
-    return { ok: res.ok, data: text };
-  }
-}
 
 // ─── Results panel ────────────────────────────────────────────────────────────
 
@@ -222,9 +144,11 @@ function RankPollRow({
   tripId: string;
   onRanked: () => void;
 }) {
-  const { data, isLoading } = useGetRankPollResults(tripId, poll.id ?? "", {
-    query: { enabled: !!(tripId && poll.id) },
-  });
+  const { data, isLoading, isError, refetch } = useGetRankPollResults(
+    tripId,
+    poll.id ?? "",
+    { query: { enabled: !!(tripId && poll.id) } },
+  );
 
   if (isLoading) {
     return (
@@ -239,6 +163,17 @@ function RankPollRow({
       </Box>
     );
   }
+  if (isError) {
+    return (
+      <Box
+        backgroundColor="white"
+        borderRadius="md"
+        style={styles.loadingCard}
+      >
+        <ErrorState title="Couldn't load poll" refresh={refetch} />
+      </Box>
+    );
+  }
   if (!data) return null;
   return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
 }
@@ -250,9 +185,6 @@ export default function PollsScreen() {
   const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [isCreatingDummy, setIsCreatingDummy] = useState(false);
-
-  const toast = useToast();
 
   const {
     data: pollsData,
@@ -319,46 +251,6 @@ export default function PollsScreen() {
     };
   }, [tripId, queryClient]); // WS only reconnects when tripId changes
 
-  // ─── Create dummy polls ─────────────────────────────────────────────────
-
-  const createDummyPolls = useCallback(async () => {
-    if (!tripId) return;
-    setIsCreatingDummy(true);
-    try {
-      const token = await getAuthToken();
-      if (!token) {
-        console.error("[polls] not authenticated");
-        return;
-      }
-
-      for (const body of DUMMY_POLLS) {
-        const res = await apiPost(
-          `/api/v1/trips/${tripId}/vote-polls`,
-          body,
-          token,
-        );
-        if (!res.ok) console.error("[polls] vote poll failed", res.data);
-        else
-          console.log("[polls] created", body.poll_type, "poll:", res.data.id);
-      }
-
-      const rankRes = await apiPost(
-        `/api/v1/trips/${tripId}/rank-polls`,
-        DUMMY_RANK_POLL,
-        token,
-      );
-      if (!rankRes.ok) console.error("[polls] rank poll failed", rankRes.data);
-      else console.log("[polls] created rank poll:", rankRes.data.id);
-
-      queryClient.invalidateQueries({
-        queryKey: getPollsByTripIDQueryKey(tripId),
-      });
-      toast.show({ message: "Polls created! Your trip members can now vote." });
-    } finally {
-      setIsCreatingDummy(false);
-    }
-  }, [tripId, queryClient, toast]);
-
   // ─── Handlers ──────────────────────────────────────────────────────────
 
   const handleRefresh = useCallback(async () => {
@@ -415,21 +307,11 @@ export default function PollsScreen() {
           Polls
         </Text>
 
-        {/* Create dummy polls */}
-        <Button
-          layout="textOnly"
-          label="Create Dummy Polls"
-          variant="Secondary"
-          onPress={createDummyPolls}
-          loading={isCreatingDummy}
-          disabled={isCreatingDummy}
-        />
-
         {/* Poll cards */}
-        {polls.length === 0 && !isCreatingDummy && (
+        {polls.length === 0 && (
           <Box alignItems="center" paddingVertical="xl">
             <Text variant="bodySmDefault" color="gray500">
-              No polls yet. Tap above to create some.
+              No polls yet.
             </Text>
           </Box>
         )}
