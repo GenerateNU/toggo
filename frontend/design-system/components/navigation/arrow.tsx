@@ -20,14 +20,10 @@ export const BackButton: React.FC<BackButtonProps> = ({
       onTouchEnd={onPress ?? router.back}
       alignItems="center"
       justifyContent="center"
-<<<<<<< HEAD
-      style={{ width: 36, height: 36 }}
-=======
       width={36}
       height={36}
       borderRadius={hasBackground ? "md" : undefined}
       backgroundColor={hasBackground ? "gray50" : undefined}
->>>>>>> origin
     >
       <Icon icon={ArrowLeft} size="sm" color="black" />
     </Box>

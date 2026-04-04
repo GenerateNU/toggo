@@ -5,13 +5,7 @@ import {
 } from "@/api/polls/useGetRankPollResults";
 import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
-import {
-  Box,
-  Divider,
-  ErrorState,
-  Screen,
-  Text,
-} from "@/design-system";
+import { Box, Divider, ErrorState, Screen, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import {
@@ -166,11 +160,7 @@ function RankPollRow({
   }
   if (isError) {
     return (
-      <Box
-        backgroundColor="white"
-        borderRadius="md"
-        style={styles.loadingCard}
-      >
+      <Box backgroundColor="white" borderRadius="md" style={styles.loadingCard}>
         <ErrorState title="Couldn't load poll" refresh={refetch} />
       </Box>
     );
