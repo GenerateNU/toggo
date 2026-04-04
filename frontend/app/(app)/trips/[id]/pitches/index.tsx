@@ -21,7 +21,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DeadlinePickerFlow } from "./components/deadline-picker-flow";
 import { PitchCtaBar } from "./components/pitch-cta-bar";
@@ -64,6 +64,8 @@ export default function Pitches() {
   const {
     pitches,
     isLoading: pitchesLoading,
+    isError: pitchesError,
+    refetch: refetchPitches,
     fetchMore,
     isLoadingMore,
   } = usePitchesList(tripID);
@@ -193,18 +195,18 @@ export default function Pitches() {
           onPressAddDeadline={() => setDeadlineFlowVisible(true)}
         />
 
-        {isLoading ? (
-          <Box flex={1} alignItems="center" justifyContent="center">
-            <ActivityIndicator />
-          </Box>
-        ) : tab === "pitches" ? (
+        {tab === "pitches" ? (
           <PitchesTabContent
             pitches={pitches}
+            isLoading={isLoading}
+            isError={pitchesError}
             isLoadingMore={isLoadingMore}
+            hasDeadline={hasDeadline}
             onFetchMore={fetchMore}
             onOpenPitch={navigateToPitch}
             onOpenComments={setActiveCommentPitchId}
             onCreatePitch={navigateToPitchCreation}
+            onRetry={refetchPitches}
           />
         ) : (
           <RankingTabContent

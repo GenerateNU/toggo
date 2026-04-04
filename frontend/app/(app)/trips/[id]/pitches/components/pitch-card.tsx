@@ -52,7 +52,7 @@ export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
             <Box
               paddingHorizontal="xs"
               paddingTop="sm"
-              paddingBottom="sm"
+              paddingBottom="xs"
               gap="xs"
             >
               <Box flexDirection="row" alignItems="center">
@@ -122,7 +122,7 @@ export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
                   flexDirection="row"
                   alignItems="center"
                   gap="xs"
-                  backgroundColor="gray100"
+                  backgroundColor="gray50"
                   borderRadius="md"
                   paddingHorizontal="xs"
                   paddingVertical="xs"
@@ -138,7 +138,7 @@ export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
                       showName={false}
                     />
                   ) : null}
-                  <Text variant="bodySmMedium" color="gray600">
+                  <Text variant="bodySmMedium" color="gray600" paddingLeft="xs">
                     {commentCount === 0
                       ? "No comments yet"
                       : `${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}

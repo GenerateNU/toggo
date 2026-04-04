@@ -3,11 +3,11 @@ import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Typography } from "@/design-system/tokens/typography";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import type { RecordingResult } from "./audio-pitch-sheet";
-import { CheckCircle, ImagePlus, Link, Mic, X } from "lucide-react-native";
 import { Image } from "expo-image";
+import { CheckCircle, ImagePlus, Link, Mic, X } from "lucide-react-native";
 import { useEffect, useRef } from "react";
 import { Pressable, StyleSheet, TextInput } from "react-native";
+import type { RecordingResult } from "./audio-pitch-sheet";
 
 interface CreatePitchFormSheetProps {
   visible: boolean;
@@ -112,7 +112,7 @@ export function CreatePitchFormSheet({
             label="Cancel"
             variant="Red"
             onPress={onCancel}
-            disabled={isSubmitting || !recording}
+            disabled={isSubmitting}
           />
         </Box>
       }

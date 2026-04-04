@@ -1,6 +1,6 @@
 import type { TimeValue } from "@/design-system";
 import { DateRangePicker, TimePicker } from "@/design-system";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 interface DeadlinePickerFlowProps {
   onClose: () => void;
@@ -43,6 +43,7 @@ export function DeadlinePickerFlow({
 }: DeadlinePickerFlowProps) {
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [pendingDeadline, setPendingDeadline] = useState<Date | null>(null);
+  const transitioningRef = useRef(false);
 
   const initialTime = useMemo(
     () => getInitialTime(pendingDeadline),
@@ -53,16 +54,25 @@ export function DeadlinePickerFlow({
     <>
       <DateRangePicker
         visible={!timePickerVisible}
-        onClose={onClose}
+        onClose={() => {
+          if (!transitioningRef.current) {
+            onClose();
+          }
+        }}
         onSave={(range) => {
           if (!range.start) {
             setPendingDeadline(null);
             onClose();
             return;
           }
+          transitioningRef.current = true;
           setPendingDeadline(toEndOfDay(range.start));
-          setTimeout(() => setTimePickerVisible(true), 400);
+          setTimeout(() => {
+            transitioningRef.current = false;
+            setTimePickerVisible(true);
+          }, 400);
         }}
+        singleDate
         initialRange={{ start: null, end: null }}
         minDate={new Date()}
       />

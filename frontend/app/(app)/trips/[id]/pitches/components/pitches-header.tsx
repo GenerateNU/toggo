@@ -27,11 +27,9 @@ export function PitchesHeader({
   return (
     <Box marginTop="xl" paddingHorizontal="sm" gap="sm" backgroundColor="white">
       <SegmentedTabs value={tab} onChange={onTabChange} />
-      {!isLoading &&
-        hasPitches &&
-        deadline &&
-        !hasCurrentUserPitch &&
-        tab === "pitches" && <Countdown deadline={deadline} />}
+      {!isLoading && deadline && !hasCurrentUserPitch && tab === "pitches" && (
+        <Countdown deadline={deadline} />
+      )}
       {!isLoading && !deadline && tab === "pitches" && (
         <AddDeadline onPress={onPressAddDeadline} />
       )}

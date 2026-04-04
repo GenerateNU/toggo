@@ -1,7 +1,7 @@
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetPitch } from "@/api/pitches/useGetPitch";
 import { useUser } from "@/contexts/user";
-import { Box, Divider, Text } from "@/design-system";
+import { Box, Divider, Icon, Text } from "@/design-system";
 import AvatarStack from "@/design-system/components/avatars/avatar-stack";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -206,7 +206,7 @@ export default function PitchDetail() {
           )}
 
           <Pressable onPress={() => setCommentSectionVisible(true)}>
-            <Box flexDirection="row" alignItems="center" gap="sm">
+            <Box flexDirection="row" alignItems="center" gap="xs">
               {commenters.length > 0 ? (
                 <AvatarStack
                   members={commenters}
@@ -214,7 +214,7 @@ export default function PitchDetail() {
                   showName={false}
                 />
               ) : (
-                <MessageCircle size={16} color={ColorPalette.gray400} />
+                <Icon icon={MessageCircle} size="xs" color="gray400" />
               )}
               <Text variant="bodyXsDefault" color="gray500">
                 {comments.length === 0

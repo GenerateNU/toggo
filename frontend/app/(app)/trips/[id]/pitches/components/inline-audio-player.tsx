@@ -1,29 +1,22 @@
-import { Box, Text } from "@/design-system";
+import { Box } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { Pause, Play } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { getPitchBarHeights } from "../utils/waveform";
+import { WaveformBars } from "./waveform";
 
 const BAR_COUNT = 40;
-
-function formatTime(ms: number): string {
-  const s = Math.floor(ms / 1000);
-  const m = Math.floor(s / 60);
-  return `${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-}
 
 interface InlineAudioPlayerProps {
   audioUrl: string;
   pitchId: string;
-  showTime?: boolean;
 }
 
 export function InlineAudioPlayer({
   audioUrl,
   pitchId,
-  showTime = true,
 }: InlineAudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +47,7 @@ export function InlineAudioPlayer({
           if (status.durationMillis) setDuration(status.durationMillis);
           if (status.didJustFinish) {
             setIsPlaying(false);
-            setPlayPosition(0);
+            setPlayPosition(status.durationMillis ?? 0);
             soundRef.current?.unloadAsync();
             soundRef.current = null;
           }
@@ -143,7 +136,7 @@ export function InlineAudioPlayer({
         gap="sm"
         backgroundColor="gray50"
         borderRadius="md"
-        paddingHorizontal="sm"
+        paddingHorizontal="xs"
         paddingVertical="xs"
       >
         <Pressable onPress={togglePlayback} style={styles.playBtn} hitSlop={8}>
@@ -173,47 +166,16 @@ export function InlineAudioPlayer({
               waveformPageXRef.current = pageX;
             });
           }}
-          style={{
-            flex: 1,
-            height: 28,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          style={{ flex: 1 }}
         >
-          {barHeights.map((h: number, i: number) => {
-            const filled = i / BAR_COUNT < progress;
-            return (
-              <View
-                key={i}
-                style={{
-                  width: 2,
-                  height: h,
-                  borderRadius: 1,
-                  backgroundColor: filled
-                    ? ColorPalette.gray700
-                    : ColorPalette.gray300,
-                }}
-              />
-            );
-          })}
+          <WaveformBars
+            barHeights={barHeights}
+            progress={progress}
+            barWidth={2}
+            style={{ flex: 1, height: 28 }}
+          />
         </View>
       </Box>
-
-      {showTime && (
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          paddingHorizontal="xs"
-        >
-          <Text variant="bodyXsDefault" color="gray400">
-            {formatTime(playPosition)}
-          </Text>
-          <Text variant="bodyXsDefault" color="gray400">
-            {formatTime(duration)}
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 }
