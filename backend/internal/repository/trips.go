@@ -67,7 +67,7 @@ func (r *tripRepository) FindWithCoverImage(ctx context.Context, id uuid.UUID) (
 	tripData := &models.TripDatabaseResponse{}
 	err := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.start_date, t.end_date, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
@@ -116,7 +116,7 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID
 func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.start_date, t.end_date, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("JOIN memberships AS m ON m.trip_id = t.id").
@@ -174,6 +174,14 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("pitch_deadline = ?", *req.PitchDeadline)
 	}
 
+	if req.StartDate != nil {
+		updateQuery = updateQuery.Set("start_date = ?", *req.StartDate)
+	}
+
+	if req.EndDate != nil {
+		updateQuery = updateQuery.Set("end_date = ?", *req.EndDate)
+	}
+
 	result, err := updateQuery.Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -223,6 +231,12 @@ func (r *tripRepository) UpdateTx(ctx context.Context, tx bun.Tx, id uuid.UUID, 
 	}
 	if req.PitchDeadline != nil {
 		updateQuery = updateQuery.Set("pitch_deadline = ?", *req.PitchDeadline)
+	}
+	if req.StartDate != nil {
+		updateQuery = updateQuery.Set("start_date = ?", *req.StartDate)
+	}
+	if req.EndDate != nil {
+		updateQuery = updateQuery.Set("end_date = ?", *req.EndDate)
 	}
 
 	result, err := updateQuery.Exec(ctx)

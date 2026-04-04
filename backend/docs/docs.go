@@ -6654,12 +6654,17 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
                 },
-                "pitch_deadline": {
-                    "type": "string"
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 }
             }
         },
@@ -7890,6 +7895,10 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -7901,6 +7910,10 @@ const docTemplate = `{
                 },
                 "rank_poll_id": {
                     "type": "string"
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "updated_at": {
                     "type": "string"
@@ -8123,24 +8136,38 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "budget_max": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "budget_min": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "cover_image_id": {
+                    "type": "string"
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "currency": {
                     "type": "string"
                 },
-                "name": {
+                "end_date": {
                     "type": "string",
-                    "minLength": 1
+                    "format": "date-time"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "pitch_deadline": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

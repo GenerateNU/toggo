@@ -1,12 +1,17 @@
 {
   "type": "object",
   "properties": {
-    "budget_max": { "type": "integer", "minimum": 0 },
-    "budget_min": { "type": "integer", "minimum": 0 },
+    "budget_max": { "type": "integer" },
+    "budget_min": { "type": "integer" },
     "cover_image_id": { "type": "string" },
+    "created_at": { "type": "string" },
     "currency": { "type": "string" },
-    "name": { "type": "string", "minLength": 1 },
-    "pitch_deadline": { "type": "string" }
+    "end_date": { "type": "string", "format": "date-time" },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "pitch_deadline": { "type": "string" },
+    "start_date": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string" }
   },
   "x-readme-ref-name": "models.UpdateTripRequest"
 }

@@ -1244,8 +1244,9 @@ export const modelsCreateTripRequestSchema = z.object({
   budget_min: z.int().min(0),
   cover_image_id: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   name: z.string().min(1),
-  pitch_deadline: z.optional(z.string()),
+  start_date: z.optional(z.iso.datetime()),
 }) as unknown as z.ZodType<ModelsCreateTripRequest>;
 
 export const modelsCreateUserRequestSchema = z.object({
@@ -1680,10 +1681,12 @@ export const modelsTripAPIResponseSchema = z.object({
   cover_image_url: z.optional(z.string()),
   created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
   rank_poll_id: z.optional(z.string()),
+  start_date: z.optional(z.iso.datetime()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripAPIResponse>;
 
@@ -1827,12 +1830,17 @@ export const modelsUpdatePollWithCategoriesRequestSchema = z.object({
 }) as unknown as z.ZodType<ModelsUpdatePollWithCategoriesRequest>;
 
 export const modelsUpdateTripRequestSchema = z.object({
-  budget_max: z.optional(z.int().min(0)),
-  budget_min: z.optional(z.int().min(0)),
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
   cover_image_id: z.optional(z.string()),
+  created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
-  name: z.optional(z.string().min(1)),
+  end_date: z.optional(z.iso.datetime()),
+  id: z.optional(z.string()),
+  name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
+  start_date: z.optional(z.iso.datetime()),
+  updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 
 export const modelsUpdateUserNotificationPreferencesRequestSchema = z.object({

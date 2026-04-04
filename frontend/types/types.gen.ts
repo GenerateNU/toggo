@@ -1044,14 +1044,18 @@ export type ModelsCreateTripRequest = {
    */
   currency?: string;
   /**
+   * @type string | undefined, date-time
+   */
+  end_date?: string;
+  /**
    * @minLength 1
    * @type string
    */
   name: string;
   /**
-   * @type string | undefined
+   * @type string | undefined, date-time
    */
-  pitch_deadline?: string;
+  start_date?: string;
 };
 
 export type ModelsCreateUserRequest = {
@@ -1976,6 +1980,10 @@ export type ModelsTripAPIResponse = {
    */
   currency?: string;
   /**
+   * @type string | undefined, date-time
+   */
+  end_date?: string;
+  /**
    * @type string | undefined
    */
   id?: string;
@@ -1991,6 +1999,10 @@ export type ModelsTripAPIResponse = {
    * @type string | undefined
    */
   rank_poll_id?: string;
+  /**
+   * @type string | undefined, date-time
+   */
+  start_date?: string;
   /**
    * @type string | undefined
    */
@@ -2328,12 +2340,10 @@ export type ModelsUpdatePollWithCategoriesRequest = {
 
 export type ModelsUpdateTripRequest = {
   /**
-   * @minLength 0
    * @type integer | undefined
    */
   budget_max?: number;
   /**
-   * @minLength 0
    * @type integer | undefined
    */
   budget_min?: number;
@@ -2344,9 +2354,20 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
   currency?: string;
   /**
-   * @minLength 1
+   * @type string | undefined, date-time
+   */
+  end_date?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
    * @type string | undefined
    */
   name?: string;
@@ -2354,6 +2375,14 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   pitch_deadline?: string;
+  /**
+   * @type string | undefined, date-time
+   */
+  start_date?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
 };
 
 export type ModelsUpdateUserNotificationPreferencesRequest = {

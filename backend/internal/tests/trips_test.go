@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -502,6 +503,164 @@ func TestTripCurrency(t *testing.T) {
 				},
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
+	})
+}
+
+func TestTripDates(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	ownerID := createUser(t, app)
+
+	startDate := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC)
+
+	t.Run("create trip with start and end dates", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &ownerID,
+				Body: models.CreateTripRequest{
+					Name:      "Dated Trip",
+					BudgetMin: 100,
+					BudgetMax: 500,
+					StartDate: &startDate,
+					EndDate:   &endDate,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			AssertFieldExists("start_date").
+			AssertFieldExists("end_date").
+			GetBody()
+
+		tripID := resp["id"].(string)
+
+		// Dates persist on GET
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.GET,
+				UserID: &ownerID,
+			}).
+			AssertStatus(http.StatusOK).
+			AssertFieldExists("start_date").
+			AssertFieldExists("end_date")
+	})
+
+	t.Run("dates appear in list response", func(t *testing.T) {
+		listOwnerID := createUser(t, app)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &listOwnerID,
+				Body: models.CreateTripRequest{
+					Name:      "Listed Dated Trip",
+					BudgetMin: 100,
+					BudgetMax: 500,
+					StartDate: &startDate,
+					EndDate:   &endDate,
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		listResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.GET,
+				UserID: &listOwnerID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := listResp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		trip := items[0].(map[string]interface{})
+		require.NotNil(t, trip["start_date"])
+		require.NotNil(t, trip["end_date"])
+	})
+
+	t.Run("update trip dates", func(t *testing.T) {
+		tripID := createTrip(t, app, ownerID)
+
+		newStart := time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)
+		newEnd := time.Date(2026, 7, 10, 0, 0, 0, 0, time.UTC)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.PATCH,
+				UserID: &ownerID,
+				Body: models.UpdateTripRequest{
+					StartDate: &newStart,
+					EndDate:   &newEnd,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertFieldExists("start_date").
+			AssertFieldExists("end_date")
+	})
+
+	t.Run("end date before start date is rejected on create", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &ownerID,
+				Body: models.CreateTripRequest{
+					Name:      "Bad Date Trip",
+					BudgetMin: 100,
+					BudgetMax: 500,
+					StartDate: &endDate, // end before start
+					EndDate:   &startDate,
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("end date before start date is rejected on update", func(t *testing.T) {
+		tripID := createTrip(t, app, ownerID)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s", tripID),
+				Method: testkit.PATCH,
+				UserID: &ownerID,
+				Body: models.UpdateTripRequest{
+					StartDate: &endDate, // end before start
+					EndDate:   &startDate,
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("omitting dates creates trip without dates", func(t *testing.T) {
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.POST,
+				UserID: &ownerID,
+				Body: models.CreateTripRequest{
+					Name:      "Dateless Trip",
+					BudgetMin: 100,
+					BudgetMax: 500,
+				},
+			}).
+			AssertStatus(http.StatusCreated).
+			GetBody()
+
+		_, hasStart := resp["start_date"]
+		_, hasEnd := resp["end_date"]
+		require.False(t, hasStart)
+		require.False(t, hasEnd)
 	})
 }
 

@@ -58,6 +58,10 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
+	if req.StartDate != nil && req.EndDate != nil && !req.EndDate.After(*req.StartDate) {
+		return nil, errs.BadRequest(errors.New("end date must be after start date"))
+	}
+
 	// Validate cover image ID exists if provided
 	if req.CoverImageID != nil {
 		_, err := s.Image.FindByID(ctx, *req.CoverImageID)
@@ -87,6 +91,8 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		BudgetMax:     req.BudgetMax,
 		Currency:      currency,
 		PitchDeadline: req.PitchDeadline,
+		StartDate:     req.StartDate,
+		EndDate:       req.EndDate,
 	}
 
 	// Use transaction to ensure trip creation, membership, and default categories are atomic
@@ -193,6 +199,8 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			Currency:      tripData.Currency,
 			PitchDeadline: tripData.PitchDeadline,
 			RankPollID:    tripData.RankPollID,
+			StartDate:     tripData.StartDate,
+			EndDate:       tripData.EndDate,
 			CreatedAt:     tripData.CreatedAt,
 			UpdatedAt:     tripData.UpdatedAt,
 		})
@@ -227,6 +235,10 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID 
 
 	if req.BudgetMin != nil && req.BudgetMax != nil && *req.BudgetMax < *req.BudgetMin {
 		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
+	}
+
+	if req.StartDate != nil && req.EndDate != nil && !req.EndDate.After(*req.StartDate) {
+		return nil, errs.BadRequest(errors.New("end date must be after start date"))
 	}
 
 	if req.CoverImageID != nil {
@@ -304,6 +316,8 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		Currency:      tripData.Currency,
 		PitchDeadline: tripData.PitchDeadline,
 		RankPollID:    tripData.RankPollID,
+		StartDate:     tripData.StartDate,
+		EndDate:       tripData.EndDate,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil
