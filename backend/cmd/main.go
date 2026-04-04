@@ -26,6 +26,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
+
+	if cfg.AWS.S3Endpoint != "" {
+		log.Printf("[Startup] Using S3 endpoint: %s", cfg.AWS.S3Endpoint)
+		if cfg.AWS.S3PresignEndpoint != "" {
+			log.Printf("[Startup] Using S3 presign endpoint: %s", cfg.AWS.S3PresignEndpoint)
+		}
+	} else {
+		log.Printf("[Startup] Using AWS S3 default endpoint for region: %s", cfg.AWS.Region)
+	}
 	db := database.ConnectDB(context.Background(), cfg)
 	defer database.CloseDB(db)
 

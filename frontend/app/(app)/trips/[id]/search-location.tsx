@@ -11,9 +11,10 @@ import {
   MapView,
   PointAnnotation,
 } from "@maplibre/maplibre-react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import {
   ActivityIndicator,
   FlatList,
@@ -49,6 +50,9 @@ const DEFAULT_ZOOM = 11;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SearchLocationScreen() {
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const isSelectMode = mode === "select";
+
   const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [selectedLocation, setSelectedLocation] =
@@ -79,6 +83,12 @@ export default function SearchLocationScreen() {
   };
 
   const handleSelectPrediction = async (prediction: Prediction) => {
+    if (isSelectMode) {
+      locationSelectStore.resolve(prediction);
+      router.back();
+      return;
+    }
+
     setIsSelectingPlace(true);
     setIsLoadingDetails(true);
     setQuery(prediction.description);
@@ -88,10 +98,8 @@ export default function SearchLocationScreen() {
         place_id: prediction.place_id,
       });
       setSelectedLocation(res.data);
-    } catch (error) {
-      console.error("Failed to fetch place details:", error);
+    } catch {
       setIsSelectingPlace(false);
-      // Optionally show user-friendly error message
     } finally {
       setIsLoadingDetails(false);
     }
@@ -110,7 +118,7 @@ export default function SearchLocationScreen() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
+      <Box flex={1} backgroundColor="gray25">
         <SearchHeader
           query={query}
           onChangeQuery={handleQueryChange}
@@ -127,10 +135,10 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <ActivityIndicator size="large" color={ColorPalette.brandPrimary} />
+            <ActivityIndicator size="large" color={ColorPalette.brand500} />
           </Box>
         ) : (
-          <Box flex={1} backgroundColor="surfaceCard" />
+          <Box flex={1} backgroundColor="white" />
         )}
       </Box>
     </Screen>
@@ -152,7 +160,7 @@ function SearchHeader({
 }) {
   return (
     <Box
-      backgroundColor="surfaceCard"
+      backgroundColor="white"
       paddingHorizontal="lg"
       paddingTop="lg"
       paddingBottom="sm"
@@ -165,7 +173,7 @@ function SearchHeader({
         alignItems="center"
         style={styles.titleRow}
       >
-        <Text variant="mdHeading" color="textSecondary">
+        <Text variant="headingSm" color="gray900">
           Location
         </Text>
         {query.length > 0 && (
@@ -174,7 +182,7 @@ function SearchHeader({
             hitSlop={styles.hitSlop}
             style={styles.dismissButton}
           >
-            <Icon icon={X} color="iconSecondary" size="sm" />
+            <Icon icon={X} color="gray500" size="sm" />
           </TouchableOpacity>
         )}
       </Box>
@@ -185,9 +193,9 @@ function SearchHeader({
         placeholder="Enter a city, neighborhood, or address"
         leftIcon={
           isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.iconTertiary} />
+            <ActivityIndicator size="small" color={ColorPalette.gray500} />
           ) : (
-            <Icon icon={Search} color="iconTertiary" size="sm" />
+            <Icon icon={Search} color="gray500" size="sm" />
           )
         }
       />
@@ -214,17 +222,17 @@ function PredictionsList({
           <Box
             paddingHorizontal="lg"
             paddingVertical="md"
-            backgroundColor="surfaceCard"
+            backgroundColor="white"
             style={styles.predictionItem}
           >
-            <Text variant="mdParagraph" color="textSecondary">
+            <Text variant="bodySmDefault" color="gray900">
               {item.description}
             </Text>
           </Box>
         </TouchableOpacity>
       )}
       ItemSeparatorComponent={() => (
-        <Box style={styles.separator} backgroundColor="surfaceBackground" />
+        <Box style={styles.separator} backgroundColor="gray100" />
       )}
       style={styles.predictionsList}
     />
@@ -262,12 +270,12 @@ function LocationMapView({ location }: { location: LocationDetails }) {
 
       <View style={styles.locationLabel} pointerEvents="none">
         <Box
-          backgroundColor="surfaceCard"
+          backgroundColor="white"
           paddingHorizontal="sm"
           paddingVertical="xs"
           style={styles.locationLabelInner}
         >
-          <Text variant="smLabel" color="textSecondary" numberOfLines={1}>
+          <Text variant="bodyXsDefault" color="gray700" numberOfLines={1}>
             {location.name || location.formatted_address}
           </Text>
         </Box>
@@ -302,7 +310,7 @@ const styles = StyleSheet.create({
     right: 8,
   },
   predictionsList: {
-    backgroundColor: ColorPalette.surfaceCard,
+    backgroundColor: ColorPalette.white,
   },
   predictionItem: {
     minHeight: 48,
@@ -321,7 +329,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: ColorPalette.brandPrimary,
+    backgroundColor: ColorPalette.brand500,
     borderWidth: 3,
     borderColor: ColorPalette.white,
     alignItems: "center",

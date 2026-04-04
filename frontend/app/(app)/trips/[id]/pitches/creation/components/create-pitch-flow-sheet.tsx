@@ -7,15 +7,16 @@ import { useToast } from "@/design-system";
 import type { ModelsPlacePrediction } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import * as ExpoImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddLinkSheet } from "./add-link-sheet";
 import type { RecordingResult } from "./audio-pitch-sheet";
 import { AudioPitchSheet } from "./audio-pitch-sheet";
 import { CancelConfirmModal } from "./cancel-confirm-modal";
 import { CreatePitchFormSheet } from "./create-pitch-form-sheet";
-import { LocationSearchSheet } from "./location-search-sheet";
 
 type ActiveOverlay =
   | "hidden"
@@ -54,6 +55,8 @@ export function CreatePitchFlowSheet({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay>("hidden");
+
+  const router = useRouter();
 
   const createPitch = useCreatePitch();
   const confirmUpload = useConfirmPitchUpload();
@@ -100,10 +103,19 @@ export function CreatePitchFlowSheet({
       clearTransitionTimer();
       setActiveOverlay("hidden");
       setCancelModalVisible(false);
+      locationSelectStore.clear();
       return;
     }
     setActiveOverlay("location");
   }, [visible]);
+
+  useEffect(() => {
+    if (!visible || activeOverlay !== "location") return;
+    locationSelectStore.set((prediction) => {
+      handleSelectLocation(prediction);
+    });
+    router.push(`/trips/${tripID}/search-location?mode=select`);
+  }, [visible, activeOverlay]);
 
   useEffect(() => {
     return () => clearTransitionTimer();
@@ -266,19 +278,6 @@ export function CreatePitchFlowSheet({
           onRemoveLink={removeLink}
           onSubmit={handleSubmit}
           onCancel={() => setCancelModalVisible(true)}
-        />
-      )}
-
-      {visible && activeOverlay === "location" && (
-        <LocationSearchSheet
-          onClose={() => {
-            if (!selectedLocation) {
-              closeFlow();
-              return;
-            }
-            setActiveOverlay("create");
-          }}
-          onSelect={handleSelectLocation}
         />
       )}
 
