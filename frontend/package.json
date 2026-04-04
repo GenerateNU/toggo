@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "dev": "doppler run --project frontend --config dev -- expo run",
+    "dev": "doppler run --project frontend --config dev -- expo start --dev-client",
     "tunnel": "doppler run --project frontend --config dev -- expo run --tunnel",
     "android": "doppler run --project frontend --config dev -- expo run:android",
     "ios": "doppler run --project frontend --config dev -- expo run:ios",
-    "web": "doppler run --project frontend --config dev -- expo start --web",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
     "kubb": "kubb --debug",
     "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",

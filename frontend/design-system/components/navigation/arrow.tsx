@@ -18,7 +18,6 @@ export const BackButton: React.FC<BackButtonProps> = ({
   return (
     <Box
       onTouchEnd={onPress ?? router.back}
-      flexDirection="row"
       alignItems="center"
       justifyContent="center"
       width={36}
