@@ -99,6 +99,16 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
+          name="map-view"
+          options={{
+            headerTransparent: true,
+            headerShown: true,
+            headerTitle: "Map",
+            headerShadowVisible: false,
+            headerLeft: () => <BackButton />,
+          }}
+        />
+        <Stack.Screen
           name="trips"
           options={{
             headerTransparent: true,
