@@ -18,11 +18,13 @@ export interface AvatarStackMember {
 export interface AvatarStackProps {
   members: AvatarStackMember[];
   maxVisible?: number;
+  showName?: boolean;
 }
 
 export const AvatarStack: React.FC<AvatarStackProps> = ({
   members,
   maxVisible = 3,
+  showName = true,
 }) => {
   const visible = members.slice(0, maxVisible);
   const overflow = members.length - maxVisible;
@@ -71,7 +73,7 @@ export const AvatarStack: React.FC<AvatarStackProps> = ({
         )}
       </Box>
 
-      {members.length > 0 && (
+      {showName && members.length > 0 && (
         <Box flexDirection="row" flexShrink={1}>
           <Text variant="bodySmDefault" color="gray600" numberOfLines={1}>
             {summaryPrefix}

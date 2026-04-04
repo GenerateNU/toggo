@@ -82,8 +82,6 @@ export default function CommentSection({
   onReact,
 }: CommentSectionProps) {
   const [inputText, setInputText] = useState("");
-  const [activePickerId, setActivePickerId] = useState<string | null>(null);
-  const [pickerAnchor, setPickerAnchor] = useState({ y: 0, x: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -124,43 +122,15 @@ export default function CommentSection({
     currentUserSeed,
   ]);
 
-  const handleOpenPicker = useCallback(
-    (commentId: string, y: number, x: number) => {
-      setPickerAnchor({ y, x });
-      setActivePickerId(commentId);
-    },
-    [],
-  );
-
-  const handleClosePicker = useCallback(() => {
-    setActivePickerId(null);
-  }, []);
-
   const handleModalClose = useCallback(() => {
-    // Reset picker state when modal closes
-    setActivePickerId(null);
-    setPickerAnchor({ y: 0, x: 0 });
     onClose();
   }, [onClose]);
 
   const renderItem = useCallback(
     ({ item }: { item: CommentData }) => (
-      <Comment
-        comment={item}
-        pickerOpen={activePickerId === item.id}
-        onOpenPicker={handleOpenPicker}
-        onClosePicker={handleClosePicker}
-        pickerAnchor={pickerAnchor}
-        onReact={onReact}
-      />
+      <Comment comment={item} onReact={onReact} />
     ),
-    [
-      onReact,
-      activePickerId,
-      pickerAnchor,
-      handleOpenPicker,
-      handleClosePicker,
-    ],
+    [onReact],
   );
 
   const keyExtractor = useCallback(

@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"toggo/internal/constants"
 	"toggo/internal/errs"
 	"toggo/internal/interfaces"
 	"toggo/internal/models"
@@ -17,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 // MaxPitchAudioSize is the maximum allowed size in bytes for pitch audio uploads (50 MiB).
@@ -35,25 +37,31 @@ type PitchServiceInterface interface {
 var _ PitchServiceInterface = (*PitchService)(nil)
 
 type PitchService struct {
-	presignClient       interfaces.S3PresignClient
-	s3Client            interfaces.S3Client
-	pitchRepo           repository.PitchRepository
-	membershipRepo      repository.MembershipRepository
-	imageRepo           repository.ImageRepository
-	bucketName          string
-	urlExpiration       time.Duration
-	notificationService NotificationService
+	presignClient  interfaces.S3PresignClient
+	s3Client       interfaces.S3Client
+	pitchRepo      repository.PitchRepository
+	membershipRepo repository.MembershipRepository
+	imageRepo      repository.ImageRepository
+	commentRepo    repository.CommentRepository
+	pitchLinkRepo  repository.PitchLinkRepository
+	tripRepo       repository.TripRepository
+	pollRepo       repository.PollRepository
+	bucketName     string
+	urlExpiration  time.Duration
 }
 
 type PitchServiceConfig struct {
-	PresignClient       interfaces.S3PresignClient
-	S3Client            interfaces.S3Client
-	PitchRepo           repository.PitchRepository
-	MembershipRepo      repository.MembershipRepository
-	ImageRepo           repository.ImageRepository
-	BucketName          string
-	URLExpiration       time.Duration
-	NotificationService NotificationService
+	PresignClient  interfaces.S3PresignClient
+	S3Client       interfaces.S3Client
+	PitchRepo      repository.PitchRepository
+	MembershipRepo repository.MembershipRepository
+	ImageRepo      repository.ImageRepository
+	CommentRepo    repository.CommentRepository
+	PitchLinkRepo  repository.PitchLinkRepository
+	TripRepo       repository.TripRepository
+	PollRepo       repository.PollRepository
+	BucketName     string
+	URLExpiration  time.Duration
 }
 
 func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
@@ -62,14 +70,17 @@ func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
 		expiration = 15 * time.Minute
 	}
 	return &PitchService{
-		presignClient:       cfg.PresignClient,
-		s3Client:            cfg.S3Client,
-		pitchRepo:           cfg.PitchRepo,
-		membershipRepo:      cfg.MembershipRepo,
-		imageRepo:           cfg.ImageRepo,
-		bucketName:          cfg.BucketName,
-		urlExpiration:       expiration,
-		notificationService: cfg.NotificationService,
+		presignClient:  cfg.PresignClient,
+		s3Client:       cfg.S3Client,
+		pitchRepo:      cfg.PitchRepo,
+		membershipRepo: cfg.MembershipRepo,
+		imageRepo:      cfg.ImageRepo,
+		commentRepo:    cfg.CommentRepo,
+		pitchLinkRepo:  cfg.PitchLinkRepo,
+		tripRepo:       cfg.TripRepo,
+		pollRepo:       cfg.PollRepo,
+		bucketName:     cfg.BucketName,
+		urlExpiration:  expiration,
 	}
 }
 
@@ -84,6 +95,17 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 		return nil, errs.Forbidden()
 	}
 
+	trip, err := s.tripRepo.Find(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.PitchDeadline == nil {
+		return nil, errs.BadRequest(errors.New("pitching is not open yet — a deadline must be set first"))
+	}
+	if time.Now().UTC().After(*trip.PitchDeadline) {
+		return nil, errs.BadRequest(errors.New("pitching is closed — the deadline has passed"))
+	}
+
 	if err := s.validateImageIDs(ctx, req.ImageIDs); err != nil {
 		return nil, err
 	}
@@ -93,7 +115,6 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	if err != nil {
 		return nil, errs.BadRequest(err)
 	}
-	// Single bucket, folder layout per ticket: trips/:tripId/pitches (e.g. profile_pictures/ elsewhere)
 	audioKey := fmt.Sprintf("trips/%s/pitches/%s.%s", tripID.String(), pitchID.String(), ext)
 
 	if req.ContentLength <= 0 {
@@ -116,6 +137,8 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 		return nil, fmt.Errorf("create pitch: %w", err)
 	}
 
+	s.addPitchToRankPoll(ctx, tripID, pitchID, req.Title)
+
 	presigned, err := s.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:        aws.String(s.bucketName),
 		Key:           aws.String(audioKey),
@@ -127,7 +150,6 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 
 	expiresAt := time.Now().Add(s.urlExpiration).UTC().Format(time.RFC3339)
-	// Fetch images with medium keys and presign URLs for the response (no audio download URL until audio is uploaded)
 	imageKeys, err := s.pitchRepo.GetImagesForPitch(ctx, pitchID)
 	if err != nil {
 		return nil, fmt.Errorf("fetch pitch images: %w", err)
@@ -145,9 +167,8 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}, nil
 }
 
-// ConfirmUpload verifies that the audio file was successfully uploaded to S3 and
-// sends a notification to trip members. Must be called by the pitch creator after
-// the presigned PUT upload completes.
+// ConfirmUpload verifies that the audio file was successfully uploaded to S3.
+// Must be called by the pitch creator after the presigned PUT upload completes.
 func (s *PitchService) ConfirmUpload(ctx context.Context, tripID, pitchID, userID uuid.UUID) error {
 	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
 	if err != nil {
@@ -156,7 +177,6 @@ func (s *PitchService) ConfirmUpload(ctx context.Context, tripID, pitchID, userI
 	if pitch.UserID != userID {
 		return errs.Forbidden()
 	}
-
 	_, err = s.s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(s.bucketName),
 		Key:    aws.String(pitch.AudioS3Key),
@@ -168,34 +188,11 @@ func (s *PitchService) ConfirmUpload(ctx context.Context, tripID, pitchID, userI
 		}
 		return fmt.Errorf("check audio upload: %w", err)
 	}
-
-	go s.notifyNewPitch(tripID, userID)
 	return nil
 }
 
-const notificationTimeout = 30 * time.Second
-
-func (s *PitchService) notifyNewPitch(tripID uuid.UUID, actorID uuid.UUID) {
-	if s.notificationService == nil {
-		return
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), notificationTimeout)
-	defer cancel()
-	err := s.notificationService.NotifyTripMembers(
-		ctx,
-		tripID,
-		actorID,
-		models.NotificationPreferenceNewPitch,
-		"New pitch",
-		"A new pitch has been added to your trip",
-		nil,
-	)
-	if err != nil {
-		log.Printf("Failed to send new pitch notification: %v", err)
-	}
-}
-
-// GetByID returns a pitch by id and trip id with presigned URLs for audio and images.
+// GetByID returns a pitch by id and trip id with presigned URLs for audio, images, links, and comment stats.
+// Images, links, and comment stats are fetched concurrently.
 func (s *PitchService) GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (*models.PitchAPIResponse, error) {
 	pitch, err := s.pitchRepo.FindByIDAndTripID(ctx, pitchID, tripID)
 	if err != nil {
@@ -205,20 +202,44 @@ func (s *PitchService) GetByID(ctx context.Context, tripID, pitchID uuid.UUID) (
 	if err != nil {
 		return nil, fmt.Errorf("presign download URL: %w", err)
 	}
-	imageKeys, err := s.pitchRepo.GetImagesForPitch(ctx, pitchID)
-	if err != nil {
-		return nil, fmt.Errorf("fetch pitch images: %w", err)
+
+	var imageKeys []models.PitchImageKey
+	var links []*models.PitchLink
+	var statsMap map[uuid.UUID]*models.PitchCommentStats
+
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		imageKeys, err = s.pitchRepo.GetImagesForPitch(gctx, pitchID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		links, err = s.pitchLinkRepo.FindByPitchID(gctx, pitchID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		statsMap, err = s.commentRepo.GetCommentStatsForPitches(gctx, []uuid.UUID{pitchID})
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
+
 	images, err := s.presignImageKeys(ctx, imageKeys)
 	if err != nil {
 		return nil, err
 	}
-	resp := pitchToAPIResponse(pitch, audioURL, images)
+	resp, err := s.enrichedPitchToAPIResponse(ctx, pitch, audioURL, images, links, statsMap[pitchID])
+	if err != nil {
+		return nil, err
+	}
 	return &resp, nil
 }
 
-// List returns pitches for a trip with cursor-based pagination; each item includes a presigned audio URL
-// and associated image keys (batch-loaded to avoid N+1).
+// List returns pitches for a trip with cursor-based pagination. Images, links, and comment stats
+// are batch-fetched concurrently to avoid N+1 queries.
 func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.PitchCursorPageResult, error) {
 	if limit <= 0 {
 		limit = 20
@@ -241,14 +262,33 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 		return nil, err
 	}
 
-	// Batch-load all images in a single query to avoid N+1.
 	pitchIDs := make([]uuid.UUID, len(pitches))
 	for i, p := range pitches {
 		pitchIDs[i] = p.ID
 	}
-	imageKeyMap, err := s.pitchRepo.GetImagesForPitches(ctx, pitchIDs)
-	if err != nil {
-		return nil, fmt.Errorf("batch fetch pitch images: %w", err)
+
+	var imageKeyMap map[uuid.UUID][]models.PitchImageKey
+	var linkMap map[uuid.UUID][]*models.PitchLink
+	var statsMap map[uuid.UUID]*models.PitchCommentStats
+
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		imageKeyMap, err = s.pitchRepo.GetImagesForPitches(gctx, pitchIDs)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		linkMap, err = s.pitchLinkRepo.FindByPitchIDs(gctx, pitchIDs)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		statsMap, err = s.commentRepo.GetCommentStatsForPitches(gctx, pitchIDs)
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
 
 	items := make([]*models.PitchAPIResponse, 0, len(pitches))
@@ -261,7 +301,10 @@ func (s *PitchService) List(ctx context.Context, tripID uuid.UUID, limit int, cu
 		if err != nil {
 			return nil, err
 		}
-		resp := pitchToAPIResponse(p, audioURL, images)
+		resp, err := s.enrichedPitchToAPIResponse(ctx, p, audioURL, images, linkMap[p.ID], statsMap[p.ID])
+		if err != nil {
+			return nil, err
+		}
 		items = append(items, &resp)
 	}
 
@@ -296,9 +339,6 @@ func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.
 		if err := s.validateImageIDs(ctx, *req.ImageIDs); err != nil {
 			return nil, err
 		}
-		// UpdateWithImages is additive (ON CONFLICT DO NOTHING), not a replacement.
-		// Enforce the cap against the post-merge total so we cannot silently
-		// accumulate more than MaxPitchImages even across separate calls.
 		if len(*req.ImageIDs) > 0 {
 			existingIDs, err := s.pitchRepo.GetImageIDsForPitch(ctx, pitchID)
 			if err != nil {
@@ -323,42 +363,104 @@ func (s *PitchService) Update(ctx context.Context, tripID, pitchID, userID uuid.
 		}
 	}
 
-	// When image_ids are provided, use UpdateWithImages so metadata update and
-	// image association merge happen atomically in a single transaction.
-	var updated *models.TripPitch
+	// After mutation, merge updated fields with enriched existing record (username, profile pic)
+	// to avoid a second DB round-trip.
+	finalPitch := existing
 	if req.ImageIDs != nil {
-		var err error
-		updated, err = s.pitchRepo.UpdateWithImages(ctx, pitchID, tripID, &req, *req.ImageIDs)
+		updated, err := s.pitchRepo.UpdateWithImages(ctx, pitchID, tripID, &req, *req.ImageIDs)
 		if err != nil {
 			return nil, err
 		}
+		finalPitch = mergeUpdatedPitch(updated, existing)
 	} else if req.Title != nil || req.Description != nil || req.Duration != nil {
-		var err error
-		updated, err = s.pitchRepo.Update(ctx, pitchID, tripID, &req)
+		updated, err := s.pitchRepo.Update(ctx, pitchID, tripID, &req)
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		updated = existing
+		finalPitch = mergeUpdatedPitch(updated, existing)
 	}
 
-	audioURL, err := s.presignGetURL(ctx, updated.AudioS3Key)
+	audioURL, err := s.presignGetURL(ctx, finalPitch.AudioS3Key)
 	if err != nil {
 		return nil, fmt.Errorf("presign download URL: %w", err)
 	}
 
-	// Always read back the current images so the response is consistent.
-	imageKeys, err := s.pitchRepo.GetImagesForPitch(ctx, pitchID)
-	if err != nil {
-		return nil, fmt.Errorf("fetch pitch images: %w", err)
+	var imageKeys []models.PitchImageKey
+	var links []*models.PitchLink
+	var statsMap map[uuid.UUID]*models.PitchCommentStats
+
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		imageKeys, err = s.pitchRepo.GetImagesForPitch(gctx, pitchID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		links, err = s.pitchLinkRepo.FindByPitchID(gctx, pitchID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		statsMap, err = s.commentRepo.GetCommentStatsForPitches(gctx, []uuid.UUID{pitchID})
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
+
 	images, err := s.presignImageKeys(ctx, imageKeys)
 	if err != nil {
 		return nil, err
 	}
-
-	resp := pitchToAPIResponse(updated, audioURL, images)
+	resp, err := s.enrichedPitchToAPIResponse(ctx, finalPitch, audioURL, images, links, statsMap[pitchID])
+	if err != nil {
+		return nil, err
+	}
 	return &resp, nil
+}
+
+// mergeUpdatedPitch combines mutable fields from a TripPitch (post-update) with
+// the user-enriched fields from the pre-fetched PitchDatabaseResponse, avoiding
+// an extra DB round-trip after an update.
+func mergeUpdatedPitch(updated *models.TripPitch, src *models.PitchDatabaseResponse) *models.PitchDatabaseResponse {
+	return &models.PitchDatabaseResponse{
+		ID:                updated.ID,
+		TripID:            updated.TripID,
+		UserID:            updated.UserID,
+		Title:             updated.Title,
+		Description:       updated.Description,
+		AudioS3Key:        updated.AudioS3Key,
+		Duration:          updated.Duration,
+		CreatedAt:         updated.CreatedAt,
+		UpdatedAt:         updated.UpdatedAt,
+		Username:          src.Username,
+		ProfilePictureKey: src.ProfilePictureKey,
+	}
+}
+
+// addPitchToRankPoll adds the pitch as an option to the trip's rank poll if one exists.
+// Failures are logged and silently ignored — pitch creation must not fail because of poll state.
+func (s *PitchService) addPitchToRankPoll(ctx context.Context, tripID, pitchID uuid.UUID, title string) {
+	if s.tripRepo == nil || s.pollRepo == nil {
+		return
+	}
+	trip, err := s.tripRepo.Find(ctx, tripID)
+	if err != nil || trip.RankPollID == nil {
+		return
+	}
+	entityType := "pitch"
+	option := &models.PollOption{
+		ID:         uuid.New(),
+		PollID:     *trip.RankPollID,
+		OptionType: models.OptionTypeEntity,
+		EntityType: &entityType,
+		EntityID:   &pitchID,
+		Name:       title,
+	}
+	if _, err := s.pollRepo.AddOption(ctx, option, constants.MaxPollOptions); err != nil {
+		log.Printf("failed to add pitch %s to rank poll %s: %v", pitchID, *trip.RankPollID, err)
+	}
 }
 
 // Delete removes a pitch by id and trip id.
@@ -390,13 +492,11 @@ func (s *PitchService) validateImageIDs(ctx context.Context, imageIDs []uuid.UUI
 		}
 		seen[id] = struct{}{}
 	}
-	// Batch check: verify all images exist and are confirmed in a single query
 	confirmedIDs, err := s.imageRepo.FindConfirmedByIDs(ctx, imageIDs)
 	if err != nil {
 		return err
 	}
 	if len(confirmedIDs) != len(imageIDs) {
-		// Find which IDs are missing
 		confirmedSet := make(map[uuid.UUID]struct{}, len(confirmedIDs))
 		for _, id := range confirmedIDs {
 			confirmedSet[id] = struct{}{}
@@ -408,6 +508,54 @@ func (s *PitchService) validateImageIDs(ctx context.Context, imageIDs []uuid.UUI
 		}
 	}
 	return nil
+}
+
+func (s *PitchService) enrichedPitchToAPIResponse(ctx context.Context, p *models.PitchDatabaseResponse, audioURL string, images []models.PitchImageInfo, links []*models.PitchLink, stats *models.PitchCommentStats) (models.PitchAPIResponse, error) {
+	var profilePictureURL *string
+	if p.ProfilePictureKey != nil {
+		url, err := s.presignGetURL(ctx, *p.ProfilePictureKey)
+		if err == nil {
+			profilePictureURL = &url
+		}
+	}
+
+	commentCount := 0
+	commentPreviews := []models.CommenterPreview{}
+	if stats != nil {
+		commentCount = stats.Count
+		commentPreviews = make([]models.CommenterPreview, 0, len(stats.Previews))
+		for _, c := range stats.Previews {
+			preview := models.CommenterPreview{
+				UserID:   c.UserID,
+				Username: c.Username,
+			}
+			if c.ProfilePictureKey != nil {
+				url, err := s.presignGetURL(ctx, *c.ProfilePictureKey)
+				if err == nil {
+					preview.ProfilePictureURL = &url
+				}
+			}
+			commentPreviews = append(commentPreviews, preview)
+		}
+	}
+
+	return models.PitchAPIResponse{
+		ID:                p.ID,
+		TripID:            p.TripID,
+		UserID:            p.UserID,
+		Username:          p.Username,
+		ProfilePictureURL: profilePictureURL,
+		Title:             p.Title,
+		Description:       p.Description,
+		AudioURL:          audioURL,
+		Duration:          p.Duration,
+		Images:            images,
+		Links:             links,
+		CommentCount:      commentCount,
+		CommentPreviews:   commentPreviews,
+		CreatedAt:         p.CreatedAt,
+		UpdatedAt:         p.UpdatedAt,
+	}, nil
 }
 
 func pitchToAPIResponse(p *models.TripPitch, audioURL string, images []models.PitchImageInfo) models.PitchAPIResponse {
@@ -425,7 +573,6 @@ func pitchToAPIResponse(p *models.TripPitch, audioURL string, images []models.Pi
 	}
 }
 
-// presignImageKeys converts image keys to presigned URLs
 func (s *PitchService) presignImageKeys(ctx context.Context, imageKeys []models.PitchImageKey) ([]models.PitchImageInfo, error) {
 	if len(imageKeys) == 0 {
 		return []models.PitchImageInfo{}, nil
@@ -445,7 +592,6 @@ func (s *PitchService) presignImageKeys(ctx context.Context, imageKeys []models.
 }
 
 // extensionFromContentType returns a file extension for allowed audio MIME types.
-// Unsupported types return a non-nil error including the contentType for diagnosis.
 func extensionFromContentType(contentType string) (string, error) {
 	contentType = strings.TrimSpace(strings.ToLower(contentType))
 	switch {

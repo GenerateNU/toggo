@@ -6,9 +6,13 @@ import { Icon } from "../icons/icon";
 
 interface BackButtonProps {
   onPress?: () => void;
+  hasBackground?: boolean;
 }
 
-export const BackButton: React.FC<BackButtonProps> = ({ onPress }) => {
+export const BackButton: React.FC<BackButtonProps> = ({
+  onPress,
+  hasBackground = false,
+}) => {
   const router = useRouter();
 
   return (
@@ -16,7 +20,14 @@ export const BackButton: React.FC<BackButtonProps> = ({ onPress }) => {
       onTouchEnd={onPress ?? router.back}
       alignItems="center"
       justifyContent="center"
+<<<<<<< HEAD
       style={{ width: 36, height: 36 }}
+=======
+      width={36}
+      height={36}
+      borderRadius={hasBackground ? "md" : undefined}
+      backgroundColor={hasBackground ? "gray50" : undefined}
+>>>>>>> origin
     >
       <Icon icon={ArrowLeft} size="sm" color="black" />
     </Box>

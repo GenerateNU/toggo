@@ -199,7 +199,7 @@ export default function HomeScreen() {
 
   const handleCreateTrip = async () => {
     const data = {
-      name: "Spring Break",
+      name: "Trip Name",
       budget_min: 1,
       budget_max: 1000,
     };
@@ -240,7 +240,7 @@ export default function HomeScreen() {
               >
                 <Box
                   paddingTop="sm"
-                  paddingHorizontal="md"
+                  paddingHorizontal="sm"
                   paddingBottom="lg"
                   gap="sm"
                 >
@@ -346,7 +346,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" paddingHorizontal="md">
+          <Box gap="sm" paddingHorizontal="sm">
             <Text variant="headingMd" color="gray900">
               Past Trips
             </Text>

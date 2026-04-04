@@ -78,16 +78,21 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 		currency = "USD"
 	}
 
+	if req.PitchDeadline != nil && req.PitchDeadline.Before(time.Now().UTC()) {
+		return nil, errs.BadRequest(errors.New("pitch_deadline must be in the future"))
+	}
+
 	// Create trip
 	trip := &models.Trip{
-		ID:           uuid.New(),
-		Name:         req.Name,
-		CoverImageID: req.CoverImageID,
-		BudgetMin:    req.BudgetMin,
-		BudgetMax:    req.BudgetMax,
-		Currency:     currency,
-		StartDate:    req.StartDate,
-		EndDate:      req.EndDate,
+		ID:            uuid.New(),
+		Name:          req.Name,
+		CoverImageID:  req.CoverImageID,
+		BudgetMin:     req.BudgetMin,
+		BudgetMax:     req.BudgetMax,
+		Currency:      currency,
+		PitchDeadline: req.PitchDeadline,
+		StartDate:     req.StartDate,
+		EndDate:       req.EndDate,
 	}
 
 	// Use transaction to ensure trip creation, membership, and default categories are atomic
@@ -192,6 +197,8 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			BudgetMin:     tripData.BudgetMin,
 			BudgetMax:     tripData.BudgetMax,
 			Currency:      tripData.Currency,
+			PitchDeadline: tripData.PitchDeadline,
+			RankPollID:    tripData.RankPollID,
 			StartDate:     tripData.StartDate,
 			EndDate:       tripData.EndDate,
 			CreatedAt:     tripData.CreatedAt,
@@ -234,7 +241,32 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID 
 		return nil, errs.BadRequest(errors.New("end date must be after start date"))
 	}
 
-	trip, err := s.Trip.Update(ctx, tripID, &req)
+	if req.CoverImageID != nil {
+		_, err := s.Image.FindByID(ctx, *req.CoverImageID)
+		if err != nil {
+			if errors.Is(err, errs.ErrNotFound) {
+				return nil, errs.BadRequest(errors.New("cover image not found"))
+			}
+			return nil, err
+		}
+	}
+
+	if req.PitchDeadline != nil && req.PitchDeadline.Before(time.Now().UTC()) {
+		return nil, errs.BadRequest(errors.New("pitch_deadline must be in the future"))
+	}
+
+	var trip *models.Trip
+	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var txErr error
+		trip, txErr = s.Trip.UpdateTx(ctx, tx, tripID, &req)
+		if txErr != nil {
+			return txErr
+		}
+		if req.PitchDeadline != nil && trip.RankPollID == nil {
+			return s.createTripRankPollTx(ctx, tx, trip, actorID)
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -282,11 +314,33 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		BudgetMin:     tripData.BudgetMin,
 		BudgetMax:     tripData.BudgetMax,
 		Currency:      tripData.Currency,
+		PitchDeadline: tripData.PitchDeadline,
+		RankPollID:    tripData.RankPollID,
 		StartDate:     tripData.StartDate,
 		EndDate:       tripData.EndDate,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil
+}
+
+const rankPollQuestion = "Rank your top destinations"
+
+func (s *TripService) createTripRankPollTx(ctx context.Context, tx bun.Tx, trip *models.Trip, creatorID uuid.UUID) error {
+	poll := &models.Poll{
+		ID:        uuid.New(),
+		TripID:    trip.ID,
+		CreatedBy: creatorID,
+		Question:  rankPollQuestion,
+		PollType:  models.PollTypeRank,
+	}
+	if _, err := tx.NewInsert().Model(poll).Returning("*").Exec(ctx, poll); err != nil {
+		return err
+	}
+	if err := s.Trip.SetRankPollIDTx(ctx, tx, trip.ID, poll.ID); err != nil {
+		return err
+	}
+	trip.RankPollID = &poll.ID
+	return nil
 }
 
 const defaultInviteExpiry = 7 * 24 * time.Hour

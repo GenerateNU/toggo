@@ -15,16 +15,17 @@ const Layout = () => {
         headerLeft: () => <BackButton />,
         headerBackVisible: false,
         headerTitleAlign: "center",
-        headerTransparent: true,
+        headerTransparent: false,
+        headerShadowVisible: false,
         headerTitle: "",
       }}
     >
       <Stack.Screen
         name="index"
         options={{
-          headerShown: false,
+          headerShown: true,
           headerTitle: "",
-          headerTransparent: true,
+          headerTransparent: false,
           gestureEnabled: false,
         }}
       />

@@ -21,6 +21,9 @@ export type TextFieldProps = {
   autoCapitalize?: TextInputProps["autoCapitalize"];
   secureTextEntry?: boolean;
   maxLength?: number;
+  multiline?: boolean;
+  returnKeyType?: TextInputProps["returnKeyType"];
+  onSubmitEditing?: TextInputProps["onSubmitEditing"];
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -37,6 +40,9 @@ export default function TextField({
   autoCapitalize = "none",
   secureTextEntry,
   maxLength,
+  multiline,
+  returnKeyType,
+  onSubmitEditing,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
 
@@ -81,6 +87,9 @@ export default function TextField({
           autoCapitalize={autoCapitalize}
           secureTextEntry={secureTextEntry}
           maxLength={maxLength}
+          multiline={multiline}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
         />
       </Box>
       {error && (

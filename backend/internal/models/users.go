@@ -29,7 +29,7 @@ type UpdateUserRequest struct {
 	Name           *string    `validate:"omitempty,min=1" json:"name"`
 	Username       *string    `validate:"omitempty,username" json:"username"`
 	PhoneNumber    *string    `validate:"omitempty,phone" json:"phone_number"`
-	ProfilePicture *uuid.UUID `validate:"omitempty,uuid" json:"profile_picture,omitempty"`
+	ProfilePicture *uuid.UUID `validate:"omitempty" json:"profile_picture,omitempty"`
 	DeviceToken    *string    `validate:"omitempty,max=200" json:"device_token"`
 	Timezone       *string    `validate:"omitempty,timezone" json:"timezone"`
 }

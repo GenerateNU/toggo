@@ -340,6 +340,15 @@ definitions:
           $ref: '#/definitions/models.CommentReactionSummary'
         type: array
     type: object
+  models.CommenterPreview:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -861,6 +870,10 @@ definitions:
         type: string
       option_type:
         $ref: '#/definitions/models.OptionType'
+      rank_breakdown:
+        additionalProperties:
+          type: integer
+        type: object
       vote_count:
         type: integer
     type: object
@@ -912,6 +925,12 @@ definitions:
     properties:
       audio_url:
         type: string
+      comment_count:
+        type: integer
+      comment_previews:
+        items:
+          $ref: '#/definitions/models.CommenterPreview'
+        type: array
       created_at:
         type: string
       description:
@@ -924,6 +943,12 @@ definitions:
         items:
           $ref: '#/definitions/models.PitchImageInfo'
         type: array
+      links:
+        items:
+          $ref: '#/definitions/models.PitchLink'
+        type: array
+      profile_picture_url:
+        type: string
       title:
         type: string
       trip_id:
@@ -931,6 +956,8 @@ definitions:
       updated_at:
         type: string
       user_id:
+        type: string
+      username:
         type: string
     type: object
   models.PitchCursorPageResult:
@@ -949,6 +976,27 @@ definitions:
       id:
         type: string
       medium_url:
+        type: string
+    type: object
+  models.PitchLink:
+    properties:
+      added_by:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      pitch_id:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      url:
         type: string
     type: object
   models.PlaceDetailsRequest:
@@ -1376,15 +1424,13 @@ definitions:
         type: string
       currency:
         type: string
-      end_date:
-        format: date-time
-        type: string
       id:
         type: string
       name:
         type: string
-      start_date:
-        format: date-time
+      pitch_deadline:
+        type: string
+      rank_poll_id:
         type: string
       updated_at:
         type: string
@@ -1407,6 +1453,10 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      pitch_deadline:
+        type: string
+      rank_poll_id:
         type: string
       start_date:
         format: date-time
@@ -1563,23 +1613,28 @@ definitions:
   models.UpdateTripRequest:
     properties:
       budget_max:
-        minimum: 0
         type: integer
       budget_min:
-        minimum: 0
         type: integer
       cover_image_id:
+        type: string
+      created_at:
         type: string
       currency:
         type: string
       end_date:
         format: date-time
         type: string
+      id:
+        type: string
       name:
-        minLength: 1
+        type: string
+      pitch_deadline:
         type: string
       start_date:
         format: date-time
+        type: string
+      updated_at:
         type: string
     type: object
   models.UpdateUserNotificationPreferencesRequest:

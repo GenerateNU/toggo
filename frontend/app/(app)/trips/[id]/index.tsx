@@ -4,7 +4,7 @@ import {
 } from "@/api/polls/useGetPollsByTripID";
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
-import { useGetTrip } from "@/api/trips/useGetTrip";
+import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
@@ -13,17 +13,31 @@ import CreatePollSheet, {
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
-import { Box, ErrorState, Text } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  Chip,
+  ErrorState,
+  Text,
+  TextField,
+} from "@/design-system";
+import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import * as Linking from "expo-linking";
-import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
-  ArrowLeft,
+  router,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import {
   BellDot,
   Binoculars,
   Calendar,
@@ -33,7 +47,8 @@ import {
   Map,
   MapPin,
   PiggyBank,
-  Settings2,
+  Settings,
+  type LucideIcon,
 } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -42,6 +57,7 @@ import {
   ScrollView,
   Share,
   StyleSheet,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -78,26 +94,10 @@ function InviteFriendsButton({
   onPress: () => void;
   loading: boolean;
 }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={loading}
-      style={({ pressed }) => [
-        styles.inviteButton,
-        (pressed || loading) && styles.inviteButtonPressed,
-      ]}
-      accessibilityRole="button"
-      accessibilityLabel="Invite friends"
-    >
-      {loading ? (
-        <ActivityIndicator size="small" color={ColorPalette.gray500} />
-      ) : (
-        <Text variant="bodyXsMedium" color="gray500">
-          + Invite Friends
-        </Text>
-      )}
-    </Pressable>
-  );
+  if (loading) {
+    return <ActivityIndicator size="small" color={ColorPalette.gray500} />;
+  }
+  return <Chip label="+ Invite Friends" onPress={onPress} />;
 }
 
 type TripTabBarProps = {
@@ -106,19 +106,15 @@ type TripTabBarProps = {
 };
 
 function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
-  const tabs: Array<{
-    key: TabKey;
-    label?: string;
-    icon: React.ComponentType<any>;
-  }> = [
-    { key: "new", label: "New", icon: BellDot },
-    { key: "itinerary", label: "Itinerary", icon: List },
-    { key: "polls", label: "Polls", icon: ChartColumnBig },
-    { key: "housing", label: "Housing", icon: House },
-    { key: "budget", label: "Budget", icon: PiggyBank },
-    { key: "activities", label: "Activities", icon: Binoculars },
-    { key: "settings", icon: Settings2 },
-  ];
+  const tabs: { key: TabKey; label?: string; icon: LucideIcon | undefined }[] =
+    [
+      { key: "new", label: "New", icon: BellDot },
+      { key: "itinerary", label: "Itinerary", icon: List },
+      { key: "polls", label: "Polls", icon: ChartColumnBig },
+      { key: "housing", label: "Housing", icon: House },
+      { key: "budget", label: "Budget", icon: PiggyBank },
+      { key: "activities", label: "Activities", icon: Binoculars },
+    ];
 
   return (
     <ScrollView
@@ -126,35 +122,16 @@ function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.tabBarContent}
     >
-      {tabs.map(({ key, label, icon: Icon }) => {
-        const isActive = activeTab === key;
-        return (
-          <Pressable
-            key={key}
-            onPress={() => onTabPress(key)}
-            style={({ pressed }) => [
-              styles.tabItem,
-              isActive ? styles.tabItemActive : styles.tabItemInactive,
-              pressed && styles.tabItemPressed,
-            ]}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: isActive }}
-          >
-            <Icon
-              size={16}
-              color={isActive ? ColorPalette.white : ColorPalette.gray950}
-            />
-            {label ? (
-              <Text
-                variant="bodyDefault"
-                color={isActive ? "white" : "gray950"}
-              >
-                {label}
-              </Text>
-            ) : null}
-          </Pressable>
-        );
-      })}
+      {tabs.map(({ key, label, icon }) => (
+        <Chip
+          key={key}
+          label={label ?? ""}
+          icon={icon}
+          selected={activeTab === key}
+          onPress={() => onTabPress(key)}
+          variant="filled"
+        />
+      ))}
     </ScrollView>
   );
 }
@@ -164,7 +141,7 @@ function ItineraryEmptyState() {
     <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
       <Box alignItems="center" paddingVertical="lg">
         <Text
-          variant="bodyDefault"
+          variant="bodySmDefault"
           color="gray950"
           style={styles.emptyStateText}
         >
@@ -172,6 +149,62 @@ function ItineraryEmptyState() {
         </Text>
       </Box>
     </Box>
+  );
+}
+
+// ─── Location sheet ───────────────────────────────────────────────────────────
+
+type LocationOptionsSheetProps = {
+  bottomSheetRef: React.RefObject<any>;
+  locationDraft: string;
+  onLocationDraftChange: (text: string) => void;
+  onLocationConfirm: () => void;
+  onVoteOnDestination: () => void;
+  onDismiss: () => void;
+};
+
+function LocationOptionsSheet({
+  bottomSheetRef,
+  locationDraft,
+  onLocationDraftChange,
+  onLocationConfirm,
+  onVoteOnDestination,
+  onDismiss,
+}: LocationOptionsSheetProps) {
+  return (
+    <BottomSheet ref={bottomSheetRef} snapPoints={["45%"]} onClose={onDismiss}>
+      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
+        <Box gap="xxs">
+          <Text variant="headingMd" color="gray950">
+            Where are you going?
+          </Text>
+          <Text variant="bodyDefault" color="gray500">
+            Set your trip destination
+          </Text>
+        </Box>
+        <Box gap="sm">
+          <TextField
+            value={locationDraft}
+            onChangeText={onLocationDraftChange}
+            placeholder="e.g. Paris, France"
+            returnKeyType="done"
+            onSubmitEditing={onLocationConfirm}
+          />
+          <Button
+            layout="textOnly"
+            label="Set Location"
+            variant="Primary"
+            onPress={onLocationConfirm}
+          />
+          <Button
+            layout="textOnly"
+            label="Vote on a Destination"
+            variant="Secondary"
+            onPress={onVoteOnDestination}
+          />
+        </Box>
+      </Box>
+    </BottomSheet>
   );
 }
 
@@ -294,11 +327,15 @@ export default function Trip() {
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
   const createInviteMutation = useCreateTripInvite();
   const updateTripMutation = useUpdateTrip();
-  const dateSheetRef = useRef<any>(null);
-  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
   const queryClient = useQueryClient();
+  const dateSheetRef = useRef<any>(null);
+  const locationSheetRef = useRef<any>(null);
+  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
-  const { data: trip, isLoading, refetch } = useGetTrip(tripID!);
+  const [locationDraft, setLocationDraft] = useState("");
+  const [locationText, setLocationText] = useState<string | null>(null);
+
+  const { data: trip, isLoading } = useGetTrip(tripID!);
 
   const handleTabPress = (tab: TabKey) => {
     if (tab === "settings") {
@@ -327,7 +364,7 @@ export default function Trip() {
       const code = invite.code;
       if (!code) return;
 
-      const deepLink = Linking.createURL("join", { queryParams: { code } });
+      const deepLink = Linking.createURL(`invite/${code}`);
       await Share.share({
         message: `Join my trip on Toggo! ${deepLink}`,
         url: deepLink,
@@ -347,7 +384,9 @@ export default function Trip() {
           ...(range.end ? { end_date: range.end.toISOString() } : {}),
         },
       });
-      await refetch();
+      await queryClient.invalidateQueries({
+        queryKey: getTripQueryKey(tripID!),
+      });
     } catch {
       // non-blocking
     } finally {
@@ -355,136 +394,165 @@ export default function Trip() {
     }
   };
 
+  const handleLocationPress = () => {
+    locationSheetRef.current?.snapToIndex(0);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        locationSheetRef.current?.close();
+      };
+    }, []),
+  );
+
+  const handleLocationConfirm = () => {
+    if (locationDraft.trim()) {
+      setLocationText(locationDraft.trim());
+    }
+    locationSheetRef.current?.close();
+  };
+
+  const handleVoteOnDestination = () => {
+    locationSheetRef.current?.close();
+    router.push(`/trips/${tripID}/pitches/creation` as any);
+  };
+
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header bar */}
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="sm"
-        paddingVertical="xs"
-      >
-        <Pressable
-          onPress={router.back}
-          hitSlop={styles.hitSlop}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <ArrowLeft size={20} color={ColorPalette.gray950} />
-        </Pressable>
+      {/* Cover image background */}
+      {trip?.cover_image_url ? (
+        <Image
+          source={{ uri: trip.cover_image_url }}
+          style={styles.coverImage}
+          contentFit="cover"
+        />
+      ) : (
+        <View style={[styles.coverImage, styles.coverImageFallback]} />
+      )}
 
-        <Pressable
-          onPress={() => router.push(`/trips/${tripID}/search-location` as any)}
-          style={styles.mapButton}
-          accessibilityRole="button"
-          accessibilityLabel="View map"
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="sm"
+          paddingVertical="xs"
         >
-          <Map size={16} color={ColorPalette.gray950} />
-          <Text variant="bodyMedium" color="gray950">
-            Map
-          </Text>
-        </Pressable>
-      </Box>
+          <BackButton />
 
-      {/* White content card */}
-      <Box style={styles.card}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Trip header */}
-          <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
-            <Box
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              {isLoading ? (
-                <Box
-                  width={160}
-                  height={28}
-                  backgroundColor="gray100"
-                  borderRadius="xs"
-                />
-              ) : (
-                <Text variant="headingXl" color="gray950">
-                  {trip?.name ?? "Trip"}
-                </Text>
-              )}
+          <Pressable
+            onPress={() =>
+              router.push(`/trips/${tripID}/search-location` as any)
+            }
+            style={styles.mapButton}
+            accessibilityRole="button"
+            accessibilityLabel="View map"
+          >
+            <Map size={16} color={ColorPalette.gray950} />
+            <Text variant="bodySmMedium" color="gray950">
+              Map
+            </Text>
+          </Pressable>
+        </Box>
 
-              <Box flexDirection="row" alignItems="center" gap="sm">
-                <InviteFriendsButton
-                  onPress={handleInvite}
-                  loading={createInviteMutation.isPending}
-                />
+        {/* White content card */}
+        <Box style={styles.card}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Trip header */}
+            <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
+              <Box
+                flexDirection="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                {isLoading ? (
+                  <Box
+                    width={160}
+                    height={28}
+                    backgroundColor="gray100"
+                    borderRadius="xs"
+                  />
+                ) : (
+                  <Text variant="headingMd" color="gray950">
+                    {trip?.name ?? "Trip"}
+                  </Text>
+                )}
+
+                <Box flexDirection="row" alignItems="center" gap="sm">
+                  <InviteFriendsButton
+                    onPress={handleInvite}
+                    loading={createInviteMutation.isPending}
+                  />
+                  <Pressable
+                    onPress={() =>
+                      router.push(`/trips/${tripID}/settings` as any)
+                    }
+                    hitSlop={styles.hitSlop}
+                    accessibilityRole="button"
+                    accessibilityLabel="Trip settings"
+                  >
+                    <Settings size={20} color={ColorPalette.gray950} />
+                  </Pressable>
+                </Box>
+              </Box>
+
+              {/* Trip meta */}
+              <Box gap="xs">
                 <Pressable
-                  onPress={() =>
-                    router.push(`/trips/${tripID}/settings` as any)
-                  }
-                  hitSlop={styles.hitSlop}
+                  onPress={() => dateSheetRef.current?.snapToIndex(0)}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                   accessibilityRole="button"
-                  accessibilityLabel="Trip settings"
+                  accessibilityLabel="Set trip dates"
                 >
-                  <Settings2 size={20} color={ColorPalette.gray950} />
+                  <Box flexDirection="row" alignItems="center" gap="xxs">
+                    <Calendar size={16} color={ColorPalette.gray500} />
+                    <Text variant="bodySmDefault" color="gray500">
+                      {tripDate ?? "Add dates"}
+                    </Text>
+                  </Box>
+                </Pressable>
+                <Pressable
+                  onPress={handleLocationPress}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Set trip location"
+                >
+                  <Box flexDirection="row" alignItems="center" gap="xxs">
+                    <MapPin size={16} color={ColorPalette.gray500} />
+                    <Text variant="bodySmDefault" color="gray500">
+                      {locationText ?? "Add location"}
+                    </Text>
+                  </Box>
                 </Pressable>
               </Box>
             </Box>
 
-            {/* Trip meta */}
-            <Box gap="xs">
-              <Pressable
-                onPress={() => dateSheetRef.current?.snapToIndex(0)}
-                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                accessibilityRole="button"
-                accessibilityLabel="Set trip dates"
-              >
-                <Box flexDirection="row" alignItems="center" gap="xxs">
-                  <Calendar size={16} color={ColorPalette.gray500} />
-                  <Text variant="bodySmDefault" color="gray500">
-                    {tripDate ?? "Add dates"}
-                  </Text>
-                </Box>
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  router.push(`/trips/${tripID}/search-location` as any)
-                }
-                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                accessibilityRole="button"
-                accessibilityLabel="Set trip location"
-              >
-                <Box flexDirection="row" alignItems="center" gap="xxs">
-                  <MapPin size={16} color={ColorPalette.gray500} />
-                  <Text variant="bodySmDefault" color="gray500">
-                    Add location
-                  </Text>
-                </Box>
-              </Pressable>
+            {/* Tab bar */}
+            <Box paddingTop="sm">
+              <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
             </Box>
-          </Box>
 
-          {/* Tab bar */}
-          <Box paddingTop="sm">
-            <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
-          </Box>
-
-          {/* Tab content */}
-          <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
-            {activeTab === "itinerary" && <ItineraryEmptyState />}
-            {activeTab === "polls" && (
-              <PollsTabContent
-                tripId={tripID!}
-                onCreatePoll={handleOpenCreatePoll}
-              />
-            )}
-          </Box>
-        </ScrollView>
-      </Box>
+            {/* Tab content */}
+            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
+              {activeTab === "itinerary" && <ItineraryEmptyState />}
+              {activeTab === "polls" && (
+                <PollsTabContent
+                  tripId={tripID!}
+                  onCreatePoll={handleOpenCreatePoll}
+                />
+              )}
+            </Box>
+          </ScrollView>
+        </Box>
+      </SafeAreaView>
 
       {activeTab === "polls" && (
         <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
@@ -502,16 +570,39 @@ export default function Trip() {
         onSkip={() => dateSheetRef.current?.close()}
         onDismiss={() => dateSheetRef.current?.close()}
       />
-    </SafeAreaView>
+
+      <LocationOptionsSheet
+        bottomSheetRef={locationSheetRef}
+        locationDraft={locationDraft}
+        onLocationDraftChange={setLocationDraft}
+        onLocationConfirm={handleLocationConfirm}
+        onVoteOnDestination={handleVoteOnDestination}
+        onDismiss={() => locationSheetRef.current?.close()}
+      />
+    </View>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: ColorPalette.gray950,
+  },
+  coverImage: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 260,
+  },
+  coverImageFallback: {
+    backgroundColor: ColorPalette.gray100,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: ColorPalette.gray50,
+    backgroundColor: "transparent",
   },
   mapButton: {
     flexDirection: "row",
@@ -533,46 +624,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     overflow: "hidden",
+    marginTop: 120,
   },
   scrollContent: {
     paddingBottom: Layout.spacing.xl,
     gap: 0,
   },
-  inviteButton: {
-    backgroundColor: ColorPalette.white,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: 5,
-    borderRadius: CornerRadius.full,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  inviteButtonPressed: {
-    opacity: 0.7,
-  },
   tabBarContent: {
     flexDirection: "row",
     gap: Layout.spacing.xs,
     paddingHorizontal: Layout.spacing.sm,
-  },
-  tabItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xxs + 4,
-    borderRadius: CornerRadius.sm,
-  },
-  tabItemActive: {
-    backgroundColor: ColorPalette.gray950,
-  },
-  tabItemInactive: {
-    backgroundColor: ColorPalette.gray50,
-  },
-  tabItemPressed: {
-    opacity: 0.75,
   },
   emptyStateText: {
     fontStyle: "italic",

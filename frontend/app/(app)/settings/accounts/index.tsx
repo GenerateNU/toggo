@@ -14,7 +14,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -168,14 +167,12 @@ export default function AccountScreen() {
                 value={firstName}
                 onChangeText={setFirstName}
                 autoCapitalize="words"
-                autoCorrect={false}
               />
               <TextField
                 label="Last Name"
                 value={lastName}
                 onChangeText={setLastName}
                 autoCapitalize="words"
-                autoCorrect={false}
               />
               <TextField
                 label="Phone Number"
