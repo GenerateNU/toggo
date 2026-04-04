@@ -55,7 +55,8 @@
         }
       ],
       "react-native-localize",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "@maplibre/maplibre-react-native"
     ],
     "extra": {
       "router": {},
