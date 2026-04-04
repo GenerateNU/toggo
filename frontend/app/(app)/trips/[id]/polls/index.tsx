@@ -191,7 +191,9 @@ export default function PollsScreen() {
   // Keep a stable ref so the WS handler always calls the latest refetch
   // without the effect needing to reconnect when refetch changes reference.
   const refetchPollsRef = useRef(refetchPolls);
-  refetchPollsRef.current = refetchPolls;
+  useEffect(() => {
+    refetchPollsRef.current = refetchPolls;
+  }, [refetchPolls]);
 
   // ─── WebSocket ─────────────────────────────────────────────────────────
 

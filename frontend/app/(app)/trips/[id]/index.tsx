@@ -249,13 +249,7 @@ function RankPollRow({
   return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
 }
 
-function PollsTabContent({
-  tripId,
-  onCreatePoll,
-}: {
-  tripId: string;
-  onCreatePoll: () => void;
-}) {
+function PollsTabContent({ tripId }: { tripId: string }) {
   const {
     data: pollsData,
     isLoading,
@@ -543,12 +537,7 @@ export default function Trip() {
             {/* Tab content */}
             <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
               {activeTab === "itinerary" && <ItineraryEmptyState />}
-              {activeTab === "polls" && (
-                <PollsTabContent
-                  tripId={tripID!}
-                  onCreatePoll={handleOpenCreatePoll}
-                />
-              )}
+              {activeTab === "polls" && <PollsTabContent tripId={tripID!} />}
             </Box>
           </ScrollView>
         </Box>
