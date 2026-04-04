@@ -12,9 +12,12 @@ import { Layout } from "@/design-system/tokens/layout";
 import { useDeeplinkInvite } from "@/hooks/useDeeplinkInvite";
 import { useCreateTrip } from "@/index";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
+import { router } from "expo-router";
 import { useCallback, useEffect, useRef } from "react";
 import { ActivityIndicator, FlatList } from "react-native";
 import { TripCard } from "./trips/[id]/components/trip-card";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function TripsListSkeleton() {
   return (
@@ -26,10 +29,12 @@ function TripsListSkeleton() {
   );
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function Home() {
   const { currentUser } = useUser();
   const createTripMutation = useCreateTrip();
-  const bottomSheetRef = useRef<any>(null);
+  const profileSheetRef = useRef<any>(null);
   const { handleProfileCreated } = useDeeplinkInvite();
 
   const needsProfile = !currentUser?.username;
@@ -37,7 +42,7 @@ export default function Home() {
   useEffect(() => {
     if (needsProfile) {
       const t = setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
+        profileSheetRef.current?.snapToIndex(0);
       }, 300);
       return () => clearTimeout(t);
     }
@@ -51,18 +56,23 @@ export default function Home() {
     prependTrip,
   } = useTripsList();
 
+  // ─── Trip creation ───────────────────────────────────────────────────────
+
   const handleCreateTrip = useCallback(async () => {
     try {
       const result = await createTripMutation.mutateAsync({
-        data: { name: "Spring Break", budget_min: 1, budget_max: 1000 },
+        data: { name: "New Trip", budget_min: 1, budget_max: 1000 },
       });
       if (result?.id) {
         prependTrip(result);
+        router.push(`/trips/${result.id}` as any);
       }
     } catch {
-      // handled silently, mutation error state covers feedback
+      // mutation error state covers feedback
     }
   }, [createTripMutation, prependTrip]);
+
+  // ─── Trip list rendering ─────────────────────────────────────────────────
 
   const renderTripItem = useCallback(
     ({ item }: { item: ModelsTripAPIResponse }) => <TripCard trip={item} />,
@@ -128,10 +138,10 @@ export default function Home() {
       />
 
       <CreateProfileSheet
-        bottomSheetRef={bottomSheetRef}
+        bottomSheetRef={profileSheetRef}
         needsProfile={needsProfile}
         onSuccess={async () => {
-          bottomSheetRef.current?.close();
+          profileSheetRef.current?.close();
           await handleProfileCreated();
         }}
       />
