@@ -2,7 +2,14 @@ import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
-import { BottomSheet, Box, Button, Chip, Text, TextField } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  Chip,
+  Text,
+  TextField,
+} from "@/design-system";
 import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -11,7 +18,12 @@ import { Layout } from "@/design-system/tokens/layout";
 import { useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
-import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import {
   BellDot,
   Binoculars,
@@ -81,14 +93,15 @@ type TripTabBarProps = {
 };
 
 function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
-  const tabs: { key: TabKey; label?: string; icon: LucideIcon | undefined }[] = [
-    { key: "new", label: "New", icon: BellDot },
-    { key: "itinerary", label: "Itinerary", icon: List },
-    { key: "polls", label: "Polls", icon: ChartColumnBig },
-    { key: "housing", label: "Housing", icon: House },
-    { key: "budget", label: "Budget", icon: PiggyBank },
-    { key: "activities", label: "Activities", icon: Binoculars },
-  ];
+  const tabs: { key: TabKey; label?: string; icon: LucideIcon | undefined }[] =
+    [
+      { key: "new", label: "New", icon: BellDot },
+      { key: "itinerary", label: "Itinerary", icon: List },
+      { key: "polls", label: "Polls", icon: ChartColumnBig },
+      { key: "housing", label: "Housing", icon: House },
+      { key: "budget", label: "Budget", icon: PiggyBank },
+      { key: "activities", label: "Activities", icon: Binoculars },
+    ];
 
   return (
     <ScrollView
@@ -144,11 +157,7 @@ function LocationOptionsSheet({
   onDismiss,
 }: LocationOptionsSheetProps) {
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      snapPoints={["45%"]}
-      onClose={onDismiss}
-    >
+    <BottomSheet ref={bottomSheetRef} snapPoints={["45%"]} onClose={onDismiss}>
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
         <Box gap="xxs">
           <Text variant="headingMd" color="gray950">

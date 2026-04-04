@@ -50,7 +50,8 @@ export default function Chip({
   icon: Icon,
   variant = "outlined",
 }: ChipProps) {
-  const variantStyle = VARIANT_STYLES[variant][selected ? "selected" : "unselected"];
+  const variantStyle =
+    VARIANT_STYLES[variant][selected ? "selected" : "unselected"];
   const iconColor = selected ? ColorPalette.white : ColorPalette.gray900;
 
   return (
@@ -64,7 +65,8 @@ export default function Chip({
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderWidth: 1,
-        borderRadius: variant === "filled" ? CornerRadius.sm : CornerRadius.full,
+        borderRadius:
+          variant === "filled" ? CornerRadius.sm : CornerRadius.full,
         borderColor: variantStyle.borderColor,
         backgroundColor: variantStyle.backgroundColor,
         opacity: disabled ? 0.5 : 1,
@@ -72,7 +74,10 @@ export default function Chip({
       }}
     >
       {Icon && <Icon size={16} color={iconColor} />}
-      <Text variant={variant === "filled" ? "bodySmMedium" : "bodyXsMedium"} style={{ color: iconColor }}>
+      <Text
+        variant={variant === "filled" ? "bodySmMedium" : "bodyXsMedium"}
+        style={{ color: iconColor }}
+      >
         {label}
       </Text>
     </Pressable>
