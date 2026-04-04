@@ -51,6 +51,7 @@ import type {
   ModelsCastVoteRequest,
   ModelsCategoryAPIResponse,
   ModelsCategoryListResponse,
+  ModelsCategoryTabOrder,
   ModelsEntityType,
   ModelsComment,
   ModelsCommentAPIResponse,
@@ -122,10 +123,12 @@ import type {
   ModelsSendNotificationRequest,
   ModelsSizedUploadURL,
   ModelsSubmitRankingRequest,
+  ModelsTabListResponse,
   ModelsTrip,
   ModelsTripCursorPageResult,
   ModelsTripInviteAPIResponse,
   ModelsUpdateActivityRequest,
+  ModelsUpdateCategoryTabOrderRequest,
   ModelsUpdateCommentRequest,
   ModelsUpdateMembershipRequest,
   ModelsUpdateNotificationPreferencesRequest,
@@ -641,6 +644,24 @@ import type {
   GetRankPollVoters500,
   GetRankPollVotersPathParams,
   GetRankPollVotersQueryResponse,
+  GetTripTabs200,
+  GetTripTabs400,
+  GetTripTabs401,
+  GetTripTabs403,
+  GetTripTabs404,
+  GetTripTabs500,
+  GetTripTabsPathParams,
+  GetTripTabsQueryResponse,
+  ReorderTripTabs204,
+  ReorderTripTabs400,
+  ReorderTripTabs401,
+  ReorderTripTabs403,
+  ReorderTripTabs404,
+  ReorderTripTabs422,
+  ReorderTripTabs500,
+  ReorderTripTabsMutationRequest,
+  ReorderTripTabsMutationResponse,
+  ReorderTripTabsPathParams,
   GetPollsByTripID200,
   GetPollsByTripID400,
   GetPollsByTripID401,
@@ -948,7 +969,7 @@ export const modelsCategoryAPIResponseSchema = z.object({
   created_at: z.optional(z.string()),
   icon: z.optional(z.string()),
   is_default: z.optional(z.boolean()),
-  is_hidden: z.optional(z.boolean()),
+  is_hidden: z.optional(z.boolean().describe("only present for admins")),
   label: z.optional(z.string()),
   name: z.optional(z.string()),
   position: z.optional(z.int()),
@@ -961,6 +982,11 @@ export const modelsCategoryListResponseSchema = z.object({
     return z.array(modelsCategoryAPIResponseSchema).optional();
   },
 }) as unknown as z.ZodType<ModelsCategoryListResponse>;
+
+export const modelsCategoryTabOrderSchema = z.object({
+  name: z.string().min(1),
+  position: z.optional(z.int().min(0)),
+}) as unknown as z.ZodType<ModelsCategoryTabOrder>;
 
 export const modelsEntityTypeSchema = z.enum([
   "activity",
@@ -1668,6 +1694,12 @@ export const modelsSubmitRankingRequestSchema = z.object({
   },
 }) as unknown as z.ZodType<ModelsSubmitRankingRequest>;
 
+export const modelsTabListResponseSchema = z.object({
+  get tabs() {
+    return z.array(modelsCategoryAPIResponseSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsTabListResponse>;
+
 export const modelsTripSchema = z.object({
   budget_max: z.optional(z.int()),
   budget_min: z.optional(z.int()),
@@ -1721,6 +1753,12 @@ export const modelsUpdateActivityRequestSchema = z.object({
     return modelsActivityTimeOfDaySchema.optional();
   },
 }) as unknown as z.ZodType<ModelsUpdateActivityRequest>;
+
+export const modelsUpdateCategoryTabOrderRequestSchema = z.object({
+  get tabs() {
+    return z.array(modelsCategoryTabOrderSchema).min(1);
+  },
+}) as unknown as z.ZodType<ModelsUpdateCategoryTabOrderRequest>;
 
 export const modelsUpdateCommentRequestSchema = z.object({
   content: z.string().min(1),
@@ -5273,6 +5311,119 @@ export const getRankPollVoters500Schema = z.lazy(
 export const getRankPollVotersQueryResponseSchema = z.lazy(
   () => getRankPollVoters200Schema,
 ) as unknown as z.ZodType<GetRankPollVotersQueryResponse>;
+
+export const getTripTabsPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<GetTripTabsPathParams>;
+
+/**
+ * @description OK
+ */
+export const getTripTabs200Schema = z.lazy(
+  () => modelsTabListResponseSchema,
+) as unknown as z.ZodType<GetTripTabs200>;
+
+/**
+ * @description Bad Request
+ */
+export const getTripTabs400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripTabs400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getTripTabs401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripTabs401>;
+
+/**
+ * @description Forbidden
+ */
+export const getTripTabs403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripTabs403>;
+
+/**
+ * @description Not Found
+ */
+export const getTripTabs404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripTabs404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getTripTabs500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetTripTabs500>;
+
+export const getTripTabsQueryResponseSchema = z.lazy(
+  () => getTripTabs200Schema,
+) as unknown as z.ZodType<GetTripTabsQueryResponse>;
+
+export const reorderTripTabsPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+}) as unknown as z.ZodType<ReorderTripTabsPathParams>;
+
+/**
+ * @description No Content
+ */
+export const reorderTripTabs204Schema =
+  z.any() as unknown as z.ZodType<ReorderTripTabs204>;
+
+/**
+ * @description Bad Request
+ */
+export const reorderTripTabs400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs400>;
+
+/**
+ * @description Unauthorized
+ */
+export const reorderTripTabs401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs401>;
+
+/**
+ * @description Forbidden
+ */
+export const reorderTripTabs403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs403>;
+
+/**
+ * @description Not Found
+ */
+export const reorderTripTabs404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs404>;
+
+/**
+ * @description Unprocessable Entity
+ */
+export const reorderTripTabs422Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs422>;
+
+/**
+ * @description Internal Server Error
+ */
+export const reorderTripTabs500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<ReorderTripTabs500>;
+
+/**
+ * @description Reorder request
+ */
+export const reorderTripTabsMutationRequestSchema = z.lazy(
+  () => modelsUpdateCategoryTabOrderRequestSchema,
+) as unknown as z.ZodType<ReorderTripTabsMutationRequest>;
+
+export const reorderTripTabsMutationResponseSchema = z.lazy(
+  () => reorderTripTabs204Schema,
+) as unknown as z.ZodType<ReorderTripTabsMutationResponse>;
 
 export const getPollsByTripIDPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

@@ -617,7 +617,7 @@ func TestTripDates(t *testing.T) {
 					Name:      "Bad Date Trip",
 					BudgetMin: 100,
 					BudgetMax: 500,
-					StartDate: &endDate,   // end before start
+					StartDate: &endDate, // end before start
 					EndDate:   &startDate,
 				},
 			}).
@@ -634,7 +634,7 @@ func TestTripDates(t *testing.T) {
 				Method: testkit.PATCH,
 				UserID: &ownerID,
 				Body: models.UpdateTripRequest{
-					StartDate: &endDate,   // end before start
+					StartDate: &endDate, // end before start
 					EndDate:   &startDate,
 				},
 			}).

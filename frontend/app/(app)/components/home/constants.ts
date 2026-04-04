@@ -39,13 +39,15 @@ export const RECOMMENDED_DESTINATIONS: RecommendedTripDestination[] = [
     title: "London",
     description:
       "Vibrant, historic, and cosmopolitan capital blending centuries-old tradition with modern innovation.",
-    imageUrl: "https://www.figma.com/api/mcp/asset/134bec24-3629-41ee-bb00-acf957538daf",
+    imageUrl:
+      "https://www.figma.com/api/mcp/asset/134bec24-3629-41ee-bb00-acf957538daf",
   },
   {
     id: "puerto-rico",
     title: "Puerto Rico",
     description:
       "Tropical island paradise with turquoise waters, colorful colonial towns, and white-sand beaches.",
-    imageUrl: "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7",
+    imageUrl:
+      "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7",
   },
 ];

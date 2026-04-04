@@ -89,7 +89,9 @@ export default function HomeScreen() {
     .map((trip) => trip.id)
     .filter((id): id is string => Boolean(id));
   const unreadCountQueries = useQueries({
-    queries: upcomingTripIds.map((tripId) => getUnreadActivityCountQueryOptions(tripId)),
+    queries: upcomingTripIds.map((tripId) =>
+      getUnreadActivityCountQueryOptions(tripId),
+    ),
   });
   const hasAnyUnreadUpdates = unreadCountQueries.some(
     (query) => (query.data?.unread_count ?? 0) > 0,
@@ -229,16 +231,19 @@ export default function HomeScreen() {
         }
       >
         <Box flex={1} backgroundColor="white" gap="md">
-          <Box
-            gap="sm"
-          >
+          <Box gap="sm">
             {upcomingTrip ? (
               <LinearGradient
                 colors={topSectionGradientColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box paddingTop="sm" paddingHorizontal="md" paddingBottom="lg" gap="sm">
+                <Box
+                  paddingTop="sm"
+                  paddingHorizontal="md"
+                  paddingBottom="lg"
+                  gap="sm"
+                >
                   <HomeHeader
                     profilePhotoUri={profile.profilePhotoUri}
                     seed={profile.seed}
@@ -310,7 +315,11 @@ export default function HomeScreen() {
                   onPressCreateTrip={handleCreateTrip}
                 />
                 {tripsQueryEnabled && tripsQuery.isPending ? (
-                  <SkeletonRect width="full" borderRadius="lg" style={{ height: 260 }} />
+                  <SkeletonRect
+                    width="full"
+                    borderRadius="lg"
+                    style={{ height: 260 }}
+                  />
                 ) : null}
                 {tripsQueryEnabled && tripsQuery.isError ? (
                   <ErrorState
@@ -350,7 +359,10 @@ export default function HomeScreen() {
                       key={id}
                       trip={trip}
                       currentUserId={currentUser?.id}
-                      dateLabel={formatTripDateLabel(trip, HOME_NULL_DATE_DISPLAY)}
+                      dateLabel={formatTripDateLabel(
+                        trip,
+                        HOME_NULL_DATE_DISPLAY,
+                      )}
                     />
                   );
                 })}
@@ -423,7 +435,11 @@ export default function HomeScreen() {
         >
           <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>
             <Icon icon={Check} size="xs" color={toastIconColor} />
-            <Text variant="bodySmDefault" color="gray900" style={{ flexShrink: 1 }}>
+            <Text
+              variant="bodySmDefault"
+              color="gray900"
+              style={{ flexShrink: 1 }}
+            >
               {toastPrefix}
               {toastBold && (
                 <Text
@@ -453,4 +469,3 @@ export default function HomeScreen() {
     </Screen>
   );
 }
-

@@ -233,10 +233,10 @@ func TestNotificationPreferencesAuthorization(t *testing.T) {
 
 		testkit.New(t).
 			Request(testkit.Request{
-				App:   app,
-				Route: "/api/v1/users/me/notification-preferences",
+				App:    app,
+				Route:  "/api/v1/users/me/notification-preferences",
 				Method: testkit.GET,
-				Auth:  &auth,
+				Auth:   &auth,
 			}).
 			AssertStatus(http.StatusUnauthorized)
 	})

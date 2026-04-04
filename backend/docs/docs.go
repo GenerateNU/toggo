@@ -4415,6 +4415,141 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/tabs": {
+            "get": {
+                "description": "Retrieves all visible categories for a trip ordered by position",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Get trip tabs",
+                "operationId": "getTripTabs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TabListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/tabs/reorder": {
+            "put": {
+                "description": "Updates the position of visible categories for a trip",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Reorder trip tabs",
+                "operationId": "reorderTripTabs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reorder request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateCategoryTabOrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/vote-polls": {
             "get": {
                 "description": "Retrieves all polls for a trip with cursor-based pagination",
@@ -5932,6 +6067,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "is_hidden": {
+                    "description": "only present for admins",
                     "type": "boolean"
                 },
                 "label": {
@@ -5959,6 +6095,22 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.CategoryAPIResponse"
                     }
+                }
+            }
+        },
+        "models.CategoryTabOrder": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "position": {
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         },
@@ -7606,6 +7758,17 @@ const docTemplate = `{
                 }
             }
         },
+        "models.TabListResponse": {
+            "type": "object",
+            "properties": {
+                "tabs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CategoryAPIResponse"
+                    }
+                }
+            }
+        },
         "models.Trip": {
             "type": "object",
             "properties": {
@@ -7788,6 +7951,21 @@ const docTemplate = `{
                             "$ref": "#/definitions/models.ActivityTimeOfDay"
                         }
                     ]
+                }
+            }
+        },
+        "models.UpdateCategoryTabOrderRequest": {
+            "type": "object",
+            "required": [
+                "tabs"
+            ],
+            "properties": {
+                "tabs": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.CategoryTabOrder"
+                    }
                 }
             }
         },

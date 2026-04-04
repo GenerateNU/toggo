@@ -18,8 +18,10 @@ type MemberPreview = {
 
 function getSummaryText(members: MemberPreview[]) {
   if (members.length === 0) return "";
-  const first = getFirstName(members[0]?.username) ?? members[0]?.username ?? "";
-  const second = getFirstName(members[1]?.username) ?? members[1]?.username ?? "";
+  const first =
+    getFirstName(members[0]?.username) ?? members[0]?.username ?? "";
+  const second =
+    getFirstName(members[1]?.username) ?? members[1]?.username ?? "";
   const others = members.length - 1;
 
   if (others <= 0) return first;
@@ -73,7 +75,10 @@ export function TripMemberPreviewRow({
         {visibleMembers.map((member, index) => (
           <Box
             key={member.id}
-            style={{ marginLeft: index === 0 ? 0 : AVATAR_OVERLAP, zIndex: 10 - index }}
+            style={{
+              marginLeft: index === 0 ? 0 : AVATAR_OVERLAP,
+              zIndex: 10 - index,
+            }}
           >
             <Avatar
               profilePhoto={member.profilePhotoUrl}

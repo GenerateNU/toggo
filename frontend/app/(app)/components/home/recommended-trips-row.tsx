@@ -2,8 +2,8 @@ import { Box, Text } from "@/design-system";
 import { Image } from "expo-image";
 import { ScrollView } from "react-native";
 import {
-    HOME_RECOMMENDED_CARD_WIDTH,
-    RECOMMENDED_DESTINATIONS,
+  HOME_RECOMMENDED_CARD_WIDTH,
+  RECOMMENDED_DESTINATIONS,
 } from "./constants";
 
 export function RecommendedTripsRow() {

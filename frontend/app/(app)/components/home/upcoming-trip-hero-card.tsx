@@ -27,15 +27,14 @@ export function UpcomingTripHeroCard({
   width,
 }: UpcomingTripHeroCardProps) {
   const tripId = trip.id;
+  const unreadCountQuery = useGetUnreadActivityCount(tripId ?? "");
   if (!tripId) return null;
-  const unreadCountQuery = useGetUnreadActivityCount(tripId);
   const unreadCount = unreadCountQuery.data?.unread_count ?? 0;
   const hasUnreadUpdates = unreadCount > 0;
 
-  const updatesLabel =
-    hasUnreadUpdates
-      ? `View ${unreadCount} new update${unreadCount === 1 ? "" : "s"}`
-      : "View updates";
+  const updatesLabel = hasUnreadUpdates
+    ? `View ${unreadCount} new update${unreadCount === 1 ? "" : "s"}`
+    : "View updates";
   const updatesColor = hasUnreadUpdates ? "blue500" : "brand600";
   const updatesGradientColors = hasUnreadUpdates
     ? [ColorPalette.blue25, ColorPalette.blue100]

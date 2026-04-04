@@ -8,10 +8,7 @@ type ScreenProps = {
 
 export function Screen({ children, backgroundColor = "#FFFFFF" }: ScreenProps) {
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor }} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

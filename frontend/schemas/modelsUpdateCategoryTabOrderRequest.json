@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["tabs"],
+  "properties": {
+    "tabs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "position": { "type": "integer", "minimum": 0 }
+        },
+        "x-readme-ref-name": "models.CategoryTabOrder"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.UpdateCategoryTabOrderRequest"
+}

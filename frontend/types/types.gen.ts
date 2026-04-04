@@ -370,6 +370,7 @@ export type ModelsCategoryAPIResponse = {
    */
   is_default?: boolean;
   /**
+   * @description only present for admins
    * @type boolean | undefined
    */
   is_hidden?: boolean;
@@ -400,6 +401,19 @@ export type ModelsCategoryListResponse = {
    * @type array | undefined
    */
   categories?: ModelsCategoryAPIResponse[];
+};
+
+export type ModelsCategoryTabOrder = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  name: string;
+  /**
+   * @minLength 0
+   * @type integer | undefined
+   */
+  position?: number;
 };
 
 export const modelsEntityType = {
@@ -1994,6 +2008,13 @@ export type ModelsSubmitRankingRequest = {
   rankings: ModelsRankingItem[];
 };
 
+export type ModelsTabListResponse = {
+  /**
+   * @type array | undefined
+   */
+  tabs?: ModelsCategoryAPIResponse[];
+};
+
 export type ModelsTrip = {
   /**
    * @type integer | undefined
@@ -2139,6 +2160,13 @@ export type ModelsUpdateActivityRequest = {
    */
   thumbnail_url?: string;
   time_of_day?: ModelsActivityTimeOfDay;
+};
+
+export type ModelsUpdateCategoryTabOrderRequest = {
+  /**
+   * @type array
+   */
+  tabs: ModelsCategoryTabOrder[];
 };
 
 export type ModelsUpdateCommentRequest = {
@@ -6023,6 +6051,121 @@ export type GetRankPollVotersQuery = {
     | GetRankPollVoters403
     | GetRankPollVoters404
     | GetRankPollVoters500;
+};
+
+export type GetTripTabsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetTripTabs200 = ModelsTabListResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetTripTabs400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetTripTabs401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetTripTabs403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetTripTabs404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetTripTabs500 = ErrsAPIError;
+
+export type GetTripTabsQueryResponse = GetTripTabs200;
+
+export type GetTripTabsQuery = {
+  Response: GetTripTabs200;
+  PathParams: GetTripTabsPathParams;
+  Errors:
+    | GetTripTabs400
+    | GetTripTabs401
+    | GetTripTabs403
+    | GetTripTabs404
+    | GetTripTabs500;
+};
+
+export type ReorderTripTabsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ReorderTripTabs204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ReorderTripTabs400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ReorderTripTabs401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ReorderTripTabs403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ReorderTripTabs404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type ReorderTripTabs422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ReorderTripTabs500 = ErrsAPIError;
+
+/**
+ * @description Reorder request
+ */
+export type ReorderTripTabsMutationRequest =
+  ModelsUpdateCategoryTabOrderRequest;
+
+export type ReorderTripTabsMutationResponse = ReorderTripTabs204;
+
+export type ReorderTripTabsMutation = {
+  Response: ReorderTripTabs204;
+  Request: ReorderTripTabsMutationRequest;
+  PathParams: ReorderTripTabsPathParams;
+  Errors:
+    | ReorderTripTabs400
+    | ReorderTripTabs401
+    | ReorderTripTabs403
+    | ReorderTripTabs404
+    | ReorderTripTabs422
+    | ReorderTripTabs500;
 };
 
 export type GetPollsByTripIDPathParams = {
