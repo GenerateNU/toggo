@@ -7,9 +7,13 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { useUser } from "@/contexts/user";
 import { modelsEntityType } from "@/types/types.gen";
 import type { ModelsActivity } from "@/types/types.gen";
-import { useLocalSearchParams } from "expo-router";
-import { MessageCircle, Plus } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import {
+  activityHasMapLocation,
+  encodeMapViewActivitiesParam,
+} from "@/utils/map-view-activities";
+import { router, useLocalSearchParams } from "expo-router";
+import { MapPinned, MessageCircle, Plus } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -27,6 +31,11 @@ export default function Activities() {
 
   const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
     useActivitiesList(tripID);
+
+  const activitiesWithLocation = useMemo(
+    () => activities.filter((a) => activityHasMapLocation(a)),
+    [activities],
+  );
 
   const { mutate: createActivity, isPending: isCreating } = useCreateActivity({
     mutation: {
@@ -155,6 +164,30 @@ export default function Activities() {
                 </Text>
               </Pressable>
 
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/map-view",
+                    params: {
+                      activities: encodeMapViewActivitiesParam(activities),
+                    },
+                  })
+                }
+                disabled={activitiesWithLocation.length === 0}
+                style={({ pressed }) => [
+                  styles.mapButton,
+                  activitiesWithLocation.length === 0 && styles.mapButtonDisabled,
+                  pressed &&
+                    activitiesWithLocation.length > 0 &&
+                    styles.mapButtonPressed,
+                ]}
+              >
+                <MapPinned size={18} color={ColorPalette.gray900} />
+                <Text variant="bodySmMedium" color="gray900">
+                  View on map
+                </Text>
+              </Pressable>
+
               {isLoading && (
                 <Box alignItems="center" paddingVertical="md">
                   <ActivityIndicator color={ColorPalette.gray500} />
@@ -209,6 +242,22 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.brand500,
   },
   createButtonPressed: {
+    opacity: 0.75,
+  },
+  mapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: ColorPalette.gray100,
+  },
+  mapButtonDisabled: {
+    opacity: 0.45,
+  },
+  mapButtonPressed: {
     opacity: 0.75,
   },
   commentButton: {
