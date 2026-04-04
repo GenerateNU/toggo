@@ -13,6 +13,8 @@ type Trip struct {
 	BudgetMin    int        `bun:"budget_min" json:"budget_min"`
 	BudgetMax    int        `bun:"budget_max" json:"budget_max"`
 	Currency     string     `bun:"currency" json:"currency"`
+	StartDate    *time.Time `bun:"start_date" json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate      *time.Time `bun:"end_date" json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 	CreatedAt    time.Time  `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt    time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -23,6 +25,8 @@ type CreateTripRequest struct {
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
 	Currency     string     `json:"currency" validate:"omitempty,iso4217"`
+	StartDate    *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate      *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 }
 
 type UpdateTripRequest struct {
@@ -31,6 +35,8 @@ type UpdateTripRequest struct {
 	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
 	BudgetMax    *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
 	Currency     *string    `json:"currency" validate:"omitempty,iso4217"`
+	StartDate    *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate      *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 }
 
 // TripPageResult holds an offset-paginated list of trips and metadata.
@@ -59,17 +65,21 @@ type TripDatabaseResponse struct {
 	BudgetMin     int        `bun:"budget_min"`
 	BudgetMax     int        `bun:"budget_max"`
 	Currency      string     `bun:"currency"`
+	StartDate     *time.Time `bun:"start_date"`
+	EndDate       *time.Time `bun:"end_date"`
 	CreatedAt     time.Time  `bun:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at"`
 }
 
 type TripAPIResponse struct {
-	ID            uuid.UUID `json:"id"`
-	Name          string    `json:"name"`
-	CoverImageURL *string   `json:"cover_image_url"`
-	BudgetMin     int       `json:"budget_min"`
-	BudgetMax     int       `json:"budget_max"`
-	Currency      string    `json:"currency"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID            uuid.UUID  `json:"id"`
+	Name          string     `json:"name"`
+	CoverImageURL *string    `json:"cover_image_url"`
+	BudgetMin     int        `json:"budget_min"`
+	BudgetMax     int        `json:"budget_max"`
+	Currency      string     `json:"currency"`
+	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
 }

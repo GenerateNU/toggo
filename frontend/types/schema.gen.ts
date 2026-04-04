@@ -1141,7 +1141,9 @@ export const modelsCreateTripRequestSchema = z.object({
   budget_min: z.int().min(0),
   cover_image_id: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   name: z.string().min(1),
+  start_date: z.optional(z.iso.datetime()),
 }) as unknown as z.ZodType<ModelsCreateTripRequest>;
 
 export const modelsCreateUserRequestSchema = z.object({
@@ -1563,8 +1565,10 @@ export const modelsTripAPIResponseSchema = z.object({
   cover_image_url: z.optional(z.string()),
   created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  start_date: z.optional(z.iso.datetime()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripAPIResponse>;
 
@@ -1610,8 +1614,10 @@ export const modelsTripSchema = z.object({
   cover_image_id: z.optional(z.string()),
   created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  start_date: z.optional(z.iso.datetime()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTrip>;
 
@@ -1698,7 +1704,9 @@ export const modelsUpdateTripRequestSchema = z.object({
   budget_min: z.optional(z.int().min(0)),
   cover_image_id: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.iso.datetime()),
   name: z.optional(z.string().min(1)),
+  start_date: z.optional(z.iso.datetime()),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 
 export const modelsUpdateUserRequestSchema = z.object({

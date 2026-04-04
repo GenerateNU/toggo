@@ -6488,9 +6488,17 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 }
             }
         },
@@ -7616,11 +7624,19 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7645,11 +7661,19 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7870,9 +7894,17 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                },
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "start_date": {
+                    "type": "string",
+                    "format": "date-time"
                 }
             }
         },
