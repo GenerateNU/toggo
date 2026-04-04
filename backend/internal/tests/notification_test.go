@@ -18,7 +18,7 @@ func TestNotificationServiceSendNotification(t *testing.T) {
 		}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+		notifService := services.NewNotificationService(mockRepo, &noopMembershipRepo{}, mockExpoClient)
 
 		req := models.SendNotificationRequest{
 			UserID: userID,
@@ -49,7 +49,7 @@ func TestNotificationServiceSendNotification(t *testing.T) {
 		}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+		notifService := services.NewNotificationService(mockRepo, &noopMembershipRepo{}, mockExpoClient)
 		req := models.SendNotificationRequest{
 			UserID: userID,
 			Title:  "Test Title",
@@ -87,7 +87,7 @@ func TestNotificationServiceBatch(t *testing.T) {
 		mockRepo := &mockNotificationUserRepo{users: []*models.User{users[userID1], users[userID2]}}
 		mockExpoClient := &services.MockExpoClient{}
 
-		notifService := services.NewNotificationService(mockRepo, mockExpoClient)
+		notifService := services.NewNotificationService(mockRepo, &noopMembershipRepo{}, mockExpoClient)
 
 		req := models.SendBulkNotificationRequest{
 			UserIDs: []uuid.UUID{userID1, userID2},
@@ -137,4 +137,46 @@ func (m *mockNotificationUserRepo) UpdateDeviceToken(ctx context.Context, id uui
 
 func (m *mockNotificationUserRepo) GetUsersWithDeviceTokens(ctx context.Context, userIDs []uuid.UUID) ([]*models.User, error) {
 	return m.users, nil
+}
+
+type noopMembershipRepo struct{}
+
+func (n *noopMembershipRepo) Create(ctx context.Context, membership *models.Membership) (*models.Membership, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) Find(ctx context.Context, userID, tripID uuid.UUID) (*models.MembershipDatabaseResponse, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) FindByTripID(ctx context.Context, tripID uuid.UUID) ([]*models.MembershipDatabaseResponse, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.MembershipCursor) ([]*models.MembershipDatabaseResponse, *models.MembershipCursor, error) {
+	return nil, nil, nil
+}
+func (n *noopMembershipRepo) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) FindUserIDsWithNotificationPreference(ctx context.Context, tripID uuid.UUID, preference models.NotificationPreference, excludeUserID uuid.UUID) ([]uuid.UUID, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) IsMember(ctx context.Context, tripID, userID uuid.UUID) (bool, error) {
+	return false, nil
+}
+func (n *noopMembershipRepo) IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error) {
+	return false, nil
+}
+func (n *noopMembershipRepo) CountMembers(ctx context.Context, tripID uuid.UUID) (int, error) {
+	return 0, nil
+}
+func (n *noopMembershipRepo) CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error) {
+	return 0, nil
+}
+func (n *noopMembershipRepo) Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.Membership, error) {
+	return nil, nil
+}
+func (n *noopMembershipRepo) Delete(ctx context.Context, userID, tripID uuid.UUID) error {
+	return nil
 }

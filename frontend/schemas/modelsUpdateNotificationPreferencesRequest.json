@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "notify_new_comments": { "type": "boolean" },
+    "notify_new_pitches": { "type": "boolean" },
+    "notify_new_polls": { "type": "boolean" }
+  },
+  "x-readme-ref-name": "models.UpdateNotificationPreferencesRequest"
+}

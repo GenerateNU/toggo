@@ -1,9 +1,10 @@
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
-import { Box, Button, Screen, Text, useToast } from "@/design-system";
+import { Box, Button, Icon, Screen, Text, useToast } from "@/design-system";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
+import { Settings } from "lucide-react-native";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Share } from "react-native";
+import { ActivityIndicator, Pressable, Share } from "react-native";
 import CreateFAB from "./components/create-fab";
 import CreatePollSheet, {
   CreatePollSheetMethods,
@@ -44,7 +45,7 @@ export default function Trip() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="backgroundSubtle">
+      <Box flex={1} backgroundColor="gray50">
         <CreatePollSheet
           ref={createPollSheetRef}
           tripID={tripID!}
@@ -54,22 +55,29 @@ export default function Trip() {
             })
           }
         />
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="backgroundCard"
-          gap="xs"
-        >
-          <Text variant="bodySmMedium" color="textSubtle">
-            TRIP
-          </Text>
-          <Text variant="headingMd" color="textInverse">
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Text variant="bodySmMedium" color="gray500">
+              TRIP
+            </Text>
+            <Pressable
+              onPress={() => router.push(`/trips/${tripID}/settings` as any)}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Icon icon={Settings} size="sm" color="gray500" />
+            </Pressable>
+          </Box>
+          <Text variant="headingMd" color="gray900">
             {tripID}
           </Text>
         </Box>
 
         <Box padding="lg" gap="md">
-          <Text variant="bodySmMedium" color="textSubtle">
+          <Text variant="bodySmMedium" color="gray500">
             VIEW
           </Text>
           <Box gap="sm">
@@ -122,7 +130,7 @@ export default function Trip() {
             />
           </Box>
 
-          <Text variant="bodySmMedium" color="textSubtle" marginTop="sm">
+          <Text variant="bodySmMedium" color="gray500" marginTop="sm">
             INVITE
           </Text>
           <Box gap="sm">
@@ -141,16 +149,8 @@ export default function Trip() {
               <ActivityIndicator size="small" />
             )}
             {inviteLink && (
-              <Box
-                backgroundColor="backgroundCard"
-                padding="sm"
-                borderRadius="sm"
-              >
-                <Text
-                  variant="bodyXsDefault"
-                  color="textSubtle"
-                  numberOfLines={1}
-                >
+              <Box backgroundColor="white" padding="sm" borderRadius="sm">
+                <Text variant="bodyXsDefault" color="gray500" numberOfLines={1}>
                   {inviteLink}
                 </Text>
               </Box>

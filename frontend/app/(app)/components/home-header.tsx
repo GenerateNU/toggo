@@ -7,19 +7,19 @@ type HomeHeaderProps = {
 export function HomeHeader({ username }: HomeHeaderProps) {
   return (
     <Box
-      backgroundColor="backgroundCard"
+      backgroundColor="white"
       padding="lg"
       paddingTop="xl"
       paddingBottom="lg"
       gap="xxs"
       borderBottomWidth={1}
-      borderBottomColor="borderSubtle"
+      borderBottomColor="gray100"
     >
-      <Text variant="headingMd" color="textInverse">
+      <Text variant="headingMd" color="gray900">
         Home
       </Text>
       {username && (
-        <Text variant="bodySmDefault" color="textSubtle">
+        <Text variant="bodySmDefault" color="gray500">
           @{username}
         </Text>
       )}

@@ -7,9 +7,9 @@ export default function Polls() {
         flex={1}
         justifyContent="center"
         alignItems="center"
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
       >
-        <Text variant="headingMd" color="textInverse">
+        <Text variant="headingMd" color="gray900">
           Polls Page
         </Text>
       </Box>

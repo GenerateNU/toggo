@@ -30,22 +30,22 @@ export default function Home() {
       alignItems="center"
       padding="lg"
       gap="md"
-      backgroundColor="backgroundCard"
+      backgroundColor="white"
     >
       <Box
         marginTop="md"
         padding="md"
         borderRadius="sm"
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
         alignSelf="stretch"
         gap="xs"
       >
-        <Text variant="bodySmMedium" color="textSubtle">
+        <Text variant="bodySmMedium" color="gray500">
           Debug: JWT
         </Text>
         <Text
           variant="bodySmMedium"
-          color="textSubtle"
+          color="gray500"
           numberOfLines={3}
           style={{ fontFamily: "monospace" }}
         >

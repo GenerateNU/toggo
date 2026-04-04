@@ -118,6 +118,12 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 		nil,
 	)
 
+	serviceParams.NotificationService = services.NewNotificationService(
+		repo.User,
+		repo.Membership,
+		services.NewExpoClient(""),
+	)
+
 	serviceParams.HTTPClient = services.DefaultHTTPClient()
 
 	routeParams := types.RouteParams{

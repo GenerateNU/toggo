@@ -99,11 +99,14 @@ func (s *TripService) CreateTrip(ctx context.Context, creatorUserID uuid.UUID, r
 
 		// Create membership within the same transaction
 		membership := &models.Membership{
-			UserID:    creatorUserID,
-			TripID:    trip.ID,
-			IsAdmin:   true,
-			BudgetMin: req.BudgetMin,
-			BudgetMax: req.BudgetMax,
+			UserID:            creatorUserID,
+			TripID:            trip.ID,
+			IsAdmin:           true,
+			BudgetMin:         req.BudgetMin,
+			BudgetMax:         req.BudgetMax,
+			NotifyNewPitches:  true,
+			NotifyNewPolls:    true,
+			NotifyNewComments: true,
 		}
 
 		_, err = tx.NewInsert().

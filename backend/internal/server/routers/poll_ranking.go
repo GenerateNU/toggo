@@ -13,6 +13,7 @@ func RankPollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	rankPollService := services.NewRankPollService(
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.PollService,
+		routeParams.ServiceParams.NotificationService,
 	)
 	rankPollController := controllers.NewRankPollController(rankPollService, routeParams.Validator)
 

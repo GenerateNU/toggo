@@ -128,10 +128,10 @@ const DayCell = React.memo(
             variant="bodySmMedium"
             style={{
               color: isEndpoint
-                ? ColorPalette.backgroundSubtle
+                ? ColorPalette.gray50
                 : isDisabled
-                  ? ColorPalette.textDisabled
-                  : ColorPalette.textInverse,
+                  ? ColorPalette.gray400
+                  : ColorPalette.gray900,
             }}
           >
             {day}
@@ -180,11 +180,7 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text
-          variant="bodySmStrong"
-          color="textDefault"
-          style={styles.monthLabel}
-        >
+        <Text variant="bodySmStrong" color="white" style={styles.monthLabel}>
           {formatMonth(year, month)}
         </Text>
 
@@ -344,9 +340,9 @@ export default function DateRangePicker({
               hitSlop={16}
               style={styles.closeButton}
             >
-              <X size={20} color={ColorPalette.textSubtle} />
+              <X size={20} color={ColorPalette.gray500} />
             </Pressable>
-            <Text variant="headingSm" color="textDefault">
+            <Text variant="headingSm" color="white">
               Select dates
             </Text>
           </Box>
@@ -364,9 +360,7 @@ export default function DateRangePicker({
               <Text
                 variant="bodySmMedium"
                 style={{
-                  color: hasRange
-                    ? ColorPalette.textInverse
-                    : ColorPalette.textSubtle,
+                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
                 }}
               >
                 {formatShortDate(range.start)}
@@ -374,7 +368,7 @@ export default function DateRangePicker({
             </Box>
             <Text
               variant="bodyXsMedium"
-              color="textSubtle"
+              color="gray500"
               style={styles.summaryArrow}
             >
               →
@@ -389,8 +383,8 @@ export default function DateRangePicker({
                 variant="bodySmMedium"
                 style={{
                   color: range.end
-                    ? ColorPalette.textInverse
-                    : ColorPalette.textSubtle,
+                    ? ColorPalette.gray900
+                    : ColorPalette.gray500,
                 }}
               >
                 {formatShortDate(range.end)}
@@ -403,7 +397,7 @@ export default function DateRangePicker({
         <Box flexDirection="row" style={styles.weekdayRow}>
           {DAYS.map((d, i) => (
             <Box key={i} style={styles.weekdayCell}>
-              <Text variant="bodyXsMedium" color="textSubtle">
+              <Text variant="bodyXsMedium" color="gray500">
                 {d}
               </Text>
             </Box>
@@ -445,9 +439,7 @@ export default function DateRangePicker({
               <Text
                 variant="bodyMedium"
                 style={{
-                  color: hasRange
-                    ? ColorPalette.textInverse
-                    : ColorPalette.textDisabled,
+                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray400,
                 }}
               >
                 Clear
@@ -465,10 +457,7 @@ export default function DateRangePicker({
               ]}
               disabled={!hasRange}
             >
-              <Text
-                variant="bodyMedium"
-                style={{ color: ColorPalette.textDefault }}
-              >
+              <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
                 Save Dates
               </Text>
             </Pressable>
@@ -481,13 +470,13 @@ export default function DateRangePicker({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.backgroundSubtle;
+const RANGE_TINT = ColorPalette.gray50;
 
 const styles = StyleSheet.create({
   /* Sheet */
   sheet: {
     flex: 1,
-    backgroundColor: ColorPalette.backgroundCard,
+    backgroundColor: ColorPalette.white,
   },
 
   /* Header */
@@ -496,7 +485,7 @@ const styles = StyleSheet.create({
     paddingTop: Layout.spacing.md,
     paddingBottom: Layout.spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.borderDefault,
+    borderBottomColor: ColorPalette.gray300,
   },
   closeButton: {
     position: "absolute",
@@ -512,11 +501,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.backgroundCard,
+    backgroundColor: ColorPalette.white,
   },
   summaryPillActive: {
-    backgroundColor: ColorPalette.backgroundSubtle,
-    borderColor: ColorPalette.borderDefault,
+    backgroundColor: ColorPalette.gray50,
+    borderColor: ColorPalette.gray300,
   },
   summaryArrow: {
     marginHorizontal: Layout.spacing.xxs,
@@ -527,7 +516,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: GRID_PADDING,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.borderSubtle,
+    borderBottomColor: ColorPalette.gray100,
   },
   weekdayCell: {
     width: CELL_SIZE,
@@ -587,12 +576,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dayCircleSelected: {
-    backgroundColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.gray900,
     borderRadius: CIRCLE_SIZE / 2,
   },
   dayCircleToday: {
     borderWidth: 1,
-    borderColor: ColorPalette.borderDefault,
+    borderColor: ColorPalette.gray300,
     borderRadius: CIRCLE_SIZE / 2,
   },
 
@@ -601,8 +590,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: GRID_PADDING,
     paddingTop: Layout.spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.borderDefault,
-    backgroundColor: ColorPalette.backgroundCard,
+    borderTopColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.white,
   },
   footerButtons: {
     gap: 10,
@@ -616,22 +605,22 @@ const styles = StyleSheet.create({
     borderRadius: CornerRadius.md,
   },
   clearButton: {
-    borderColor: ColorPalette.borderDefault,
-    backgroundColor: ColorPalette.backgroundSubtle,
+    borderColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.gray50,
   },
   clearButtonPressed: {
     opacity: 0.85,
   },
   clearButtonDisabled: {
-    borderColor: ColorPalette.borderSubtle,
+    borderColor: ColorPalette.gray100,
   },
   saveButton: {
-    backgroundColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.gray900,
   },
   saveButtonPressed: {
     opacity: 0.85,
   },
   saveButtonDisabled: {
-    backgroundColor: ColorPalette.backgroundDisabled,
+    backgroundColor: ColorPalette.gray300,
   },
 });

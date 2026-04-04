@@ -85,7 +85,7 @@ export default function Home() {
   };
 
   return (
-    <Box flex={1} backgroundColor="backgroundCard">
+    <Box flex={1} backgroundColor="white">
       <HomeHeader username={currentUser?.username} />
       <Box paddingTop="md" gap="sm">
         <NavChips />

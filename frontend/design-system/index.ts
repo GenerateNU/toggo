@@ -14,6 +14,8 @@ export type { ToggleProps } from "./components/buttons/toggle";
 
 // ─── Avatars ──────────────────────────────────────────────────────────────────
 export { Avatar } from "./components/avatars/avatar";
+export { AvatarStack } from "./components/avatars/avatar-stack";
+export type { AvatarStackProps } from "./components/avatars/avatar-stack";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 export { Icon } from "./components/icons/icon";
@@ -75,3 +77,11 @@ export { default as Divider } from "./primitives/divider";
 
 // ─── Toast ──────────────────────────────────────────────────────────────────────
 export { ToastProvider, useToast } from "./primitives/toast-manager";
+
+// ─── Dialog ──────────────────────────────────────────────────────────────────────
+export { Dialog } from "./components/dialog/dialog";
+export type {
+  DialogProps,
+  DialogAction,
+  DialogActionStyle,
+} from "./components/dialog/dialog";

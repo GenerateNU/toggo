@@ -15,6 +15,7 @@ export const Gray = {
 } as const;
 
 export const Brand = {
+  25: "#FFF7F0",
   50: "#FFF2E5",
   100: "#FFE6CC",
   200: "#FFCC99",
@@ -59,50 +60,52 @@ const Teal = {
   500: "#4ECBA0",
 } as const;
 
-// ─── Semantic Color Tokens ─────────────────────────────────────────────────
-// Use these throughout the app. Names describe role, not the color value.
-
 export const ColorPalette = {
   transparent: "transparent",
+  white: Gray[0],
+  black: "#000000",
 
-  // Brand
-  brandPrimary: Brand[500],
-  brandPrimarySubtle: Brand[50],
-  brandSecondary: Blue[500],
-  brandSecondarySubtle: Blue[50],
+  gray25: Gray[25],
+  gray50: Gray[50],
+  gray100: Gray[100],
+  gray200: Gray[200],
+  gray300: Gray[300],
+  gray400: Gray[400],
+  gray500: Gray[500],
+  gray600: Gray[600],
+  gray700: Gray[700],
+  gray800: Gray[800],
+  gray900: Gray[900],
+  gray950: Gray[950],
 
-  // Text
-  textDefault: Gray[0],
-  textSubtle: Gray[500],
-  textDisabled: Gray[400],
-  textInverse: Gray[900],
-  textLink: Blue[500],
-  textBrand: Brand[500],
-  textError: Red[500],
+  brand50: Brand[50],
+  brand100: Brand[100],
+  brand200: Brand[200],
+  brand300: Brand[300],
+  brand400: Brand[400],
+  brand500: Brand[500],
+  brand600: Brand[600],
+  brand700: Brand[700],
+  brand800: Brand[800],
+  brand900: Brand[900],
+  brand950: Brand[950],
 
-  // Icon
-  iconDefault: Gray[0],
-  iconSubtle: Gray[500],
-  iconDisabled: Gray[400],
-  iconInverse: Gray[900],
+  blue25: Blue[25],
+  blue50: Blue[50],
+  blue100: Blue[100],
+  blue200: Blue[200],
+  blue300: Blue[300],
+  blue400: Blue[400],
+  blue500: Blue[500],
+  blue600: Blue[600],
+  blue700: Blue[700],
+  blue800: Blue[800],
+  blue900: Blue[900],
+  blue950: Blue[950],
 
-  // Background
-  backgroundDefault: Gray[900],
-  backgroundSubtle: Gray[50],
-  backgroundCard: Gray[0],
-  backgroundMuted: Gray[200],
-  backgroundElevated: Gray[50],
-  backgroundDisabled: Gray[300],
   backgroundOverlay: "rgba(0,0,0,0.4)",
-  backgroundIconDefault: Gray[900],
-  backgroundIconSubtle: Gray[50],
   backgroundWarm: "#FFF3E8",
 
-  // Border
-  borderDefault: Gray[300],
-  borderSubtle: Gray[100],
-
-  // Status
   statusSuccess: Green[500],
   statusError: Red[500],
   statusWarning: Amber[500],

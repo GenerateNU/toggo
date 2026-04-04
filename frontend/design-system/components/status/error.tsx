@@ -23,17 +23,17 @@ const ErrorState: React.FC<ErrorDisplayProps> = ({
         width={48}
         height={48}
         borderRadius="full"
-        backgroundColor="backgroundSubtle"
+        backgroundColor="gray50"
         alignItems="center"
         justifyContent="center"
       >
-        <AlertCircle size={22} color={ColorPalette.textSubtle} />
+        <AlertCircle size={22} color={ColorPalette.gray500} />
       </Box>
       <Box alignItems="center" gap="xs">
-        <Text variant="bodySmMedium" color="textInverse" textAlign="center">
+        <Text variant="bodySmMedium" color="gray900" textAlign="center">
           {title}
         </Text>
-        <Text variant="bodyXsDefault" color="textSubtle" textAlign="center">
+        <Text variant="bodyXsDefault" color="gray500" textAlign="center">
           {description}
         </Text>
       </Box>

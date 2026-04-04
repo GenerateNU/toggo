@@ -22,16 +22,18 @@ type CommentServiceInterface interface {
 var _ CommentServiceInterface = (*CommentService)(nil)
 
 type CommentService struct {
-	repository  *repository.Repository
-	fileService FileServiceInterface
-	publisher   realtime.EventPublisher
+	repository          *repository.Repository
+	fileService         FileServiceInterface
+	publisher           realtime.EventPublisher
+	notificationService NotificationService
 }
 
-func NewCommentService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher) CommentServiceInterface {
+func NewCommentService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher, notificationService NotificationService) CommentServiceInterface {
 	return &CommentService{
-		repository:  repo,
-		fileService: fileService,
-		publisher:   publisher,
+		repository:          repo,
+		fileService:         fileService,
+		publisher:           publisher,
+		notificationService: notificationService,
 	}
 }
 
@@ -57,8 +59,27 @@ func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCom
 	}
 
 	s.publishCommentCreated(ctx, comment, userID)
+	go s.notifyNewComment(comment.TripID, userID)
 
 	return comment, nil
+}
+
+func (s *CommentService) notifyNewComment(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	err := s.notificationService.NotifyTripMembers(
+		context.Background(),
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewComment,
+		"New comment",
+		"Someone commented on your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new comment notification: %v", err)
+	}
 }
 
 func (s *CommentService) publishCommentCreated(ctx context.Context, comment *models.Comment, actorID uuid.UUID) {

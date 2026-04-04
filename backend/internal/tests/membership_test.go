@@ -1,10 +1,12 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
 	"toggo/internal/models"
+	"toggo/internal/repository"
 	testkit "toggo/internal/tests/testkit/builders"
 	"toggo/internal/tests/testkit/fakes"
 
@@ -701,5 +703,259 @@ func TestMembershipPagination(t *testing.T) {
 				UserID: &nonMember,
 			}).
 			AssertStatus(http.StatusNotFound)
+	})
+}
+
+func TestNotificationPreferences(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	t.Run("defaults to all notifications enabled", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, owner),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, true, resp["notify_new_pitches"])
+		require.Equal(t, true, resp["notify_new_polls"])
+		require.Equal(t, true, resp["notify_new_comments"])
+	})
+
+	t.Run("can disable a notification preference", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		pitches := false
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, owner),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body:   map[string]interface{}{"notify_new_pitches": pitches},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, false, resp["notify_new_pitches"])
+		require.Equal(t, true, resp["notify_new_polls"])
+		require.Equal(t, true, resp["notify_new_comments"])
+	})
+
+	t.Run("can update multiple preferences at once", func(t *testing.T) {
+		owner := createUser(t, app)
+		trip := createTrip(t, app, owner)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, owner),
+				Method: testkit.PATCH,
+				UserID: &owner,
+				Body: map[string]interface{}{
+					"notify_new_pitches":  false,
+					"notify_new_polls":    false,
+					"notify_new_comments": false,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, false, resp["notify_new_pitches"])
+		require.Equal(t, false, resp["notify_new_polls"])
+		require.Equal(t, false, resp["notify_new_comments"])
+	})
+
+	t.Run("cannot update another member's preferences", func(t *testing.T) {
+		owner := createUser(t, app)
+		member := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, member, trip)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, owner),
+				Method: testkit.PATCH,
+				UserID: &member,
+				Body:   map[string]interface{}{"notify_new_pitches": false},
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+
+	t.Run("members with preference disabled are excluded from notifications", func(t *testing.T) {
+		owner := createUser(t, app)
+		member := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, member, trip)
+
+		// Member disables pitch notifications
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, member),
+				Method: testkit.PATCH,
+				UserID: &member,
+				Body:   map[string]interface{}{"notify_new_pitches": false},
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Verify member's preference is persisted
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, member),
+				Method: testkit.GET,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		require.Equal(t, false, resp["notify_new_pitches"])
+		require.Equal(t, true, resp["notify_new_polls"])
+		require.Equal(t, true, resp["notify_new_comments"])
+	})
+}
+
+func TestFindUserIDsWithNotificationPreference(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+	db := fakes.GetSharedDB()
+	repo := repository.NewMembershipRepository(db)
+	ctx := context.Background()
+
+	t.Run("returns all members with preference enabled by default", func(t *testing.T) {
+		owner := createUser(t, app)
+		m1 := createUser(t, app)
+		m2 := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, m1, trip)
+		addMember(t, app, owner, m2, trip)
+
+		tripUUID := uuid.MustParse(trip)
+		ownerUUID := uuid.MustParse(owner)
+
+		ids, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewPitch, ownerUUID)
+		require.NoError(t, err)
+
+		// m1 and m2 should both have pitches enabled (default true)
+		require.Len(t, ids, 2)
+		idSet := map[uuid.UUID]bool{ids[0]: true, ids[1]: true}
+		require.True(t, idSet[uuid.MustParse(m1)])
+		require.True(t, idSet[uuid.MustParse(m2)])
+	})
+
+	t.Run("excludes members who disabled the preference", func(t *testing.T) {
+		owner := createUser(t, app)
+		m1 := createUser(t, app)
+		m2 := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, m1, trip)
+		addMember(t, app, owner, m2, trip)
+
+		// m1 disables pitch notifications
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, m1),
+				Method: testkit.PATCH,
+				UserID: &m1,
+				Body:   map[string]any{"notify_new_pitches": false},
+			}).
+			AssertStatus(http.StatusOK)
+
+		tripUUID := uuid.MustParse(trip)
+		ownerUUID := uuid.MustParse(owner)
+
+		ids, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewPitch, ownerUUID)
+		require.NoError(t, err)
+
+		// only m2 should be returned
+		require.Len(t, ids, 1)
+		require.Equal(t, uuid.MustParse(m2), ids[0])
+	})
+
+	t.Run("excludes the actor (excludeUserID) even if preference is enabled", func(t *testing.T) {
+		owner := createUser(t, app)
+		m1 := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, m1, trip)
+
+		tripUUID := uuid.MustParse(trip)
+		m1UUID := uuid.MustParse(m1)
+
+		// exclude m1 — they are the actor
+		ids, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewPitch, m1UUID)
+		require.NoError(t, err)
+
+		// only owner should be returned, not m1
+		require.Len(t, ids, 1)
+		require.Equal(t, uuid.MustParse(owner), ids[0])
+	})
+
+	t.Run("returns empty when all members disabled the preference", func(t *testing.T) {
+		owner := createUser(t, app)
+		m1 := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, m1, trip)
+
+		// Both disable comments
+		for _, userID := range []string{owner, m1} {
+			uid := userID
+			testkit.New(t).
+				Request(testkit.Request{
+					App:    app,
+					Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, uid),
+					Method: testkit.PATCH,
+					UserID: &uid,
+					Body:   map[string]any{"notify_new_comments": false},
+				}).
+				AssertStatus(http.StatusOK)
+		}
+
+		tripUUID := uuid.MustParse(trip)
+		excludeNone := uuid.New() // non-member, so nobody is excluded
+
+		ids, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewComment, excludeNone)
+		require.NoError(t, err)
+		require.Empty(t, ids)
+	})
+
+	t.Run("preference filter is per-type (disabling pitches does not affect polls)", func(t *testing.T) {
+		owner := createUser(t, app)
+		m1 := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, m1, trip)
+
+		// m1 disables only polls
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/notification-preferences", trip, m1),
+				Method: testkit.PATCH,
+				UserID: &m1,
+				Body:   map[string]any{"notify_new_polls": false},
+			}).
+			AssertStatus(http.StatusOK)
+
+		tripUUID := uuid.MustParse(trip)
+		ownerUUID := uuid.MustParse(owner)
+
+		// Pitches: both m1 still enabled
+		pitchIDs, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewPitch, ownerUUID)
+		require.NoError(t, err)
+		require.Len(t, pitchIDs, 1)
+		require.Equal(t, uuid.MustParse(m1), pitchIDs[0])
+
+		// Polls: m1 disabled, so empty (owner is excluded)
+		pollIDs, err := repo.FindUserIDsWithNotificationPreference(ctx, tripUUID, models.NotificationPreferenceNewPoll, ownerUUID)
+		require.NoError(t, err)
+		require.Empty(t, pollIDs)
 	})
 }

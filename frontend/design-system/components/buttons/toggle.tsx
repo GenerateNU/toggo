@@ -20,7 +20,7 @@ const THUMB_WIDTH = 35;
 const THUMB_HEIGHT = 23;
 const THUMB_OFFSET = 3;
 const THUMB_TRAVEL = TRACK_WIDTH - THUMB_WIDTH - THUMB_OFFSET * 2;
-const TRACK_OFF_COLOR = ColorPalette.borderDefault;
+const TRACK_OFF_COLOR = ColorPalette.gray300;
 const TRACK_ON_COLOR = ColorPalette.statusSuccess;
 
 export default function Toggle({
@@ -78,7 +78,7 @@ export default function Toggle({
       {label && (
         <Text
           variant="bodySmMedium"
-          color={disabled ? "textDisabled" : "textInverse"}
+          color={disabled ? "gray400" : "gray900"}
           style={{ flex: 1 }}
         >
           {label}
@@ -130,8 +130,8 @@ const styles = StyleSheet.create({
     width: THUMB_WIDTH,
     height: THUMB_HEIGHT,
     borderRadius: THUMB_HEIGHT / 2,
-    backgroundColor: ColorPalette.backgroundCard,
-    shadowColor: ColorPalette.backgroundDefault,
+    backgroundColor: ColorPalette.white,
+    shadowColor: ColorPalette.gray900,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,

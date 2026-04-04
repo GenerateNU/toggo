@@ -268,11 +268,9 @@ func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByK
 			continue
 		}
 
-		sizedKey := buildSizedKey(fileKey, req.Size)
-
 		presignedURL, err := f.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 			Bucket: aws.String(f.bucketName),
-			Key:    aws.String(sizedKey),
+			Key:    aws.String(fileKey),
 		}, s3.WithPresignExpires(f.urlExpiration))
 
 		if err != nil {

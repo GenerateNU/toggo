@@ -21,6 +21,7 @@ type MembershipServiceInterface interface {
 	GetTripMembers(ctx context.Context, tripID uuid.UUID, limit int, cursorToken string) (*models.MembershipCursorPageResult, error)
 	GetUserTrips(ctx context.Context, userID uuid.UUID) ([]*models.Membership, error)
 	UpdateMembership(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateMembershipRequest) (*models.Membership, error)
+	UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateNotificationPreferencesRequest) (*models.Membership, error)
 	RemoveMember(ctx context.Context, tripID, userID uuid.UUID) error
 	PromoteToAdmin(ctx context.Context, tripID, userID uuid.UUID) error
 	DemoteFromAdmin(ctx context.Context, tripID, userID uuid.UUID) error
@@ -64,26 +65,35 @@ func (s *MembershipService) AddMember(ctx context.Context, req models.CreateMemb
 	existingMembership, err := s.Membership.Find(ctx, req.UserID, req.TripID)
 	if err == nil {
 		return &models.Membership{
-			UserID:       existingMembership.UserID,
-			TripID:       existingMembership.TripID,
-			IsAdmin:      existingMembership.IsAdmin,
-			BudgetMin:    existingMembership.BudgetMin,
-			BudgetMax:    existingMembership.BudgetMax,
-			Availability: existingMembership.Availability,
-			CreatedAt:    existingMembership.CreatedAt,
-			UpdatedAt:    existingMembership.UpdatedAt,
+			UserID:            existingMembership.UserID,
+			TripID:            existingMembership.TripID,
+			IsAdmin:           existingMembership.IsAdmin,
+			BudgetMin:         existingMembership.BudgetMin,
+			BudgetMax:         existingMembership.BudgetMax,
+			Availability:      existingMembership.Availability,
+			NotifyNewPitches:  existingMembership.NotifyNewPitches,
+			NotifyNewPolls:    existingMembership.NotifyNewPolls,
+			NotifyNewComments: existingMembership.NotifyNewComments,
+			CreatedAt:         existingMembership.CreatedAt,
+			UpdatedAt:         existingMembership.UpdatedAt,
 		}, nil
+	}
+	if !errors.Is(err, errs.ErrNotFound) {
+		return nil, err
 	}
 
 	// Create membership
 	membership := &models.Membership{
-		UserID:    req.UserID,
-		TripID:    req.TripID,
-		IsAdmin:   req.IsAdmin,
-		BudgetMin: req.BudgetMin,
-		BudgetMax: req.BudgetMax,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		UserID:            req.UserID,
+		TripID:            req.TripID,
+		IsAdmin:           req.IsAdmin,
+		BudgetMin:         req.BudgetMin,
+		BudgetMax:         req.BudgetMax,
+		NotifyNewPitches:  true,
+		NotifyNewPolls:    true,
+		NotifyNewComments: true,
+		CreatedAt:         time.Now(),
+		UpdatedAt:         time.Now(),
 	}
 
 	return s.Membership.Create(ctx, membership)
@@ -111,14 +121,17 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 	existingMembership, err := s.Membership.Find(ctx, userID, invite.TripID)
 	if err == nil {
 		return &models.Membership{
-			UserID:       existingMembership.UserID,
-			TripID:       existingMembership.TripID,
-			IsAdmin:      existingMembership.IsAdmin,
-			BudgetMin:    existingMembership.BudgetMin,
-			BudgetMax:    existingMembership.BudgetMax,
-			Availability: existingMembership.Availability,
-			CreatedAt:    existingMembership.CreatedAt,
-			UpdatedAt:    existingMembership.UpdatedAt,
+			UserID:            existingMembership.UserID,
+			TripID:            existingMembership.TripID,
+			IsAdmin:           existingMembership.IsAdmin,
+			BudgetMin:         existingMembership.BudgetMin,
+			BudgetMax:         existingMembership.BudgetMax,
+			Availability:      existingMembership.Availability,
+			NotifyNewPitches:  existingMembership.NotifyNewPitches,
+			NotifyNewPolls:    existingMembership.NotifyNewPolls,
+			NotifyNewComments: existingMembership.NotifyNewComments,
+			CreatedAt:         existingMembership.CreatedAt,
+			UpdatedAt:         existingMembership.UpdatedAt,
 		}, nil
 	}
 	if !errors.Is(err, errs.ErrNotFound) {
@@ -127,13 +140,16 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 
 	// Not a member yet; create a basic membership.
 	membership := &models.Membership{
-		UserID:    userID,
-		TripID:    invite.TripID,
-		IsAdmin:   false,
-		BudgetMin: 0,
-		BudgetMax: 0,
-		CreatedAt: now,
-		UpdatedAt: now,
+		UserID:            userID,
+		TripID:            invite.TripID,
+		IsAdmin:           false,
+		BudgetMin:         0,
+		BudgetMax:         0,
+		NotifyNewPitches:  true,
+		NotifyNewPolls:    true,
+		NotifyNewComments: true,
+		CreatedAt:         now,
+		UpdatedAt:         now,
 	}
 
 	created, err := s.Membership.Create(ctx, membership)
@@ -145,14 +161,17 @@ func (s *MembershipService) JoinTripByInviteCode(ctx context.Context, userID uui
 				return nil, findErr
 			}
 			return &models.Membership{
-				UserID:       existingMembership.UserID,
-				TripID:       existingMembership.TripID,
-				IsAdmin:      existingMembership.IsAdmin,
-				BudgetMin:    existingMembership.BudgetMin,
-				BudgetMax:    existingMembership.BudgetMax,
-				Availability: existingMembership.Availability,
-				CreatedAt:    existingMembership.CreatedAt,
-				UpdatedAt:    existingMembership.UpdatedAt,
+				UserID:            existingMembership.UserID,
+				TripID:            existingMembership.TripID,
+				IsAdmin:           existingMembership.IsAdmin,
+				BudgetMin:         existingMembership.BudgetMin,
+				BudgetMax:         existingMembership.BudgetMax,
+				Availability:      existingMembership.Availability,
+				NotifyNewPitches:  existingMembership.NotifyNewPitches,
+				NotifyNewPolls:    existingMembership.NotifyNewPolls,
+				NotifyNewComments: existingMembership.NotifyNewComments,
+				CreatedAt:         existingMembership.CreatedAt,
+				UpdatedAt:         existingMembership.UpdatedAt,
 			}, nil
 		}
 		return nil, err
@@ -306,6 +325,17 @@ func (s *MembershipService) GetMemberCount(ctx context.Context, tripID uuid.UUID
 	return s.Membership.CountMembers(ctx, tripID)
 }
 
+func (s *MembershipService) UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req models.UpdateNotificationPreferencesRequest) (*models.Membership, error) {
+	if req.NotifyNewPitches == nil && req.NotifyNewPolls == nil && req.NotifyNewComments == nil {
+		return nil, errs.BadRequest(errors.New("at least one notification preference must be provided"))
+	}
+	_, err := s.Membership.Find(ctx, userID, tripID)
+	if err != nil {
+		return nil, err
+	}
+	return s.Membership.UpdateNotificationPreferences(ctx, userID, tripID, &req)
+}
+
 func (s *MembershipService) toAPIResponse(ctx context.Context, membership *models.MembershipDatabaseResponse) (*models.MembershipAPIResponse, error) {
 	var profilePictureURL *string
 	if membership.ProfilePictureID != nil {
@@ -314,6 +344,10 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 			profilePictureURL = &fileResp.URL
 		}
 	}
+
+	notifyNewPitches := membership.NotifyNewPitches
+	notifyNewPolls := membership.NotifyNewPolls
+	notifyNewComments := membership.NotifyNewComments
 
 	return &models.MembershipAPIResponse{
 		UserID:            membership.UserID,
@@ -324,6 +358,9 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 		BudgetMin:         membership.BudgetMin,
 		BudgetMax:         membership.BudgetMax,
 		Availability:      membership.Availability,
+		NotifyNewPitches:  &notifyNewPitches,
+		NotifyNewPolls:    &notifyNewPolls,
+		NotifyNewComments: &notifyNewComments,
 		Username:          membership.Username,
 		ProfilePictureURL: profilePictureURL,
 	}, nil

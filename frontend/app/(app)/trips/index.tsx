@@ -9,9 +9,9 @@ export default function Trips() {
         alignItems="center"
         padding="lg"
         gap="md"
-        backgroundColor="backgroundCard"
+        backgroundColor="white"
       >
-        <Text variant="headingMd" color="textInverse">
+        <Text variant="headingMd" color="gray900">
           Trips
         </Text>
       </Box>
