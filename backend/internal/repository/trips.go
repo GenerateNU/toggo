@@ -18,7 +18,9 @@ type TripRepository interface {
 	FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
+	UpdateTx(ctx context.Context, tx bun.Tx, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	SetRankPollID(ctx context.Context, tripID, pollID uuid.UUID) error
+	SetRankPollIDTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -198,9 +200,64 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 	return updatedTrip, nil
 }
 
+// UpdateTx modifies an existing trip within the given transaction.
+func (r *tripRepository) UpdateTx(ctx context.Context, tx bun.Tx, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error) {
+	updateQuery := tx.NewUpdate().
+		Model(&models.Trip{}).
+		Where("id = ?", id)
+
+	if req.Name != nil {
+		updateQuery = updateQuery.Set("name = ?", *req.Name)
+	}
+	if req.BudgetMin != nil {
+		updateQuery = updateQuery.Set("budget_min = ?", *req.BudgetMin)
+	}
+	if req.BudgetMax != nil {
+		updateQuery = updateQuery.Set("budget_max = ?", *req.BudgetMax)
+	}
+	if req.Currency != nil {
+		updateQuery = updateQuery.Set("currency = ?", *req.Currency)
+	}
+	if req.CoverImageID != nil {
+		updateQuery = updateQuery.Set("cover_image = ?", *req.CoverImageID)
+	}
+	if req.PitchDeadline != nil {
+		updateQuery = updateQuery.Set("pitch_deadline = ?", *req.PitchDeadline)
+	}
+
+	result, err := updateQuery.Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if rowsAffected == 0 {
+		return nil, errs.ErrNotFound
+	}
+
+	updatedTrip := &models.Trip{}
+	if err := tx.NewSelect().Model(updatedTrip).Where("id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+	return updatedTrip, nil
+}
+
 // SetRankPollID sets the rank_poll_id on a trip.
 func (r *tripRepository) SetRankPollID(ctx context.Context, tripID, pollID uuid.UUID) error {
 	_, err := r.db.NewUpdate().
+		TableExpr("trips").
+		Set("rank_poll_id = ?", pollID).
+		Where("id = ?", tripID).
+		Exec(ctx)
+	return err
+}
+
+// SetRankPollIDTx sets the rank_poll_id on a trip within the given transaction.
+func (r *tripRepository) SetRankPollIDTx(ctx context.Context, tx bun.Tx, tripID, pollID uuid.UUID) error {
+	_, err := tx.NewUpdate().
 		TableExpr("trips").
 		Set("rank_poll_id = ?", pollID).
 		Where("id = ?", tripID).

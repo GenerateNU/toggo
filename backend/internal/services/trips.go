@@ -243,15 +243,20 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID 
 		return nil, errs.BadRequest(errors.New("pitch_deadline must be in the future"))
 	}
 
-	trip, err := s.Trip.Update(ctx, tripID, &req)
+	var trip *models.Trip
+	err := s.Repository.GetDB().RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		var txErr error
+		trip, txErr = s.Trip.UpdateTx(ctx, tx, tripID, &req)
+		if txErr != nil {
+			return txErr
+		}
+		if req.PitchDeadline != nil && trip.RankPollID == nil {
+			return s.createTripRankPollTx(ctx, tx, trip, actorID)
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
-	}
-
-	if req.PitchDeadline != nil && trip.RankPollID == nil {
-		if err := s.createTripRankPoll(ctx, trip, actorID); err != nil {
-			log.Printf("failed to create rank poll for trip %s: %v", tripID, err)
-		}
 	}
 
 	// Publish trip.updated event
@@ -306,7 +311,7 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 
 const rankPollQuestion = "Rank your top destinations"
 
-func (s *TripService) createTripRankPoll(ctx context.Context, trip *models.Trip, creatorID uuid.UUID) error {
+func (s *TripService) createTripRankPollTx(ctx context.Context, tx bun.Tx, trip *models.Trip, creatorID uuid.UUID) error {
 	poll := &models.Poll{
 		ID:        uuid.New(),
 		TripID:    trip.ID,
@@ -314,10 +319,14 @@ func (s *TripService) createTripRankPoll(ctx context.Context, trip *models.Trip,
 		Question:  rankPollQuestion,
 		PollType:  models.PollTypeRank,
 	}
-	if _, err := s.Poll.CreatePoll(ctx, bun.Tx{}, poll, nil); err != nil {
+	if _, err := tx.NewInsert().Model(poll).Returning("*").Exec(ctx, poll); err != nil {
 		return err
 	}
-	return s.Trip.SetRankPollID(ctx, trip.ID, poll.ID)
+	if err := s.Trip.SetRankPollIDTx(ctx, tx, trip.ID, poll.ID); err != nil {
+		return err
+	}
+	trip.RankPollID = &poll.ID
+	return nil
 }
 
 const defaultInviteExpiry = 7 * 24 * time.Hour
