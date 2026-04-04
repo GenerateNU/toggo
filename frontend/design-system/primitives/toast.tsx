@@ -11,6 +11,7 @@ import { Layout } from "../tokens/layout";
 
 export type ToastProps = {
   message: string;
+  subtitle?: string;
   action?: {
     label: string;
     onPress: () => void;
@@ -19,9 +20,44 @@ export type ToastProps = {
   onClose: () => void;
 };
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Poll-sent style (Figma 3859-27171) ──────────────────────────────────────
 
-export default function Toast({
+function PollSentToast({
+  message,
+  subtitle,
+  onClose,
+}: Pick<ToastProps, "message" | "subtitle" | "onClose">) {
+  return (
+    <Pressable onPress={onClose}>
+      <Box style={styles.pollSentContainer}>
+        {/* Orange circle check icon */}
+        <Box style={styles.pollSentIcon}>
+          <Check size={22} color={ColorPalette.white} strokeWidth={2.5} />
+        </Box>
+
+        {/* Text */}
+        <Box style={styles.pollSentText}>
+          <Text variant="headingSm" color="gray950" numberOfLines={1}>
+            {message}
+          </Text>
+          {subtitle ? (
+            <Text
+              variant="bodySmDefault"
+              style={styles.pollSentSubtitle}
+              numberOfLines={2}
+            >
+              {subtitle}
+            </Text>
+          ) : null}
+        </Box>
+      </Box>
+    </Pressable>
+  );
+}
+
+// ─── Default style ────────────────────────────────────────────────────────────
+
+function DefaultToast({
   message,
   action,
   showClose = true,
@@ -68,9 +104,21 @@ export default function Toast({
   );
 }
 
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function Toast(props: ToastProps) {
+  if (props.subtitle !== undefined) {
+    return <PollSentToast {...props} />;
+  }
+  return <DefaultToast {...props} />;
+}
+
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
+const ICON_SIZE = 48;
+
 const styles = StyleSheet.create({
+  // Default toast
   toast: {
     flexDirection: "row",
     alignItems: "center",
@@ -100,5 +148,32 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 2,
+  },
+
+  // Poll-sent toast (matches Figma 3859-27171)
+  pollSentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: ColorPalette.white,
+    borderRadius: CornerRadius.md,
+    borderWidth: 1,
+    borderColor: ColorPalette.gray200,
+    padding: 8,
+    gap: 15,
+  },
+  pollSentIcon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    borderRadius: ICON_SIZE / 2,
+    backgroundColor: ColorPalette.brand500,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pollSentText: {
+    flex: 1,
+    gap: 2,
+  },
+  pollSentSubtitle: {
+    color: "#857c7c",
   },
 });

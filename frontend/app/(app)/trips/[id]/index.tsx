@@ -119,14 +119,9 @@ export default function Trip() {
             />
             <Button
               layout="textOnly"
-              label="See Dummy Poll"
+              label="Polls"
               variant="Primary"
-              onPress={() =>
-                router.push({
-                  pathname: `/trips/${tripID}/polls/${DUMMY_ID}`,
-                  params: { tripID },
-                })
-              }
+              onPress={() => router.push(`/trips/${tripID}/polls` as any)}
             />
           </Box>
 

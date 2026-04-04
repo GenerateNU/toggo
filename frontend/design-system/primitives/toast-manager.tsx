@@ -23,6 +23,7 @@ type ToastAction = {
 
 type ToastConfig = {
   message: string;
+  subtitle?: string;
   action?: ToastAction;
   showClose?: boolean;
   duration?: number;
@@ -174,6 +175,7 @@ const ToastItem = ({
     >
       <Toast
         message={entry.message}
+        subtitle={entry.subtitle}
         action={entry.action}
         showClose={showClose}
         onClose={hide}

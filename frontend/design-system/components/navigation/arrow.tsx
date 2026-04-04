@@ -14,9 +14,9 @@ export const BackButton: React.FC<BackButtonProps> = ({ onPress }) => {
   return (
     <Box
       onTouchEnd={onPress ?? router.back}
-      flexDirection="row"
       alignItems="center"
       justifyContent="center"
+      style={{ width: 36, height: 36 }}
     >
       <Icon icon={ArrowLeft} size="sm" color="black" />
     </Box>

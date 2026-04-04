@@ -45,7 +45,7 @@ type CategoryAPIResponse struct {
 	Name      string    `json:"name"`
 	Label     string    `json:"label"`
 	Icon      *string   `json:"icon,omitempty"`
-	IsHidden  *bool     `json:"is_hidden,omitempty"`// only present for admins
+	IsHidden  *bool     `json:"is_hidden,omitempty"` // only present for admins
 	IsDefault bool      `json:"is_default"`
 	Position  int       `json:"position"`
 	CreatedAt time.Time `json:"created_at"`

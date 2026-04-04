@@ -64,6 +64,15 @@ const Layout = () => {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="test-polls-voting"
+        options={{
+          headerShown: true,
+          headerTitle: "",
+          headerTransparent: true,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 };
