@@ -2,7 +2,7 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Icon, Screen, Text, TextField } from "@/design-system";
+import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -107,6 +107,10 @@ export default function SearchLocationScreen() {
   const showPredictions = predictions.length > 0;
   const showMap = !!selectedLocation && !showPredictions;
 
+  const handleConfirm = () => {
+    router.back();
+  };
+
   return (
     <Screen>
       <Box flex={1} backgroundColor="gray50">
@@ -130,6 +134,22 @@ export default function SearchLocationScreen() {
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
+        )}
+
+        {showMap && (
+          <Box
+            paddingHorizontal="sm"
+            paddingVertical="sm"
+            backgroundColor="white"
+            style={styles.confirmBar}
+          >
+            <Button
+              layout="textOnly"
+              label={`Select ${selectedLocation.name || selectedLocation.formatted_address}`}
+              variant="Primary"
+              onPress={handleConfirm}
+            />
+          </Box>
         )}
       </Box>
     </Screen>
@@ -351,6 +371,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
+    elevation: 4,
+  },
+  confirmBar: {
+    shadowColor: ColorPalette.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 4,
   },
 });

@@ -1,6 +1,9 @@
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { useGetTrip } from "@/api/trips/useGetTrip";
+import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
+import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { Box, Text } from "@/design-system";
+import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -19,7 +22,7 @@ import {
   PiggyBank,
   Settings2,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -167,8 +170,10 @@ export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
   const createInviteMutation = useCreateTripInvite();
+  const updateTripMutation = useUpdateTrip();
+  const dateSheetRef = useRef<any>(null);
 
-  const { data: trip, isLoading } = useGetTrip(tripID!);
+  const { data: trip, isLoading, refetch } = useGetTrip(tripID!);
 
   const handleTabPress = (tab: TabKey) => {
     if (tab === "settings") {
@@ -194,6 +199,24 @@ export default function Trip() {
       });
     } catch {
       // silently handled
+    }
+  };
+
+  const handleDateSet = async (range: DateRange) => {
+    if (!range.start) return;
+    try {
+      await updateTripMutation.mutateAsync({
+        tripID: tripID!,
+        data: {
+          start_date: range.start.toISOString(),
+          ...(range.end ? { end_date: range.end.toISOString() } : {}),
+        },
+      });
+      await refetch();
+    } catch {
+      // non-blocking
+    } finally {
+      dateSheetRef.current?.close();
     }
   };
 
@@ -282,18 +305,34 @@ export default function Trip() {
 
             {/* Trip meta */}
             <Box gap="xs">
-              <Box flexDirection="row" alignItems="center" gap="xxs">
-                <Calendar size={16} color={ColorPalette.gray500} />
-                <Text variant="bodySmDefault" color="gray500">
-                  {tripDate ?? "Trip Date"}
-                </Text>
-              </Box>
-              <Box flexDirection="row" alignItems="center" gap="xxs">
-                <MapPin size={16} color={ColorPalette.gray500} />
-                <Text variant="bodySmDefault" color="gray500">
-                  Location
-                </Text>
-              </Box>
+              <Pressable
+                onPress={() => dateSheetRef.current?.snapToIndex(0)}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                accessibilityRole="button"
+                accessibilityLabel="Set trip dates"
+              >
+                <Box flexDirection="row" alignItems="center" gap="xxs">
+                  <Calendar size={16} color={ColorPalette.gray500} />
+                  <Text variant="bodySmDefault" color="gray500">
+                    {tripDate ?? "Add dates"}
+                  </Text>
+                </Box>
+              </Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push(`/trips/${tripID}/search-location` as any)
+                }
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                accessibilityRole="button"
+                accessibilityLabel="Set trip location"
+              >
+                <Box flexDirection="row" alignItems="center" gap="xxs">
+                  <MapPin size={16} color={ColorPalette.gray500} />
+                  <Text variant="bodySmDefault" color="gray500">
+                    Add location
+                  </Text>
+                </Box>
+              </Pressable>
             </Box>
           </Box>
 
@@ -308,6 +347,13 @@ export default function Trip() {
           </Box>
         </ScrollView>
       </Box>
+
+      <TripReminderDateSheet
+        bottomSheetRef={dateSheetRef}
+        onSetDate={handleDateSet}
+        onSkip={() => dateSheetRef.current?.close()}
+        onDismiss={() => dateSheetRef.current?.close()}
+      />
     </SafeAreaView>
   );
 }
