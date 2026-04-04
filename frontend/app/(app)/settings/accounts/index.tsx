@@ -1,6 +1,9 @@
 import { useGetFile } from "@/api/files/useGetFile";
 import { useUser } from "@/contexts/user";
-import { Avatar, Box, Screen, Text } from "@/design-system";
+import { Avatar, Box, Icon, Screen, Text } from "@/design-system";
+import { router } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
+import { Pressable } from "react-native";
 
 export default function Accounts() {
   const { currentUser } = useUser();
@@ -49,6 +52,24 @@ export default function Accounts() {
           <InfoRow label="Phone" value={currentUser?.phone_number} />
           <Box height={1} backgroundColor="gray300" marginLeft="md" />
           <InfoRow label="Timezone" value={currentUser?.timezone} />
+          <Box height={1} backgroundColor="gray300" marginLeft="md" />
+          <Pressable
+            onPress={() => router.push("/testing")}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              alignItems="center"
+              paddingHorizontal="md"
+              paddingVertical="sm"
+            >
+              <Text variant="bodyDefault" color="gray500">
+                Developer Window
+              </Text>
+              <Icon icon={ChevronRight} size="xs" color="gray500" />
+            </Box>
+          </Pressable>
         </Box>
       </Box>
     </Screen>

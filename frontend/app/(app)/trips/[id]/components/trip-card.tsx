@@ -66,3 +66,5 @@ export function TripCard({ trip }: TripCardProps) {
     </Pressable>
   );
 }
+
+export default TripCard;
