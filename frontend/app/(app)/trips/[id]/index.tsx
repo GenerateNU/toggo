@@ -47,10 +47,7 @@ const INITIAL_TAB: TabKey = "itinerary";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatTripDates(
-  startDate?: string,
-  endDate?: string,
-): string | null {
+function formatTripDates(startDate?: string, endDate?: string): string | null {
   if (!startDate) return null;
   const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
   const start = new Date(startDate).toLocaleDateString("en-US", opts);
@@ -61,7 +58,13 @@ function formatTripDates(
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function InviteFriendsButton({ onPress, loading }: { onPress: () => void; loading: boolean }) {
+function InviteFriendsButton({
+  onPress,
+  loading,
+}: {
+  onPress: () => void;
+  loading: boolean;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -77,7 +80,7 @@ function InviteFriendsButton({ onPress, loading }: { onPress: () => void; loadin
         <ActivityIndicator size="small" color={ColorPalette.gray500} />
       ) : (
         <Text variant="bodyXsMedium" color="gray500">
-          +  Invite Friends
+          + Invite Friends
         </Text>
       )}
     </Pressable>
@@ -145,12 +148,7 @@ function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
 
 function ItineraryEmptyState() {
   return (
-    <Box
-      borderWidth={1}
-      borderColor="gray200"
-      borderRadius="xl"
-      padding="sm"
-    >
+    <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
       <Box alignItems="center" paddingVertical="lg">
         <Text
           variant="bodyDefault"
@@ -223,10 +221,7 @@ export default function Trip() {
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
 
   return (
-    <SafeAreaView
-      style={styles.safeArea}
-      edges={["top", "bottom"]}
-    >
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header bar */}

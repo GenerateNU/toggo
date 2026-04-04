@@ -57,11 +57,7 @@ function TripCodeInput({ value, onChange }: TripCodeInputProps) {
   };
 
   const handleKeyPress = (e: any, index: number) => {
-    if (
-      e.nativeEvent.key === "Backspace" &&
-      chars[index] === "" &&
-      index > 0
-    ) {
+    if (e.nativeEvent.key === "Backspace" && chars[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
       const newChars = [...chars];
       newChars[index - 1] = "";
@@ -144,12 +140,7 @@ export function JoinOrCreateTripSheet({
       snapPoints={["65%"]}
       onClose={handleSheetClose}
     >
-      <Box
-        paddingHorizontal="sm"
-        paddingTop="sm"
-        paddingBottom="lg"
-        gap="md"
-      >
+      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
         <Box flexDirection="row" justifyContent="flex-end">
           <TouchableOpacity
             onPress={handleClose}

@@ -1,4 +1,11 @@
-import { BottomSheet, Box, Button, Divider, Text, TextField } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  Divider,
+  Text,
+  TextField,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { X } from "lucide-react-native";
 import { useState } from "react";
@@ -27,11 +34,7 @@ export function TripReminderLocationSheet({
   const [destination, setDestination] = useState("");
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      snapPoints={["55%"]}
-      onClose={onDismiss}
-    >
+    <BottomSheet ref={bottomSheetRef} snapPoints={["55%"]} onClose={onDismiss}>
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
         <Box flexDirection="row" justifyContent="flex-end">
           <TouchableOpacity
