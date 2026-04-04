@@ -84,7 +84,7 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
           flex={1}
           aspectRatio={0.8}
           borderWidth={2}
-          borderColor={hasError ? "error" : "borderPrimary"}
+          borderColor={hasError ? "statusError" : "gray300"}
           borderRadius="sm"
           backgroundColor="white"
           justifyContent="center"
@@ -192,6 +192,9 @@ export default function OTPVerificationForm() {
         });
         return;
       }
+
+      // Auth layout's <Redirect> handles navigation to /(app) once
+      // isAuthenticated + currentUser.username are set in context.
     } catch (err: any) {
       setError(err?.message || "Invalid verification code");
       setIsSubmitting(false);
@@ -238,13 +241,13 @@ export default function OTPVerificationForm() {
                   />
 
                   {formState.errors.otp && (
-                    <Text variant="xsParagraph" color="error">
+                    <Text variant="bodyXsDefault" color="statusError">
                       {formState.errors.otp.message}
                     </Text>
                   )}
 
                   {error && (
-                    <Text variant="smParagraph" color="error">
+                    <Text variant="bodySmDefault" color="statusError">
                       {error}
                     </Text>
                   )}
@@ -266,11 +269,11 @@ export default function OTPVerificationForm() {
 
             <Box alignItems="center">
               {canResend ? (
-                <Text variant="smParagraph" color="textQuaternary">
+                <Text variant="bodySmDefault" color="gray500">
                   Didn't receive a code?{" "}
                   <Text
-                    variant="smLabel"
-                    color="textSecondary"
+                    variant="bodySmMedium"
+                    color="white"
                     onPress={!isPending ? handleResendOTP : undefined}
                     style={{ fontWeight: "600" }}
                   >
@@ -278,7 +281,7 @@ export default function OTPVerificationForm() {
                   </Text>
                 </Text>
               ) : (
-                <Text variant="smParagraph" color="textQuaternary">
+                <Text variant="bodySmDefault" color="gray500">
                   Didn't receive a code? Resend in {timer}s
                 </Text>
               )}

@@ -139,6 +139,7 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 		}
 		return err
 	}
+
 	return c.Status(http.StatusOK).JSON(result)
 }
 
@@ -172,7 +173,12 @@ func (ctrl *TripController) UpdateTrip(c *fiber.Ctx) error {
 		return err
 	}
 
-	trip, err := ctrl.tripService.UpdateTrip(c.Context(), tripID, req)
+	actorID, err := validators.ValidateID(c.Locals("userID").(string))
+	if err != nil {
+		return errs.Unauthorized()
+	}
+
+	trip, err := ctrl.tripService.UpdateTrip(c.Context(), tripID, actorID, req)
 	if err != nil {
 		return err
 	}

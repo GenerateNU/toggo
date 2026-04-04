@@ -27,7 +27,8 @@ export const createPitchMutationKey = () =>
 export type CreatePitchMutationKey = ReturnType<typeof createPitchMutationKey>;
 
 /**
- * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+ * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+ * Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
  * @summary Create a pitch
  * {@link /api/v1/trips/:tripID/pitches}
  */
@@ -82,7 +83,8 @@ export function createPitchMutationOptions<TContext = unknown>(
 }
 
 /**
- * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+ * @description Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+ * Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
  * @summary Create a pitch
  * {@link /api/v1/trips/:tripID/pitches}
  */

@@ -20,6 +20,8 @@ type FileServiceInterface interface {
 	GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error)
 	GetFileAllSizes(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)
 	GetFilesByKeys(ctx context.Context, req models.GetFilesByKeysRequest) (*models.GetFilesByKeysResponse, error)
+	GetFilesByImageIDs(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) (map[uuid.UUID]string, error)
+	DeleteImage(ctx context.Context, imageID uuid.UUID) error
 }
 
 var _ FileServiceInterface = (*FileService)(nil)
@@ -266,11 +268,9 @@ func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByK
 			continue
 		}
 
-		sizedKey := buildSizedKey(fileKey, req.Size)
-
 		presignedURL, err := f.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 			Bucket: aws.String(f.bucketName),
-			Key:    aws.String(sizedKey),
+			Key:    aws.String(fileKey),
 		}, s3.WithPresignExpires(f.urlExpiration))
 
 		if err != nil {
@@ -291,6 +291,51 @@ func (f *FileService) GetFilesByKeys(ctx context.Context, req models.GetFilesByK
 // findPendingImages is a helper to find images including pending ones (for confirmation flow)
 func (f *FileService) findPendingImages(ctx context.Context, imageID uuid.UUID) ([]*models.Image, error) {
 	return f.imageRepo.FindByIDIncludingPending(ctx, imageID)
+}
+
+// DeleteImage removes all size variants of an image from S3 and the database
+func (f *FileService) DeleteImage(ctx context.Context, imageID uuid.UUID) error {
+	images, err := f.imageRepo.FindAllByID(ctx, imageID)
+	if err != nil {
+		return err
+	}
+
+	for _, image := range images {
+		if _, err := f.s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: aws.String(f.bucketName),
+			Key:    aws.String(image.FileKey),
+		}); err != nil {
+			return fmt.Errorf("failed to delete S3 object %s: %w", image.FileKey, err)
+		}
+	}
+
+	return f.imageRepo.DeleteByID(ctx, imageID)
+}
+
+// GetFilesByImageIDs retrieves presigned URLs for multiple image IDs at a given size
+func (f *FileService) GetFilesByImageIDs(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) (map[uuid.UUID]string, error) {
+	if len(imageIDs) == 0 {
+		return map[uuid.UUID]string{}, nil
+	}
+
+	images, err := f.imageRepo.FindByIDsAndSize(ctx, imageIDs, size)
+	if err != nil {
+		return nil, err
+	}
+
+	urlMap := make(map[uuid.UUID]string, len(images))
+	for _, image := range images {
+		presignedURL, err := f.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
+			Bucket: aws.String(f.bucketName),
+			Key:    aws.String(image.FileKey),
+		}, s3.WithPresignExpires(f.urlExpiration))
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate download URL for image %s: %w", image.ImageID, err)
+		}
+		urlMap[image.ImageID] = presignedURL.URL
+	}
+
+	return urlMap, nil
 }
 
 // buildSizedKey constructs the S3 key for a specific size variant

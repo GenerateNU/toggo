@@ -1,12 +1,14 @@
 package types //nolint:revive
 
 import (
+	"net/http"
 	"toggo/internal/config"
 	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/services"
 
 	"github.com/go-playground/validator/v10"
+	"go.temporal.io/sdk/client"
 )
 
 type RouteParams struct {
@@ -15,9 +17,13 @@ type RouteParams struct {
 }
 
 type ServiceParams struct {
-	Repository     *repository.Repository
-	Config         *config.Configuration
-	EventPublisher realtime.EventPublisher
-	FileService    services.FileServiceInterface
-	PollService    services.PollServiceInterface
+	Repository          *repository.Repository
+	Config              *config.Configuration
+	EventPublisher      realtime.EventPublisher
+	FileService         services.FileServiceInterface
+	NotificationService services.NotificationService
+	PollService         services.PollServiceInterface
+	ActivityFeedService services.ActivityFeedServiceInterface
+	HTTPClient          *http.Client
+	TemporalClient      client.Client
 }

@@ -7,6 +7,7 @@ export type RequestConfig<TBody = unknown> = {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   url: string;
   headers?: Record<string, string>;
+  params?: Record<string, unknown>;
   data?: TBody;
   signal?: AbortSignal;
 };
@@ -67,7 +68,21 @@ export default async function request<TData, TError = unknown, TBody = unknown>(
 ): Promise<ClientResponse<TData>> {
   const token = await getAuthToken();
 
-  const res = await globalThis.fetch(`${BASE_URL}${config.url}`, {
+  let url = `${BASE_URL}${config.url}`;
+  if (config.params) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(config.params)) {
+      if (value !== undefined && value !== null) {
+        query.set(key, String(value));
+      }
+    }
+    const queryString = query.toString();
+    if (queryString) {
+      url = `${url}?${queryString}`;
+    }
+  }
+
+  const res = await globalThis.fetch(url, {
     method: config.method,
     headers: {
       "Content-Type": "application/json",

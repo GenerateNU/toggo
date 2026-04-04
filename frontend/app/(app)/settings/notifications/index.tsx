@@ -11,7 +11,7 @@ export default function Notifications() {
         gap="md"
         backgroundColor="white"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="gray900">
           Notifications
         </Text>
       </Box>

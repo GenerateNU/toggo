@@ -34,6 +34,8 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        $ref: '#/definitions/models.ActivityTimeOfDay'
       trip_id:
         type: string
       updated_at:
@@ -55,8 +57,18 @@ definitions:
         type: string
       estimated_price:
         type: number
+      going_count:
+        type: integer
+      going_users:
+        items:
+          $ref: '#/definitions/models.ActivityGoingUserResponse'
+        type: array
       id:
         type: string
+      image_ids:
+        items:
+          $ref: '#/definitions/models.ActivityImageResponse'
+        type: array
       location_lat:
         type: number
       location_lng:
@@ -75,6 +87,8 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        $ref: '#/definitions/models.ActivityTimeOfDay'
       trip_id:
         type: string
       updated_at:
@@ -100,6 +114,22 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.ActivityGoingUserResponse:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.ActivityImageResponse:
+    properties:
+      image_id:
+        type: string
+      image_url:
         type: string
     type: object
   models.ActivityRSVPAPIResponse:
@@ -135,6 +165,16 @@ definitions:
           $ref: '#/definitions/models.ActivityRSVPAPIResponse'
         type: array
     type: object
+  models.ActivityTimeOfDay:
+    enum:
+    - morning
+    - afternoon
+    - evening
+    type: string
+    x-enum-varnames:
+    - ActivityTimeOfDayMorning
+    - ActivityTimeOfDayAfternoon
+    - ActivityTimeOfDayEvening
   models.AddCategoryResponse:
     properties:
       message:
@@ -172,11 +212,16 @@ definitions:
         type: string
       icon:
         type: string
-      is_hidden:
-        description: only present for admins
+      is_default:
         type: boolean
+      is_hidden:
+        type: boolean
+      label:
+        type: string
       name:
         type: string
+      position:
+        type: integer
       trip_id:
         type: string
       updated_at:
@@ -232,6 +277,57 @@ definitions:
       username:
         type: string
     type: object
+  models.CommentReaction:
+    properties:
+      comment_id:
+        type: string
+      created_at:
+        type: string
+      emoji:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.CommentReactionSummary:
+    properties:
+      count:
+        type: integer
+      emoji:
+        type: string
+      reacted_by_me:
+        type: boolean
+    type: object
+  models.CommentReactionUser:
+    properties:
+      profile_picture_url:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  models.CommentReactionUsersResponse:
+    properties:
+      comment_id:
+        type: string
+      emoji:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.CommentReactionUser'
+        type: array
+    type: object
+  models.CommentReactionsSummaryResponse:
+    properties:
+      comment_id:
+        type: string
+      reactions:
+        items:
+          $ref: '#/definitions/models.CommentReactionSummary'
+        type: array
+    type: object
   models.ConfirmUploadRequest:
     properties:
       imageId:
@@ -269,6 +365,11 @@ definitions:
       estimated_price:
         minimum: 0
         type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       location_lat:
         maximum: 90
         minimum: -90
@@ -289,10 +390,45 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        allOf:
+        - $ref: '#/definitions/models.ActivityTimeOfDay'
+        enum:
+        - morning
+        - afternoon
+        - evening
       trip_id:
         type: string
     required:
     - name
+    type: object
+  models.CreateCategoryRequest:
+    properties:
+      icon:
+        maxLength: 255
+        type: string
+      label:
+        maxLength: 255
+        minLength: 1
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      trip_id:
+        type: string
+    required:
+    - label
+    - name
+    - trip_id
+    type: object
+  models.CreateCommentReactionRequest:
+    properties:
+      emoji:
+        minLength: 1
+        type: string
+    required:
+    - emoji
     type: object
   models.CreateCommentRequest:
     properties:
@@ -335,6 +471,21 @@ definitions:
     - trip_id
     - user_id
     type: object
+  models.CreateNotificationPreferencesRequest:
+    properties:
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      voting_reminders:
+        type: boolean
+    type: object
   models.CreatePitchRequest:
     properties:
       content_length:
@@ -345,6 +496,11 @@ definitions:
         type: string
       description:
         type: string
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -468,6 +624,14 @@ definitions:
       time:
         type: string
     type: object
+  models.DeleteCommentReactionRequest:
+    properties:
+      emoji:
+        minLength: 1
+        type: string
+    required:
+    - emoji
+    type: object
   models.EntityType:
     enum:
     - activity
@@ -513,6 +677,20 @@ definitions:
       lng:
         type: number
     type: object
+  models.LinkType:
+    enum:
+    - airbnb
+    - booking_com
+    - tiktok
+    - instagram
+    - generic
+    type: string
+    x-enum-varnames:
+    - LinkTypeAirbnb
+    - LinkTypeBookingCom
+    - LinkTypeTikTok
+    - LinkTypeInstagram
+    - LinkTypeGeneric
   models.MatchedSubstring:
     properties:
       length:
@@ -533,6 +711,12 @@ definitions:
         type: string
       is_admin:
         type: boolean
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
+        type: boolean
       trip_id:
         type: string
       updated_at:
@@ -552,6 +736,12 @@ definitions:
       created_at:
         type: string
       is_admin:
+        type: boolean
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
         type: boolean
       profile_picture_url:
         type: string
@@ -583,6 +773,27 @@ definitions:
         type: string
       user_id:
         type: string
+    type: object
+  models.NotificationPreferences:
+    properties:
+      created_at:
+        type: string
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      updated_at:
+        type: string
+      user_id:
+        type: string
+      voting_reminders:
+        type: boolean
     type: object
   models.NotificationResponse:
     properties:
@@ -646,6 +857,32 @@ definitions:
       next_cursor:
         type: string
     type: object
+  models.ParseLinkRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  models.ParsedActivityData:
+    properties:
+      category_suggestions:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      media_url:
+        type: string
+      name:
+        type: string
+      source_type:
+        $ref: '#/definitions/models.LinkType'
+      source_url:
+        type: string
+      thumbnail_url:
+        type: string
+    type: object
   models.Period:
     properties:
       close:
@@ -665,6 +902,10 @@ definitions:
         type: integer
       id:
         type: string
+      images:
+        items:
+          $ref: '#/definitions/models.PitchImageInfo'
+        type: array
       title:
         type: string
       trip_id:
@@ -683,6 +924,13 @@ definitions:
       limit:
         type: integer
       next_cursor:
+        type: string
+    type: object
+  models.PitchImageInfo:
+    properties:
+      id:
+        type: string
+      medium_url:
         type: string
     type: object
   models.PlaceDetailsRequest:
@@ -1162,6 +1410,7 @@ definitions:
   models.UpdateActivityRequest:
     properties:
       dates:
+        description: Max 20 date ranges
         items:
           $ref: '#/definitions/models.DateRange'
         maxItems: 20
@@ -1171,6 +1420,11 @@ definitions:
       estimated_price:
         minimum: 0
         type: number
+      image_ids:
+        items:
+          type: string
+        maxItems: 5
+        type: array
       location_lat:
         maximum: 90
         minimum: -90
@@ -1191,6 +1445,13 @@ definitions:
         type: string
       thumbnail_url:
         type: string
+      time_of_day:
+        allOf:
+        - $ref: '#/definitions/models.ActivityTimeOfDay'
+        enum:
+        - morning
+        - afternoon
+        - evening
     type: object
   models.UpdateCommentRequest:
     properties:
@@ -1211,6 +1472,15 @@ definitions:
       is_admin:
         type: boolean
     type: object
+  models.UpdateNotificationPreferencesRequest:
+    properties:
+      notify_new_comments:
+        type: boolean
+      notify_new_pitches:
+        type: boolean
+      notify_new_polls:
+        type: boolean
+    type: object
   models.UpdatePitchRequest:
     properties:
       description:
@@ -1218,6 +1488,14 @@ definitions:
       duration:
         minimum: 0
         type: integer
+      image_ids:
+        description: |-
+          ImageIDs, when non-nil, fully replaces the pitch's image associations.
+          Pass an empty slice to remove all images; omit the field to leave images unchanged.
+        items:
+          type: string
+        maxItems: 5
+        type: array
       title:
         minLength: 1
         type: string
@@ -1250,6 +1528,21 @@ definitions:
       name:
         minLength: 1
         type: string
+    type: object
+  models.UpdateUserNotificationPreferencesRequest:
+    properties:
+      deadline_reminders:
+        type: boolean
+      finalized_decisions:
+        type: boolean
+      push_enabled:
+        type: boolean
+      trip_activity:
+        type: boolean
+      upcoming_trip:
+        type: boolean
+      voting_reminders:
+        type: boolean
     type: object
   models.UpdateUserRequest:
     properties:
@@ -1340,6 +1633,30 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  realtime.Event:
+    properties:
+      actor_id:
+        type: string
+      actor_name:
+        type: string
+      data:
+        type: object
+      entity_id:
+        type: string
+      id:
+        type: string
+      timestamp:
+        type: string
+      topic:
+        type: string
+      trip_id:
+        type: string
+    type: object
+  realtime.UnreadCountResponse:
+    properties:
+      unread_count:
+        type: integer
     type: object
 host: localhost:8000
 info:
@@ -1470,7 +1787,209 @@ paths:
       summary: Update a comment
       tags:
       - comments
+  /api/v1/comments/{commentID}/reactions:
+    delete:
+      consumes:
+      - application/json
+      description: Removes the current user's emoji reaction from a comment
+      operationId: removeCommentReaction
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Delete reaction request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeleteCommentReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Remove a reaction from a comment
+      tags:
+      - comment-reactions
+    get:
+      description: Retrieves aggregated emoji reactions for a comment
+      operationId: getCommentReactionsSummary
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentReactionsSummaryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get reactions summary for a comment
+      tags:
+      - comment-reactions
+    post:
+      consumes:
+      - application/json
+      description: Adds an emoji reaction to a comment
+      operationId: addCommentReaction
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Create reaction request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCommentReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CommentReaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Add a reaction to a comment
+      tags:
+      - comment-reactions
+  /api/v1/comments/{commentID}/reactions/{emoji}/users:
+    get:
+      description: Retrieves users who reacted with a specific emoji on a comment
+      operationId: getCommentReactionUsers
+      parameters:
+      - description: Comment ID
+        in: path
+        name: commentID
+        required: true
+        type: string
+      - description: Emoji (URL-encoded)
+        in: path
+        name: emoji
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CommentReactionUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get users who reacted with an emoji
+      tags:
+      - comment-reactions
   /api/v1/files/{imageId}:
+    delete:
+      description: Deletes all size variants of an image from S3 and the database
+      operationId: deleteImage
+      parameters:
+      - description: Image ID (UUID)
+        in: path
+        name: imageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete image
+      tags:
+      - files
     get:
       description: Retrieves presigned URLs for all sizes of an image
       operationId: getFileAllSizes
@@ -2268,7 +2787,7 @@ paths:
   /api/v1/trips/{tripID}/activities:
     get:
       description: Retrieves paginated activities for a trip, optionally filtered
-        by category
+        by category, time of day, and/or date
       operationId: getActivitiesByTripID
       parameters:
       - description: Trip ID
@@ -2279,6 +2798,15 @@ paths:
       - description: Filter by category name
         in: query
         name: category
+        type: string
+      - description: Filter by time of day (morning, afternoon, evening)
+        in: query
+        name: time_of_day
+        type: string
+      - description: Filter by calendar date (YYYY-MM-DD); activity must have a date
+          range containing this day
+        in: query
+        name: date
         type: string
       - description: Max items per page (default 20, max 100)
         in: query
@@ -2785,6 +3313,157 @@ paths:
       summary: Get activity RSVPs
       tags:
       - activities
+  /api/v1/trips/{tripID}/activities/parse-link:
+    post:
+      consumes:
+      - application/json
+      description: Fetches a URL and extracts structured activity fields (name, description,
+        thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram,
+        and generic travel blog URLs.
+      operationId: parseActivityLink
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: URL to parse
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParseLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParsedActivityData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Parse link into activity data
+      tags:
+      - activities
+  /api/v1/trips/{tripID}/activity:
+    get:
+      description: Returns all unread events in the caller's trip feed. Events persist
+        until explicitly dismissed via the mark-read endpoint.
+      operationId: getTripActivityFeed
+      parameters:
+      - description: Trip ID (UUID)
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/realtime.Event'
+            type: array
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get trip activity feed
+      tags:
+      - activity-feed
+  /api/v1/trips/{tripID}/activity/{eventID}:
+    delete:
+      description: Removes a specific event from the caller's trip activity feed.
+      operationId: markActivityEventRead
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Event ID
+        in: path
+        name: eventID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Mark activity event as read
+      tags:
+      - activity-feed
+  /api/v1/trips/{tripID}/activity/unread-count:
+    get:
+      description: Returns the number of events in the caller's trip feed that have
+        not yet been marked as read.
+      operationId: getUnreadActivityCount
+      parameters:
+      - description: Trip ID (UUID)
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/realtime.UnreadCountResponse'
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get unread activity count
+      tags:
+      - activity-feed
   /api/v1/trips/{tripID}/categories:
     get:
       description: Retrieves all categories for a trip
@@ -2795,6 +3474,10 @@ paths:
         name: tripID
         required: true
         type: string
+      - description: Include hidden categories (admin only)
+        in: query
+        name: include_hidden
+        type: boolean
       produces:
       - application/json
       responses:
@@ -2823,6 +3506,95 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Get categories by trip
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new custom category for a trip (any trip member)
+      operationId: createCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CategoryAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create category
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/categories/{name}:
+    delete:
+      description: Deletes a custom category from a trip (admin only, cannot delete
+        default categories)
+      operationId: deleteCategory
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Category name
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete category
       tags:
       - categories
   /api/v1/trips/{tripID}/categories/{name}/hide:
@@ -3170,6 +3942,63 @@ paths:
       summary: Demote admin to member
       tags:
       - memberships
+  /api/v1/trips/{tripID}/memberships/{userID}/notification-preferences:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the notification preferences for a membership (self only)
+      operationId: updateMembershipNotificationPreferences
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      - description: Notification preferences
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Membership'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update notification preferences
+      tags:
+      - memberships
   /api/v1/trips/{tripID}/memberships/{userID}/promote:
     post:
       description: Promotes a member to admin role
@@ -3254,8 +4083,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Creates a new pitch for the trip and returns a presigned URL to
-        upload the audio file
+      description: |-
+        Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+        Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
       operationId: createPitch
       parameters:
       - description: Trip ID
@@ -3329,7 +4159,8 @@ paths:
       tags:
       - pitches
     get:
-      description: Returns a single pitch with a presigned URL for the audio file
+      description: Returns a single pitch with presigned URLs for the audio file and
+        associated images (medium_url for each image)
       operationId: getPitch
       parameters:
       - description: Trip ID
@@ -3367,7 +4198,12 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates pitch metadata (title, description, duration)
+      description: |-
+        Updates pitch metadata (title, description, duration).
+        When image_ids is omitted from the request, existing image associations remain unchanged.
+        When image_ids is an empty array, all image associations are removed.
+        When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+        The response includes images with presigned medium_url for each image.
       operationId: updatePitch
       parameters:
       - description: Trip ID
@@ -3410,6 +4246,45 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Update a pitch
+      tags:
+      - pitches
+  /api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload:
+    post:
+      description: |-
+        Verifies that the audio file was successfully uploaded to S3 and notifies trip members.
+        Must be called by the pitch creator after the presigned PUT upload completes.
+      operationId: confirmPitchUpload
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Pitch ID
+        in: path
+        name: pitchID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Confirm pitch audio upload
       tags:
       - pitches
   /api/v1/trips/{tripID}/rank-polls:
@@ -4396,6 +5271,156 @@ paths:
       summary: Get current user
       tags:
       - users
+  /api/v1/users/me/notification-preferences:
+    delete:
+      description: Deletes notification preferences for the authenticated user
+      operationId: deleteNotificationPreferences
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Delete notification preferences
+      tags:
+      - notification-preferences
+    get:
+      description: Retrieves the notification preferences for the authenticated user
+      operationId: getNotificationPreferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get notification preferences
+      tags:
+      - notification-preferences
+    patch:
+      consumes:
+      - application/json
+      description: Updates notification preferences for the authenticated user
+      operationId: updateNotificationPreferences
+      parameters:
+      - description: Update notification preferences request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Update notification preferences
+      tags:
+      - notification-preferences
+    post:
+      consumes:
+      - application/json
+      description: Creates notification preferences for the authenticated user
+      operationId: createNotificationPreferences
+      parameters:
+      - description: Create notification preferences request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateNotificationPreferencesRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Create notification preferences
+      tags:
+      - notification-preferences
+  /api/v1/users/me/notification-preferences/default:
+    post:
+      description: Returns existing preferences or creates default preferences for
+        the authenticated user
+      operationId: getOrCreateDefaultNotificationPreferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationPreferences'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get or create default notification preferences
+      tags:
+      - notification-preferences
   /healthcheck:
     get:
       description: Returns OK if the server is running and database is healthy

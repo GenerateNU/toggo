@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "required": ["emoji"],
+  "properties": { "emoji": { "type": "string", "minLength": 1 } },
+  "x-readme-ref-name": "models.DeleteCommentReactionRequest"
+}

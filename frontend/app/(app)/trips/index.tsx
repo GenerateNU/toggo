@@ -11,7 +11,7 @@ export default function Trips() {
         gap="md"
         backgroundColor="white"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="gray900">
           Trips
         </Text>
       </Box>

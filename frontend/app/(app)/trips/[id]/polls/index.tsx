@@ -9,7 +9,7 @@ export default function Polls() {
         alignItems="center"
         backgroundColor="white"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="gray900">
           Polls Page
         </Text>
       </Box>

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 	"toggo/internal/constants"
 	"toggo/internal/errs"
@@ -28,15 +29,17 @@ type PollVotingServiceInterface interface {
 var _ PollVotingServiceInterface = (*PollVotingService)(nil)
 
 type PollVotingService struct {
-	repository  *repository.Repository
-	pollService PollServiceInterface
+	repository          *repository.Repository
+	pollService         PollServiceInterface
+	notificationService NotificationService
 }
 
 // NewPollVotingService creates a poll voting service with the given repository and event publisher.
-func NewPollVotingService(repo *repository.Repository, pollService PollServiceInterface) PollVotingServiceInterface {
+func NewPollVotingService(repo *repository.Repository, pollService PollServiceInterface, notificationService NotificationService) PollVotingServiceInterface {
 	return &PollVotingService{
-		repository:  repo,
-		pollService: pollService,
+		repository:          repo,
+		pollService:         pollService,
+		notificationService: notificationService,
 	}
 }
 
@@ -76,9 +79,28 @@ func (s *PollVotingService) CreateVotePoll(
 		categoryNames,
 	)
 
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollCreated, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollCreated, tripID.String(), created.ID.String(), userID.String(), resp)
+	go s.notifyNewPoll(tripID, userID)
 
 	return resp, nil
+}
+
+func (s *PollVotingService) notifyNewPoll(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	err := s.notificationService.NotifyTripMembers(
+		context.Background(),
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewPoll,
+		"New poll",
+		"A new poll has been created for your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new poll notification: %v", err)
+	}
 }
 
 // GetPoll returns a single poll with vote counts and the requesting user's vote state.
@@ -159,7 +181,7 @@ func (s *PollVotingService) UpdateVotePoll(
 
 	resp := s.toAPIResponse(updated, summary, categoryNames)
 
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollUpdated, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollUpdated, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }
@@ -193,8 +215,12 @@ func (s *PollVotingService) DeleteVotePoll(ctx context.Context, tripID, pollID, 
 		return nil, err
 	}
 
+	if err := s.pollService.CancelDeadlineReminder(ctx, pollID); err != nil {
+		log.Printf("failed to cancel deadline reminder for poll %s: %v", pollID, err)
+	}
+
 	resp := s.toAPIResponse(poll, summary)
-	s.pollService.PublishEvent(ctx, realtime.EventTopicPollDeleted, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, realtime.EventTopicPollDeleted, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }
@@ -320,7 +346,7 @@ func (s *PollVotingService) CastVote(ctx context.Context, tripID, pollID, userID
 	if len(req.OptionIDs) == 0 {
 		topic = realtime.EventTopicPollVoteRemoved
 	}
-	s.pollService.PublishEvent(ctx, topic, tripID.String(), resp)
+	s.pollService.PublishEventWithActor(ctx, topic, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
 }

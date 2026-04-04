@@ -16,13 +16,13 @@ export default function VerifyPage() {
       >
         <Box gap="xs">
           <Box width="auto" justifyContent="center" alignItems="center">
-            <Logo />
+            <Logo size="xl" />
           </Box>
-          <Text variant="mdLabel" color="textSecondary">
+          <Text variant="bodyMedium" color="gray900">
             Enter Verification Code
           </Text>
           {phone && (
-            <Text variant="smParagraph" color="black">
+            <Text variant="bodySmDefault" color="gray900">
               We have sent the code to {phone}
             </Text>
           )}

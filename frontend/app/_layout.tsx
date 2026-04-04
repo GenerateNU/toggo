@@ -1,6 +1,6 @@
 import { NotificationProvider } from "@/contexts/notification";
 import { UserProvider } from "@/contexts/user";
-import { theme } from "@/design-system";
+import { theme, ToastProvider } from "@/design-system";
 import { PortalProvider } from "@gorhom/portal";
 import { ThemeProvider } from "@shopify/restyle";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -9,7 +9,6 @@ import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo } from "react";
-import { Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -33,29 +32,7 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  // TODO: figure out how to link this to design system
-  if (!fontsLoaded)
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#000000",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: "Zain-ExtraBold",
-            fontSize: 36,
-            color: "#FFFFFF",
-            letterSpacing: -1,
-          }}
-        >
-          Toggo
-        </Text>
-      </View>
-    );
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -64,10 +41,12 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <UserProvider>
               <NotificationProvider>
-                <PortalProvider>
-                  <StatusBar style="auto" />
-                  <Slot />
-                </PortalProvider>
+                <ToastProvider>
+                  <PortalProvider>
+                    <StatusBar style="auto" />
+                    <Slot />
+                  </PortalProvider>
+                </ToastProvider>
               </NotificationProvider>
             </UserProvider>
           </QueryClientProvider>

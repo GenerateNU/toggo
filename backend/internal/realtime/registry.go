@@ -30,6 +30,8 @@ const (
 	EventTopicFileUploaded         EventTopic = "file.uploaded"
 	EventTopicFileDeleted          EventTopic = "file.deleted"
 	EventTopicNotificationSent     EventTopic = "notification.sent"
+	EventTopicActivityCreated      EventTopic = "activity.created"
+	EventTopicCategoryCreated      EventTopic = "category.created"
 )
 
 // TopicRegistry validates event topics against a whitelist of allowed event names.
@@ -68,6 +70,8 @@ func (r *TopicRegistry) registerDefaultTopics() {
 		EventTopicFileUploaded,
 		EventTopicFileDeleted,
 		EventTopicNotificationSent,
+		EventTopicActivityCreated,
+		EventTopicCategoryCreated,
 	}
 
 	for _, topic := range topics {

@@ -21,11 +21,11 @@ func TestCategoryVisibility(t *testing.T) {
 	trip := createTrip(t, app, admin)
 	addMember(t, app, admin, member, trip)
 
-	t.Run("admin can hide a category", func(t *testing.T) {
+	t.Run("admin can hide a default category", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/food/hide", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/housing/hide", trip),
 				Method: testkit.PUT,
 				UserID: &admin,
 			}).
@@ -46,7 +46,7 @@ func TestCategoryVisibility(t *testing.T) {
 		categories := resp["categories"].([]interface{})
 		for _, cat := range categories {
 			catMap := cat.(map[string]interface{})
-			require.NotEqual(t, "food", catMap["name"], "hidden category should not appear for members")
+			require.NotEqual(t, "housing", catMap["name"], "hidden category should not appear for members")
 		}
 	})
 
@@ -64,7 +64,7 @@ func TestCategoryVisibility(t *testing.T) {
 		categories := resp["categories"].([]interface{})
 		for _, cat := range categories {
 			catMap := cat.(map[string]interface{})
-			require.NotEqual(t, "food", catMap["name"], "hidden category should not appear without include_hidden")
+			require.NotEqual(t, "housing", catMap["name"], "hidden category should not appear without include_hidden")
 		}
 	})
 
@@ -83,7 +83,7 @@ func TestCategoryVisibility(t *testing.T) {
 		var found bool
 		for _, cat := range categories {
 			catMap := cat.(map[string]interface{})
-			if catMap["name"] == "food" {
+			if catMap["name"] == "housing" {
 				found = true
 				require.Equal(t, true, catMap["is_hidden"], "hidden category should have is_hidden=true for admin")
 			} else {
@@ -97,13 +97,12 @@ func TestCategoryVisibility(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/food/show", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/housing/show", trip),
 				Method: testkit.PUT,
 				UserID: &admin,
 			}).
 			AssertStatus(http.StatusNoContent)
 
-		// Verify it's visible to members again
 		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -120,14 +119,14 @@ func TestCategoryVisibility(t *testing.T) {
 			catMap := cat.(map[string]interface{})
 			names = append(names, catMap["name"].(string))
 		}
-		require.Contains(t, names, "food")
+		require.Contains(t, names, "housing")
 	})
 
 	t.Run("member cannot hide a category", func(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/lodging/hide", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/activities/hide", trip),
 				Method: testkit.PUT,
 				UserID: &member,
 			}).
@@ -138,7 +137,7 @@ func TestCategoryVisibility(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/lodging/show", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/activities/show", trip),
 				Method: testkit.PUT,
 				UserID: &member,
 			}).
@@ -149,7 +148,7 @@ func TestCategoryVisibility(t *testing.T) {
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/lodging/hide", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/activities/hide", trip),
 				Method: testkit.PUT,
 				UserID: &nonMember,
 			}).
@@ -203,7 +202,7 @@ func TestCategoryGetByTripID(t *testing.T) {
 			AssertStatus(http.StatusNotFound)
 	})
 
-	t.Run("new trip has default categories", func(t *testing.T) {
+	t.Run("new trip has correct default categories", func(t *testing.T) {
 		newTrip := createTrip(t, app, owner)
 
 		resp := testkit.New(t).
@@ -217,7 +216,13 @@ func TestCategoryGetByTripID(t *testing.T) {
 			GetBody()
 
 		categories := resp["categories"].([]interface{})
-		require.Equal(t, 5, len(categories), "New trip should have 5 default categories")
+		require.Equal(t, 5, len(categories), "new trip should have 5 default categories")
+
+		for _, cat := range categories {
+			catMap := cat.(map[string]interface{})
+			require.NotEmpty(t, catMap["label"], "each default category should have a label")
+			require.Equal(t, true, catMap["is_default"], "seeded categories should have is_default=true")
+		}
 
 		categoryNames := make([]string, 0)
 		for _, cat := range categories {
@@ -225,85 +230,158 @@ func TestCategoryGetByTripID(t *testing.T) {
 			categoryNames = append(categoryNames, catMap["name"].(string))
 		}
 
-		require.Contains(t, categoryNames, "food")
-		require.Contains(t, categoryNames, "lodging")
-		require.Contains(t, categoryNames, "attraction")
+		require.Contains(t, categoryNames, "housing")
 		require.Contains(t, categoryNames, "transportation")
-		require.Contains(t, categoryNames, "entertainment")
+		require.Contains(t, categoryNames, "activities")
+		require.Contains(t, categoryNames, "polls")
+		require.Contains(t, categoryNames, "itinerary")
 	})
+}
 
-	t.Run("shows all categories after activities created", func(t *testing.T) {
-		categoryTrip := createTrip(t, app, owner)
+func TestCategoryCreate(t *testing.T) {
+	app := fakes.GetSharedTestApp()
 
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", categoryTrip),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: models.CreateActivityRequest{
-					TripID:        uuid.MustParse(categoryTrip),
-					Name:          "Restaurant",
-					CategoryNames: []string{"food"},
-				},
-			}).
-			AssertStatus(http.StatusCreated)
+	admin := createUser(t, app)
+	member := createUser(t, app)
+	nonMember := createUser(t, app)
+	trip := createTrip(t, app, admin)
+	addMember(t, app, admin, member, trip)
 
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", categoryTrip),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: models.CreateActivityRequest{
-					TripID:        uuid.MustParse(categoryTrip),
-					Name:          "Hotel",
-					CategoryNames: []string{"lodging"},
-				},
-			}).
-			AssertStatus(http.StatusCreated)
-
-		testkit.New(t).
-			Request(testkit.Request{
-				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", categoryTrip),
-				Method: testkit.POST,
-				UserID: &owner,
-				Body: models.CreateActivityRequest{
-					TripID:        uuid.MustParse(categoryTrip),
-					Name:          "Custom Activity",
-					CategoryNames: []string{"my-custom-category"},
-				},
-			}).
-			AssertStatus(http.StatusCreated)
-
+	t.Run("member can create a custom category", func(t *testing.T) {
 		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", categoryTrip),
-				Method: testkit.GET,
-				UserID: &owner,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+				Method: testkit.POST,
+				UserID: &member,
+				Body: models.CreateCategoryRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "custom-category",
+					Label:  "Custom Category",
+				},
 			}).
-			AssertStatus(http.StatusOK).
+			AssertStatus(http.StatusCreated).
 			GetBody()
 
-		categories := resp["categories"].([]interface{})
-		require.Equal(t, 6, len(categories), "Should have 6 categories (5 defaults + 1 custom)")
+		require.Equal(t, "custom-category", resp["name"])
+		require.Equal(t, "Custom Category", resp["label"])
+		require.Equal(t, false, resp["is_default"])
+	})
 
-		categoryNames := make([]string, 0)
-		for _, cat := range categories {
-			catMap := cat.(map[string]interface{})
-			categoryNames = append(categoryNames, catMap["name"].(string))
-		}
+	t.Run("admin can create a custom category", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+				Method: testkit.POST,
+				UserID: &admin,
+				Body: models.CreateCategoryRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "admin-category",
+					Label:  "Admin Category",
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+	})
 
-		// Verify defaults are present
-		require.Contains(t, categoryNames, "food")
-		require.Contains(t, categoryNames, "lodging")
-		require.Contains(t, categoryNames, "attraction")
-		require.Contains(t, categoryNames, "transportation")
-		require.Contains(t, categoryNames, "entertainment")
-		// Verify custom category
-		require.Contains(t, categoryNames, "my-custom-category")
+	t.Run("duplicate category name returns error", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+				Method: testkit.POST,
+				UserID: &admin,
+				Body: models.CreateCategoryRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "custom-category",
+					Label:  "Duplicate",
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("non-member cannot create a category", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+				Method: testkit.POST,
+				UserID: &nonMember,
+				Body: models.CreateCategoryRequest{
+					TripID: uuid.MustParse(trip),
+					Name:   "sneaky-category",
+					Label:  "Sneaky",
+				},
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+}
+
+func TestCategoryDelete(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	admin := createUser(t, app)
+	member := createUser(t, app)
+	trip := createTrip(t, app, admin)
+	addMember(t, app, admin, member, trip)
+
+	// Create a custom category to delete
+	testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  fmt.Sprintf("/api/v1/trips/%s/categories", trip),
+			Method: testkit.POST,
+			UserID: &admin,
+			Body: models.CreateCategoryRequest{
+				TripID: uuid.MustParse(trip),
+				Name:   "deletable-category",
+				Label:  "Deletable",
+			},
+		}).
+		AssertStatus(http.StatusCreated)
+
+	t.Run("admin cannot delete a default category", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/housing", trip),
+				Method: testkit.DELETE,
+				UserID: &admin,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("member cannot delete a category", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/deletable-category", trip),
+				Method: testkit.DELETE,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+
+	t.Run("admin can delete a custom category", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/deletable-category", trip),
+				Method: testkit.DELETE,
+				UserID: &admin,
+			}).
+			AssertStatus(http.StatusNoContent)
+	})
+
+	t.Run("deleting non-existent category returns 404", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/categories/does-not-exist", trip),
+				Method: testkit.DELETE,
+				UserID: &admin,
+			}).
+			AssertStatus(http.StatusNotFound)
 	})
 }
 
@@ -315,7 +393,7 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 	trip := createTrip(t, app, admin)
 	addMember(t, app, admin, member, trip)
 
-	// Create an activity with a food category
+	// Create an activity with default categories
 	createResp := testkit.New(t).
 		Request(testkit.Request{
 			App:    app,
@@ -324,8 +402,8 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 			UserID: &admin,
 			Body: models.CreateActivityRequest{
 				TripID:        uuid.MustParse(trip),
-				Name:          "Dinner",
-				CategoryNames: []string{"food", "entertainment"},
+				Name:          "City Tour",
+				CategoryNames: []string{"housing", "activities"},
 			},
 		}).
 		AssertStatus(http.StatusCreated).
@@ -333,11 +411,11 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 
 	activityID := createResp["id"].(string)
 
-	// Hide the food category
+	// Hide the housing category
 	testkit.New(t).
 		Request(testkit.Request{
 			App:    app,
-			Route:  fmt.Sprintf("/api/v1/trips/%s/categories/food/hide", trip),
+			Route:  fmt.Sprintf("/api/v1/trips/%s/categories/housing/hide", trip),
 			Method: testkit.PUT,
 			UserID: &admin,
 		}).
@@ -356,9 +434,9 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 
 		categories := resp["categories"].([]interface{})
 		for _, cat := range categories {
-			require.NotEqual(t, "food", cat, "hidden category should not appear in activity categories")
+			require.NotEqual(t, "housing", cat, "hidden category should not appear in activity categories")
 		}
-		require.Contains(t, categories, "entertainment")
+		require.Contains(t, categories, "activities")
 	})
 
 	t.Run("hidden category not returned in activity list", func(t *testing.T) {
@@ -375,12 +453,12 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 		items := resp["items"].([]interface{})
 		for _, act := range items {
 			actMap := act.(map[string]interface{})
-			if actMap["name"] == "Dinner" {
+			if actMap["name"] == "City Tour" {
 				categoryNames := actMap["category_names"].([]interface{})
 				for _, cat := range categoryNames {
-					require.NotEqual(t, "food", cat, "hidden category should not appear in activity list")
+					require.NotEqual(t, "housing", cat, "hidden category should not appear in activity list")
 				}
-				require.Contains(t, categoryNames, "entertainment")
+				require.Contains(t, categoryNames, "activities")
 			}
 		}
 	})
@@ -389,7 +467,7 @@ func TestHiddenCategoryInActivityEndpoints(t *testing.T) {
 		resp := testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
-				Route:  fmt.Sprintf("/api/v1/trips/%s/activities?category=food", trip),
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities?category=housing", trip),
 				Method: testkit.GET,
 				UserID: &member,
 			}).

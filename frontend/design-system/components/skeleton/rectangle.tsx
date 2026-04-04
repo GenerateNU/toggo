@@ -78,7 +78,7 @@ const SkeletonRect = ({
         },
         style,
       ]}
-      backgroundColor="secondaryBackground"
+      backgroundColor="gray50"
     />
   );
 };

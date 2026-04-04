@@ -1,5 +1,7 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
+import { ColorPalette } from "@/design-system/tokens/color";
+import { AlertCircle } from "lucide-react-native";
 import React from "react";
 import { Button } from "../buttons/button";
 
@@ -12,22 +14,34 @@ interface ErrorDisplayProps {
 
 const ErrorState: React.FC<ErrorDisplayProps> = ({
   title = "Something went wrong",
-  description = "Oops! Something went a bit sideways, but our amazing engineers are on it. Please give it a moment and try refreshing!",
+  description = "Please give it a moment and try again.",
   refresh,
-  isBottomSheet,
 }) => {
   return (
-    <Box flex={1} width="100%" justifyContent="center">
-      <Box gap="md" marginBottom="md">
-        {!isBottomSheet && <Box width={150} height={150} />}
-        <Text variant="smLabel">{title}</Text>
-        <Text variant="smDisplay">{description}</Text>
+    <Box alignItems="center" gap="sm" padding="lg">
+      <Box
+        width={48}
+        height={48}
+        borderRadius="full"
+        backgroundColor="gray50"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <AlertCircle size={22} color={ColorPalette.gray500} />
+      </Box>
+      <Box alignItems="center" gap="xs">
+        <Text variant="bodySmMedium" color="gray900" textAlign="center">
+          {title}
+        </Text>
+        <Text variant="bodyXsDefault" color="gray500" textAlign="center">
+          {description}
+        </Text>
       </Box>
       {refresh && (
         <Button
           layout="textOnly"
           variant="Tertiary"
-          label="Reload Page"
+          label="Try again"
           onPress={refresh}
         />
       )}

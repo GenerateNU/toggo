@@ -1,8 +1,22 @@
+import { Theme } from "@/design-system/tokens/theme";
 import { Text } from "@/design-system/primitives/text";
 
-export function Logo() {
+type LogoSize = "xl" | "xxl" | "xxxl";
+
+const sizeToVariant: Record<LogoSize, "logoXl" | "logoXxl" | "logoXxxl"> = {
+  xl: "logoXl",
+  xxl: "logoXxl",
+  xxxl: "logoXxxl",
+};
+
+interface LogoProps {
+  color?: keyof Theme["colors"];
+  size?: LogoSize;
+}
+
+export function Logo({ color = "brand500", size = "xxl" }: LogoProps) {
   return (
-    <Text variant="logoXxxxl" color="brandPrimary">
+    <Text variant={sizeToVariant[size]} color={color}>
       toggo
     </Text>
   );

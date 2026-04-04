@@ -58,8 +58,6 @@ interface ButtonVariantStyle {
   contentColor: ColorName;
 }
 
-// ─── Base ─────────────────────────────────────────────────────────────────────
-
 const baseButton = {
   alignItems: "center",
   justifyContent: "center",
@@ -67,46 +65,44 @@ const baseButton = {
   paddingHorizontal: "md",
 } as const;
 
-// ─── Variants ─────────────────────────────────────────────────────────────────
-
 export const ButtonVariants = {
   Primary: {
     ...baseButton,
     width: "100%",
-    backgroundColor: "primaryBackground",
-    borderRadius: "md",
+    backgroundColor: "brand500",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textPrimary",
+    contentColor: "white",
   },
   Secondary: {
     ...baseButton,
     width: "100%",
-    backgroundColor: "secondaryBackground",
-    borderRadius: "md",
+    backgroundColor: "gray50",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textSecondary",
+    contentColor: "gray900",
   },
   Tertiary: {
     ...baseButton,
     width: "100%",
     backgroundColor: "transparent",
-    borderRadius: "md",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textSecondary",
+    contentColor: "gray900",
   },
   Quaternary: {
     ...baseButton,
     width: "100%",
     backgroundColor: "transparent",
-    borderRadius: "md",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textQuaternary",
+    contentColor: "gray500",
   },
   Destructive: {
     ...baseButton,
     width: "100%",
-    backgroundColor: "error",
-    borderRadius: "md",
+    backgroundColor: "statusError",
+    borderRadius: "lg",
     borderWidth: "none",
     contentColor: "white",
   },
@@ -116,10 +112,10 @@ export const ButtonVariants = {
     minHeight: "xl",
     paddingHorizontal: "md",
     width: "auto",
-    backgroundColor: "iconPrimaryBackground",
-    borderRadius: "md",
+    backgroundColor: "brand500",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textPrimary",
+    contentColor: "white",
   },
   IconSecondary: {
     alignItems: "center",
@@ -127,10 +123,10 @@ export const ButtonVariants = {
     minHeight: "xl",
     paddingHorizontal: "md",
     width: "auto",
-    backgroundColor: "iconSecondaryBackground",
-    borderRadius: "md",
+    backgroundColor: "gray50",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "textSecondary",
+    contentColor: "gray900",
   },
   IconTertiary: {
     alignItems: "center",
@@ -139,9 +135,38 @@ export const ButtonVariants = {
     paddingHorizontal: "md",
     width: "auto",
     backgroundColor: "transparent",
-    borderRadius: "md",
+    borderRadius: "lg",
     borderWidth: "none",
-    contentColor: "iconTertiary",
+    contentColor: "gray500",
+  },
+  Outline: {
+    ...baseButton,
+    width: "100%",
+    backgroundColor: "transparent",
+    borderRadius: "lg",
+    borderWidth: "thin",
+    borderColor: "gray300",
+    contentColor: "gray900",
+  },
+  Dashed: {
+    ...baseButton,
+    width: "100%",
+    backgroundColor: "transparent",
+    borderRadius: "lg",
+    borderWidth: "thin",
+    borderColor: "gray300",
+    contentColor: "gray500",
+  },
+  IconCircular: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "md",
+    paddingHorizontal: "sm",
+    width: "auto",
+    backgroundColor: "gray900",
+    borderRadius: "full",
+    borderWidth: "none",
+    contentColor: "white",
   },
 } as const satisfies Record<string, ButtonVariantStyle>;
 
@@ -155,30 +180,42 @@ export const DisabledVariantStyle: Record<
   }
 > = {
   Primary: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   Secondary: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
-  Tertiary: { backgroundColor: "transparent", contentColor: "textDisabled" },
-  Quaternary: { backgroundColor: "transparent", contentColor: "textDisabled" },
+  Tertiary: { backgroundColor: "transparent", contentColor: "gray400" },
+  Quaternary: { backgroundColor: "transparent", contentColor: "gray400" },
   Destructive: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconPrimary: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconSecondary: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
   IconTertiary: {
-    backgroundColor: "disabledBackground",
-    contentColor: "textDisabled",
+    backgroundColor: "gray300",
+    contentColor: "gray400",
+  },
+  Outline: {
+    backgroundColor: "transparent",
+    contentColor: "gray400",
+  },
+  Dashed: {
+    backgroundColor: "transparent",
+    contentColor: "gray400",
+  },
+  IconCircular: {
+    backgroundColor: "gray300",
+    contentColor: "gray400",
   },
 };
 
@@ -217,12 +254,12 @@ export function resolveButtonStyle(
 
 export function getButtonTextColor(background: ColorName): ColorName {
   const hex = ColorPalette[background]?.replace("#", "");
-  if (!hex || hex.length < 6) return "textPrimary";
+  if (!hex || hex.length < 6) return "white";
 
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
 
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 186 ? "textPrimary" : "white";
+  return luminance > 186 ? "gray900" : "white";
 }

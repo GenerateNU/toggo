@@ -91,7 +91,7 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(trip.created_at, trip.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(trip.created_at < ?) OR (trip.created_at = ? AND trip.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
 
 	var trips []*models.Trip
@@ -123,7 +123,7 @@ func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, use
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(t.created_at, t.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(t.created_at < ?) OR (t.created_at = ? AND t.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
 	}
 
 	var tripsData []*models.TripDatabaseResponse
@@ -133,7 +133,7 @@ func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, use
 
 	var nextCursor *models.TripCursor
 	if len(tripsData) > limit {
-		lastVisible := tripsData[limit-1]
+		lastVisible := tripsData[limit]
 		nextCursor = &models.TripCursor{CreatedAt: lastVisible.CreatedAt, ID: lastVisible.TripID}
 		tripsData = tripsData[:limit]
 	}

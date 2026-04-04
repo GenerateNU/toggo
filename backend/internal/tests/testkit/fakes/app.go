@@ -115,8 +115,16 @@ func setupRoutesAndMiddlewares(app *fiber.App, cfg *config.Configuration, db *bu
 	serviceParams.PollService = services.NewPollService(
 		repo,
 		serviceParams.EventPublisher,
+		nil,
 	)
 
+	serviceParams.NotificationService = services.NewNotificationService(
+		repo.User,
+		repo.Membership,
+		services.NewExpoClient(""),
+	)
+
+	serviceParams.HTTPClient = services.DefaultHTTPClient()
 
 	routeParams := types.RouteParams{
 		Validator:     utilities.NewValidator(),

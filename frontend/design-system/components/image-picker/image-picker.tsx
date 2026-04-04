@@ -5,9 +5,15 @@ import { Text } from "@/design-system/primitives/text";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
-import { Camera, ImageIcon, Pencil, Trash2, X } from "lucide-react-native";
+import { Camera, ImageIcon, Trash2, X } from "lucide-react-native";
 import React, { useRef } from "react";
-import { Alert, Pressable, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export type ImagePickerVariant = "circular" | "rectangular";
 
@@ -106,7 +112,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
         width={size}
         height={size}
         borderRadius="full"
-        backgroundColor="secondaryBackground"
+        backgroundColor="gray200"
         justifyContent="center"
         alignItems="center"
         style={{ overflow: "hidden" }}
@@ -118,24 +124,8 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             contentFit="cover"
           />
         ) : (
-          <Icon icon={ImageIcon} size="md" color="textQuaternary" />
+          <Icon icon={ImageIcon} size="md" color="gray500" />
         )}
-      </Box>
-
-      <Box
-        position="absolute"
-        bottom={0}
-        right={0}
-        width={size * 0.32}
-        height={size * 0.32}
-        borderRadius="full"
-        backgroundColor="black"
-        justifyContent="center"
-        alignItems="center"
-        borderWidth={2}
-        borderColor="white"
-      >
-        <Icon icon={Pencil} size="xs" color="white" />
       </Box>
     </Pressable>
   );
@@ -148,39 +138,38 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
     >
       <Box
         borderRadius="md"
-        backgroundColor="secondaryBackground"
-        borderWidth={1}
-        borderColor="borderPrimary"
+        backgroundColor="gray100"
         overflow="hidden"
         style={{ height }}
         justifyContent="center"
         alignItems="center"
       >
         {value ? (
-          <Image
-            source={{ uri: value }}
-            style={StyleSheet.absoluteFillObject}
-            contentFit="cover"
-          />
+          <>
+            <Image
+              source={{ uri: value }}
+              style={StyleSheet.absoluteFillObject}
+              contentFit="cover"
+            />
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                { backgroundColor: "rgba(0,0,0,0.45)" },
+              ]}
+            />
+            <Box flexDirection="row" gap="xs" alignItems="center">
+              <Icon icon={ImageIcon} size="md" color="white" />
+              <Text variant="bodySmMedium" color="white">
+                Change cover image
+              </Text>
+            </Box>
+          </>
         ) : (
           <Box gap="xs" alignItems="center">
-            <Icon icon={ImageIcon} size="md" color="textQuaternary" />
-            <Text variant="smLabel" color="textQuaternary">
+            <Icon icon={ImageIcon} size="md" color="gray500" />
+            <Text variant="bodySmMedium" color="gray500">
               {placeholder}
             </Text>
-          </Box>
-        )}
-
-        {value && (
-          <Box
-            position="absolute"
-            bottom={0}
-            right={0}
-            backgroundColor="black"
-            padding="xs"
-            borderTopLeftRadius="sm"
-          >
-            <Icon icon={Pencil} size="xs" color="white" />
           </Box>
         )}
       </Box>
@@ -203,11 +192,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             alignItems="center"
             marginBottom="xs"
           >
-            <Text variant="lgHeading" color="textSecondary">
+            <Text variant="headingMd" color="gray900">
               Select photo
             </Text>
             <TouchableOpacity onPress={closeSheet} hitSlop={12}>
-              <Icon icon={X} size="sm" color="textQuaternary" />
+              <Icon icon={X} size="sm" color="gray500" />
             </TouchableOpacity>
           </Box>
 
@@ -217,11 +206,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               alignItems="center"
               gap="md"
               padding="md"
-              backgroundColor="surfaceBackground"
+              backgroundColor="gray50"
               borderRadius="md"
             >
-              <Icon icon={Camera} size="sm" color="iconSecondary" />
-              <Text variant="mdParagraph" color="textSecondary">
+              <Icon icon={Camera} size="sm" color="gray900" />
+              <Text variant="bodyDefault" color="gray900">
                 Take a photo
               </Text>
             </Box>
@@ -233,11 +222,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               alignItems="center"
               gap="md"
               padding="md"
-              backgroundColor="surfaceBackground"
+              backgroundColor="gray50"
               borderRadius="md"
             >
-              <Icon icon={ImageIcon} size="sm" color="textQuaternary" />
-              <Text variant="mdParagraph" color="textSecondary">
+              <Icon icon={ImageIcon} size="sm" color="gray500" />
+              <Text variant="bodyDefault" color="gray900">
                 Choose from library
               </Text>
             </Box>
@@ -250,11 +239,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
                 alignItems="center"
                 gap="md"
                 padding="md"
-                backgroundColor="surfaceBackground"
+                backgroundColor="gray50"
                 borderRadius="md"
               >
-                <Icon icon={Trash2} size="sm" color="error" />
-                <Text variant="mdParagraph" color="error">
+                <Icon icon={Trash2} size="sm" color="statusError" />
+                <Text variant="bodyDefault" color="statusError">
                   Remove photo
                 </Text>
               </Box>

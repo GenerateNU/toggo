@@ -15,14 +15,16 @@ import (
 )
 
 type ActivityController struct {
-	activityService services.ActivityServiceInterface
-	validator       *validator.Validate
+	activityService   services.ActivityServiceInterface
+	linkParserService services.LinkParserServiceInterface
+	validator         *validator.Validate
 }
 
-func NewActivityController(activityService services.ActivityServiceInterface, validator *validator.Validate) *ActivityController {
+func NewActivityController(activityService services.ActivityServiceInterface, linkParserService services.LinkParserServiceInterface, validator *validator.Validate) *ActivityController {
 	return &ActivityController{
-		activityService: activityService,
-		validator:       validator,
+		activityService:   activityService,
+		linkParserService: linkParserService,
+		validator:         validator,
 	}
 }
 
@@ -112,11 +114,13 @@ func (ctrl *ActivityController) GetActivity(c *fiber.Ctx) error {
 }
 
 // @Summary      Get activities by trip
-// @Description  Retrieves paginated activities for a trip, optionally filtered by category
+// @Description  Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date
 // @Tags         activities
 // @Produce      json
 // @Param        tripID path string true "Trip ID"
 // @Param        category query string false "Filter by category name"
+// @Param        time_of_day query string false "Filter by time of day (morning, afternoon, evening)"
+// @Param        date query string false "Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day"
 // @Param        limit query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor returned in next_cursor"
 // @Success      200 {object} models.ActivityCursorPageResult
@@ -145,14 +149,29 @@ func (ctrl *ActivityController) GetActivitiesByTripID(c *fiber.Ctx) error {
 
 	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
 
-	// If category query param is provided, filter by category
-	var result *models.ActivityCursorPageResult
 	categoryName := c.Query("category")
-	if categoryName != "" {
-		result, err = ctrl.activityService.GetActivitiesByCategory(c.Context(), tripID, userID, categoryName, limit, cursorToken)
-	} else {
-		result, err = ctrl.activityService.GetActivitiesByTripID(c.Context(), tripID, userID, limit, cursorToken)
+	timeOfDayStr := c.Query("time_of_day")
+	dateStr := c.Query("date")
+	if err := validators.ValidateActivityTimeOfDay(timeOfDayStr); err != nil {
+		return err
 	}
+	if err := validators.ValidateActivityDateFilter(dateStr); err != nil {
+		return err
+	}
+
+	filterParams := models.ActivityQueryParams{}
+	if categoryName != "" {
+		filterParams.Category = &categoryName
+	}
+	if timeOfDayStr != "" {
+		tod := models.ActivityTimeOfDay(timeOfDayStr)
+		filterParams.TimeOfDay = &tod
+	}
+	if dateStr != "" {
+		filterParams.Date = &dateStr
+	}
+
+	result, err := ctrl.activityService.GetActivitiesWithFilters(c.Context(), tripID, userID, filterParams, limit, cursorToken)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
@@ -473,6 +492,46 @@ func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(rsvps)
+}
+
+// @Summary      Parse link into activity data
+// @Description  Fetches a URL and extracts structured activity fields (name, description, thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram, and generic travel blog URLs.
+// @Tags         activities
+// @Accept       json
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        request body models.ParseLinkRequest true "URL to parse"
+// @Success      200 {object} models.ParsedActivityData
+// @Failure      400 {object} errs.APIError
+// @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      422 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/activities/parse-link [post]
+// @ID           parseActivityLink
+func (ctrl *ActivityController) ParseActivityLink(c *fiber.Ctx) error {
+	var req models.ParseLinkRequest
+	if err := c.BodyParser(&req); err != nil {
+		return errs.InvalidJSON()
+	}
+
+	if err := validators.Validate(ctrl.validator, req); err != nil {
+		return err
+	}
+
+	parsed, err := ctrl.linkParserService.ParseLink(c.Context(), req.URL)
+	if err != nil {
+		switch {
+		case errors.Is(err, services.ErrInvalidURL), errors.Is(err, services.ErrForbiddenURL):
+			return errs.BadRequest(err)
+		case errors.Is(err, services.ErrNetworkFailure), errors.Is(err, services.ErrUpstreamError):
+			return errs.NewAPIError(http.StatusBadGateway, err)
+		default:
+			return errs.InternalServerError()
+		}
+	}
+
+	return c.Status(http.StatusOK).JSON(parsed)
 }
 
 func (ctrl *ActivityController) parseTripAndActivityIDs(

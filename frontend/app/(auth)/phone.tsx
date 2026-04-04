@@ -14,9 +14,9 @@ export default function PhonePage() {
       >
         <Box gap="xs">
           <Box width="auto" justifyContent="center" alignItems="center">
-            <Logo />
+            <Logo size="xl" />
           </Box>
-          <Text variant="mdLabel" color="textSecondary">
+          <Text variant="bodyMedium" color="gray900">
             Enter your phone number
           </Text>
         </Box>

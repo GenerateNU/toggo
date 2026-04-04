@@ -26,7 +26,31 @@
     },
     "description": { "type": "string" },
     "estimated_price": { "type": "number" },
+    "going_count": { "type": "integer" },
+    "going_users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "profile_picture_url": { "type": "string" },
+          "user_id": { "type": "string" },
+          "username": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.ActivityGoingUserResponse"
+      }
+    },
     "id": { "type": "string" },
+    "image_ids": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "image_id": { "type": "string" },
+          "image_url": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.ActivityImageResponse"
+      }
+    },
     "location_lat": { "type": "number" },
     "location_lng": { "type": "number" },
     "location_name": { "type": "string" },
@@ -36,6 +60,16 @@
     "proposer_picture_url": { "type": "string" },
     "proposer_username": { "type": "string" },
     "thumbnail_url": { "type": "string" },
+    "time_of_day": {
+      "type": "string",
+      "enum": ["morning", "afternoon", "evening"],
+      "x-enum-varnames": [
+        "ActivityTimeOfDayMorning",
+        "ActivityTimeOfDayAfternoon",
+        "ActivityTimeOfDayEvening"
+      ],
+      "x-readme-ref-name": "models.ActivityTimeOfDay"
+    },
     "trip_id": { "type": "string" },
     "updated_at": { "type": "string" }
   },

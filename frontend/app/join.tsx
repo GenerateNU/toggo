@@ -79,7 +79,7 @@ export default function JoinScreen() {
       alignItems="center"
       backgroundColor="white"
     >
-      <Text variant="mdParagraph" color="textQuaternary">
+      <Text variant="bodyDefault" color="gray500">
         Joining trip…
       </Text>
     </Box>

@@ -24,6 +24,17 @@ export type ModelsDateRange = {
   start?: string;
 };
 
+export const modelsActivityTimeOfDay = {
+  ActivityTimeOfDayMorning: "morning",
+  ActivityTimeOfDayAfternoon: "afternoon",
+  ActivityTimeOfDayEvening: "evening",
+} as const;
+
+export type ModelsActivityTimeOfDayEnumKey =
+  (typeof modelsActivityTimeOfDay)[keyof typeof modelsActivityTimeOfDay];
+
+export type ModelsActivityTimeOfDay = ModelsActivityTimeOfDayEnumKey;
+
 export type ModelsActivity = {
   /**
    * @type string | undefined
@@ -76,11 +87,41 @@ export type ModelsActivity = {
   /**
    * @type string | undefined
    */
+  time_of_day?: ModelsActivityTimeOfDay;
+  /**
+   * @type string | undefined
+   */
   trip_id?: string;
   /**
    * @type string | undefined
    */
   updated_at?: string;
+};
+
+export type ModelsActivityGoingUserResponse = {
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsActivityImageResponse = {
+  /**
+   * @type string | undefined
+   */
+  image_id?: string;
+  /**
+   * @type string | undefined
+   */
+  image_url?: string;
 };
 
 export type ModelsActivityAPIResponse = {
@@ -105,9 +146,21 @@ export type ModelsActivityAPIResponse = {
    */
   estimated_price?: number;
   /**
+   * @type integer | undefined
+   */
+  going_count?: number;
+  /**
+   * @type array | undefined
+   */
+  going_users?: ModelsActivityGoingUserResponse[];
+  /**
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: ModelsActivityImageResponse[];
   /**
    * @type number | undefined
    */
@@ -144,6 +197,10 @@ export type ModelsActivityAPIResponse = {
    * @type string | undefined
    */
   thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  time_of_day?: ModelsActivityTimeOfDay;
   /**
    * @type string | undefined
    */
@@ -309,14 +366,25 @@ export type ModelsCategoryAPIResponse = {
    */
   icon?: string;
   /**
-   * @description only present for admins
+   * @type boolean | undefined
+   */
+  is_default?: boolean;
+  /**
    * @type boolean | undefined
    */
   is_hidden?: boolean;
   /**
    * @type string | undefined
    */
+  label?: string;
+  /**
+   * @type string | undefined
+   */
   name?: string;
+  /**
+   * @type integer | undefined
+   */
+  position?: number;
   /**
    * @type string | undefined
    */
@@ -423,6 +491,85 @@ export type ModelsCommentAPIResponse = {
   username?: string;
 };
 
+export type ModelsCommentReaction = {
+  /**
+   * @type string | undefined
+   */
+  comment_id?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  emoji?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+};
+
+export type ModelsCommentReactionSummary = {
+  /**
+   * @type integer | undefined
+   */
+  count?: number;
+  /**
+   * @type string | undefined
+   */
+  emoji?: string;
+  /**
+   * @type boolean | undefined
+   */
+  reacted_by_me?: boolean;
+};
+
+export type ModelsCommentReactionUser = {
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
+export type ModelsCommentReactionUsersResponse = {
+  /**
+   * @type string | undefined
+   */
+  comment_id?: string;
+  /**
+   * @type string | undefined
+   */
+  emoji?: string;
+  /**
+   * @type array | undefined
+   */
+  users?: ModelsCommentReactionUser[];
+};
+
+export type ModelsCommentReactionsSummaryResponse = {
+  /**
+   * @type string | undefined
+   */
+  comment_id?: string;
+  /**
+   * @type array | undefined
+   */
+  reactions?: ModelsCommentReactionSummary[];
+};
+
 export const modelsImageSize = {
   ImageSizeLarge: "large",
   ImageSizeMedium: "medium",
@@ -479,6 +626,10 @@ export type ModelsCreateActivityRequest = {
    */
   estimated_price?: number;
   /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
    * @minLength -90
    * @maxLength 90
    * @type number | undefined
@@ -510,10 +661,43 @@ export type ModelsCreateActivityRequest = {
    * @type string | undefined
    */
   thumbnail_url?: string;
+  time_of_day?: ModelsActivityTimeOfDay;
   /**
    * @type string | undefined
    */
   trip_id?: string;
+};
+
+export type ModelsCreateCategoryRequest = {
+  /**
+   * @maxLength 255
+   * @type string | undefined
+   */
+  icon?: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   * @type string
+   */
+  label: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   * @type string
+   */
+  name: string;
+  /**
+   * @type string
+   */
+  trip_id: string;
+};
+
+export type ModelsCreateCommentReactionRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  emoji: string;
 };
 
 export type ModelsCreateCommentRequest = {
@@ -574,10 +758,25 @@ export type ModelsCreatePitchRequest = {
    */
   description?: string;
   /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
+  /**
    * @minLength 1
    * @type string
    */
   title: string;
+};
+
+export type ModelsPitchImageInfo = {
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  medium_url?: string;
 };
 
 export type ModelsPitchAPIResponse = {
@@ -601,6 +800,10 @@ export type ModelsPitchAPIResponse = {
    * @type string | undefined
    */
   id?: string;
+  /**
+   * @type array | undefined
+   */
+  images?: ModelsPitchImageInfo[];
   /**
    * @type string | undefined
    */
@@ -759,6 +962,14 @@ export type ModelsDayTime = {
   time?: string;
 };
 
+export type ModelsDeleteCommentReactionRequest = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  emoji: string;
+};
+
 export type ModelsGetFileResponse = {
   /**
    * @type string | undefined
@@ -788,6 +999,19 @@ export type ModelsGetFileAllSizesResponse = {
    */
   imageId?: string;
 };
+
+export const modelsLinkType = {
+  LinkTypeAirbnb: "airbnb",
+  LinkTypeBookingCom: "booking_com",
+  LinkTypeTikTok: "tiktok",
+  LinkTypeInstagram: "instagram",
+  LinkTypeGeneric: "generic",
+} as const;
+
+export type ModelsLinkTypeEnumKey =
+  (typeof modelsLinkType)[keyof typeof modelsLinkType];
+
+export type ModelsLinkType = ModelsLinkTypeEnumKey;
 
 export type ModelsMatchedSubstring = {
   /**
@@ -823,6 +1047,18 @@ export type ModelsMembership = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
   /**
    * @type string | undefined
    */
@@ -860,6 +1096,18 @@ export type ModelsMembershipAPIResponse = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
   /**
    * @type string | undefined
    */
@@ -1001,6 +1249,44 @@ export type ModelsPaginatedCommentsResponse = {
    * @type string | undefined
    */
   next_cursor?: string;
+};
+
+export type ModelsParseLinkRequest = {
+  /**
+   * @type string
+   */
+  url: string;
+};
+
+export type ModelsParsedActivityData = {
+  /**
+   * @type array | undefined
+   */
+  category_suggestions?: string[];
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  media_url?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  source_type?: ModelsLinkType;
+  /**
+   * @type string | undefined
+   */
+  source_url?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
 };
 
 export type ModelsPitchCursorPageResult = {
@@ -1713,6 +1999,7 @@ export type ModelsTripInviteAPIResponse = {
 
 export type ModelsUpdateActivityRequest = {
   /**
+   * @description Max 20 date ranges
    * @type array | undefined
    */
   dates?: ModelsDateRange[];
@@ -1725,6 +2012,10 @@ export type ModelsUpdateActivityRequest = {
    * @type number | undefined
    */
   estimated_price?: number;
+  /**
+   * @type array | undefined
+   */
+  image_ids?: string[];
   /**
    * @minLength -90
    * @maxLength 90
@@ -1757,6 +2048,7 @@ export type ModelsUpdateActivityRequest = {
    * @type string | undefined
    */
   thumbnail_url?: string;
+  time_of_day?: ModelsActivityTimeOfDay;
 };
 
 export type ModelsUpdateCommentRequest = {
@@ -1784,6 +2076,21 @@ export type ModelsUpdateMembershipRequest = {
   is_admin?: boolean;
 };
 
+export type ModelsUpdateNotificationPreferencesRequest = {
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_comments?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_pitches?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  notify_new_polls?: boolean;
+};
+
 export type ModelsUpdatePitchRequest = {
   /**
    * @type string | undefined
@@ -1794,6 +2101,11 @@ export type ModelsUpdatePitchRequest = {
    * @type integer | undefined
    */
   duration?: number;
+  /**
+   * @description ImageIDs, when non-nil, fully replaces the pitch\'s image associations.\nPass an empty slice to remove all images; omit the field to leave images unchanged.
+   * @type array | undefined
+   */
+  image_ids?: string[];
   /**
    * @minLength 1
    * @type string | undefined
@@ -1954,6 +2266,48 @@ export type ModelsUser = {
   username?: string;
 };
 
+export type RealtimeEvent = {
+  /**
+   * @type string | undefined
+   */
+  actor_id?: string;
+  /**
+   * @type string | undefined
+   */
+  actor_name?: string;
+  /**
+   * @type object | undefined
+   */
+  data?: object;
+  /**
+   * @type string | undefined
+   */
+  entity_id?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  timestamp?: string;
+  /**
+   * @type string | undefined
+   */
+  topic?: string;
+  /**
+   * @type string | undefined
+   */
+  trip_id?: string;
+};
+
+export type RealtimeUnreadCountResponse = {
+  /**
+   * @type integer | undefined
+   */
+  unread_count?: number;
+};
+
 /**
  * @description Created
  */
@@ -2104,6 +2458,225 @@ export type UpdateCommentMutation = {
     | UpdateComment500;
 };
 
+export type GetCommentReactionsSummaryPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetCommentReactionsSummary200 =
+  ModelsCommentReactionsSummaryResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetCommentReactionsSummary400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetCommentReactionsSummary401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetCommentReactionsSummary404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetCommentReactionsSummary500 = ErrsAPIError;
+
+export type GetCommentReactionsSummaryQueryResponse =
+  GetCommentReactionsSummary200;
+
+export type GetCommentReactionsSummaryQuery = {
+  Response: GetCommentReactionsSummary200;
+  PathParams: GetCommentReactionsSummaryPathParams;
+  Errors:
+    | GetCommentReactionsSummary400
+    | GetCommentReactionsSummary401
+    | GetCommentReactionsSummary404
+    | GetCommentReactionsSummary500;
+};
+
+export type AddCommentReactionPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description Created
+ */
+export type AddCommentReaction201 = ModelsCommentReaction;
+
+/**
+ * @description Bad Request
+ */
+export type AddCommentReaction400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type AddCommentReaction401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type AddCommentReaction404 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type AddCommentReaction409 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type AddCommentReaction422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type AddCommentReaction500 = ErrsAPIError;
+
+/**
+ * @description Create reaction request
+ */
+export type AddCommentReactionMutationRequest =
+  ModelsCreateCommentReactionRequest;
+
+export type AddCommentReactionMutationResponse = AddCommentReaction201;
+
+export type AddCommentReactionMutation = {
+  Response: AddCommentReaction201;
+  Request: AddCommentReactionMutationRequest;
+  PathParams: AddCommentReactionPathParams;
+  Errors:
+    | AddCommentReaction400
+    | AddCommentReaction401
+    | AddCommentReaction404
+    | AddCommentReaction409
+    | AddCommentReaction422
+    | AddCommentReaction500;
+};
+
+export type RemoveCommentReactionPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type RemoveCommentReaction204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type RemoveCommentReaction400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type RemoveCommentReaction401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type RemoveCommentReaction404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type RemoveCommentReaction422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type RemoveCommentReaction500 = ErrsAPIError;
+
+/**
+ * @description Delete reaction request
+ */
+export type RemoveCommentReactionMutationRequest =
+  ModelsDeleteCommentReactionRequest;
+
+export type RemoveCommentReactionMutationResponse = RemoveCommentReaction204;
+
+export type RemoveCommentReactionMutation = {
+  Response: RemoveCommentReaction204;
+  Request: RemoveCommentReactionMutationRequest;
+  PathParams: RemoveCommentReactionPathParams;
+  Errors:
+    | RemoveCommentReaction400
+    | RemoveCommentReaction401
+    | RemoveCommentReaction404
+    | RemoveCommentReaction422
+    | RemoveCommentReaction500;
+};
+
+export type GetCommentReactionUsersPathParams = {
+  /**
+   * @description Comment ID
+   * @type string
+   */
+  commentID: string;
+  /**
+   * @description Emoji (URL-encoded)
+   * @type string
+   */
+  emoji: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetCommentReactionUsers200 = ModelsCommentReactionUsersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetCommentReactionUsers400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetCommentReactionUsers401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetCommentReactionUsers404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetCommentReactionUsers500 = ErrsAPIError;
+
+export type GetCommentReactionUsersQueryResponse = GetCommentReactionUsers200;
+
+export type GetCommentReactionUsersQuery = {
+  Response: GetCommentReactionUsers200;
+  PathParams: GetCommentReactionUsersPathParams;
+  Errors:
+    | GetCommentReactionUsers400
+    | GetCommentReactionUsers401
+    | GetCommentReactionUsers404
+    | GetCommentReactionUsers500;
+};
+
 /**
  * @description OK
  */
@@ -2230,6 +2803,42 @@ export type GetFileAllSizesQuery = {
   Response: GetFileAllSizes200;
   PathParams: GetFileAllSizesPathParams;
   Errors: GetFileAllSizes400 | GetFileAllSizes404 | GetFileAllSizes500;
+};
+
+export type DeleteImagePathParams = {
+  /**
+   * @description Image ID (UUID)
+   * @type string
+   */
+  imageId: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteImage204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteImage400 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteImage404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteImage500 = ErrsAPIError;
+
+export type DeleteImageMutationResponse = DeleteImage204;
+
+export type DeleteImageMutation = {
+  Response: DeleteImage204;
+  PathParams: DeleteImagePathParams;
+  Errors: DeleteImage400 | DeleteImage404 | DeleteImage500;
 };
 
 export type GetFilePathParams = {
@@ -2926,6 +3535,16 @@ export type GetActivitiesByTripIDQueryParams = {
    */
   category?: string;
   /**
+   * @description Filter by time of day (morning, afternoon, evening)
+   * @type string | undefined
+   */
+  time_of_day?: string;
+  /**
+   * @description Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day
+   * @type string | undefined
+   */
+  date?: string;
+  /**
    * @description Max items per page (default 20, max 100)
    * @type integer | undefined
    */
@@ -3042,6 +3661,63 @@ export type CreateActivityMutation = {
     | CreateActivity404
     | CreateActivity422
     | CreateActivity500;
+};
+
+export type ParseActivityLinkPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type ParseActivityLink200 = ModelsParsedActivityData;
+
+/**
+ * @description Bad Request
+ */
+export type ParseActivityLink400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ParseActivityLink401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ParseActivityLink403 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type ParseActivityLink422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ParseActivityLink500 = ErrsAPIError;
+
+/**
+ * @description URL to parse
+ */
+export type ParseActivityLinkMutationRequest = ModelsParseLinkRequest;
+
+export type ParseActivityLinkMutationResponse = ParseActivityLink200;
+
+export type ParseActivityLinkMutation = {
+  Response: ParseActivityLink200;
+  Request: ParseActivityLinkMutationRequest;
+  PathParams: ParseActivityLinkPathParams;
+  Errors:
+    | ParseActivityLink400
+    | ParseActivityLink401
+    | ParseActivityLink403
+    | ParseActivityLink422
+    | ParseActivityLink500;
 };
 
 export type GetActivityPathParams = {
@@ -3583,12 +4259,142 @@ export type GetApiV1TripsTripidActivitiesActivityidRsvpsQuery = {
     | GetApiV1TripsTripidActivitiesActivityidRsvps500;
 };
 
+export type GetTripActivityFeedPathParams = {
+  /**
+   * @description Trip ID (UUID)
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetTripActivityFeed200 = RealtimeEvent[];
+
+/**
+ * @description Invalid trip ID
+ */
+export type GetTripActivityFeed400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetTripActivityFeed401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetTripActivityFeed500 = ErrsAPIError;
+
+export type GetTripActivityFeedQueryResponse = GetTripActivityFeed200;
+
+export type GetTripActivityFeedQuery = {
+  Response: GetTripActivityFeed200;
+  PathParams: GetTripActivityFeedPathParams;
+  Errors:
+    | GetTripActivityFeed400
+    | GetTripActivityFeed401
+    | GetTripActivityFeed500;
+};
+
+export type GetUnreadActivityCountPathParams = {
+  /**
+   * @description Trip ID (UUID)
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetUnreadActivityCount200 = RealtimeUnreadCountResponse;
+
+/**
+ * @description Invalid trip ID
+ */
+export type GetUnreadActivityCount400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetUnreadActivityCount401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetUnreadActivityCount500 = ErrsAPIError;
+
+export type GetUnreadActivityCountQueryResponse = GetUnreadActivityCount200;
+
+export type GetUnreadActivityCountQuery = {
+  Response: GetUnreadActivityCount200;
+  PathParams: GetUnreadActivityCountPathParams;
+  Errors:
+    | GetUnreadActivityCount400
+    | GetUnreadActivityCount401
+    | GetUnreadActivityCount500;
+};
+
+export type MarkActivityEventReadPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Event ID
+   * @type string
+   */
+  eventID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type MarkActivityEventRead204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type MarkActivityEventRead400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type MarkActivityEventRead401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type MarkActivityEventRead500 = ErrsAPIError;
+
+export type MarkActivityEventReadMutationResponse = MarkActivityEventRead204;
+
+export type MarkActivityEventReadMutation = {
+  Response: MarkActivityEventRead204;
+  PathParams: MarkActivityEventReadPathParams;
+  Errors:
+    | MarkActivityEventRead400
+    | MarkActivityEventRead401
+    | MarkActivityEventRead500;
+};
+
 export type GetCategoriesByTripIDPathParams = {
   /**
    * @description Trip ID
    * @type string
    */
   tripID: string;
+};
+
+export type GetCategoriesByTripIDQueryParams = {
+  /**
+   * @description Include hidden categories (admin only)
+   * @type boolean | undefined
+   */
+  include_hidden?: boolean;
 };
 
 /**
@@ -3626,12 +4432,126 @@ export type GetCategoriesByTripIDQueryResponse = GetCategoriesByTripID200;
 export type GetCategoriesByTripIDQuery = {
   Response: GetCategoriesByTripID200;
   PathParams: GetCategoriesByTripIDPathParams;
+  QueryParams: GetCategoriesByTripIDQueryParams;
   Errors:
     | GetCategoriesByTripID400
     | GetCategoriesByTripID401
     | GetCategoriesByTripID403
     | GetCategoriesByTripID404
     | GetCategoriesByTripID500;
+};
+
+export type CreateCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description Created
+ */
+export type CreateCategory201 = ModelsCategoryAPIResponse;
+
+/**
+ * @description Bad Request
+ */
+export type CreateCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type CreateCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type CreateCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateCategory500 = ErrsAPIError;
+
+/**
+ * @description Category details
+ */
+export type CreateCategoryMutationRequest = ModelsCreateCategoryRequest;
+
+export type CreateCategoryMutationResponse = CreateCategory201;
+
+export type CreateCategoryMutation = {
+  Response: CreateCategory201;
+  Request: CreateCategoryMutationRequest;
+  PathParams: CreateCategoryPathParams;
+  Errors:
+    | CreateCategory400
+    | CreateCategory401
+    | CreateCategory403
+    | CreateCategory404
+    | CreateCategory500;
+};
+
+export type DeleteCategoryPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Category name
+   * @type string
+   */
+  name: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteCategory204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteCategory400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteCategory401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeleteCategory403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteCategory404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteCategory500 = ErrsAPIError;
+
+export type DeleteCategoryMutationResponse = DeleteCategory204;
+
+export type DeleteCategoryMutation = {
+  Response: DeleteCategory204;
+  PathParams: DeleteCategoryPathParams;
+  Errors:
+    | DeleteCategory400
+    | DeleteCategory401
+    | DeleteCategory403
+    | DeleteCategory404
+    | DeleteCategory500;
 };
 
 export type HideCategoryPathParams = {
@@ -4070,6 +4990,76 @@ export type DemoteFromAdminMutation = {
     | DemoteFromAdmin401
     | DemoteFromAdmin404
     | DemoteFromAdmin500;
+};
+
+export type UpdateNotificationPreferencesPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description User ID
+   * @type string
+   */
+  userID: string;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateNotificationPreferences200 = ModelsMembership;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateNotificationPreferences400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type UpdateNotificationPreferences403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateNotificationPreferences404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateNotificationPreferences422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateNotificationPreferences500 = ErrsAPIError;
+
+/**
+ * @description Notification preferences
+ */
+export type UpdateNotificationPreferencesMutationRequest =
+  ModelsUpdateNotificationPreferencesRequest;
+
+export type UpdateNotificationPreferencesMutationResponse =
+  UpdateNotificationPreferences200;
+
+export type UpdateNotificationPreferencesMutation = {
+  Response: UpdateNotificationPreferences200;
+  Request: UpdateNotificationPreferencesMutationRequest;
+  PathParams: UpdateNotificationPreferencesPathParams;
+  Errors:
+    | UpdateNotificationPreferences400
+    | UpdateNotificationPreferences401
+    | UpdateNotificationPreferences403
+    | UpdateNotificationPreferences404
+    | UpdateNotificationPreferences422
+    | UpdateNotificationPreferences500;
 };
 
 export type PromoteToAdminPathParams = {

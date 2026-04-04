@@ -237,6 +237,63 @@ func (_c *MockFileServiceInterface_CreateUploadURLs_Call) RunAndReturn(run func(
 	return _c
 }
 
+// DeleteImage provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) DeleteImage(ctx context.Context, imageID uuid.UUID) error {
+	ret := _mock.Called(ctx, imageID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteImage")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, imageID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockFileServiceInterface_DeleteImage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteImage'
+type MockFileServiceInterface_DeleteImage_Call struct {
+	*mock.Call
+}
+
+// DeleteImage is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageID uuid.UUID
+func (_e *MockFileServiceInterface_Expecter) DeleteImage(ctx interface{}, imageID interface{}) *MockFileServiceInterface_DeleteImage_Call {
+	return &MockFileServiceInterface_DeleteImage_Call{Call: _e.mock.On("DeleteImage", ctx, imageID)}
+}
+
+func (_c *MockFileServiceInterface_DeleteImage_Call) Run(run func(ctx context.Context, imageID uuid.UUID)) *MockFileServiceInterface_DeleteImage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileServiceInterface_DeleteImage_Call) Return(err error) *MockFileServiceInterface_DeleteImage_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockFileServiceInterface_DeleteImage_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID) error) *MockFileServiceInterface_DeleteImage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetFile provides a mock function for the type MockFileServiceInterface
 func (_mock *MockFileServiceInterface) GetFile(ctx context.Context, imageID uuid.UUID, size models.ImageSize) (*models.GetFileResponse, error) {
 	ret := _mock.Called(ctx, imageID, size)
@@ -375,6 +432,80 @@ func (_c *MockFileServiceInterface_GetFileAllSizes_Call) Return(getFileAllSizesR
 }
 
 func (_c *MockFileServiceInterface_GetFileAllSizes_Call) RunAndReturn(run func(ctx context.Context, imageID uuid.UUID) (*models.GetFileAllSizesResponse, error)) *MockFileServiceInterface_GetFileAllSizes_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetFilesByImageIDs provides a mock function for the type MockFileServiceInterface
+func (_mock *MockFileServiceInterface) GetFilesByImageIDs(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) (map[uuid.UUID]string, error) {
+	ret := _mock.Called(ctx, imageIDs, size)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFilesByImageIDs")
+	}
+
+	var r0 map[uuid.UUID]string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, models.ImageSize) (map[uuid.UUID]string, error)); ok {
+		return returnFunc(ctx, imageIDs, size)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, models.ImageSize) map[uuid.UUID]string); ok {
+		r0 = returnFunc(ctx, imageIDs, size)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, models.ImageSize) error); ok {
+		r1 = returnFunc(ctx, imageIDs, size)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFileServiceInterface_GetFilesByImageIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFilesByImageIDs'
+type MockFileServiceInterface_GetFilesByImageIDs_Call struct {
+	*mock.Call
+}
+
+// GetFilesByImageIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - imageIDs []uuid.UUID
+//   - size models.ImageSize
+func (_e *MockFileServiceInterface_Expecter) GetFilesByImageIDs(ctx interface{}, imageIDs interface{}, size interface{}) *MockFileServiceInterface_GetFilesByImageIDs_Call {
+	return &MockFileServiceInterface_GetFilesByImageIDs_Call{Call: _e.mock.On("GetFilesByImageIDs", ctx, imageIDs, size)}
+}
+
+func (_c *MockFileServiceInterface_GetFilesByImageIDs_Call) Run(run func(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize)) *MockFileServiceInterface_GetFilesByImageIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		var arg2 models.ImageSize
+		if args[2] != nil {
+			arg2 = args[2].(models.ImageSize)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFilesByImageIDs_Call) Return(uUIDToString map[uuid.UUID]string, err error) *MockFileServiceInterface_GetFilesByImageIDs_Call {
+	_c.Call.Return(uUIDToString, err)
+	return _c
+}
+
+func (_c *MockFileServiceInterface_GetFilesByImageIDs_Call) RunAndReturn(run func(ctx context.Context, imageIDs []uuid.UUID, size models.ImageSize) (map[uuid.UUID]string, error)) *MockFileServiceInterface_GetFilesByImageIDs_Call {
 	_c.Call.Return(run)
 	return _c
 }

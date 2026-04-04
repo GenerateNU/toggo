@@ -17,7 +17,7 @@ type healthRepository struct {
 	db *bun.DB
 }
 
-func NewHealthepository(db *bun.DB) HealthRepository {
+func NewHealthRepository(db *bun.DB) HealthRepository {
 	return &healthRepository{db: db}
 }
 

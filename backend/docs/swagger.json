@@ -192,6 +192,264 @@
                 }
             }
         },
+        "/api/v1/comments/{commentID}/reactions": {
+            "get": {
+                "description": "Retrieves aggregated emoji reactions for a comment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Get reactions summary for a comment",
+                "operationId": "getCommentReactionsSummary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReactionsSummaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Adds an emoji reaction to a comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Add a reaction to a comment",
+                "operationId": "addCommentReaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create reaction request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCommentReactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReaction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes the current user's emoji reaction from a comment",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Remove a reaction from a comment",
+                "operationId": "removeCommentReaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Delete reaction request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeleteCommentReactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/comments/{commentID}/reactions/{emoji}/users": {
+            "get": {
+                "description": "Retrieves users who reacted with a specific emoji on a comment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment-reactions"
+                ],
+                "summary": "Get users who reacted with an emoji",
+                "operationId": "getCommentReactionUsers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Emoji (URL-encoded)",
+                        "name": "emoji",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CommentReactionUsersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/files/confirm": {
             "post": {
                 "description": "Verifies the file exists in S3 and marks the upload as confirmed in DB",
@@ -357,6 +615,49 @@
                         "schema": {
                             "$ref": "#/definitions/models.GetFileAllSizesResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes all size variants of an image from S3 and the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "files"
+                ],
+                "summary": "Delete image",
+                "operationId": "deleteImage",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Image ID (UUID)",
+                        "name": "imageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1289,7 +1590,7 @@
         },
         "/api/v1/trips/{tripID}/activities": {
             "get": {
-                "description": "Retrieves paginated activities for a trip, optionally filtered by category",
+                "description": "Retrieves paginated activities for a trip, optionally filtered by category, time of day, and/or date",
                 "produces": [
                     "application/json"
                 ],
@@ -1310,6 +1611,18 @@
                         "type": "string",
                         "description": "Filter by category name",
                         "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by time of day (morning, afternoon, evening)",
+                        "name": "time_of_day",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by calendar date (YYYY-MM-DD); activity must have a date range containing this day",
+                        "name": "date",
                         "in": "query"
                     },
                     {
@@ -1422,6 +1735,78 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/activities/parse-link": {
+            "post": {
+                "description": "Fetches a URL and extracts structured activity fields (name, description, thumbnail) for form autofill. Supports Airbnb, Booking.com, TikTok, Instagram, and generic travel blog URLs.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Parse link into activity data",
+                "operationId": "parseActivityLink",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "URL to parse",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ParseLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.ParsedActivityData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -2058,6 +2443,154 @@
                 }
             }
         },
+        "/api/v1/trips/{tripID}/activity": {
+            "get": {
+                "description": "Returns all unread events in the caller's trip feed. Events persist until explicitly dismissed via the mark-read endpoint.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activity-feed"
+                ],
+                "summary": "Get trip activity feed",
+                "operationId": "getTripActivityFeed",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID (UUID)",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/realtime.Event"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/activity/unread-count": {
+            "get": {
+                "description": "Returns the number of events in the caller's trip feed that have not yet been marked as read.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activity-feed"
+                ],
+                "summary": "Get unread activity count",
+                "operationId": "getUnreadActivityCount",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID (UUID)",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/realtime.UnreadCountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/activity/{eventID}": {
+            "delete": {
+                "description": "Removes a specific event from the caller's trip activity feed.",
+                "tags": [
+                    "activity-feed"
+                ],
+                "summary": "Mark activity event as read",
+                "operationId": "markActivityEventRead",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/categories": {
             "get": {
                 "description": "Retrieves all categories for a trip",
@@ -2076,6 +2609,12 @@
                         "name": "tripID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include hidden categories (admin only)",
+                        "name": "include_hidden",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2084,6 +2623,137 @@
                         "schema": {
                             "$ref": "#/definitions/models.CategoryListResponse"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new custom category for a trip (any trip member)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Create category",
+                "operationId": "createCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Category details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.CategoryAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/categories/{name}": {
+            "delete": {
+                "description": "Deletes a custom category from a trip (admin only, cannot delete default categories)",
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Delete category",
+                "operationId": "deleteCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2630,6 +3300,91 @@
                 }
             }
         },
+        "/api/v1/trips/{tripID}/memberships/{userID}/notification-preferences": {
+            "patch": {
+                "description": "Updates the notification preferences for a membership (self only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "memberships"
+                ],
+                "summary": "Update notification preferences",
+                "operationId": "updateMembershipNotificationPreferences",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Notification preferences",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Membership"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/memberships/{userID}/promote": {
             "post": {
                 "description": "Promotes a member to admin role",
@@ -2751,7 +3506,7 @@
                 }
             },
             "post": {
-                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file",
+                "description": "Creates a new pitch for the trip and returns a presigned URL to upload the audio file.\nOptionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2817,7 +3572,7 @@
         },
         "/api/v1/trips/{tripID}/pitches/{pitchID}": {
             "get": {
-                "description": "Returns a single pitch with a presigned URL for the audio file",
+                "description": "Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)",
                 "produces": [
                     "application/json"
                 ],
@@ -2917,7 +3672,7 @@
                 }
             },
             "patch": {
-                "description": "Updates pitch metadata (title, description, duration)",
+                "description": "Updates pitch metadata (title, description, duration).\nWhen image_ids is omitted from the request, existing image associations remain unchanged.\nWhen image_ids is an empty array, all image associations are removed.\nWhen image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).\nThe response includes images with presigned medium_url for each image.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2975,6 +3730,61 @@
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload": {
+            "post": {
+                "description": "Verifies that the audio file was successfully uploaded to S3 and notifies trip members.\nMust be called by the pitch creator after the presigned PUT upload completes.",
+                "tags": [
+                    "pitches"
+                ],
+                "summary": "Confirm pitch audio upload",
+                "operationId": "confirmPitchUpload",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pitch ID",
+                        "name": "pitchID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -4384,6 +5194,229 @@
                 }
             }
         },
+        "/api/v1/users/me/notification-preferences": {
+            "get": {
+                "description": "Retrieves the notification preferences for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Get notification preferences",
+                "operationId": "getNotificationPreferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates notification preferences for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Create notification preferences",
+                "operationId": "createNotificationPreferences",
+                "parameters": [
+                    {
+                        "description": "Create notification preferences request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes notification preferences for the authenticated user",
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Delete notification preferences",
+                "operationId": "deleteNotificationPreferences",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates notification preferences for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Update notification preferences",
+                "operationId": "updateNotificationPreferences",
+                "parameters": [
+                    {
+                        "description": "Update notification preferences request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateUserNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/notification-preferences/default": {
+            "post": {
+                "description": "Returns existing preferences or creates default preferences for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Get or create default notification preferences",
+                "operationId": "getOrCreateDefaultNotificationPreferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/{userID}": {
             "get": {
                 "description": "Retrieves a user by ID",
@@ -4618,6 +5651,9 @@
                 "thumbnail_url": {
                     "type": "string"
                 },
+                "time_of_day": {
+                    "$ref": "#/definitions/models.ActivityTimeOfDay"
+                },
                 "trip_id": {
                     "type": "string"
                 },
@@ -4650,8 +5686,23 @@
                 "estimated_price": {
                     "type": "number"
                 },
+                "going_count": {
+                    "type": "integer"
+                },
+                "going_users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityGoingUserResponse"
+                    }
+                },
                 "id": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ActivityImageResponse"
+                    }
                 },
                 "location_lat": {
                     "type": "number"
@@ -4679,6 +5730,9 @@
                 },
                 "thumbnail_url": {
                     "type": "string"
+                },
+                "time_of_day": {
+                    "$ref": "#/definitions/models.ActivityTimeOfDay"
                 },
                 "trip_id": {
                     "type": "string"
@@ -4718,6 +5772,31 @@
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityGoingUserResponse": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ActivityImageResponse": {
+            "type": "object",
+            "properties": {
+                "image_id": {
+                    "type": "string"
+                },
+                "image_url": {
                     "type": "string"
                 }
             }
@@ -4772,6 +5851,19 @@
                     }
                 }
             }
+        },
+        "models.ActivityTimeOfDay": {
+            "type": "string",
+            "enum": [
+                "morning",
+                "afternoon",
+                "evening"
+            ],
+            "x-enum-varnames": [
+                "ActivityTimeOfDayMorning",
+                "ActivityTimeOfDayAfternoon",
+                "ActivityTimeOfDayEvening"
+            ]
         },
         "models.AddCategoryResponse": {
             "type": "object",
@@ -4830,12 +5922,20 @@
                 "icon": {
                     "type": "string"
                 },
-                "is_hidden": {
-                    "description": "only present for admins",
+                "is_default": {
                     "type": "boolean"
+                },
+                "is_hidden": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
+                },
+                "position": {
+                    "type": "integer"
                 },
                 "trip_id": {
                     "type": "string"
@@ -4921,6 +6021,85 @@
                 }
             }
         },
+        "models.CommentReaction": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CommentReactionSummary": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "reacted_by_me": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.CommentReactionUser": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CommentReactionUsersResponse": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentReactionUser"
+                    }
+                }
+            }
+        },
+        "models.CommentReactionsSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "comment_id": {
+                    "type": "string"
+                },
+                "reactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommentReactionSummary"
+                    }
+                }
+            }
+        },
         "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
@@ -4981,6 +6160,13 @@
                     "type": "number",
                     "minimum": 0
                 },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "location_lat": {
                     "type": "number",
                     "maximum": 90,
@@ -5007,8 +6193,59 @@
                 "thumbnail_url": {
                     "type": "string"
                 },
+                "time_of_day": {
+                    "enum": [
+                        "morning",
+                        "afternoon",
+                        "evening"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ActivityTimeOfDay"
+                        }
+                    ]
+                },
                 "trip_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.CreateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "label",
+                "name",
+                "trip_id"
+            ],
+            "properties": {
+                "icon": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "label": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "trip_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CreateCommentReactionRequest": {
+            "type": "object",
+            "required": [
+                "emoji"
+            ],
+            "properties": {
+                "emoji": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
@@ -5072,6 +6309,29 @@
                 }
             }
         },
+        "models.CreateNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.CreatePitchRequest": {
             "type": "object",
             "required": [
@@ -5090,6 +6350,13 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "title": {
                     "type": "string",
@@ -5269,6 +6536,18 @@
                 }
             }
         },
+        "models.DeleteCommentReactionRequest": {
+            "type": "object",
+            "required": [
+                "emoji"
+            ],
+            "properties": {
+                "emoji": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
         "models.EntityType": {
             "type": "string",
             "enum": [
@@ -5335,6 +6614,23 @@
                 }
             }
         },
+        "models.LinkType": {
+            "type": "string",
+            "enum": [
+                "airbnb",
+                "booking_com",
+                "tiktok",
+                "instagram",
+                "generic"
+            ],
+            "x-enum-varnames": [
+                "LinkTypeAirbnb",
+                "LinkTypeBookingCom",
+                "LinkTypeTikTok",
+                "LinkTypeInstagram",
+                "LinkTypeGeneric"
+            ]
+        },
         "models.MatchedSubstring": {
             "type": "object",
             "properties": {
@@ -5365,6 +6661,15 @@
                 "is_admin": {
                     "type": "boolean"
                 },
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
+                    "type": "boolean"
+                },
                 "trip_id": {
                     "type": "string"
                 },
@@ -5393,6 +6698,15 @@
                     "type": "string"
                 },
                 "is_admin": {
+                    "type": "boolean"
+                },
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
                     "type": "boolean"
                 },
                 "profile_picture_url": {
@@ -5440,6 +6754,38 @@
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.NotificationPreferences": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
                 }
             }
         },
@@ -5537,6 +6883,46 @@
                 }
             }
         },
+        "models.ParseLinkRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParsedActivityData": {
+            "type": "object",
+            "properties": {
+                "category_suggestions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source_type": {
+                    "$ref": "#/definitions/models.LinkType"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Period": {
             "type": "object",
             "properties": {
@@ -5566,6 +6952,12 @@
                 "id": {
                     "type": "string"
                 },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PitchImageInfo"
+                    }
+                },
                 "title": {
                     "type": "string"
                 },
@@ -5593,6 +6985,17 @@
                     "type": "integer"
                 },
                 "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PitchImageInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "medium_url": {
                     "type": "string"
                 }
             }
@@ -6297,6 +7700,7 @@
             "type": "object",
             "properties": {
                 "dates": {
+                    "description": "Max 20 date ranges",
                     "type": "array",
                     "maxItems": 20,
                     "items": {
@@ -6309,6 +7713,13 @@
                 "estimated_price": {
                     "type": "number",
                     "minimum": 0
+                },
+                "image_ids": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "location_lat": {
                     "type": "number",
@@ -6335,6 +7746,18 @@
                 },
                 "thumbnail_url": {
                     "type": "string"
+                },
+                "time_of_day": {
+                    "enum": [
+                        "morning",
+                        "afternoon",
+                        "evening"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.ActivityTimeOfDay"
+                        }
+                    ]
                 }
             }
         },
@@ -6366,6 +7789,20 @@
                 }
             }
         },
+        "models.UpdateNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "notify_new_comments": {
+                    "type": "boolean"
+                },
+                "notify_new_pitches": {
+                    "type": "boolean"
+                },
+                "notify_new_polls": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.UpdatePitchRequest": {
             "type": "object",
             "properties": {
@@ -6375,6 +7812,14 @@
                 "duration": {
                     "type": "integer",
                     "minimum": 0
+                },
+                "image_ids": {
+                    "description": "ImageIDs, when non-nil, fully replaces the pitch's image associations.\nPass an empty slice to remove all images; omit the field to leave images unchanged.",
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "title": {
                     "type": "string",
@@ -6422,6 +7867,29 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                }
+            }
+        },
+        "models.UpdateUserNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
                 }
             }
         },
@@ -6556,6 +8024,43 @@
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "realtime.Event": {
+            "type": "object",
+            "properties": {
+                "actor_id": {
+                    "type": "string"
+                },
+                "actor_name": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object"
+                },
+                "entity_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "realtime.UnreadCountResponse": {
+            "type": "object",
+            "properties": {
+                "unread_count": {
+                    "type": "integer"
                 }
             }
         }

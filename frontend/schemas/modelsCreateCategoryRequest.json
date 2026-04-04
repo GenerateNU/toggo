@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["label", "name", "trip_id"],
+  "properties": {
+    "icon": { "type": "string", "maxLength": 255 },
+    "label": { "type": "string", "maxLength": 255, "minLength": 1 },
+    "name": { "type": "string", "maxLength": 255, "minLength": 1 },
+    "trip_id": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.CreateCategoryRequest"
+}

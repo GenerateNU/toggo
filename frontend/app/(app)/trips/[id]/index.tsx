@@ -1,9 +1,14 @@
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
-import { Box, Button, Screen, Text } from "@/design-system";
+import { Box, Button, Icon, Screen, Text, useToast } from "@/design-system";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, Share } from "react-native";
+import { Settings } from "lucide-react-native";
+import { useRef, useState } from "react";
+import { ActivityIndicator, Pressable, Share } from "react-native";
+import CreateFAB from "./components/create-fab";
+import CreatePollSheet, {
+  CreatePollSheetMethods,
+} from "./polls/components/create-poll-sheet";
 
 const DUMMY_ID = "dummy-entity-001";
 
@@ -11,11 +16,15 @@ export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const createInviteMutation = useCreateTripInvite();
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
+  const toast = useToast();
 
   const handleInvite = async () => {
     try {
+      // TODO: update data field for actual flow
       const invite = await createInviteMutation.mutateAsync({
         tripID: tripID!,
+        data: {},
       });
       const code = invite.code;
       if (!code) return;
@@ -36,26 +45,50 @@ export default function Trip() {
 
   return (
     <Screen>
-      <Box flex={1} backgroundColor="surfaceBackground">
-        <Box
-          padding="lg"
-          paddingTop="xl"
-          backgroundColor="surfaceCard"
-          gap="xs"
-        >
-          <Text variant="smLabel" color="textQuaternary">
-            TRIP
-          </Text>
-          <Text variant="lgHeading" color="textSecondary">
+      <Box flex={1} backgroundColor="gray50">
+        <CreatePollSheet
+          ref={createPollSheetRef}
+          tripID={tripID!}
+          onCreated={() =>
+            toast.show({
+              message: "Poll sent! Your trip members will be notified.",
+            })
+          }
+        />
+        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Text variant="bodySmMedium" color="gray500">
+              TRIP
+            </Text>
+            <Pressable
+              onPress={() => router.push(`/trips/${tripID}/settings` as any)}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Icon icon={Settings} size="sm" color="gray500" />
+            </Pressable>
+          </Box>
+          <Text variant="headingMd" color="gray900">
             {tripID}
           </Text>
         </Box>
 
         <Box padding="lg" gap="md">
-          <Text variant="smLabel" color="textQuaternary">
+          <Text variant="bodySmMedium" color="gray500">
             VIEW
           </Text>
           <Box gap="sm">
+            <Button
+              layout="textOnly"
+              label="Activities"
+              variant="Primary"
+              onPress={() =>
+                router.push({ pathname: `/trips/${tripID}/activities` })
+              }
+            />
             <Button
               layout="textOnly"
               label="See Dummy Activity"
@@ -91,33 +124,7 @@ export default function Trip() {
             />
           </Box>
 
-          <Text variant="smLabel" color="textQuaternary" marginTop="sm">
-            CREATE
-          </Text>
-          <Box gap="sm">
-            <Button
-              layout="textOnly"
-              label="New Activity"
-              variant="Secondary"
-              onPress={() =>
-                router.push(`/trips/${tripID}/activities/creation`)
-              }
-            />
-            <Button
-              layout="textOnly"
-              label="New Pitch"
-              variant="Secondary"
-              onPress={() => router.push(`/trips/${tripID}/pitches/creation`)}
-            />
-            <Button
-              layout="textOnly"
-              label="New Poll"
-              variant="Secondary"
-              onPress={() => router.push(`/trips/${tripID}/polls/creation`)}
-            />
-          </Box>
-
-          <Text variant="smLabel" color="textQuaternary" marginTop="sm">
+          <Text variant="bodySmMedium" color="gray500" marginTop="sm">
             INVITE
           </Text>
           <Box gap="sm">
@@ -128,7 +135,7 @@ export default function Trip() {
                   ? "Generating..."
                   : "Invite via Link"
               }
-              variant="Secondary"
+              variant="Primary"
               disabled={createInviteMutation.isPending}
               onPress={handleInvite}
             />
@@ -136,18 +143,18 @@ export default function Trip() {
               <ActivityIndicator size="small" />
             )}
             {inviteLink && (
-              <Box backgroundColor="surfaceCard" padding="sm" borderRadius="sm">
-                <Text
-                  variant="xsParagraph"
-                  color="textQuaternary"
-                  numberOfLines={1}
-                >
+              <Box backgroundColor="white" padding="sm" borderRadius="sm">
+                <Text variant="bodyXsDefault" color="gray500" numberOfLines={1}>
                   {inviteLink}
                 </Text>
               </Box>
             )}
           </Box>
         </Box>
+        <CreateFAB
+          tripID={tripID!}
+          onCreatePoll={() => createPollSheetRef.current?.open()}
+        />
       </Box>
     </Screen>
   );

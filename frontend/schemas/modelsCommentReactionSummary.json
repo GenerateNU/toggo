@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "count": { "type": "integer" },
+    "emoji": { "type": "string" },
+    "reacted_by_me": { "type": "boolean" }
+  },
+  "x-readme-ref-name": "models.CommentReactionSummary"
+}

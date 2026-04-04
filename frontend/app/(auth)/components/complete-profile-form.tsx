@@ -116,8 +116,8 @@ export default function CompleteProfileForm({
   return (
     <Box gap="md">
       {error && (
-        <Box backgroundColor="error" padding="sm" borderRadius="sm">
-          <Text variant="smParagraph" color="white">
+        <Box backgroundColor="statusError" padding="sm" borderRadius="sm">
+          <Text variant="bodySmDefault" color="white">
             {error}
           </Text>
         </Box>
@@ -128,12 +128,12 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="smLabel" color="textSecondary">
+            <Text variant="bodySmMedium" color="gray900">
               Full Name
             </Text>
             <Box
               borderWidth={1}
-              borderColor={formState.errors.name ? "error" : "borderPrimary"}
+              borderColor={formState.errors.name ? "statusError" : "gray300"}
               borderRadius="sm"
               padding="sm"
               backgroundColor="white"
@@ -147,7 +147,7 @@ export default function CompleteProfileForm({
               />
             </Box>
             {formState.errors.name && (
-              <Text variant="xsParagraph" color="error">
+              <Text variant="bodyXsDefault" color="statusError">
                 {formState.errors.name.message}
               </Text>
             )}
@@ -160,13 +160,13 @@ export default function CompleteProfileForm({
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="smLabel" color="textSecondary">
+            <Text variant="bodySmMedium" color="gray900">
               Username
             </Text>
             <Box
               borderWidth={1}
               borderColor={
-                formState.errors.username ? "error" : "borderPrimary"
+                formState.errors.username ? "statusError" : "gray300"
               }
               borderRadius="sm"
               padding="sm"
@@ -183,7 +183,7 @@ export default function CompleteProfileForm({
               />
             </Box>
             {formState.errors.username && (
-              <Text variant="xsParagraph" color="error">
+              <Text variant="bodyXsDefault" color="statusError">
                 {formState.errors.username.message}
               </Text>
             )}
@@ -194,7 +194,7 @@ export default function CompleteProfileForm({
       <Button
         layout="textOnly"
         label="Create Account"
-        variant="Primary"
+        variant="Secondary"
         loading={isSubmitting}
         loadingLabel="Creating account..."
         disabled={!formState.isValid || isSubmitting}

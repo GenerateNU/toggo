@@ -26,7 +26,8 @@ func NewPitchController(pitchService services.PitchServiceInterface, validator *
 }
 
 // @Summary      Create a pitch
-// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file
+// @Description  Creates a new pitch for the trip and returns a presigned URL to upload the audio file.
+// @Description  Optionally supply up to 5 confirmed image IDs (image_ids) in the request. The response includes images with presigned medium_url for each image.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json
@@ -65,6 +66,40 @@ func (ctrl *PitchController) CreatePitch(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(resp)
 }
 
+// @Summary      Confirm pitch audio upload
+// @Description  Verifies that the audio file was successfully uploaded to S3 and notifies trip members.
+// @Description  Must be called by the pitch creator after the presigned PUT upload completes.
+// @Tags         pitches
+// @Param        tripID  path string true "Trip ID"
+// @Param        pitchID path string true "Pitch ID"
+// @Success      204 "No Content"
+// @Failure      400 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/pitches/{pitchID}/confirm-upload [post]
+// @ID           confirmPitchUpload
+func (ctrl *PitchController) ConfirmPitchUpload(c *fiber.Ctx) error {
+	userID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return err
+	}
+
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+	pitchID, err := validators.ValidateID(c.Params("pitchID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	if err := ctrl.pitchService.ConfirmUpload(c.Context(), tripID, pitchID, userID); err != nil {
+		return err
+	}
+	return c.SendStatus(http.StatusNoContent)
+}
+
 // @Summary      Get all pitches for a trip
 // @Description  Returns pitches for the trip with cursor-based pagination
 // @Tags         pitches
@@ -88,7 +123,7 @@ func (ctrl *PitchController) ListPitches(c *fiber.Ctx) error {
 	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
-	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params.CursorPaginationParams)
 
 	result, err := ctrl.pitchService.List(c.Context(), tripID, limit, cursorToken)
 	if err != nil {
@@ -101,7 +136,7 @@ func (ctrl *PitchController) ListPitches(c *fiber.Ctx) error {
 }
 
 // @Summary      Get a pitch by ID
-// @Description  Returns a single pitch with a presigned URL for the audio file
+// @Description  Returns a single pitch with presigned URLs for the audio file and associated images (medium_url for each image)
 // @Tags         pitches
 // @Produce      json
 // @Param        tripID  path string true "Trip ID"
@@ -133,7 +168,11 @@ func (ctrl *PitchController) GetPitch(c *fiber.Ctx) error {
 }
 
 // @Summary      Update a pitch
-// @Description  Updates pitch metadata (title, description, duration)
+// @Description  Updates pitch metadata (title, description, duration).
+// @Description  When image_ids is omitted from the request, existing image associations remain unchanged.
+// @Description  When image_ids is an empty array, all image associations are removed.
+// @Description  When image_ids is a non-empty array, the provided IDs are added to existing associations (additive, not replacement).
+// @Description  The response includes images with presigned medium_url for each image.
 // @Tags         pitches
 // @Accept       json
 // @Produce      json

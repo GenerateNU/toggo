@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "required": ["url"],
+  "properties": { "url": { "type": "string" } },
+  "x-readme-ref-name": "models.ParseLinkRequest"
+}

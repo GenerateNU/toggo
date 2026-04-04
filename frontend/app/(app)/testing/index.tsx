@@ -36,16 +36,16 @@ export default function Home() {
         marginTop="md"
         padding="md"
         borderRadius="sm"
-        backgroundColor="surfaceCard"
+        backgroundColor="white"
         alignSelf="stretch"
         gap="xs"
       >
-        <Text variant="smLabel" color="textQuaternary">
+        <Text variant="bodySmMedium" color="gray500">
           Debug: JWT
         </Text>
         <Text
-          variant="smLabel"
-          color="textQuaternary"
+          variant="bodySmMedium"
+          color="gray500"
           numberOfLines={3}
           style={{ fontFamily: "monospace" }}
         >
@@ -91,6 +91,12 @@ export default function Home() {
         label="Test Rank Poll API"
         variant="Primary"
         onPress={() => router.push("/testing/test-rank-poll")}
+      />
+      <Button
+        layout="textOnly"
+        label="Test Activity Feed"
+        variant="Primary"
+        onPress={() => router.push("/testing/test-activity-feed")}
       />
     </Box>
   );

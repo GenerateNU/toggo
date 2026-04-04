@@ -55,6 +55,15 @@ const Layout = () => {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="settings"
+        options={{
+          headerShown: false,
+          headerTitle: "",
+          headerTransparent: true,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 };

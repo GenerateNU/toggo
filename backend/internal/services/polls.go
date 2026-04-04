@@ -16,35 +16,61 @@ import (
 )
 
 type PollServiceInterface interface {
-	PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{})
+	PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data any)
+	PublishEventWithActor(ctx context.Context, topic realtime.EventTopic, tripID, entityID, actorID string, data any)
 	ValidateDeadline(deadline *time.Time) error
 	ValidatePollMinMaxOptions(options []models.CreatePollOptionRequest) error
 	CreatePollWithTx(ctx context.Context, tripID, userID uuid.UUID, req models.CreatePollRequest) (*models.Poll, []string, error)
 	BuildPollEntity(tripID, userID uuid.UUID, req *models.CreatePollRequest) *models.Poll
 	BuildOptionEntities(pollID uuid.UUID, req *models.CreatePollRequest) []models.PollOption
 	UpdatePollWithTx(ctx context.Context, tripID, pollID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.Poll, []string, error)
+	ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline *time.Time) error
+	CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error
 }
 
 var _ PollServiceInterface = (*PollService)(nil)
 
+// schedules and cancels poll deadline reminders; defined here to avoid an import cycle with workflows
+type DeadlineScheduler interface {
+	ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline time.Time) error
+	CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error
+}
+
 type PollService struct {
 	repository *repository.Repository
 	publisher  realtime.EventPublisher
+	scheduler  DeadlineScheduler
 }
 
-func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher) PollServiceInterface {
+func NewPollService(repo *repository.Repository, publisher realtime.EventPublisher, scheduler DeadlineScheduler) PollServiceInterface {
 	return &PollService{
 		repository: repo,
 		publisher:  publisher,
+		scheduler:  scheduler,
 	}
 }
 
-// publishEvent publishes a realtime event; failures are logged but never block the caller.
-func (s *PollService) PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data interface{}) {
+// PublishEvent publishes a realtime event; failures are logged but never block the caller.
+func (s *PollService) PublishEvent(ctx context.Context, topic realtime.EventTopic, tripID string, data any) {
 	if s.publisher == nil {
 		return
 	}
 	event, err := realtime.NewEvent(topic, tripID, data)
+	if err != nil {
+		log.Printf("Failed to create %s event: %v", topic, err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish %s event: %v", topic, err)
+	}
+}
+
+// PublishEventWithActor publishes a realtime event with actor attribution.
+func (s *PollService) PublishEventWithActor(ctx context.Context, topic realtime.EventTopic, tripID, entityID, actorID string, data any) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(topic, tripID, entityID, actorID, "", data)
 	if err != nil {
 		log.Printf("Failed to create %s event: %v", topic, err)
 		return
@@ -112,6 +138,12 @@ func (s *PollService) createPollTx(
 		return nil, nil, err
 	}
 
+	if len(categories) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, categories); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	categoryNames, err := s.repository.PollCategory.ReplaceCategoriesForPoll(
 		ctx,
 		tx,
@@ -155,6 +187,10 @@ func (s *PollService) CreatePollWithTx(
 
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if err := s.ScheduleDeadlineReminder(ctx, created.ID, tripID, created.Deadline); err != nil {
+		log.Printf("failed to schedule deadline reminder for poll %s: %v", created.ID, err)
 	}
 
 	return created, categoryNames, nil
@@ -216,6 +252,12 @@ func (s *PollService) UpdatePollWithTx(
 		return nil, nil, err
 	}
 
+	if req.Deadline != nil {
+		if err := s.ScheduleDeadlineReminder(ctx, pollID, tripID, req.Deadline); err != nil {
+			log.Printf("failed to reschedule deadline reminder for poll %s: %v", pollID, err)
+		}
+	}
+
 	return updated, categoryNames, nil
 }
 
@@ -232,6 +274,12 @@ func (s *PollService) resolveCategoryUpdate(
 
 	values := *categories
 
+	if len(values) > 0 {
+		if err := s.repository.Category.EnsureCategoriesExistTx(ctx, tx, tripID, values); err != nil {
+			return nil, err
+		}
+	}
+
 	return s.repository.PollCategory.ReplaceCategoriesForPoll(
 		ctx,
 		tx,
@@ -239,4 +287,18 @@ func (s *PollService) resolveCategoryUpdate(
 		pollID,
 		&values,
 	)
+}
+
+func (s *PollService) ScheduleDeadlineReminder(ctx context.Context, pollID, tripID uuid.UUID, deadline *time.Time) error {
+	if s.scheduler == nil || deadline == nil {
+		return nil
+	}
+	return s.scheduler.ScheduleDeadlineReminder(ctx, pollID, tripID, *deadline)
+}
+
+func (s *PollService) CancelDeadlineReminder(ctx context.Context, pollID uuid.UUID) error {
+	if s.scheduler == nil {
+		return nil
+	}
+	return s.scheduler.CancelDeadlineReminder(ctx, pollID)
 }

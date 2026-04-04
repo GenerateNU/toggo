@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "profile_picture_url": { "type": "string" },
+    "user_id": { "type": "string" },
+    "username": { "type": "string" }
+  },
+  "x-readme-ref-name": "models.ActivityGoingUserResponse"
+}

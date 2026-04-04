@@ -151,6 +151,35 @@ func (f *FileController) GetFile(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+// @Summary      Delete image
+// @Description  Deletes all size variants of an image from S3 and the database
+// @Tags         files
+// @Produce      json
+// @Param        imageId path string true "Image ID (UUID)"
+// @Success      204
+// @Failure      400 {object} errs.APIError
+// @Failure      404 {object} errs.APIError
+// @Failure      500 {object} errs.APIError
+// @Router       /api/v1/files/{imageId} [delete]
+// @ID           deleteImage
+func (f *FileController) DeleteImage(c *fiber.Ctx) error {
+	imageIDStr := c.Params("imageId")
+
+	imageID, err := uuid.Parse(imageIDStr)
+	if err != nil {
+		return errs.NewAPIError(http.StatusBadRequest, err)
+	}
+
+	if err := f.fileService.DeleteImage(c.Context(), imageID); err != nil {
+		if errs.IsNotFound(err) {
+			return errs.NewAPIError(http.StatusNotFound, err)
+		}
+		return errs.NewAPIError(http.StatusInternalServerError, err)
+	}
+
+	return c.SendStatus(http.StatusNoContent)
+}
+
 // @Summary      Get all sizes of a file
 // @Description  Retrieves presigned URLs for all sizes of an image
 // @Tags         files

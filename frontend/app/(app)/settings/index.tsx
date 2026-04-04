@@ -19,7 +19,7 @@ export default function Settings() {
         gap="md"
         backgroundColor="white"
       >
-        <Text variant="lgHeading" color="black">
+        <Text variant="headingMd" color="gray900">
           Settings
         </Text>
         <Button

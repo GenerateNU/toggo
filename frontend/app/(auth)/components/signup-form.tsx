@@ -56,8 +56,8 @@ export default function SignupForm() {
   return (
     <Box gap="md">
       {error && (
-        <Box backgroundColor="error" padding="sm" borderRadius="sm">
-          <Text variant="smParagraph" color="white">
+        <Box backgroundColor="statusError" padding="sm" borderRadius="sm">
+          <Text variant="bodySmDefault" color="white">
             {error}
           </Text>
         </Box>
@@ -68,12 +68,12 @@ export default function SignupForm() {
         control={control}
         render={({ field: { onChange, value, onBlur } }) => (
           <Box gap="xs">
-            <Text variant="smLabel" color="textSecondary">
+            <Text variant="bodySmMedium" color="white">
               Phone Number
             </Text>
             <Box
               borderWidth={1}
-              borderColor={formState.errors.phone ? "error" : "borderPrimary"}
+              borderColor={formState.errors.phone ? "statusError" : "gray300"}
               borderRadius="sm"
               padding="sm"
               backgroundColor="white"
@@ -88,7 +88,7 @@ export default function SignupForm() {
               />
             </Box>
             {formState.errors.phone && (
-              <Text variant="xsParagraph" color="error">
+              <Text variant="bodyXsDefault" color="statusError">
                 {formState.errors.phone.message}
               </Text>
             )}

@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"log"
 	"toggo/internal/errs"
 	"toggo/internal/models"
+	"toggo/internal/realtime"
 	"toggo/internal/repository"
 	"toggo/internal/utilities/pagination"
 
@@ -20,14 +22,18 @@ type CommentServiceInterface interface {
 var _ CommentServiceInterface = (*CommentService)(nil)
 
 type CommentService struct {
-	repository  *repository.Repository
-	fileService FileServiceInterface
+	repository          *repository.Repository
+	fileService         FileServiceInterface
+	publisher           realtime.EventPublisher
+	notificationService NotificationService
 }
 
-func NewCommentService(repo *repository.Repository, fileService FileServiceInterface) CommentServiceInterface {
+func NewCommentService(repo *repository.Repository, fileService FileServiceInterface, publisher realtime.EventPublisher, notificationService NotificationService) CommentServiceInterface {
 	return &CommentService{
-		repository:  repo,
-		fileService: fileService,
+		repository:          repo,
+		fileService:         fileService,
+		publisher:           publisher,
+		notificationService: notificationService,
 	}
 }
 
@@ -52,7 +58,49 @@ func (s *CommentService) CreateComment(ctx context.Context, req models.CreateCom
 		return nil, err
 	}
 
+	s.publishCommentCreated(ctx, comment, userID)
+	go s.notifyNewComment(comment.TripID, userID)
+
 	return comment, nil
+}
+
+func (s *CommentService) notifyNewComment(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	err := s.notificationService.NotifyTripMembers(
+		context.Background(),
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewComment,
+		"New comment",
+		"Someone commented on your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new comment notification: %v", err)
+	}
+}
+
+func (s *CommentService) publishCommentCreated(ctx context.Context, comment *models.Comment, actorID uuid.UUID) {
+	if s.publisher == nil {
+		return
+	}
+	event, err := realtime.NewEventWithActor(
+		realtime.EventTopicCommentCreated,
+		comment.TripID.String(),
+		comment.EntityID.String(),
+		actorID.String(),
+		"",
+		comment,
+	)
+	if err != nil {
+		log.Printf("Failed to create comment.created event: %v", err)
+		return
+	}
+	if err := s.publisher.Publish(ctx, event); err != nil {
+		log.Printf("Failed to publish comment.created event: %v", err)
+	}
 }
 
 func (s *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, userID uuid.UUID, req models.UpdateCommentRequest) (*models.Comment, error) {

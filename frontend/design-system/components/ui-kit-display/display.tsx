@@ -1,8 +1,16 @@
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Button } from "@/design-system/components/buttons/button";
+import { CommentData } from "@/design-system/components/comments/comment";
+import CommentSection from "@/design-system/components/comments/comment-section";
+import TextField from "@/design-system/components/inputs/text-field";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
+import DateRangePicker, {
+  DateRange,
+} from "@/design-system/primitives/date-picker";
+import Divider from "@/design-system/primitives/divider";
 import { Text } from "@/design-system/primitives/text";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorName, ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize, CoreSizeKey } from "@/design-system/tokens/core-size";
@@ -16,11 +24,22 @@ import {
   Typography,
   TypographyVariant,
 } from "@/design-system/tokens/typography";
-import { ArrowRight, Mail, Star } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { Animated, Easing, TouchableOpacity } from "react-native";
+import { ArrowRight, Mail, Phone, Star } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Animated,
+  Easing,
+  Pressable,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
+import RadioGroup from "../buttons/radio";
+import Toggle from "../buttons/toggle";
+import Comments from "../comments/example-comments.json";
 import SkeletonCircle from "../skeleton/circle";
 import SkeletonRect from "../skeleton/rectangle";
+import ProgressBarCurved from "../status/progress-bar-curved";
 
 function Section({
   title,
@@ -31,7 +50,7 @@ function Section({
 }) {
   return (
     <Box width="100%" gap="sm">
-      <Text variant="lgHeading">{title}</Text>
+      <Text variant="headingMd">{title}</Text>
       <Box width="100%" borderRadius="md" gap="sm">
         {children}
       </Box>
@@ -53,7 +72,7 @@ function Row({
       justifyContent="space-between"
       gap="sm"
     >
-      <Text variant="xsLabel" color="textSecondary" style={{ flexShrink: 1 }}>
+      <Text variant="bodyXsMedium" color="gray900" style={{ flexShrink: 1 }}>
         {label}
       </Text>
       {children}
@@ -87,14 +106,14 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
   return (
     <TouchableOpacity onPress={play}>
       <Box gap="xs">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           {tokenKey} — {t.duration}ms · {t.easing}
         </Text>
         <AnimatedBox
           width={32}
           height={32}
           borderRadius="sm"
-          backgroundColor="brandPrimary"
+          backgroundColor="brand500"
           style={{ transform: [{ translateX }] }}
         />
       </Box>
@@ -103,18 +122,135 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 }
 
 export default function UIKit() {
+  const toast = useToast();
+
+  // ─── Progress Bar Group ────────────────────────────────────────────────
+  const [currentPercent, setCurrentPercent] = useState(0);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setCurrentPercent(65); // Set to a valid percent value, e.g., 65
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // ─── Datepicker Group ────────────────────────────────────────────────
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+
+  const handleSave = (range: DateRange) => {
+    setSelectedRange(range);
+  };
+
+  const formatDate = (d: Date | null) =>
+    d
+      ? d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "—";
+
+  // ─── Radio Group ────────────────────────────────────────────────
+  const [driver, setDriver] = useState<string | null>(null);
+
+  // ─── Checkbox Group ────────────────────────────────────────────────
+  const [activities, setActivities] = useState<string[]>([]);
+
+  // ─── Single Checkbox ───────────────────────────────────────────────
+  const [agreed, setAgreed] = useState(false);
+
+  // ─── Toggles ───────────────────────────────────────────────────────
+  const [textBlasts, setTextBlasts] = useState(true);
+  const [votingReminders, setVotingReminders] = useState(false);
+  const [finalized, setFinalized] = useState(true);
+
+  // ─── Text Fields ───────────────────────────────────────────────────
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  const validatePhone = (text: string) => {
+    const digits = text.replace(/\D/g, "");
+    setPhone(text);
+    setPhoneError(
+      digits.length > 0 && digits.length !== 10
+        ? "Phone number must be 10 digits"
+        : "",
+    );
+  };
+
+  // ─── Comments ──────────────────────────────────────────────────────
+  const [commentsVisible, setCommentsVisible] = useState(false);
+  const [comments, setComments] = useState<CommentData[]>(Comments);
+
+  const handleSubmitComment = useCallback(async (comment: CommentData) => {
+    setComments((prev) => [...prev, comment]);
+  }, []);
+
+  const handleReact = useCallback((commentId: string, emoji: string) => {
+    setComments((prev) =>
+      prev.map((c) => {
+        if (c.id !== commentId) return c;
+        const existing = c.reactions.find((r) => r.emoji === emoji);
+        let updated;
+        if (existing) {
+          if (existing.reactedByMe) {
+            updated =
+              existing.count <= 1
+                ? c.reactions.filter((r) => r.emoji !== emoji)
+                : c.reactions.map((r) =>
+                    r.emoji === emoji
+                      ? { ...r, count: r.count - 1, reactedByMe: false }
+                      : r,
+                  );
+          } else {
+            updated = c.reactions.map((r) =>
+              r.emoji === emoji
+                ? { ...r, count: r.count + 1, reactedByMe: true }
+                : r,
+            );
+          }
+        } else {
+          updated = [...c.reactions, { emoji, count: 1, reactedByMe: true }];
+        }
+        return { ...c, reactions: updated };
+      }),
+    );
+  }, []);
+
   return (
     <Box gap="lg">
       <Box gap="xs">
-        <Text variant="xxlHeading">Design System</Text>
-        <Text variant="smParagraph" color="textQuaternary">
+        <Text variant="headingXl">Design System</Text>
+        <Text variant="bodySmDefault" color="gray500">
           Basic building blocks and tokens for consistent design across the app.
           Subjected to change.
         </Text>
       </Box>
 
+      <Section title="Progress Bar">
+        {/* Basic usage */}
+        <ProgressBarCurved percent={currentPercent} />
+
+        {/* Taller bar with custom colors */}
+        <ProgressBarCurved
+          percent={40}
+          fillColor="#FF6B6B"
+          trackColor="#FFE0E0"
+        />
+
+        {/* Full width with label */}
+        <View style={{ gap: 4 }}>
+          <Text variant="bodyXsMedium" color="gray500">
+            3 of 5 complete
+          </Text>
+          <ProgressBarCurved percent={60} />
+        </View>
+      </Section>
       <Section title="Skeleton">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           shapes
         </Text>
         <Row label="rect">
@@ -129,6 +265,9 @@ export default function UIKit() {
       </Section>
 
       <Section title="Color">
+        <Text variant="bodyXsMedium" color="gray900">
+          Semantic tokens
+        </Text>
         {(Object.keys(ColorPalette) as ColorName[]).map((key) => (
           <Row key={key} label={key}>
             <Box
@@ -136,7 +275,7 @@ export default function UIKit() {
               height={32}
               borderRadius="sm"
               borderWidth={1}
-              borderColor="borderPrimary"
+              borderColor="gray300"
               style={{ backgroundColor: ColorPalette[key] }}
             />
           </Row>
@@ -160,7 +299,7 @@ export default function UIKit() {
               width={48}
               height={48}
               borderRadius="sm"
-              backgroundColor="surfaceCard"
+              backgroundColor="white"
               style={{ ...Elevation[key] }}
             />
           </Row>
@@ -172,7 +311,7 @@ export default function UIKit() {
           <Row key={`coresize-${key}`} label={`${key} — ${CoreSize[key]}px`}>
             <Box
               height={16}
-              backgroundColor="brandPrimary"
+              backgroundColor="brand500"
               borderRadius="xs"
               style={{ width: CoreSize[key] }}
             />
@@ -186,7 +325,7 @@ export default function UIKit() {
             <Box
               width={48}
               height={48}
-              backgroundColor="brandPrimary"
+              backgroundColor="brand500"
               style={{ borderRadius: CornerRadius[key] }}
             />
           </Row>
@@ -212,7 +351,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Transition">
-        <Text variant="xsParagraph" color="textSecondary">
+        <Text variant="bodyXsDefault" color="gray900">
           Tap each row to preview
         </Text>
         {(Object.keys(Transition) as TransitionKey[]).map((key) => (
@@ -234,7 +373,7 @@ export default function UIKit() {
       </Section>
 
       <Section title="Button">
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           variants
         </Text>
         <Button layout="textOnly" label="Primary" variant="Primary" />
@@ -243,7 +382,7 @@ export default function UIKit() {
         <Button layout="textOnly" label="Quaternary" variant="Quaternary" />
         <Button layout="textOnly" label="Destructive" variant="Destructive" />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           sizes
         </Text>
         <Button
@@ -265,7 +404,7 @@ export default function UIKit() {
           size="large"
         />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           with icons
         </Text>
         <Button
@@ -282,7 +421,7 @@ export default function UIKit() {
           rightIcon={ArrowRight}
         />
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           icon only
         </Text>
         <Box flexDirection="row" gap="sm">
@@ -306,7 +445,7 @@ export default function UIKit() {
           />
         </Box>
 
-        <Text variant="xsLabel" color="textSecondary">
+        <Text variant="bodyXsMedium" color="gray900">
           states
         </Text>
         <Button
@@ -344,6 +483,178 @@ export default function UIKit() {
           label="Secondary loading"
           variant="Secondary"
           loading
+        />
+      </Section>
+
+      <Section title="Checkbox, Radio & Toggle">
+        <RadioGroup
+          label="Who should drive the rental car?"
+          options={[
+            { label: "Amogh", value: "amogh" },
+            { label: "Afnan", value: "afnan" },
+            { label: "Olivia", value: "olivia" },
+            { label: "Mai", value: "mai" },
+          ]}
+          value={driver}
+          onChange={setDriver}
+        />
+
+        <CheckboxGroup
+          label="What should we do on Tuesday?"
+          options={[
+            { label: "Surfing lessons", value: "surfing" },
+            { label: "Nice long hike", value: "hike" },
+            { label: "Trivia at local bar", value: "trivia" },
+            { label: "Visit another part of the island", value: "visit" },
+          ]}
+          value={activities}
+          onChange={setActivities}
+        />
+
+        <Checkbox
+          label="I agree to the terms and conditions"
+          checked={agreed}
+          onChange={setAgreed}
+        />
+
+        <View style={{ gap: 4 }}>
+          <Toggle
+            label="Text blasts"
+            value={textBlasts}
+            onChange={setTextBlasts}
+          />
+          <Toggle
+            label="Voting reminders"
+            value={votingReminders}
+            onChange={setVotingReminders}
+          />
+          <Toggle
+            label="Finalized decisions"
+            value={finalized}
+            onChange={setFinalized}
+          />
+        </View>
+      </Section>
+
+      <Section title="Text Field">
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value={phone}
+          onChangeText={validatePhone}
+          error={phoneError}
+          keyboardType="phone-pad"
+          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
+        />
+
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value=""
+          onChangeText={() => {}}
+          disabled
+          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
+        />
+      </Section>
+
+      <Section title="Toast">
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => toast.show({ message: "Housing option saved" })}
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With close</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Trip created!",
+                action: {
+                  label: "Share",
+                  onPress: () => console.log("shared"),
+                },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With action</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              toast.show({
+                message: "Housing option saved",
+                action: { label: "Undo", onPress: () => console.log("undo") },
+              })
+            }
+            style={{
+              backgroundColor: "#000",
+              borderRadius: 8,
+              padding: 12,
+              alignItems: "center",
+              flex: 1,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>With undo</Text>
+          </Pressable>
+        </View>
+      </Section>
+
+      <Section title="Date Range Picker">
+        <Button
+          layout="textOnly"
+          label="Open Date Picker"
+          variant="Secondary"
+          onPress={() => setPickerVisible(true)}
+        />
+        <Text variant="bodyMedium">
+          Selected Dates: {formatDate(selectedRange.start)} →{" "}
+          {formatDate(selectedRange.end)}
+        </Text>
+        <DateRangePicker
+          visible={pickerVisible}
+          onClose={() => setPickerVisible(false)}
+          onSave={handleSave}
+          initialRange={selectedRange}
+          monthsToShow={12}
+        />
+      </Section>
+
+      <Section title="Dividers">
+        <Divider width={1} />
+        <Text>some content</Text>
+        <Divider color={ColorPalette.brand500} width={3} />
+      </Section>
+
+      <Section title="Comments & Reactions">
+        <Button
+          layout="textOnly"
+          label="Open Comments"
+          variant="Secondary"
+          onPress={() => setCommentsVisible(true)}
+        />
+        <CommentSection
+          visible={commentsVisible}
+          onClose={() => setCommentsVisible(false)}
+          comments={comments}
+          currentUserId="bart"
+          currentUserName="Bart"
+          currentUserSeed="bart"
+          onSubmitComment={handleSubmitComment}
+          onReact={handleReact}
         />
       </Section>
     </Box>
