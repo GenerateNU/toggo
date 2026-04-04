@@ -156,13 +156,13 @@ export default function StepReview({
               paddingVertical: 6,
             }}
           >
-            <Text variant="bodyXsMedium" color="white">
+            <Text variant="bodyXsMedium" color="gray700">
               {POLL_TYPE_LABELS[pollType]}
             </Text>
           </Box>
         </Box>
 
-        <Text variant="headingSm" color="white">
+        <Text variant="headingSm" color="gray950">
           {question}
         </Text>
 
@@ -176,11 +176,11 @@ export default function StepReview({
                 justifyContent="center"
                 style={{ width: 32, height: 32 }}
               >
-                <Text variant="bodySmMedium" color="white">
+                <Text variant="bodySmMedium" color="gray700">
                   {i + 1}
                 </Text>
               </Box>
-              <Text variant="bodySmDefault" color="white">
+              <Text variant="bodySmDefault" color="gray950">
                 {opt}
               </Text>
             </Box>

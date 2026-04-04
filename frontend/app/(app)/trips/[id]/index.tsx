@@ -1,12 +1,25 @@
+import {
+  getPollsByTripIDQueryKey,
+  useGetPollsByTripID,
+} from "@/api/polls/useGetPollsByTripID";
+import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
-import { Box, Text } from "@/design-system";
+import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import CreatePollSheet, {
+  CreatePollSheetMethods,
+} from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
+import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
+import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
+import { Box, ErrorState, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { ModelsPollAPIResponse } from "@/types/types.gen";
+import { useQueryClient } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
@@ -22,7 +35,7 @@ import {
   PiggyBank,
   Settings2,
 } from "lucide-react-native";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -162,6 +175,109 @@ function ItineraryEmptyState() {
   );
 }
 
+// ─── Polls tab ────────────────────────────────────────────────────────────────
+
+function RankPollRow({
+  poll,
+  tripId,
+  onRanked,
+}: {
+  poll: ModelsPollAPIResponse;
+  tripId: string;
+  onRanked: () => void;
+}) {
+  const { data, isLoading } = useGetRankPollResults(tripId, poll.id ?? "", {
+    query: { enabled: !!(tripId && poll.id) },
+  });
+
+  if (isLoading) {
+    return (
+      <Box
+        backgroundColor="white"
+        borderRadius="md"
+        alignItems="center"
+        padding="lg"
+        style={styles.loadingCard}
+      >
+        <ActivityIndicator color={ColorPalette.brand500} />
+      </Box>
+    );
+  }
+  if (!data) return null;
+  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
+}
+
+function PollsTabContent({
+  tripId,
+  onCreatePoll,
+}: {
+  tripId: string;
+  onCreatePoll: () => void;
+}) {
+  const {
+    data: pollsData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetPollsByTripID(tripId, {}, { query: { enabled: !!tripId } });
+
+  const polls = pollsData?.items ?? [];
+  const votePolls = polls.filter((p) => p.poll_type !== "rank");
+  const rankPolls = polls.filter((p) => p.poll_type === "rank");
+
+  const handleVoted = useCallback(() => refetch(), [refetch]);
+  const handleRanked = useCallback(() => refetch(), [refetch]);
+
+  if (isLoading) {
+    return (
+      <Box alignItems="center" paddingVertical="xl">
+        <ActivityIndicator color={ColorPalette.brand500} />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <ErrorState title="Couldn't load polls" />;
+  }
+
+  if (polls.length === 0) {
+    return (
+      <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
+        <Box alignItems="center" paddingVertical="lg">
+          <Text
+            variant="bodyDefault"
+            color="gray950"
+            style={styles.emptyStateText}
+          >
+            No polls yet. Create one!
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  return (
+    <Box gap="sm">
+      {votePolls.map((poll) => (
+        <VotePollCard
+          key={poll.id}
+          poll={poll}
+          tripId={tripId}
+          onVoted={handleVoted}
+        />
+      ))}
+      {rankPolls.map((poll) => (
+        <RankPollRow
+          key={poll.id}
+          poll={poll}
+          tripId={tripId}
+          onRanked={handleRanked}
+        />
+      ))}
+    </Box>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
@@ -170,6 +286,8 @@ export default function Trip() {
   const createInviteMutation = useCreateTripInvite();
   const updateTripMutation = useUpdateTrip();
   const dateSheetRef = useRef<any>(null);
+  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
+  const queryClient = useQueryClient();
 
   const { data: trip, isLoading, refetch } = useGetTrip(tripID!);
 
@@ -180,6 +298,16 @@ export default function Trip() {
     }
     setActiveTab(tab);
   };
+
+  const handleOpenCreatePoll = useCallback(() => {
+    createPollSheetRef.current?.open();
+  }, []);
+
+  const handlePollCreated = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: getPollsByTripIDQueryKey(tripID!),
+    });
+  }, [queryClient, tripID]);
 
   const handleInvite = async () => {
     try {
@@ -224,54 +352,6 @@ export default function Trip() {
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-        <Box padding="lg" gap="md">
-          <Text variant="bodySmMedium" color="gray500">
-            VIEW
-          </Text>
-          <Box gap="sm">
-            <Button
-              layout="textOnly"
-              label="Search Location"
-              variant="Primary"
-              onPress={() => router.push(`/trips/${tripID}/search-location`)}
-            />
-            <Button
-              layout="textOnly"
-              label="Activities"
-              variant="Primary"
-              onPress={() =>
-                router.push({ pathname: `/trips/${tripID}/activities` })
-              }
-            />
-            <Button
-              layout="textOnly"
-              label="See Dummy Activity"
-              variant="Primary"
-              onPress={() =>
-                router.push({
-                  pathname: `/trips/${tripID}/activities/${DUMMY_ID}`,
-                  params: { tripID },
-                })
-              }
-            />
-            <Button
-              layout="textOnly"
-              label="See Dummy Pitch"
-              variant="Primary"
-              onPress={() =>
-                router.push({
-                  pathname: `/trips/${tripID}/pitches/${DUMMY_ID}`,
-                  params: { tripID },
-                })
-              }
-            />
-            <Button
-              layout="textOnly"
-              label="Polls"
-              variant="Primary"
-              onPress={() => router.push(`/trips/${tripID}/polls` as any)}
-            />
-          </Box>
       {/* Header bar */}
       <Box
         flexDirection="row"
@@ -385,11 +465,27 @@ export default function Trip() {
           </Box>
 
           {/* Tab content */}
-          <Box paddingHorizontal="sm" paddingTop="sm">
+          <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
             {activeTab === "itinerary" && <ItineraryEmptyState />}
+            {activeTab === "polls" && (
+              <PollsTabContent
+                tripId={tripID!}
+                onCreatePoll={handleOpenCreatePoll}
+              />
+            )}
           </Box>
         </ScrollView>
       </Box>
+
+      {activeTab === "polls" && (
+        <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
+      )}
+
+      <CreatePollSheet
+        ref={createPollSheetRef}
+        tripID={tripID!}
+        onCreated={handlePollCreated}
+      />
 
       <TripReminderDateSheet
         bottomSheetRef={dateSheetRef}
@@ -471,6 +567,10 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontStyle: "italic",
+  },
+  loadingCard: {
+    borderWidth: 1,
+    borderColor: ColorPalette.gray100,
   },
   hitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
 });
