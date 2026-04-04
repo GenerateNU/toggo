@@ -1,8 +1,25 @@
 import { useGetActivity } from "@/api/activities";
 import { Box, Screen, Text } from "@/design-system";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { useLocalSearchParams } from "expo-router";
 import { Image, ScrollView } from "react-native";
+
+const DUMMY_ID = "dummy-entity-001";
+
+const DUMMY_ACTIVITY: ModelsActivityAPIResponse = {
+  id: DUMMY_ID,
+  name: "Visit the Eiffel Tower",
+  description:
+    "Take a guided tour of the Eiffel Tower and enjoy panoramic views of Paris from the top.",
+  proposed_by: "demo-user",
+  proposer_username: "Demo User",
+  category_names: ["Sightseeing", "Landmarks"],
+  location_name: "Champ de Mars, Paris, France",
+  location_lat: 48.8584,
+  location_lng: 2.2945,
+  estimated_price: 25,
+};
 
 export default function ActivityDetail() {
   const { id: activityID, tripID } = useLocalSearchParams<{
@@ -10,13 +27,17 @@ export default function ActivityDetail() {
     tripID: string;
   }>();
 
+  const isDummy = activityID === DUMMY_ID;
+
   const {
-    data: activity,
+    data: fetchedActivity,
     isLoading,
     isError,
   } = useGetActivity(tripID ?? "", activityID, {
-    query: { enabled: !!(tripID && activityID) },
+    query: { enabled: !isDummy && !!(tripID && activityID) },
   });
+
+  const activity = isDummy ? DUMMY_ACTIVITY : fetchedActivity;
 
   return (
     <Screen>

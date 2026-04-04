@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "dev": "doppler run --project frontend --config dev -- expo start",
-    "tunnel": "doppler run --project frontend --config dev -- expo start --tunnel",
-    "android": "doppler run --project frontend --config dev -- expo start --android",
-    "ios": "doppler run --project frontend --config dev -- expo start --ios",
+    "dev": "doppler run --project frontend --config dev -- expo run",
+    "tunnel": "doppler run --project frontend --config dev -- expo run --tunnel",
+    "android": "doppler run --project frontend --config dev -- expo run:android",
+    "ios": "doppler run --project frontend --config dev -- expo run:ios",
     "web": "doppler run --project frontend --config dev -- expo start --web",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
     "kubb": "kubb --debug",
@@ -19,6 +19,7 @@
   "dependencies": {
     "@gorhom/bottom-sheet": "^5",
     "@hookform/resolvers": "^5.2.2",
+    "@maplibre/maplibre-react-native": "^10.4.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@shopify/restyle": "^2.4.5",

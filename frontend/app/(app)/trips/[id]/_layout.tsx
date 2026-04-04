@@ -56,6 +56,14 @@ const Layout = () => {
         }}
       />
       <Stack.Screen
+        name="search-location"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name="settings"
         options={{
           headerShown: false,
