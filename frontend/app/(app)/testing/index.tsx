@@ -98,6 +98,12 @@ export default function Home() {
         variant="Primary"
         onPress={() => router.push("/testing/test-activity-feed")}
       />
+      <Button
+        layout="textOnly"
+        label="Test Poll Voting (Live)"
+        variant="Primary"
+        onPress={() => router.push("/testing/test-polls-voting")}
+      />
     </Box>
   );
 }

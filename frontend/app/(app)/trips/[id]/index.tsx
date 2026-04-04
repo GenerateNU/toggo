@@ -1,12 +1,24 @@
+import {
+  getPollsByTripIDQueryKey,
+  useGetPollsByTripID,
+} from "@/api/polls/useGetPollsByTripID";
+import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
+import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import CreatePollSheet, {
+  CreatePollSheetMethods,
+} from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
+import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
+import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
 import {
   BottomSheet,
   Box,
   Button,
   Chip,
+  ErrorState,
   Text,
   TextField,
 } from "@/design-system";
@@ -15,6 +27,7 @@ import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { ModelsPollAPIResponse } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
@@ -139,6 +152,8 @@ function ItineraryEmptyState() {
   );
 }
 
+// ─── Location sheet ───────────────────────────────────────────────────────────
+
 type LocationOptionsSheetProps = {
   bottomSheetRef: React.RefObject<any>;
   locationDraft: string;
@@ -193,6 +208,112 @@ function LocationOptionsSheet({
   );
 }
 
+// ─── Polls tab ────────────────────────────────────────────────────────────────
+
+function RankPollRow({
+  poll,
+  tripId,
+  onRanked,
+}: {
+  poll: ModelsPollAPIResponse;
+  tripId: string;
+  onRanked: () => void;
+}) {
+  const { data, isLoading, isError, refetch } = useGetRankPollResults(
+    tripId,
+    poll.id ?? "",
+    { query: { enabled: !!(tripId && poll.id) } },
+  );
+
+  if (isLoading) {
+    return (
+      <Box
+        backgroundColor="white"
+        borderRadius="md"
+        alignItems="center"
+        padding="lg"
+        style={styles.loadingCard}
+      >
+        <ActivityIndicator color={ColorPalette.brand500} />
+      </Box>
+    );
+  }
+  if (isError) {
+    return (
+      <Box backgroundColor="white" borderRadius="md" style={styles.loadingCard}>
+        <ErrorState title="Couldn't load poll" refresh={refetch} />
+      </Box>
+    );
+  }
+  if (!data) return null;
+  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
+}
+
+function PollsTabContent({ tripId }: { tripId: string }) {
+  const {
+    data: pollsData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetPollsByTripID(tripId, {}, { query: { enabled: !!tripId } });
+
+  const polls = pollsData?.items ?? [];
+  const votePolls = polls.filter((p) => p.poll_type !== "rank");
+  const rankPolls = polls.filter((p) => p.poll_type === "rank");
+
+  const handleVoted = useCallback(() => refetch(), [refetch]);
+  const handleRanked = useCallback(() => refetch(), [refetch]);
+
+  if (isLoading) {
+    return (
+      <Box alignItems="center" paddingVertical="xl">
+        <ActivityIndicator color={ColorPalette.brand500} />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <ErrorState title="Couldn't load polls" />;
+  }
+
+  if (polls.length === 0) {
+    return (
+      <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
+        <Box alignItems="center" paddingVertical="lg">
+          <Text
+            variant="bodyDefault"
+            color="gray950"
+            style={styles.emptyStateText}
+          >
+            No polls yet. Create one!
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  return (
+    <Box gap="sm">
+      {votePolls.map((poll) => (
+        <VotePollCard
+          key={poll.id}
+          poll={poll}
+          tripId={tripId}
+          onVoted={handleVoted}
+        />
+      ))}
+      {rankPolls.map((poll) => (
+        <RankPollRow
+          key={poll.id}
+          poll={poll}
+          tripId={tripId}
+          onRanked={handleRanked}
+        />
+      ))}
+    </Box>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
@@ -203,6 +324,7 @@ export default function Trip() {
   const queryClient = useQueryClient();
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
+  const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
   const [locationDraft, setLocationDraft] = useState("");
   const [locationText, setLocationText] = useState<string | null>(null);
@@ -216,6 +338,16 @@ export default function Trip() {
     }
     setActiveTab(tab);
   };
+
+  const handleOpenCreatePoll = useCallback(() => {
+    createPollSheetRef.current?.open();
+  }, []);
+
+  const handlePollCreated = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: getPollsByTripIDQueryKey(tripID!),
+    });
+  }, [queryClient, tripID]);
 
   const handleInvite = async () => {
     try {
@@ -403,12 +535,21 @@ export default function Trip() {
             </Box>
 
             {/* Tab content */}
-            <Box paddingHorizontal="sm" paddingTop="sm">
+            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
               {activeTab === "itinerary" && <ItineraryEmptyState />}
+              {activeTab === "polls" && <PollsTabContent tripId={tripID!} />}
             </Box>
           </ScrollView>
         </Box>
       </SafeAreaView>
+
+      <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
+
+      <CreatePollSheet
+        ref={createPollSheetRef}
+        tripID={tripID!}
+        onCreated={handlePollCreated}
+      />
 
       <TripReminderDateSheet
         bottomSheetRef={dateSheetRef}
@@ -483,6 +624,10 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontStyle: "italic",
+  },
+  loadingCard: {
+    borderWidth: 1,
+    borderColor: ColorPalette.gray100,
   },
   hitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
 });
