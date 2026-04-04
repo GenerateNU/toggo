@@ -23,7 +23,7 @@ export function HomeUpcomingEmptyCard({
           {"\uD83C\uDF0E"}
         </Text>
         <Text
-          variant="bodyDefault"
+          variant="bodySmDefault"
           color="gray900"
           style={{ fontStyle: "italic", textAlign: "center" }}
         >

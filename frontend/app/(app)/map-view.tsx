@@ -15,12 +15,12 @@ import {
   resolveMapViewActivitiesInput,
   type MapViewActivityForMap,
 } from "@/utils/map-view-activities";
+import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import {
   Camera,
   MapView,
   PointAnnotation,
 } from "@maplibre/maplibre-react-native";
-import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
@@ -160,19 +160,17 @@ export default function MapViewScreen() {
 
   if (input.kind === "error") {
     return (
-      <Screen>
-        <Box flex={1} backgroundColor="gray50" justifyContent="center">
-          <ErrorState title="Map couldn’t load" description={input.message} />
-          <Box paddingHorizontal="lg">
-            <Button
-              layout="textOnly"
-              variant="Primary"
-              label="Go back"
-              onPress={() => router.back()}
-            />
-          </Box>
+      <Box flex={1} backgroundColor="gray50" justifyContent="center">
+        <ErrorState title="Map couldn’t load" description={input.message} />
+        <Box paddingHorizontal="lg">
+          <Button
+            layout="textOnly"
+            variant="Primary"
+            label="Go back"
+            onPress={() => router.back()}
+          />
         </Box>
-      </Screen>
+      </Box>
     );
   }
 
@@ -249,7 +247,7 @@ export default function MapViewScreen() {
   };
 
   return (
-    <Screen>
+    <Screen edges={[]}>
       <Box flex={1} backgroundColor="gray50">
         <View style={styles.mapContainer}>
           <MapView

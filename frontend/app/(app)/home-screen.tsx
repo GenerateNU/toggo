@@ -2,11 +2,13 @@ import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUn
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
 import { useGetAllTrips } from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
+import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
+import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
+import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
   HOME_NULL_DATE_DISPLAY,
   HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
-import { HomeHeader } from "@/app/(app)/components/home/home-header";
 import { HomeUpcomingEmptyCard } from "@/app/(app)/components/home/home-upcoming-empty-card";
 import { PastTripCompactCard } from "@/app/(app)/components/home/past-trip-compact-card";
 import { RecommendedTripsRow } from "@/app/(app)/components/home/recommended-trips-row";
@@ -31,10 +33,8 @@ import {
   Text,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { Layout } from "@/design-system/tokens/layout";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
-import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
-import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
-import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { useCreateTrip } from "@/index";
 import type { ModelsActivity } from "@/types/types.gen";
 import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
@@ -149,7 +149,10 @@ export default function HomeScreen() {
   const topSectionGradientColors: [string, string] = hasAnyUnreadUpdates
     ? [ColorPalette.white, ColorPalette.blue50]
     : [ColorPalette.white, ColorPalette.brand100];
-  const upcomingCardWidth = Math.max(280, viewportWidth - 72);
+  const upcomingCardWidth = Math.max(
+    280,
+    viewportWidth - Layout.spacing.sm * 2,
+  );
   const upcomingCardGap = 12;
 
   useEffect(() => {
@@ -300,19 +303,7 @@ export default function HomeScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box
-                  paddingTop="sm"
-                  paddingHorizontal="sm"
-                  paddingBottom="lg"
-                  gap="sm"
-                >
-                  <HomeHeader
-                    profilePhotoUri={profile.profilePhotoUri}
-                    seed={profile.seed}
-                    profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings")}
-                    onPressCreateTrip={handleCreateTrip}
-                  />
+                <Box paddingTop="sm" paddingHorizontal="sm" gap="sm">
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -327,39 +318,46 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm">
-                    <Text variant="headingMd" color="gray900">
-                      Upcoming Trips
-                    </Text>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      decelerationRate="fast"
-                      snapToAlignment="start"
-                      snapToInterval={upcomingCardWidth + upcomingCardGap}
-                      contentContainerStyle={{ paddingRight: upcomingCardGap }}
-                    >
-                      <Box flexDirection="row" gap="sm">
-                        {upcoming.map((trip) => {
-                          const id = trip.id;
-                          if (!id) return null;
-                          return (
-                            <UpcomingTripHeroCard
-                              key={id}
-                              trip={trip}
-                              width={upcomingCardWidth}
-                              currentUserId={currentUser?.id}
-                              dateLabel={formatTripDateLabel(
-                                trip,
-                                HOME_NULL_DATE_DISPLAY,
-                              )}
-                            />
-                          );
-                        })}
-                      </Box>
-                    </ScrollView>
-                  </Box>
+                  <Text
+                    variant="headingMd"
+                    color="gray900"
+                    paddingBottom="sm"
+                    paddingTop="xl"
+                  >
+                    Upcoming Trips
+                  </Text>
                 </Box>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  decelerationRate="fast"
+                  snapToAlignment="start"
+                  snapToInterval={upcomingCardWidth + upcomingCardGap}
+                  contentContainerStyle={{
+                    paddingLeft: Layout.spacing.sm,
+                    paddingRight: Layout.spacing.sm,
+                  }}
+                  style={{ paddingBottom: Layout.spacing.lg }}
+                >
+                  <Box flexDirection="row" gap="sm">
+                    {upcoming.map((trip) => {
+                      const id = trip.id;
+                      if (!id) return null;
+                      return (
+                        <UpcomingTripHeroCard
+                          key={id}
+                          trip={trip}
+                          width={upcomingCardWidth}
+                          currentUserId={currentUser?.id}
+                          dateLabel={formatTripDateLabel(
+                            trip,
+                            HOME_NULL_DATE_DISPLAY,
+                          )}
+                        />
+                      );
+                    })}
+                  </Box>
+                </ScrollView>
               </LinearGradient>
             ) : (
               <LinearGradient
@@ -373,13 +371,6 @@ export default function HomeScreen() {
                   paddingBottom="lg"
                   gap="sm"
                 >
-                  <HomeHeader
-                    profilePhotoUri={profile.profilePhotoUri}
-                    seed={profile.seed}
-                    profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings")}
-                    onPressCreateTrip={handleCreateTrip}
-                  />
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -394,7 +385,7 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm">
+                  <Box gap="sm" paddingTop="xl">
                     <Text variant="headingMd" color="gray900">
                       Welcome back, {profile.greetingName}
                     </Text>
@@ -408,40 +399,44 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" paddingHorizontal="sm">
-            <Text variant="headingMd" color="gray900">
-              Past Trips
-            </Text>
-            {past.length === 0 ? (
-              <Text variant="bodySmDefault" color="gray500">
-                No past trips yet.
-              </Text>
-            ) : (
-              <Box gap="sm">
-                {past.map((trip) => {
-                  const id = trip.id;
-                  if (!id) return null;
-                  return (
-                    <PastTripCompactCard
-                      key={id}
-                      trip={trip}
-                      currentUserId={currentUser?.id}
-                      dateLabel={formatTripDateLabel(
-                        trip,
-                        HOME_NULL_DATE_DISPLAY,
-                      )}
-                    />
-                  );
-                })}
-              </Box>
-            )}
+          <Box gap="sm">
+            <Box paddingHorizontal="sm" paddingVertical="xs">
+              <Text variant="headingMd">Past Trips</Text>
+            </Box>
+            <Box paddingHorizontal="sm" gap="sm">
+              {past.length === 0 ? (
+                <Text variant="bodySmDefault" color="gray500">
+                  No past trips yet.
+                </Text>
+              ) : (
+                <Box gap="sm">
+                  {past.map((trip) => {
+                    const id = trip.id;
+                    if (!id) return null;
+                    return (
+                      <PastTripCompactCard
+                        key={id}
+                        trip={trip}
+                        currentUserId={currentUser?.id}
+                        dateLabel={formatTripDateLabel(
+                          trip,
+                          HOME_NULL_DATE_DISPLAY,
+                        )}
+                      />
+                    );
+                  })}
+                </Box>
+              )}
+            </Box>
           </Box>
 
-          <Box gap="sm" paddingHorizontal="md">
-            <Text variant="headingMd" color="gray900">
-              Recommended Trips
-            </Text>
-            <RecommendedTripsRow />
+          <Box gap="sm">
+            <Box paddingHorizontal="sm" paddingVertical="xs">
+              <Text variant="headingMd">Recommended Trips</Text>
+            </Box>
+            <Box paddingHorizontal="sm">
+              <RecommendedTripsRow />
+            </Box>
           </Box>
 
           <Box gap="xs" paddingHorizontal="md" paddingTop="md">

@@ -418,7 +418,6 @@ export default function Trip() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Cover image background */}
       {trip?.cover_image_url ? (
         <Image
           source={{ uri: trip.cover_image_url }}
@@ -454,13 +453,11 @@ export default function Trip() {
           </Pressable>
         </Box>
 
-        {/* White content card */}
         <Box style={styles.card}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Trip header */}
             <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
               <Box
                 flexDirection="row"
@@ -498,7 +495,6 @@ export default function Trip() {
                 </Box>
               </Box>
 
-              {/* Trip meta */}
               <Box gap="xs">
                 <Pressable
                   onPress={() => dateSheetRef.current?.snapToIndex(0)}
@@ -506,7 +502,7 @@ export default function Trip() {
                   accessibilityRole="button"
                   accessibilityLabel="Set trip dates"
                 >
-                  <Box flexDirection="row" alignItems="center" gap="xxs">
+                  <Box flexDirection="row" alignItems="center" gap="xs">
                     <Calendar size={16} color={ColorPalette.gray500} />
                     <Text variant="bodySmDefault" color="gray500">
                       {tripDate ?? "Add dates"}
@@ -519,7 +515,7 @@ export default function Trip() {
                   accessibilityRole="button"
                   accessibilityLabel="Set trip location"
                 >
-                  <Box flexDirection="row" alignItems="center" gap="xxs">
+                  <Box flexDirection="row" alignItems="center" gap="xs">
                     <MapPin size={16} color={ColorPalette.gray500} />
                     <Text variant="bodySmDefault" color="gray500">
                       {locationText ?? "Add location"}
@@ -529,7 +525,6 @@ export default function Trip() {
               </Box>
             </Box>
 
-            {/* Tab bar */}
             <Box paddingTop="sm">
               <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
             </Box>

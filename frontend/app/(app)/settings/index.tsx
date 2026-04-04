@@ -1,4 +1,5 @@
 import { useDeleteUser } from "@/api";
+import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { DeleteAccountSheet } from "@/app/(app)/components/delete-account-sheet";
@@ -8,10 +9,10 @@ import { Box, Icon, ImagePicker, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { router, Stack } from "expo-router";
+import { router } from "expo-router";
 import {
+  ArrowRight,
   Bell,
-  ChevronRight,
   Languages,
   LogOut,
   Map,
@@ -62,7 +63,7 @@ function SettingsRow({
             {label}
           </Text>
         </Box>
-        <ChevronRight size={16} color={ColorPalette.gray500} />
+        <Icon icon={ArrowRight} size="sm" color="gray500" />
       </Box>
     </TouchableOpacity>
   );
@@ -84,6 +85,12 @@ const AVATAR_SIZE = 120;
 
 export default function Settings() {
   const { currentUser, logout, refreshCurrentUser } = useUser();
+  const { data: profileImageData } = useGetImage(
+    [currentUser?.profile_picture],
+    "small",
+  );
+  const profilePhotoUrl = profileImageData[0]?.url;
+
   const { mutateAsync: uploadPhoto, isPending: isUploading } =
     useUploadProfilePicture();
   const { mutateAsync: updateUser } = useUpdateUser();
@@ -119,51 +126,21 @@ export default function Settings() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
-      <Stack.Screen options={{ headerShown: false }} />
-
-      {/* Header */}
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="space-between"
-        paddingHorizontal="sm"
-        paddingVertical="xs"
-      >
-        <TouchableOpacity
-          onPress={router.back}
-          style={styles.headerButton}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Icon
-            icon={ChevronRight}
-            size="sm"
-            color="gray950"
-            style={{ transform: [{ rotate: "180deg" }] }}
-          />
-        </TouchableOpacity>
-
-        <Text variant="bodyMedium" color="gray950">
-          Settings
-        </Text>
-
-        <View style={styles.headerButton} />
-      </Box>
-
+    <SafeAreaView style={styles.safeArea} edges={[]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Profile section */}
-        <Box alignItems="center" gap="sm" paddingVertical="md">
+        <Box alignItems="center" gap="sm">
           <View style={styles.avatarContainer}>
             <ImagePicker
               variant="circular"
               size={AVATAR_SIZE}
-              value={currentUser?.profile_picture ?? undefined}
+              value={profilePhotoUrl ?? undefined}
               onChange={handlePhotoChange}
               disabled={isUploading}
+              title="Edit profile picture"
+              subtitle="Customize your profile picture with images"
             />
             <View style={styles.editBadge} pointerEvents="none">
               <PenLine size={12} color={ColorPalette.gray950} />
@@ -185,7 +162,6 @@ export default function Settings() {
           </Box>
         </Box>
 
-        {/* General section */}
         <Box paddingHorizontal="sm" paddingTop="sm" gap="xs">
           <SectionHeader title="General" />
           <Box gap="xs">
@@ -258,6 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
   },
   scrollContent: {
+    paddingTop: Layout.spacing.md,
     paddingBottom: Layout.spacing.xxl,
   },
   avatarContainer: {

@@ -20,8 +20,8 @@ export function LogoutSheet({
   };
 
   return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={["35%"]} onClose={onDismiss}>
-      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="lg">
+    <BottomSheet ref={bottomSheetRef} snapPoints={["40%"]} onClose={onDismiss}>
+      <Box paddingHorizontal="sm" paddingBottom="lg" gap="lg">
         <Box flexDirection="row" justifyContent="flex-end">
           <TouchableOpacity
             onPress={handleNevermind}

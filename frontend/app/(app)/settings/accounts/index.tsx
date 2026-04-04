@@ -1,11 +1,9 @@
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
-import { Box, Text, TextField } from "@/design-system";
+import { BackButton, Box, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { router, Stack } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -112,18 +110,7 @@ export default function AccountScreen() {
           paddingHorizontal="sm"
           paddingVertical="xs"
         >
-          <TouchableOpacity
-            onPress={isEditing ? handleCancel : router.back}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel={isEditing ? "Cancel" : "Go back"}
-          >
-            <ChevronRight
-              size={20}
-              color={ColorPalette.gray950}
-              style={{ transform: [{ rotate: "180deg" }] }}
-            />
-          </TouchableOpacity>
+          <BackButton onPress={isEditing ? handleCancel : router.back} />
 
           <Text variant="bodyMedium" color="gray950">
             Account
@@ -211,19 +198,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: ColorPalette.white,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: CornerRadius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: ColorPalette.white,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 4,
   },
   actionButton: {
     width: 60,
