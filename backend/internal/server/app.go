@@ -27,7 +27,6 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 
 	middlewares.SetUpMiddlewares(app, config)
 
-	// Register WebSocket route before other routes
 	if wsHandler != nil {
 		app.Use("/ws", wsHandler.Middleware())
 		app.Get("/ws", wsHandler.Handler())

@@ -21,6 +21,7 @@ type CategoryRepository interface {
 	EnsureCategoriesExist(ctx context.Context, tripID uuid.UUID, names []string) error
 	SetHidden(ctx context.Context, tripID uuid.UUID, name string, isHidden bool) error
 	Delete(ctx context.Context, tripID uuid.UUID, name string) error
+	UpdateOrder(ctx context.Context, tripID uuid.UUID, tabs []models.CategoryTabOrder) error
 	UpsertBatchTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error
 }
 
@@ -60,6 +61,8 @@ func (r *categoryRepository) Find(ctx context.Context, tripID uuid.UUID, name st
 	return category, nil
 }
 
+// FindByTripID retrieves categories for a trip ordered by position.
+// Pass includeHidden=true to also return hidden categories (admin use).
 func (r *categoryRepository) FindByTripID(ctx context.Context, tripID uuid.UUID, includeHidden bool) ([]*models.Category, error) {
 	var categories []*models.Category
 	q := r.db.NewSelect().
@@ -178,4 +181,42 @@ func (r *categoryRepository) Delete(ctx context.Context, tripID uuid.UUID, name 
 		Where("trip_id = ? AND name = ?", tripID, name).
 		Exec(ctx)
 	return err
+}
+
+// UpdateOrder updates the position of multiple categories in a single transaction.
+// Uses a two-phase update to avoid unique constraint violations during reordering.
+func (r *categoryRepository) UpdateOrder(ctx context.Context, tripID uuid.UUID, tabs []models.CategoryTabOrder) error {
+	return r.db.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+		// Phase 1: set positions to a temporary large offset to avoid conflicts
+		for _, t := range tabs {
+			_, err := tx.NewUpdate().
+				Model((*models.Category)(nil)).
+				Set("position = ?", t.Position+1000000).
+				Where("trip_id = ? AND name = ?", tripID, t.Name).
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Phase 2: set the real positions
+		for _, t := range tabs {
+			result, err := tx.NewUpdate().
+				Model((*models.Category)(nil)).
+				Set("position = ?", t.Position).
+				Where("trip_id = ? AND name = ?", tripID, t.Name).
+				Exec(ctx)
+			if err != nil {
+				return err
+			}
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				return err
+			}
+			if rowsAffected == 0 {
+				return errs.ErrNotFound
+			}
+		}
+		return nil
+	})
 }
