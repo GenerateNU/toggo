@@ -51,28 +51,31 @@ export function AudioPlayerSheet({
     setPrevVisible(visible);
   }
 
-  const createSound = useCallback(async (shouldPlay: boolean) => {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-    });
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: audioUrl },
-      { shouldPlay, progressUpdateIntervalMillis: 80 },
-      (status: AVPlaybackStatus) => {
-        if (!status.isLoaded) return;
-        setPlayPosition(status.positionMillis ?? 0);
-        if (status.durationMillis) setDuration(status.durationMillis);
-        if (status.didJustFinish) {
-          setIsPlaying(false);
-          setPlayPosition(0);
-          soundRef.current?.unloadAsync();
-          soundRef.current = null;
-        }
-      },
-    );
-    soundRef.current = sound;
-  }, [audioUrl]);
+  const createSound = useCallback(
+    async (shouldPlay: boolean) => {
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+      });
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: audioUrl },
+        { shouldPlay, progressUpdateIntervalMillis: 80 },
+        (status: AVPlaybackStatus) => {
+          if (!status.isLoaded) return;
+          setPlayPosition(status.positionMillis ?? 0);
+          if (status.durationMillis) setDuration(status.durationMillis);
+          if (status.didJustFinish) {
+            setIsPlaying(false);
+            setPlayPosition(0);
+            soundRef.current?.unloadAsync();
+            soundRef.current = null;
+          }
+        },
+      );
+      soundRef.current = sound;
+    },
+    [audioUrl],
+  );
 
   const preload = useCallback(async () => {
     if (soundRef.current) return;
