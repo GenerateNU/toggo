@@ -1,8 +1,14 @@
 import { Avatar } from "@/design-system/components/avatars/avatar";
+import { AvatarStack } from "@/design-system/components/avatars/avatar-stack";
 import { Button } from "@/design-system/components/buttons/button";
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
+import Dialog from "@/design-system/components/dialog/dialog";
+import { ImagePicker } from "@/design-system/components/image-picker/image-picker";
 import TextField from "@/design-system/components/inputs/text-field";
+import { BackButton } from "@/design-system/components/navigation/arrow";
+import EmptyState from "@/design-system/components/status/empty";
+import ErrorState from "@/design-system/components/status/error";
 import { AnimatedBox } from "@/design-system/primitives/animated-box";
 import { Box } from "@/design-system/primitives/box";
 import DateRangePicker, {
@@ -33,6 +39,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Logo } from "../brand/logo";
 import CheckboxGroup, { Checkbox } from "../buttons/checkbox";
 import RadioGroup from "../buttons/radio";
 import Toggle from "../buttons/toggle";
@@ -50,8 +57,13 @@ function Section({
 }) {
   return (
     <Box width="100%" gap="sm">
-      <Text variant="headingMd">{title}</Text>
-      <Box width="100%" borderRadius="md" gap="sm">
+      <Box gap="xs">
+        <Text variant="headingMd" color="gray900">
+          {title}
+        </Text>
+        <Divider />
+      </Box>
+      <Box width="100%" gap="sm">
         {children}
       </Box>
     </Box>
@@ -124,26 +136,22 @@ function TransitionRow({ tokenKey }: { tokenKey: TransitionKey }) {
 export default function UIKit() {
   const toast = useToast();
 
-  // ─── Progress Bar Group ────────────────────────────────────────────────
+  // Progress Bar
   const [currentPercent, setCurrentPercent] = useState(0);
   useEffect(() => {
     const timeout = setTimeout(() => {
-      setCurrentPercent(65); // Set to a valid percent value, e.g., 65
+      setCurrentPercent(65);
     }, 400);
     return () => clearTimeout(timeout);
   }, []);
 
-  // ─── Datepicker Group ────────────────────────────────────────────────
+  // Datepicker
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedRange, setSelectedRange] = useState<DateRange>({
     start: null,
     end: null,
   });
-
-  const handleSave = (range: DateRange) => {
-    setSelectedRange(range);
-  };
-
+  const handleSave = (range: DateRange) => setSelectedRange(range);
   const formatDate = (d: Date | null) =>
     d
       ? d.toLocaleDateString("en-US", {
@@ -153,42 +161,44 @@ export default function UIKit() {
         })
       : "—";
 
-  // ─── Radio Group ────────────────────────────────────────────────
+  // Radio/Checkbox/Toggle
   const [driver, setDriver] = useState<string | null>(null);
-
-  // ─── Checkbox Group ────────────────────────────────────────────────
   const [activities, setActivities] = useState<string[]>([]);
-
-  // ─── Single Checkbox ───────────────────────────────────────────────
   const [agreed, setAgreed] = useState(false);
-
-  // ─── Toggles ───────────────────────────────────────────────────────
   const [textBlasts, setTextBlasts] = useState(true);
   const [votingReminders, setVotingReminders] = useState(false);
   const [finalized, setFinalized] = useState(true);
 
-  // ─── Text Fields ───────────────────────────────────────────────────
-  const [phone, setPhone] = useState("");
-  const [phoneError, setPhoneError] = useState("");
+  // Text Inputs
+  const [defaultValue, setDefaultValue] = useState("");
+  const [leadingValue, setLeadingValue] = useState("");
+  const [errorValue, setErrorValue] = useState("");
 
-  const validatePhone = (text: string) => {
-    const digits = text.replace(/\D/g, "");
-    setPhone(text);
+  // Image Picker
+  const [image, setImage] = useState<string | null>(null);
+
+  // Phone input
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string | undefined>(undefined);
+  const validatePhone = (value: string) => {
+    setPhone(value);
     setPhoneError(
-      digits.length > 0 && digits.length !== 10
-        ? "Phone number must be 10 digits"
-        : "",
+      value.length > 0 && value.replace(/\D/g, "").length < 10
+        ? "Enter a valid phone number"
+        : undefined,
     );
   };
 
-  // ─── Comments ──────────────────────────────────────────────────────
+  // Dialog
+  const [dialogVisible, setDialogVisible] = useState(false);
+
+  // Comments (not shown in demo)
   const [commentsVisible, setCommentsVisible] = useState(false);
   const [comments, setComments] = useState<CommentData[]>(Comments);
-
-  const handleSubmitComment = useCallback(async (comment: CommentData) => {
-    setComments((prev) => [...prev, comment]);
-  }, []);
-
+  const handleSubmitComment = useCallback(
+    async (comment: CommentData) => setComments((prev) => [...prev, comment]),
+    [],
+  );
   const handleReact = useCallback((commentId: string, emoji: string) => {
     setComments((prev) =>
       prev.map((c) => {
@@ -221,12 +231,11 @@ export default function UIKit() {
   }, []);
 
   return (
-    <Box gap="lg">
-      <Box gap="xs">
+    <Box gap="xl">
+      <Box gap="xs" paddingBottom="sm">
         <Text variant="headingXl">Design System</Text>
         <Text variant="bodySmDefault" color="gray500">
-          Basic building blocks and tokens for consistent design across the app.
-          Subjected to change.
+          Building blocks and tokens for consistent design across the app.
         </Text>
       </Box>
 
@@ -278,6 +287,13 @@ export default function UIKit() {
               borderColor="gray300"
               style={{ backgroundColor: ColorPalette[key] }}
             />
+            <Text
+              variant="bodyXsDefault"
+              color="gray700"
+              style={{ marginLeft: 8 }}
+            >
+              {ColorPalette[key]}
+            </Text>
           </Row>
         ))}
       </Section>
@@ -285,11 +301,154 @@ export default function UIKit() {
       <Section title="Typography">
         {(Object.keys(Typography) as TypographyVariant[])
           .filter((k) => k !== "defaults")
-          .map((key) => (
-            <Row key={key} label={key}>
-              <Text style={Typography[key]}>Aa</Text>
-            </Row>
-          ))}
+          .map((key) => {
+            const style = Typography[key];
+            return (
+              <Row key={key} label={key}>
+                <Box>
+                  <Text style={style}>Aa</Text>
+                  <Text variant="bodyXsDefault" color="gray600">
+                    {`fontFamily: ${style.fontFamily}, fontSize: ${style.fontSize}px, lineHeight: ${style.lineHeight}px, letterSpacing: ${style.letterSpacing}`}
+                  </Text>
+                </Box>
+              </Row>
+            );
+          })}
+      </Section>
+      <Section title="Text Input">
+        <TextField
+          label="Default"
+          placeholder="Type here..."
+          value={defaultValue}
+          onChangeText={setDefaultValue}
+        />
+        <TextField
+          label="With Icon"
+          placeholder="Email address"
+          leftIcon={<Mail />}
+          value={leadingValue}
+          onChangeText={setLeadingValue}
+        />
+        <TextField
+          label="Phone Number"
+          placeholder="(000) 000-0000"
+          value={phone}
+          onChangeText={validatePhone}
+          error={phoneError}
+          keyboardType="phone-pad"
+          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
+        />
+        <TextField
+          label="Error State"
+          placeholder="Error"
+          error="This is an error"
+          value={errorValue}
+          onChangeText={setErrorValue}
+        />
+        <TextField
+          label="Disabled"
+          placeholder="Can't type"
+          value=""
+          onChangeText={() => {}}
+          disabled
+        />
+      </Section>
+
+      <Section title="Avatar Stack">
+        <AvatarStack
+          members={[
+            {
+              userId: "1",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=1",
+              username: "Amogh",
+            },
+            {
+              userId: "2",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=2",
+              username: "Afnan",
+            },
+            {
+              userId: "3",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=3",
+              username: "Olivia",
+            },
+            {
+              userId: "4",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=4",
+              username: "Mai",
+            },
+          ]}
+        />
+        <AvatarStack
+          maxVisible={5}
+          members={[
+            {
+              userId: "1",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=1",
+              username: "Amogh",
+            },
+            {
+              userId: "2",
+              profilePhotoUrl: "https://i.pravatar.cc/150?img=2",
+              username: "Afnan",
+            },
+          ]}
+        />
+      </Section>
+      <Section title="Image Picker">
+        <ImagePicker value={image ?? undefined} onChange={setImage} />
+      </Section>
+
+      <Section title="Status States">
+        <Box flexDirection="column" gap="md">
+          <EmptyState title="No Data" description="Nothing to show here yet." />
+          <ErrorState title="Error!" description="Something went wrong." />
+        </Box>
+      </Section>
+
+      <Section title="Comments">
+        <Button
+          layout="textOnly"
+          label="Open Comments"
+          variant="Secondary"
+          onPress={() => setCommentsVisible(true)}
+        />
+        <CommentSection
+          visible={commentsVisible}
+          onClose={() => setCommentsVisible(false)}
+          comments={comments}
+          currentUserId="demo-user"
+          currentUserName="Demo User"
+          onSubmitComment={handleSubmitComment}
+          onReact={handleReact}
+        />
+      </Section>
+
+      <Section title="Divider">
+        <Divider />
+        <Divider color="#000" width={2} />
+        <Box flexDirection="row" height={48} alignItems="stretch">
+          <Divider orientation="vertical" />
+        </Box>
+      </Section>
+
+      <Section title="Logo">
+        <Box>
+          <Logo size="xl" />
+          <Logo size="xxl" />
+          <Logo size="xxxl" />
+        </Box>
+      </Section>
+
+      <Section title="Navigation">
+        <Box flexDirection="row" gap="md" alignItems="center">
+          <BackButton />
+          <Text variant="bodyDefault">Default</Text>
+        </Box>
+        <Box flexDirection="row" gap="md" alignItems="center">
+          <BackButton hasBackground />
+          <Text variant="bodyDefault">With background</Text>
+        </Box>
       </Section>
 
       <Section title="Elevation">
@@ -536,27 +695,6 @@ export default function UIKit() {
         </View>
       </Section>
 
-      <Section title="Text Field">
-        <TextField
-          label="Phone Number"
-          placeholder="(000) 000-0000"
-          value={phone}
-          onChangeText={validatePhone}
-          error={phoneError}
-          keyboardType="phone-pad"
-          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
-        />
-
-        <TextField
-          label="Phone Number"
-          placeholder="(000) 000-0000"
-          value=""
-          onChangeText={() => {}}
-          disabled
-          leftIcon={<Phone size={18} color={ColorPalette.gray500} />}
-        />
-      </Section>
-
       <Section title="Toast">
         <View style={{ flexDirection: "row", gap: 12 }}>
           <Pressable
@@ -633,28 +771,25 @@ export default function UIKit() {
         />
       </Section>
 
-      <Section title="Dividers">
-        <Divider width={1} />
-        <Text>some content</Text>
-        <Divider color={ColorPalette.brand500} width={3} />
-      </Section>
-
-      <Section title="Comments & Reactions">
+      <Section title="Dialog">
         <Button
           layout="textOnly"
-          label="Open Comments"
-          variant="Secondary"
-          onPress={() => setCommentsVisible(true)}
+          label="Show Dialog"
+          onPress={() => setDialogVisible(true)}
         />
-        <CommentSection
-          visible={commentsVisible}
-          onClose={() => setCommentsVisible(false)}
-          comments={comments}
-          currentUserId="bart"
-          currentUserName="Bart"
-          currentUserSeed="bart"
-          onSubmitComment={handleSubmitComment}
-          onReact={handleReact}
+        <Dialog
+          visible={dialogVisible}
+          onClose={() => setDialogVisible(false)}
+          title="Dialog Title"
+          message="This is a dialog message."
+          actions={[
+            { label: "Cancel", onPress: () => setDialogVisible(false) },
+            {
+              label: "Confirm",
+              onPress: () => setDialogVisible(false),
+              style: "navigate",
+            },
+          ]}
         />
       </Section>
     </Box>

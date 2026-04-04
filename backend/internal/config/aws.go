@@ -13,22 +13,24 @@ import (
 )
 
 type AWSConfig struct {
-	AccessKeyID     string `validate:"required"`
-	SecretAccessKey string `validate:"required"`
-	Region          string `validate:"required"`
-	BucketName      string `validate:"required"`
-	S3Endpoint      string // optional (for LocalStack)
-	S3Client        *s3.Client
-	PresignClient   *s3.PresignClient
+	AccessKeyID       string `validate:"required"`
+	SecretAccessKey   string `validate:"required"`
+	Region            string `validate:"required"`
+	BucketName        string `validate:"required"`
+	S3Endpoint        string // optional, overrides S3 endpoint (e.g. LocalStack internal URL)
+	S3PresignEndpoint string // optional, overrides endpoint used in presigned URLs (e.g. host IP reachable by mobile app)
+	S3Client          *s3.Client
+	PresignClient     *s3.PresignClient
 }
 
 func LoadAWSConfig() (*AWSConfig, error) {
 	cfg := &AWSConfig{
-		AccessKeyID:     os.Getenv("AWS_ACCESS_KEY_ID"),
-		SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		Region:          os.Getenv("AWS_REGION"),
-		BucketName:      os.Getenv("S3_BUCKET_NAME"),
-		S3Endpoint:      os.Getenv("S3_ENDPOINT"),
+		AccessKeyID:       os.Getenv("AWS_ACCESS_KEY_ID"),
+		SecretAccessKey:   os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		Region:            os.Getenv("AWS_REGION"),
+		BucketName:        os.Getenv("S3_BUCKET_NAME"),
+		S3Endpoint:        os.Getenv("S3_ENDPOINT"),
+		S3PresignEndpoint: os.Getenv("S3_PRESIGN_ENDPOINT"),
 	}
 
 	if cfg.Region == "" {
@@ -57,7 +59,18 @@ func LoadAWSConfig() (*AWSConfig, error) {
 			o.UsePathStyle = true
 		}
 	})
-	cfg.PresignClient = s3.NewPresignClient(cfg.S3Client)
+
+	presignEndpoint := cfg.S3PresignEndpoint
+	if presignEndpoint == "" {
+		presignEndpoint = cfg.S3Endpoint
+	}
+	presignS3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		if presignEndpoint != "" {
+			o.BaseEndpoint = aws.String(presignEndpoint)
+			o.UsePathStyle = true
+		}
+	})
+	cfg.PresignClient = s3.NewPresignClient(presignS3Client)
 
 	return cfg, nil
 }

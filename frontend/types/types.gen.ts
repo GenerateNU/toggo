@@ -584,6 +584,21 @@ export type ModelsCommentReactionsSummaryResponse = {
   reactions?: ModelsCommentReactionSummary[];
 };
 
+export type ModelsCommenterPreview = {
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
 export const modelsImageSize = {
   ImageSizeLarge: "large",
   ImageSizeMedium: "medium",
@@ -820,11 +835,58 @@ export type ModelsPitchImageInfo = {
   medium_url?: string;
 };
 
+export type ModelsPitchLink = {
+  /**
+   * @type string | undefined
+   */
+  added_by?: string;
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  description?: string;
+  /**
+   * @type string | undefined
+   */
+  domain?: string;
+  /**
+   * @type string | undefined
+   */
+  id?: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_id?: string;
+  /**
+   * @type string | undefined
+   */
+  thumbnail_url?: string;
+  /**
+   * @type string | undefined
+   */
+  title?: string;
+  /**
+   * @type string | undefined
+   */
+  url?: string;
+};
+
 export type ModelsPitchAPIResponse = {
   /**
    * @type string | undefined
    */
   audio_url?: string;
+  /**
+   * @type integer | undefined
+   */
+  comment_count?: number;
+  /**
+   * @type array | undefined
+   */
+  comment_previews?: ModelsCommenterPreview[];
   /**
    * @type string | undefined
    */
@@ -846,6 +908,14 @@ export type ModelsPitchAPIResponse = {
    */
   images?: ModelsPitchImageInfo[];
   /**
+   * @type array | undefined
+   */
+  links?: ModelsPitchLink[];
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
    * @type string | undefined
    */
   title?: string;
@@ -861,6 +931,10 @@ export type ModelsPitchAPIResponse = {
    * @type string | undefined
    */
   user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
 };
 
 export type ModelsCreatePitchResponse = {
@@ -1318,6 +1392,12 @@ export type ModelsOptionWithScore = {
    * @type string | undefined
    */
   option_type?: ModelsOptionType;
+  /**
+   * @type object | undefined
+   */
+  rank_breakdown?: {
+    [key: string]: number;
+  };
   /**
    * @type integer | undefined
    */
@@ -1912,6 +1992,14 @@ export type ModelsTripAPIResponse = {
    */
   name?: string;
   /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  rank_poll_id?: string;
+  /**
    * @type string | undefined, date-time
    */
   start_date?: string;
@@ -2037,10 +2125,6 @@ export type ModelsTrip = {
    */
   currency?: string;
   /**
-   * @type string | undefined, date-time
-   */
-  end_date?: string;
-  /**
    * @type string | undefined
    */
   id?: string;
@@ -2049,9 +2133,13 @@ export type ModelsTrip = {
    */
   name?: string;
   /**
-   * @type string | undefined, date-time
+   * @type string | undefined
    */
-  start_date?: string;
+  pitch_deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  rank_poll_id?: string;
   /**
    * @type string | undefined
    */
@@ -2252,12 +2340,10 @@ export type ModelsUpdatePollWithCategoriesRequest = {
 
 export type ModelsUpdateTripRequest = {
   /**
-   * @minLength 0
    * @type integer | undefined
    */
   budget_max?: number;
   /**
-   * @minLength 0
    * @type integer | undefined
    */
   budget_min?: number;
@@ -2268,20 +2354,35 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
+  created_at?: string;
+  /**
+   * @type string | undefined
+   */
   currency?: string;
   /**
    * @type string | undefined, date-time
    */
   end_date?: string;
   /**
-   * @minLength 1
+   * @type string | undefined
+   */
+  id?: string;
+  /**
    * @type string | undefined
    */
   name?: string;
   /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
+  /**
    * @type string | undefined, date-time
    */
   start_date?: string;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
 };
 
 export type ModelsUpdateUserNotificationPreferencesRequest = {

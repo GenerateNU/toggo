@@ -9,6 +9,8 @@
     "end_date": { "type": "string", "format": "date-time" },
     "id": { "type": "string" },
     "name": { "type": "string" },
+    "pitch_deadline": { "type": "string" },
+    "rank_poll_id": { "type": "string" },
     "start_date": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string" }
   },

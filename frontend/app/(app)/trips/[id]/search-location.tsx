@@ -6,12 +6,13 @@ import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import {
   Camera,
   MapView,
   PointAnnotation,
 } from "@maplibre/maplibre-react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
@@ -49,6 +50,9 @@ const DEFAULT_ZOOM = 11;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SearchLocationScreen() {
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const isSelectMode = mode === "select";
+
   const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [selectedLocation, setSelectedLocation] =
@@ -58,6 +62,13 @@ export default function SearchLocationScreen() {
   const [isSelectingPlace, setIsSelectingPlace] = useState(false);
 
   const debouncedQuery = useDebouncedValue(query, 300);
+
+  useEffect(() => {
+    if (!isSelectMode) return;
+    return () => {
+      locationSelectStore.cancel();
+    };
+  }, [isSelectMode]);
 
   useEffect(() => {
     if (isSelectingPlace) return;
@@ -79,6 +90,12 @@ export default function SearchLocationScreen() {
   };
 
   const handleSelectPrediction = async (prediction: Prediction) => {
+    if (isSelectMode) {
+      locationSelectStore.resolve(prediction);
+      router.back();
+      return;
+    }
+
     setIsSelectingPlace(true);
     setIsLoadingDetails(true);
     setQuery(prediction.description);
@@ -88,8 +105,7 @@ export default function SearchLocationScreen() {
         place_id: prediction.place_id,
       });
       setSelectedLocation(res.data);
-    } catch (error) {
-      console.error("Failed to fetch place details:", error);
+    } catch {
       setIsSelectingPlace(false);
     } finally {
       setIsLoadingDetails(false);

@@ -1,8 +1,9 @@
-import BottomSheetComponent from "../components/bottom-sheet/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomSheetComponent from "../components/bottom-sheet/bottom-sheet";
 import { Box } from "../primitives/box";
 import { Text } from "../primitives/text";
 import { ColorPalette } from "../tokens/color";
@@ -47,6 +48,7 @@ export default function TimePicker({
   onSave,
   initialTime = { hour: 12, minute: 0, period: "AM" },
 }: TimePickerProps) {
+  const { bottom } = useSafeAreaInsets();
   const [date, setDate] = useState(() => timeValueToDate(initialTime));
   const [prevVisible, setPrevVisible] = useState(visible);
   const sheetRef = useRef<BottomSheetMethods>(null);
@@ -76,10 +78,15 @@ export default function TimePicker({
       onClose={onClose}
       disableClose
       footer={
-        <Box style={styles.footer}>
+        <Box
+          style={[
+            styles.footer,
+            { paddingBottom: Math.max(bottom, Layout.spacing.md) },
+          ]}
+        >
           <Box flexDirection="row" style={styles.footerButtons}>
             <Pressable style={styles.cancelButton} onPress={onClose}>
-              <Text variant="bodyMedium" color="white">
+              <Text variant="bodyMedium" color="black">
                 Cancel
               </Text>
             </Pressable>
@@ -127,7 +134,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Layout.spacing.sm,
     paddingTop: Layout.spacing.xs,
-    paddingBottom: Layout.spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ColorPalette.gray300,
     backgroundColor: ColorPalette.white,

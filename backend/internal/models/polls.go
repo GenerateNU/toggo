@@ -187,14 +187,15 @@ type RankPollResultsResponse struct {
 
 // OptionWithScore contains an option with its Borda count score and ranking statistics.
 type OptionWithScore struct {
-	OptionID    uuid.UUID  `json:"option_id"`
-	Name        string     `json:"name"`
-	OptionType  OptionType `json:"option_type"`
-	EntityType  *string    `json:"entity_type,omitempty"`
-	EntityID    *uuid.UUID `json:"entity_id,omitempty"`
-	BordaScore  int        `json:"borda_score"`
-	AverageRank float64    `json:"average_rank"`
-	VoteCount   int        `json:"vote_count"`
+	OptionID      uuid.UUID   `json:"option_id"`
+	Name          string      `json:"name"`
+	OptionType    OptionType  `json:"option_type"`
+	EntityType    *string     `json:"entity_type,omitempty"`
+	EntityID      *uuid.UUID  `json:"entity_id,omitempty"`
+	BordaScore    int         `json:"borda_score"`
+	AverageRank   float64     `json:"average_rank"`
+	VoteCount     int         `json:"vote_count"`
+	RankBreakdown map[int]int `json:"rank_breakdown"`
 }
 
 // UserRankingItem represents a single option in the user's personal ranking.

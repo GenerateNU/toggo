@@ -60,6 +60,7 @@ import type {
   ModelsCommentReactionUser,
   ModelsCommentReactionUsersResponse,
   ModelsCommentReactionsSummaryResponse,
+  ModelsCommenterPreview,
   ModelsImageSize,
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
@@ -71,6 +72,7 @@ import type {
   ModelsCreateNotificationPreferencesRequest,
   ModelsCreatePitchRequest,
   ModelsPitchImageInfo,
+  ModelsPitchLink,
   ModelsPitchAPIResponse,
   ModelsCreatePitchResponse,
   ModelsOptionType,
@@ -1058,6 +1060,12 @@ export const modelsCommentReactionsSummaryResponseSchema = z.object({
   },
 }) as unknown as z.ZodType<ModelsCommentReactionsSummaryResponse>;
 
+export const modelsCommenterPreviewSchema = z.object({
+  profile_picture_url: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommenterPreview>;
+
 export const modelsImageSizeSchema = z.enum([
   "large",
   "medium",
@@ -1149,8 +1157,24 @@ export const modelsPitchImageInfoSchema = z.object({
   medium_url: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPitchImageInfo>;
 
+export const modelsPitchLinkSchema = z.object({
+  added_by: z.optional(z.string()),
+  created_at: z.optional(z.string()),
+  description: z.optional(z.string()),
+  domain: z.optional(z.string()),
+  id: z.optional(z.string()),
+  pitch_id: z.optional(z.string()),
+  thumbnail_url: z.optional(z.string()),
+  title: z.optional(z.string()),
+  url: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsPitchLink>;
+
 export const modelsPitchAPIResponseSchema = z.object({
   audio_url: z.optional(z.string()),
+  comment_count: z.optional(z.int()),
+  get comment_previews() {
+    return z.array(modelsCommenterPreviewSchema).optional();
+  },
   created_at: z.optional(z.string()),
   description: z.optional(z.string()),
   duration: z.optional(z.int()),
@@ -1158,10 +1182,15 @@ export const modelsPitchAPIResponseSchema = z.object({
   get images() {
     return z.array(modelsPitchImageInfoSchema).optional();
   },
+  get links() {
+    return z.array(modelsPitchLinkSchema).optional();
+  },
+  profile_picture_url: z.optional(z.string()),
   title: z.optional(z.string()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
   user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPitchAPIResponse>;
 
 export const modelsCreatePitchResponseSchema = z.object({
@@ -1355,6 +1384,7 @@ export const modelsOptionWithScoreSchema = z.object({
   get option_type() {
     return modelsOptionTypeSchema.optional();
   },
+  rank_breakdown: z.optional(z.object({}).catchall(z.int())),
   vote_count: z.optional(z.int()),
 }) as unknown as z.ZodType<ModelsOptionWithScore>;
 
@@ -1654,6 +1684,8 @@ export const modelsTripAPIResponseSchema = z.object({
   end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
+  pitch_deadline: z.optional(z.string()),
+  rank_poll_id: z.optional(z.string()),
   start_date: z.optional(z.iso.datetime()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripAPIResponse>;
@@ -1706,10 +1738,10 @@ export const modelsTripSchema = z.object({
   cover_image_id: z.optional(z.string()),
   created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
-  end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
-  start_date: z.optional(z.iso.datetime()),
+  pitch_deadline: z.optional(z.string()),
+  rank_poll_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTrip>;
 
@@ -1798,13 +1830,17 @@ export const modelsUpdatePollWithCategoriesRequestSchema = z.object({
 }) as unknown as z.ZodType<ModelsUpdatePollWithCategoriesRequest>;
 
 export const modelsUpdateTripRequestSchema = z.object({
-  budget_max: z.optional(z.int().min(0)),
-  budget_min: z.optional(z.int().min(0)),
+  budget_max: z.optional(z.int()),
+  budget_min: z.optional(z.int()),
   cover_image_id: z.optional(z.string()),
+  created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
   end_date: z.optional(z.iso.datetime()),
-  name: z.optional(z.string().min(1)),
+  id: z.optional(z.string()),
+  name: z.optional(z.string()),
+  pitch_deadline: z.optional(z.string()),
   start_date: z.optional(z.iso.datetime()),
+  updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 
 export const modelsUpdateUserNotificationPreferencesRequestSchema = z.object({

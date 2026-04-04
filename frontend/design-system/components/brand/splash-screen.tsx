@@ -1,6 +1,7 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import { Dimensions } from "react-native";
+import { type ReactNode, useEffect, useMemo } from "react";
+import { Animated, Dimensions } from "react-native";
 import { Logo } from "./logo";
 
 const { width, height } = Dimensions.get("window");
@@ -64,6 +65,49 @@ function IMessageBubble({ text, isMe = false }: IMessageBubbleProps) {
   );
 }
 
+type AnimatedBubbleProps = {
+  delay: number;
+  fromX: number;
+  children: ReactNode;
+};
+
+function AnimatedBubble({ delay, fromX, children }: AnimatedBubbleProps) {
+  const opacity = useMemo(() => new Animated.Value(0), []);
+  const translateX = useMemo(() => new Animated.Value(fromX), [fromX]);
+  const scale = useMemo(() => new Animated.Value(0.96), []);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 220,
+        delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateX, {
+        toValue: 0,
+        delay,
+        damping: 15,
+        stiffness: 180,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        delay,
+        damping: 15,
+        stiffness: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [delay, opacity, scale, translateX]);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateX }, { scale }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
 export function SplashScreen() {
   return (
     <Box flex={1} backgroundColor="white">
@@ -71,39 +115,49 @@ export function SplashScreen() {
         position="absolute"
         style={{ top: height * 0.27, right: width * 0.1 }}
       >
-        <IMessageBubble text="Wait I'm so down" isMe />
+        <AnimatedBubble delay={0} fromX={24}>
+          <IMessageBubble text="Wait I'm so down" isMe />
+        </AnimatedBubble>
       </Box>
 
       <Box
         position="absolute"
         left={0}
         right={0}
+        top={0}
+        bottom={0}
         alignItems="center"
-        style={{ top: "40%" }}
+        justifyContent="center"
       >
-        <Text
-          variant="headingSm"
-          color="gray900"
-          textAlign="center"
-          marginBottom="sm"
-        >
-          {"group trips shouldn't\ndie in the group chat"}
-        </Text>
-        <Logo />
+        <Box alignItems="center">
+          <Text
+            variant="headingSm"
+            color="gray900"
+            textAlign="center"
+            marginBottom="sm"
+          >
+            {"group trips shouldn't\ndie in the group chat"}
+          </Text>
+          <Logo />
+        </Box>
       </Box>
 
       <Box
         position="absolute"
         style={{ bottom: height * 0.3, left: width * 0.05 }}
       >
-        <IMessageBubble text="where tho" />
+        <AnimatedBubble delay={140} fromX={-24}>
+          <IMessageBubble text="where tho" />
+        </AnimatedBubble>
       </Box>
 
       <Box
         position="absolute"
         style={{ bottom: height * 0.22, right: width * 0.05 }}
       >
-        <IMessageBubble text="is this happening" isMe />
+        <AnimatedBubble delay={260} fromX={24}>
+          <IMessageBubble text="is this happening" isMe />
+        </AnimatedBubble>
       </Box>
     </Box>
   );

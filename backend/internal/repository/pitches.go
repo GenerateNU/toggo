@@ -14,8 +14,8 @@ import (
 type PitchRepository interface {
 	Create(ctx context.Context, pitch *models.TripPitch) (*models.TripPitch, error)
 	CreateWithImages(ctx context.Context, pitch *models.TripPitch, imageIDs []uuid.UUID) (*models.TripPitch, error)
-	FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.TripPitch, error)
-	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error)
+	FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.PitchDatabaseResponse, error)
+	FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.PitchDatabaseResponse, *models.PitchCursor, error)
 	Update(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest) (*models.TripPitch, error)
 	UpdateWithImages(ctx context.Context, id, tripID uuid.UUID, req *models.UpdatePitchRequest, imageIDs []uuid.UUID) (*models.TripPitch, error)
 	Delete(ctx context.Context, id, tripID uuid.UUID) error
@@ -70,35 +70,45 @@ func (r *pitchRepository) CreateWithImages(ctx context.Context, pitch *models.Tr
 	return pitch, nil
 }
 
-// FindByIDAndTripID fetches a pitch by id and trip_id (ensures the pitch belongs to the trip).
-func (r *pitchRepository) FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.TripPitch, error) {
-	pitch := &models.TripPitch{}
+// FindByIDAndTripID fetches a pitch by id and trip_id, joined with the pitcher's username and profile picture key.
+func (r *pitchRepository) FindByIDAndTripID(ctx context.Context, id, tripID uuid.UUID) (*models.PitchDatabaseResponse, error) {
+	result := &models.PitchDatabaseResponse{}
 	err := r.db.NewSelect().
-		Model(pitch).
-		Where("id = ? AND trip_id = ?", id, tripID).
-		Scan(ctx)
+		TableExpr("trip_pitches AS tp").
+		ColumnExpr("tp.id, tp.trip_id, tp.user_id, tp.title, tp.description, tp.audio_s3_key, tp.duration, tp.created_at, tp.updated_at").
+		ColumnExpr("u.username").
+		ColumnExpr("pfp.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = tp.user_id").
+		Join("LEFT JOIN images AS pfp ON u.profile_picture IS NOT NULL AND pfp.image_id = u.profile_picture AND pfp.size = ? AND pfp.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("tp.id = ? AND tp.trip_id = ?", id, tripID).
+		Scan(ctx, result)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errs.ErrNotFound
 		}
 		return nil, err
 	}
-	return pitch, nil
+	return result, nil
 }
 
-// FindByTripIDWithCursor returns pitches for a trip with cursor-based pagination (created_at DESC, id DESC).
-func (r *pitchRepository) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.TripPitch, *models.PitchCursor, error) {
+// FindByTripIDWithCursor returns paginated pitches for a trip joined with pitcher user info (created_at DESC, id DESC).
+func (r *pitchRepository) FindByTripIDWithCursor(ctx context.Context, tripID uuid.UUID, limit int, cursor *models.PitchCursor) ([]*models.PitchDatabaseResponse, *models.PitchCursor, error) {
 	query := r.db.NewSelect().
-		Model((*models.TripPitch)(nil)).
-		Where("trip_id = ?", tripID).
-		OrderExpr("created_at DESC, id DESC").
+		TableExpr("trip_pitches AS tp").
+		ColumnExpr("tp.id, tp.trip_id, tp.user_id, tp.title, tp.description, tp.audio_s3_key, tp.duration, tp.created_at, tp.updated_at").
+		ColumnExpr("u.username").
+		ColumnExpr("pfp.file_key AS profile_picture_key").
+		Join("JOIN users AS u ON u.id = tp.user_id").
+		Join("LEFT JOIN images AS pfp ON u.profile_picture IS NOT NULL AND pfp.image_id = u.profile_picture AND pfp.size = ? AND pfp.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
+		Where("tp.trip_id = ?", tripID).
+		OrderExpr("tp.created_at DESC, tp.id DESC").
 		Limit(limit + 1)
 
 	if cursor != nil {
-		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
+		query = query.Where("(tp.created_at, tp.id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
 
-	var pitches []*models.TripPitch
+	var pitches []*models.PitchDatabaseResponse
 	if err := query.Scan(ctx, &pitches); err != nil {
 		return nil, nil, err
 	}
@@ -109,7 +119,6 @@ func (r *pitchRepository) FindByTripIDWithCursor(ctx context.Context, tripID uui
 		nextCursor = &models.PitchCursor{CreatedAt: last.CreatedAt, ID: last.ID}
 		pitches = pitches[:limit]
 	}
-
 	return pitches, nextCursor, nil
 }
 

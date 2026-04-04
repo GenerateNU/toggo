@@ -13,6 +13,7 @@ type Repository struct {
 	Membership              MembershipRepository
 	Trip                    TripRepository
 	Pitch                   PitchRepository
+	PitchLink               PitchLinkRepository
 	Activity                ActivityRepository
 	Category                CategoryRepository
 	ActivityCategory        ActivityCategoryRepository
@@ -41,13 +42,14 @@ func NewRepository(db *bun.DB) *Repository {
 		PollCategory:            NewPollCategoryRepository(db),
 		Membership:              NewMembershipRepository(db),
 		Pitch:                   NewPitchRepository(db),
+		PitchLink:               NewPitchLinkRepository(db),
 		Activity:                NewActivityRepository(db),
 		Category:                NewCategoryRepository(db),
 		ActivityCategory:        NewActivityCategoryRepository(db),
 		ActivityRSVP:            NewActivityRSVPRepository(db),
 		TripInvite:              NewTripInviteRepository(db),
 		Search:                  NewSearchRepository(db),
-		NotificationPreferences: &notificationPreferencesRepository{db: db},
+		NotificationPreferences: NewNotificationPreferencesRepository(db),
 		db:                      db,
 	}
 }

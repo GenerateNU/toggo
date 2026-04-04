@@ -23,7 +23,7 @@ const Layout = () => {
         name="index"
         options={{
           headerShown: true,
-          headerTitle: "",
+          headerTitle: "Destination",
           headerTransparent: true,
           gestureEnabled: false,
         }}
@@ -31,7 +31,7 @@ const Layout = () => {
       <Stack.Screen
         name="[id]"
         options={{
-          headerShown: true,
+          headerShown: false,
           headerTitle: "",
           headerTransparent: true,
           gestureEnabled: false,
@@ -40,7 +40,7 @@ const Layout = () => {
       <Stack.Screen
         name="creation"
         options={{
-          headerShown: true,
+          headerShown: false,
           headerTitle: "",
           headerTransparent: true,
           gestureEnabled: false,

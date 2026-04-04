@@ -1361,7 +1361,7 @@ func TestRankPollLifecycle(t *testing.T) {
 		berlinID := addResp["id"].(string)
 		optIDs = append(optIDs, berlinID)
 
-		// 3. Owner ranks: Paris(1), Berlin(2), Tokyo(3), London(4)
+		// 3. Owner ranks top 3: Paris(1), Berlin(2), Tokyo(3) — London not ranked
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -1373,13 +1373,12 @@ func TestRankPollLifecycle(t *testing.T) {
 						{OptionID: uuid.MustParse(optIDs[0]), Rank: 1}, // Paris
 						{OptionID: uuid.MustParse(berlinID), Rank: 2},  // Berlin
 						{OptionID: uuid.MustParse(optIDs[1]), Rank: 3}, // Tokyo
-						{OptionID: uuid.MustParse(optIDs[2]), Rank: 4}, // London
 					},
 				},
 			}).
 			AssertStatus(http.StatusOK)
 
-		// 4. Member ranks: Tokyo(1), Paris(2), Berlin(3), London(4)
+		// 4. Member ranks top 3: Tokyo(1), Paris(2), Berlin(3) — London not ranked
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -1391,7 +1390,6 @@ func TestRankPollLifecycle(t *testing.T) {
 						{OptionID: uuid.MustParse(optIDs[1]), Rank: 1}, // Tokyo
 						{OptionID: uuid.MustParse(optIDs[0]), Rank: 2}, // Paris
 						{OptionID: uuid.MustParse(berlinID), Rank: 3},  // Berlin
-						{OptionID: uuid.MustParse(optIDs[2]), Rank: 4}, // London
 					},
 				},
 			}).
@@ -1408,11 +1406,11 @@ func TestRankPollLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			GetBody()
 
-		// Verify Borda scores (4 options: 1st=4pts, 2nd=3pts, 3rd=2pts, 4th=1pt)
-		// Paris: 4+3 = 7pts
-		// Tokyo: 2+4 = 6pts
-		// Berlin: 3+2 = 5pts
-		// London: 1+1 = 2pts
+		// Verify Borda scores (4 options, top-3 ranking: 1st=4pts, 2nd=3pts, 3rd=2pts, not ranked=0pts)
+		// Paris:  4 (owner #1) + 3 (member #2) = 7pts
+		// Tokyo:  2 (owner #3) + 4 (member #1) = 6pts
+		// Berlin: 3 (owner #2) + 2 (member #3) = 5pts
+		// London: 0 + 0 = 0pts
 		allOptions := resp["all_options"].([]any)
 		require.Len(t, allOptions, 4)
 
@@ -1432,9 +1430,9 @@ func TestRankPollLifecycle(t *testing.T) {
 		require.Equal(t, "Berlin", thirdPlace["name"])
 		require.Equal(t, float64(5), thirdPlace["borda_score"])
 
-		// Verify user ranking shows owner's choices
+		// Verify user ranking shows owner's top-3 choices
 		userRanking := resp["user_ranking"].([]any)
-		require.Len(t, userRanking, 4)
+		require.Len(t, userRanking, 3)
 		require.Equal(t, true, resp["user_has_voted"])
 
 		// 6. Check voters

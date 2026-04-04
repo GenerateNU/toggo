@@ -7,36 +7,40 @@ import (
 )
 
 type Trip struct {
-	ID           uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
-	Name         string     `bun:"name" json:"name"`
-	CoverImageID *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
-	BudgetMin    int        `bun:"budget_min" json:"budget_min"`
-	BudgetMax    int        `bun:"budget_max" json:"budget_max"`
-	Currency     string     `bun:"currency" json:"currency"`
-	StartDate    *time.Time `bun:"start_date" json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
-	EndDate      *time.Time `bun:"end_date" json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
-	CreatedAt    time.Time  `bun:"created_at,nullzero" json:"created_at"`
-	UpdatedAt    time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
-}
-
-type CreateTripRequest struct {
-	Name         string     `validate:"required,min=1" json:"name"`
-	BudgetMin    int        `json:"budget_min" validate:"required,gte=0"`
-	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
-	BudgetMax    int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
-	Currency     string     `json:"currency" validate:"omitempty,iso4217"`
-	StartDate    *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
-	EndDate      *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	ID            uuid.UUID  `bun:"id,pk,type:uuid" json:"id"`
+	Name          string     `bun:"name" json:"name"`
+	CoverImageID  *uuid.UUID `bun:"cover_image,type:uuid" json:"cover_image_id,omitempty"`
+	BudgetMin     int        `bun:"budget_min" json:"budget_min"`
+	BudgetMax     int        `bun:"budget_max" json:"budget_max"`
+	Currency      string     `bun:"currency" json:"currency"`
+	PitchDeadline *time.Time `bun:"pitch_deadline" json:"pitch_deadline,omitempty"`
+	RankPollID    *uuid.UUID `bun:"rank_poll_id,type:uuid" json:"rank_poll_id,omitempty"`
+	StartDate     *time.Time `bun:"start_date" json:"start_date,omitempty"`
+	EndDate       *time.Time `bun:"end_date" json:"end_date,omitempty"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero" json:"created_at"`
+	UpdatedAt     time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
 
 type UpdateTripRequest struct {
-	Name         *string    `validate:"omitempty,min=1" json:"name"`
-	BudgetMin    *int       `json:"budget_min" validate:"omitempty,gte=0"`
-	CoverImageID *uuid.UUID `json:"cover_image_id,omitempty"`
-	BudgetMax    *int       `json:"budget_max" validate:"omitempty,gte=0,gtefield=BudgetMin"`
-	Currency     *string    `json:"currency" validate:"omitempty,iso4217"`
-	StartDate    *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
-	EndDate      *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	Name          *string    `json:"name,omitempty"`
+	CoverImageID  *uuid.UUID `json:"cover_image_id,omitempty"`
+	BudgetMin     *int       `json:"budget_min,omitempty"`
+	BudgetMax     *int       `json:"budget_max,omitempty"`
+	Currency      *string    `json:"currency,omitempty"`
+	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
+}
+
+type CreateTripRequest struct {
+	Name          string     `validate:"required,min=1" json:"name"`
+	BudgetMin     int        `json:"budget_min" validate:"required,gte=0"`
+	CoverImageID  *uuid.UUID `json:"cover_image_id,omitempty"`
+	BudgetMax     int        `json:"budget_max" validate:"required,gte=0,gtefield=BudgetMin"`
+	Currency      string     `json:"currency" validate:"omitempty,iso4217"`
+	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
 }
 
 // TripPageResult holds an offset-paginated list of trips and metadata.
@@ -65,6 +69,8 @@ type TripDatabaseResponse struct {
 	BudgetMin     int        `bun:"budget_min"`
 	BudgetMax     int        `bun:"budget_max"`
 	Currency      string     `bun:"currency"`
+	PitchDeadline *time.Time `bun:"pitch_deadline"`
+	RankPollID    *uuid.UUID `bun:"rank_poll_id"`
 	StartDate     *time.Time `bun:"start_date"`
 	EndDate       *time.Time `bun:"end_date"`
 	CreatedAt     time.Time  `bun:"created_at"`
@@ -78,6 +84,8 @@ type TripAPIResponse struct {
 	BudgetMin     int        `json:"budget_min"`
 	BudgetMax     int        `json:"budget_max"`
 	Currency      string     `json:"currency"`
+	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
+	RankPollID    *uuid.UUID `json:"rank_poll_id,omitempty"`
 	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
 	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 	CreatedAt     time.Time  `json:"created_at"`

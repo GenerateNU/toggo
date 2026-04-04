@@ -10,19 +10,26 @@ export function usePitchesList(tripID: string | undefined) {
   const queryClient = useQueryClient();
   const isFetchingNextRef = useRef(false);
 
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useInfiniteQuery({
-      queryKey: pitchesQueryKey(tripID ?? ""),
-      queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-        listPitches(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
-      initialPageParam: undefined as string | undefined,
-      getNextPageParam: (lastPage) =>
-        lastPage?.items?.length && lastPage.next_cursor
-          ? lastPage.next_cursor
-          : undefined,
-      refetchOnWindowFocus: false,
-      enabled: !!tripID,
-    });
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: pitchesQueryKey(tripID ?? ""),
+    queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+      listPitches(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.items?.length && lastPage.next_cursor
+        ? lastPage.next_cursor
+        : undefined,
+    refetchOnWindowFocus: false,
+    enabled: !!tripID,
+  });
 
   const pitches = useMemo(() => {
     const seen = new Set<string>();
@@ -66,6 +73,8 @@ export function usePitchesList(tripID: string | undefined) {
   return {
     pitches,
     isLoading,
+    isError,
+    refetch,
     isLoadingMore: isFetchingNextPage,
     fetchMore,
     prependPitch,

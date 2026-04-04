@@ -6258,6 +6258,20 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CommenterPreview": {
+            "type": "object",
+            "properties": {
+                "profile_picture_url": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ConfirmUploadRequest": {
             "type": "object",
             "required": [
@@ -7027,6 +7041,12 @@ const docTemplate = `{
                 "option_type": {
                     "$ref": "#/definitions/models.OptionType"
                 },
+                "rank_breakdown": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
                 "vote_count": {
                     "type": "integer"
                 }
@@ -7106,6 +7126,15 @@ const docTemplate = `{
                 "audio_url": {
                     "type": "string"
                 },
+                "comment_count": {
+                    "type": "integer"
+                },
+                "comment_previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommenterPreview"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -7124,6 +7153,15 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.PitchImageInfo"
                     }
                 },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PitchLink"
+                    }
+                },
+                "profile_picture_url": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -7134,6 +7172,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -7162,6 +7203,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "medium_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.PitchLink": {
+            "type": "object",
+            "properties": {
+                "added_by": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pitch_id": {
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -7787,19 +7860,17 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
-                "end_date": {
-                    "type": "string",
-                    "format": "date-time"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "start_date": {
-                    "type": "string",
-                    "format": "date-time"
+                "pitch_deadline": {
+                    "type": "string"
+                },
+                "rank_poll_id": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7832,6 +7903,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "pitch_deadline": {
+                    "type": "string"
+                },
+                "rank_poll_id": {
                     "type": "string"
                 },
                 "start_date": {
@@ -8059,14 +8136,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "budget_max": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "budget_min": {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "integer"
                 },
                 "cover_image_id": {
+                    "type": "string"
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "currency": {
@@ -8076,13 +8154,21 @@ const docTemplate = `{
                     "type": "string",
                     "format": "date-time"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "name": {
-                    "type": "string",
-                    "minLength": 1
+                    "type": "string"
+                },
+                "pitch_deadline": {
+                    "type": "string"
                 },
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
