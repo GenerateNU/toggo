@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
+	"toggo/internal/constants"
 	"toggo/internal/errs"
 	"toggo/internal/interfaces"
 	"toggo/internal/models"
@@ -42,6 +44,8 @@ type PitchService struct {
 	imageRepo      repository.ImageRepository
 	commentRepo    repository.CommentRepository
 	pitchLinkRepo  repository.PitchLinkRepository
+	tripRepo       repository.TripRepository
+	pollRepo       repository.PollRepository
 	bucketName     string
 	urlExpiration  time.Duration
 }
@@ -54,6 +58,8 @@ type PitchServiceConfig struct {
 	ImageRepo      repository.ImageRepository
 	CommentRepo    repository.CommentRepository
 	PitchLinkRepo  repository.PitchLinkRepository
+	TripRepo       repository.TripRepository
+	PollRepo       repository.PollRepository
 	BucketName     string
 	URLExpiration  time.Duration
 }
@@ -71,6 +77,8 @@ func NewPitchService(cfg PitchServiceConfig) PitchServiceInterface {
 		imageRepo:      cfg.ImageRepo,
 		commentRepo:    cfg.CommentRepo,
 		pitchLinkRepo:  cfg.PitchLinkRepo,
+		tripRepo:       cfg.TripRepo,
+		pollRepo:       cfg.PollRepo,
 		bucketName:     cfg.BucketName,
 		urlExpiration:  expiration,
 	}
@@ -85,6 +93,17 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	}
 	if !isMember {
 		return nil, errs.Forbidden()
+	}
+
+	trip, err := s.tripRepo.Find(ctx, tripID)
+	if err != nil {
+		return nil, err
+	}
+	if trip.PitchDeadline == nil {
+		return nil, errs.BadRequest(errors.New("pitching is not open yet — a deadline must be set first"))
+	}
+	if time.Now().UTC().After(*trip.PitchDeadline) {
+		return nil, errs.BadRequest(errors.New("pitching is closed — the deadline has passed"))
 	}
 
 	if err := s.validateImageIDs(ctx, req.ImageIDs); err != nil {
@@ -117,6 +136,8 @@ func (s *PitchService) Create(ctx context.Context, tripID, userID uuid.UUID, req
 	if err != nil {
 		return nil, fmt.Errorf("create pitch: %w", err)
 	}
+
+	s.addPitchToRankPoll(ctx, tripID, pitchID, req.Title)
 
 	presigned, err := s.presignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:        aws.String(s.bucketName),
@@ -415,6 +436,30 @@ func mergeUpdatedPitch(updated *models.TripPitch, src *models.PitchDatabaseRespo
 		UpdatedAt:         updated.UpdatedAt,
 		Username:          src.Username,
 		ProfilePictureKey: src.ProfilePictureKey,
+	}
+}
+
+// addPitchToRankPoll adds the pitch as an option to the trip's rank poll if one exists.
+// Failures are logged and silently ignored — pitch creation must not fail because of poll state.
+func (s *PitchService) addPitchToRankPoll(ctx context.Context, tripID, pitchID uuid.UUID, title string) {
+	if s.tripRepo == nil || s.pollRepo == nil {
+		return
+	}
+	trip, err := s.tripRepo.Find(ctx, tripID)
+	if err != nil || trip.RankPollID == nil {
+		return
+	}
+	entityType := "pitch"
+	option := &models.PollOption{
+		ID:         uuid.New(),
+		PollID:     *trip.RankPollID,
+		OptionType: models.OptionTypeEntity,
+		EntityType: &entityType,
+		EntityID:   &pitchID,
+		Name:       title,
+	}
+	if _, err := s.pollRepo.AddOption(ctx, option, constants.MaxPollOptions); err != nil {
+		log.Printf("failed to add pitch %s to rank poll %s: %v", pitchID, *trip.RankPollID, err)
 	}
 }
 

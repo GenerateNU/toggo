@@ -818,6 +818,10 @@ definitions:
         type: string
       option_type:
         $ref: '#/definitions/models.OptionType'
+      rank_breakdown:
+        additionalProperties:
+          type: integer
+        type: object
       vote_count:
         type: integer
     type: object
@@ -1367,6 +1371,8 @@ definitions:
         type: string
       pitch_deadline:
         type: string
+      rank_poll_id:
+        type: string
       updated_at:
         type: string
     type: object
@@ -1387,6 +1393,8 @@ definitions:
       name:
         type: string
       pitch_deadline:
+        type: string
+      rank_poll_id:
         type: string
       updated_at:
         type: string

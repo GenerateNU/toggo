@@ -357,43 +357,39 @@ func (s *RankPollService) validateRankPollAccess(ctx context.Context, tripID uui
 	return poll, nil
 }
 
+const maxRankingSlots = 3
+
 func (s *RankPollService) validateRanking(rankings []models.RankingItem, options []models.PollOption) error {
-	if len(rankings) != len(options) {
-		return errs.BadRequest(fmt.Errorf("must rank all %d options", len(options)))
+	required := min(maxRankingSlots, len(options))
+
+	if len(rankings) != required {
+		return errs.BadRequest(fmt.Errorf("must rank exactly %d options", required))
 	}
 
-	validOptionIDs := make(map[uuid.UUID]bool)
+	validOptionIDs := make(map[uuid.UUID]bool, len(options))
 	for _, opt := range options {
 		validOptionIDs[opt.ID] = true
 	}
 
-	usedRanks := make(map[int]bool)
-	usedOptions := make(map[uuid.UUID]bool)
+	usedRanks := make(map[int]bool, len(rankings))
+	usedOptions := make(map[uuid.UUID]bool, len(rankings))
 
 	for _, ranking := range rankings {
 		if !validOptionIDs[ranking.OptionID] {
 			return errs.BadRequest(fmt.Errorf("invalid option_id: %s", ranking.OptionID))
 		}
-
 		if usedOptions[ranking.OptionID] {
 			return errs.BadRequest(fmt.Errorf("duplicate option_id: %s", ranking.OptionID))
 		}
 		usedOptions[ranking.OptionID] = true
 
-		if ranking.Rank < 1 || ranking.Rank > len(options) {
-			return errs.BadRequest(fmt.Errorf("rank must be between 1 and %d", len(options)))
+		if ranking.Rank < 1 || ranking.Rank > required {
+			return errs.BadRequest(fmt.Errorf("rank must be between 1 and %d", required))
 		}
-
 		if usedRanks[ranking.Rank] {
 			return errs.BadRequest(fmt.Errorf("duplicate rank position: %d", ranking.Rank))
 		}
 		usedRanks[ranking.Rank] = true
-	}
-
-	for i := 1; i <= len(options); i++ {
-		if !usedRanks[i] {
-			return errs.BadRequest(fmt.Errorf("missing rank position: %d", i))
-		}
 	}
 
 	return nil

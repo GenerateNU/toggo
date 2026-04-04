@@ -18,6 +18,10 @@
             "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
             "x-readme-ref-name": "models.OptionType"
           },
+          "rank_breakdown": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" }
+          },
           "vote_count": { "type": "integer" }
         },
         "x-readme-ref-name": "models.OptionWithScore"
@@ -50,6 +54,10 @@
             "enum": ["entity", "custom"],
             "x-enum-varnames": ["OptionTypeEntity", "OptionTypeCustom"],
             "x-readme-ref-name": "models.OptionType"
+          },
+          "rank_breakdown": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" }
           },
           "vote_count": { "type": "integer" }
         },

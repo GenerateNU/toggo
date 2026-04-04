@@ -192,6 +192,7 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			BudgetMax:     tripData.BudgetMax,
 			Currency:      tripData.Currency,
 			PitchDeadline: tripData.PitchDeadline,
+			RankPollID:    tripData.RankPollID,
 			CreatedAt:     tripData.CreatedAt,
 			UpdatedAt:     tripData.UpdatedAt,
 		})
@@ -228,6 +229,16 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID 
 		return nil, errs.BadRequest(errors.New("budget maximum must be greater than or equal to minimum"))
 	}
 
+	if req.CoverImageID != nil {
+		_, err := s.Image.FindByID(ctx, *req.CoverImageID)
+		if err != nil {
+			if errors.Is(err, errs.ErrNotFound) {
+				return nil, errs.BadRequest(errors.New("cover image not found"))
+			}
+			return nil, err
+		}
+	}
+
 	if req.PitchDeadline != nil && req.PitchDeadline.Before(time.Now().UTC()) {
 		return nil, errs.BadRequest(errors.New("pitch_deadline must be in the future"))
 	}
@@ -235,6 +246,12 @@ func (s *TripService) UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID 
 	trip, err := s.Trip.Update(ctx, tripID, &req)
 	if err != nil {
 		return nil, err
+	}
+
+	if req.PitchDeadline != nil && trip.RankPollID == nil {
+		if err := s.createTripRankPoll(ctx, trip, actorID); err != nil {
+			log.Printf("failed to create rank poll for trip %s: %v", tripID, err)
+		}
 	}
 
 	// Publish trip.updated event
@@ -281,9 +298,26 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		BudgetMax:     tripData.BudgetMax,
 		Currency:      tripData.Currency,
 		PitchDeadline: tripData.PitchDeadline,
+		RankPollID:    tripData.RankPollID,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil
+}
+
+const rankPollQuestion = "Rank your top destinations"
+
+func (s *TripService) createTripRankPoll(ctx context.Context, trip *models.Trip, creatorID uuid.UUID) error {
+	poll := &models.Poll{
+		ID:        uuid.New(),
+		TripID:    trip.ID,
+		CreatedBy: creatorID,
+		Question:  rankPollQuestion,
+		PollType:  models.PollTypeRank,
+	}
+	if _, err := s.Repository.Poll.CreatePoll(ctx, bun.Tx{}, poll, nil); err != nil {
+		return err
+	}
+	return s.Repository.Trip.SetRankPollID(ctx, trip.ID, poll.ID)
 }
 
 const defaultInviteExpiry = 7 * 24 * time.Hour

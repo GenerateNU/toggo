@@ -69,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
       case "textOnly":
         return (
           <Text
-            variant="bodyMedium"
+            variant="bodySmMedium"
             color={resolved.contentColor as ColorName}
             numberOfLines={1}
           >
@@ -83,7 +83,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Box flexDirection="row" alignItems="center" gap="xs">
             <Icon size={resolved.iconSize} color={iconColor} />
             <Text
-              variant="bodyMedium"
+              variant="bodySmMedium"
               color={resolved.contentColor as ColorName}
               numberOfLines={1}
               style={{ flexShrink: 1 }}
@@ -101,7 +101,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Box flexDirection="row" alignItems="center" gap="xs">
             <Left size={resolved.iconSize} color={iconColor} />
             <Text
-              variant="bodyMedium"
+              variant="bodySmMedium"
               color={resolved.contentColor as ColorName}
               numberOfLines={1}
               style={{ flexShrink: 1 }}

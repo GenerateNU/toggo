@@ -123,6 +123,9 @@ func (r *pollRankingRepository) GetAggregatedResults(ctx context.Context, pollID
 		BordaScore  int               `bun:"borda_score"`
 		AverageRank float64           `bun:"average_rank"`
 		VoteCount   int               `bun:"vote_count"`
+		Rank1Count  int               `bun:"rank1_count"`
+		Rank2Count  int               `bun:"rank2_count"`
+		Rank3Count  int               `bun:"rank3_count"`
 	}
 
 	var rows []resultRow
@@ -137,6 +140,9 @@ func (r *pollRankingRepository) GetAggregatedResults(ctx context.Context, pollID
 		ColumnExpr("COALESCE(SUM((SELECT COUNT(*) FROM poll_options WHERE poll_id = po.poll_id) - pr.rank_position + 1), 0) AS borda_score").
 		ColumnExpr("COALESCE(AVG(pr.rank_position), 0) AS average_rank").
 		ColumnExpr("COUNT(pr.user_id) AS vote_count").
+		ColumnExpr("COUNT(CASE WHEN pr.rank_position = 1 THEN 1 END) AS rank1_count").
+		ColumnExpr("COUNT(CASE WHEN pr.rank_position = 2 THEN 1 END) AS rank2_count").
+		ColumnExpr("COUNT(CASE WHEN pr.rank_position = 3 THEN 1 END) AS rank3_count").
 		Join("LEFT JOIN poll_rankings AS pr ON pr.option_id = po.id").
 		Where("po.poll_id = ?", pollID).
 		Group("po.id", "po.name", "po.option_type", "po.entity_type", "po.entity_id", "po.poll_id").
@@ -157,6 +163,11 @@ func (r *pollRankingRepository) GetAggregatedResults(ctx context.Context, pollID
 			BordaScore:  row.BordaScore,
 			AverageRank: row.AverageRank,
 			VoteCount:   row.VoteCount,
+			RankBreakdown: map[int]int{
+				1: row.Rank1Count,
+				2: row.Rank2Count,
+				3: row.Rank3Count,
+			},
 		}
 	}
 

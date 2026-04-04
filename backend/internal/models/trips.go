@@ -14,6 +14,7 @@ type Trip struct {
 	BudgetMax     int        `bun:"budget_max" json:"budget_max"`
 	Currency      string     `bun:"currency" json:"currency"`
 	PitchDeadline *time.Time `bun:"pitch_deadline" json:"pitch_deadline,omitempty"`
+	RankPollID    *uuid.UUID `bun:"rank_poll_id,type:uuid" json:"rank_poll_id,omitempty"`
 	CreatedAt     time.Time  `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -63,6 +64,7 @@ type TripDatabaseResponse struct {
 	BudgetMax     int        `bun:"budget_max"`
 	Currency      string     `bun:"currency"`
 	PitchDeadline *time.Time `bun:"pitch_deadline"`
+	RankPollID    *uuid.UUID `bun:"rank_poll_id"`
 	CreatedAt     time.Time  `bun:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at"`
 }
@@ -75,6 +77,7 @@ type TripAPIResponse struct {
 	BudgetMax     int        `json:"budget_max"`
 	Currency      string     `json:"currency"`
 	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
+	RankPollID    *uuid.UUID `json:"rank_poll_id,omitempty"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }

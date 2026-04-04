@@ -20,7 +20,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": ["remote-notification"],
         "NSCameraUsageDescription": "Allow this app to access your camera to take photos.",
-        "NSPhotoLibraryUsageDescription": "Allow this app to access your photos."
+        "NSPhotoLibraryUsageDescription": "Allow this app to access your photos.",
+        "NSMicrophoneUsageDescription": "Allow this app to access your microphone to record audio pitches."
       }
     },
     "android": {
@@ -34,7 +35,8 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "CAMERA",
-        "READ_MEDIA_IMAGES"
+        "READ_MEDIA_IMAGES",
+        "RECORD_AUDIO"
       ]
     },
     "web": {

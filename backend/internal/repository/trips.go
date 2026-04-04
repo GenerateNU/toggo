@@ -18,6 +18,7 @@ type TripRepository interface {
 	FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
+	SetRankPollID(ctx context.Context, tripID, pollID uuid.UUID) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -64,7 +65,7 @@ func (r *tripRepository) FindWithCoverImage(ctx context.Context, id uuid.UUID) (
 	tripData := &models.TripDatabaseResponse{}
 	err := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("LEFT JOIN images AS img ON t.cover_image IS NOT NULL AND img.image_id = t.cover_image AND img.size = ? AND img.status = ?", models.ImageSizeMedium, models.UploadStatusConfirmed).
@@ -113,7 +114,7 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID
 func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		TableExpr("trips AS t").
-		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.created_at, t.updated_at").
+		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.created_at, t.updated_at").
 		ColumnExpr("t.cover_image").
 		ColumnExpr("img.file_key AS cover_image_key").
 		Join("JOIN memberships AS m ON m.trip_id = t.id").
@@ -163,6 +164,10 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("currency = ?", *req.Currency)
 	}
 
+	if req.CoverImageID != nil {
+		updateQuery = updateQuery.Set("cover_image = ?", *req.CoverImageID)
+	}
+
 	if req.PitchDeadline != nil {
 		updateQuery = updateQuery.Set("pitch_deadline = ?", *req.PitchDeadline)
 	}
@@ -191,6 +196,16 @@ func (r *tripRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 	}
 
 	return updatedTrip, nil
+}
+
+// SetRankPollID sets the rank_poll_id on a trip.
+func (r *tripRepository) SetRankPollID(ctx context.Context, tripID, pollID uuid.UUID) error {
+	_, err := r.db.NewUpdate().
+		TableExpr("trips").
+		Set("rank_poll_id = ?", pollID).
+		Where("id = ?", tripID).
+		Exec(ctx)
+	return err
 }
 
 // Delete removes a trip (idempotent)

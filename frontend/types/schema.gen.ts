@@ -1304,6 +1304,7 @@ export const modelsOptionWithScoreSchema = z.object({
   get option_type() {
     return modelsOptionTypeSchema.optional();
   },
+  rank_breakdown: z.optional(z.object({}).catchall(z.int())),
   vote_count: z.optional(z.int()),
 }) as unknown as z.ZodType<ModelsOptionWithScore>;
 
@@ -1603,6 +1604,7 @@ export const modelsTripAPIResponseSchema = z.object({
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
+  rank_poll_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTripAPIResponse>;
 
@@ -1651,6 +1653,7 @@ export const modelsTripSchema = z.object({
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
+  rank_poll_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTrip>;
 

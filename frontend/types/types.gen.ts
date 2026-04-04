@@ -1309,6 +1309,12 @@ export type ModelsOptionWithScore = {
    */
   option_type?: ModelsOptionType;
   /**
+   * @type object | undefined
+   */
+  rank_breakdown?: {
+    [key: string]: number;
+  };
+  /**
    * @type integer | undefined
    */
   vote_count?: number;
@@ -1904,6 +1910,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  rank_poll_id?: string;
+  /**
+   * @type string | undefined
+   */
   updated_at?: string;
 };
 
@@ -2027,6 +2037,10 @@ export type ModelsTrip = {
    * @type string | undefined
    */
   pitch_deadline?: string;
+  /**
+   * @type string | undefined
+   */
+  rank_poll_id?: string;
   /**
    * @type string | undefined
    */

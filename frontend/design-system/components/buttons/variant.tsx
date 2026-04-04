@@ -139,6 +139,22 @@ export const ButtonVariants = {
     borderWidth: "none",
     contentColor: "gray500",
   },
+  Blue: {
+    ...baseButton,
+    width: "100%",
+    backgroundColor: "blue25",
+    borderRadius: "lg",
+    borderWidth: "none",
+    contentColor: "blue500",
+  },
+  Red: {
+    ...baseButton,
+    width: "100%",
+    contentColor: "statusError",
+    backgroundColor: "gray50",
+    borderRadius: "lg",
+    borderWidth: "none",
+  },
   Outline: {
     ...baseButton,
     width: "100%",
@@ -203,6 +219,14 @@ export const DisabledVariantStyle: Record<
   },
   IconTertiary: {
     backgroundColor: "gray300",
+    contentColor: "gray400",
+  },
+  Blue: {
+    backgroundColor: "gray100",
+    contentColor: "gray400",
+  },
+  Red: {
+    backgroundColor: "gray100",
     contentColor: "gray400",
   },
   Outline: {

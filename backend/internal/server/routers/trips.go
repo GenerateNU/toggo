@@ -26,6 +26,8 @@ func TripRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.Rout
 		ImageRepo:      routeParams.ServiceParams.Repository.Image,
 		CommentRepo:    routeParams.ServiceParams.Repository.Comment,
 		PitchLinkRepo:  routeParams.ServiceParams.Repository.PitchLink,
+		TripRepo:       routeParams.ServiceParams.Repository.Trip,
+		PollRepo:       routeParams.ServiceParams.Repository.Poll,
 		BucketName:     awsCfg.BucketName,
 	})
 	pitchController := controllers.NewPitchController(pitchService, routeParams.Validator)

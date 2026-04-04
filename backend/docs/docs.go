@@ -6606,6 +6606,12 @@ const docTemplate = `{
                 "option_type": {
                     "$ref": "#/definitions/models.OptionType"
                 },
+                "rank_breakdown": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
                 "vote_count": {
                     "type": "integer"
                 }
@@ -7417,6 +7423,9 @@ const docTemplate = `{
                 "pitch_deadline": {
                     "type": "string"
                 },
+                "rank_poll_id": {
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -7447,6 +7456,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pitch_deadline": {
+                    "type": "string"
+                },
+                "rank_poll_id": {
                     "type": "string"
                 },
                 "updated_at": {

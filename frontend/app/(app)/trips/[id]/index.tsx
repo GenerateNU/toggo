@@ -91,6 +91,14 @@ export default function Trip() {
             />
             <Button
               layout="textOnly"
+              label="Pitches"
+              variant="Primary"
+              onPress={() =>
+                router.push({ pathname: `/trips/${tripID}/pitches` })
+              }
+            />
+            <Button
+              layout="textOnly"
               label="See Dummy Activity"
               variant="Primary"
               onPress={() =>

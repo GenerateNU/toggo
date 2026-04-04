@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 	"toggo/internal/config"
 	"toggo/internal/models"
 	"toggo/internal/services"
@@ -33,8 +34,23 @@ func requireS3(t *testing.T) {
    Helpers
 =========================*/
 
+func setTripDeadline(t *testing.T, app *fiber.App, userID, tripID string) {
+	t.Helper()
+	deadline := time.Now().UTC().Add(24 * time.Hour)
+	testkit.New(t).
+		Request(testkit.Request{
+			App:    app,
+			Route:  "/api/v1/trips/" + tripID,
+			Method: testkit.PATCH,
+			UserID: &userID,
+			Body:   models.UpdateTripRequest{PitchDeadline: &deadline},
+		}).
+		AssertStatus(http.StatusOK)
+}
+
 func createPitch(t *testing.T, app *fiber.App, userID, tripID string, title, contentType string) (pitchID string, uploadURL string) {
 	requireS3(t)
+	setTripDeadline(t, app, userID, tripID)
 	resp := testkit.New(t).
 		Request(testkit.Request{
 			App:    app,
@@ -67,6 +83,47 @@ func TestPitchCreate(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	userID := createTestUser(t, app, "PitchUser", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
 	tripID := createTestTrip(t, app, userID, "PitchTrip", 100, 500)
+	setTripDeadline(t, app, userID, tripID)
+
+	t.Run("rejects pitch when no deadline is set", func(t *testing.T) {
+		noDeadlineTripID := createTestTrip(t, app, userID, "NoDeadlineTrip", 100, 500)
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + noDeadlineTripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Early pitch",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+
+	t.Run("rejects pitch when deadline has passed", func(t *testing.T) {
+		pastTripID := createTestTrip(t, app, userID, "PastDeadlineTrip", 100, 500)
+		past := time.Now().UTC().Add(-1 * time.Hour)
+		// Set deadline directly via DB — the API rejects past deadlines
+		db := fakes.GetSharedDB()
+		_, err := db.NewUpdate().TableExpr("trips").Set("pitch_deadline = ?", past).Where("id = ?", pastTripID).Exec(context.Background())
+		require.NoError(t, err)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips/" + pastTripID + "/pitches",
+				Method: testkit.POST,
+				UserID: &userID,
+				Body: models.CreatePitchRequest{
+					Title:         "Late pitch",
+					ContentType:   "audio/mpeg",
+					ContentLength: 1024,
+				},
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
 
 	t.Run("creates pitch and returns upload_url", func(t *testing.T) {
 		requireS3(t)
@@ -428,6 +485,7 @@ func TestPitchImages(t *testing.T) {
 	app := fakes.GetSharedTestApp()
 	userID := createTestUser(t, app, "ImgUser", fakes.GenerateRandomUsername(), fakes.GenerateRandomPhoneNumber())
 	tripID := createTestTrip(t, app, userID, "ImgTrip", 100, 500)
+	setTripDeadline(t, app, userID, tripID)
 
 	// -- CREATE with images --
 

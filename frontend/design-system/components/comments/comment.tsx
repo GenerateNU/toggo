@@ -4,10 +4,10 @@ import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Smile } from "lucide-react-native";
-import { useRef } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import EmojiPicker, { type EmojiType } from "rn-emoji-keyboard";
 import { withOpacity } from "../../utils/color";
-import ReactionPicker from "./reaction-picker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -29,10 +29,6 @@ export type CommentData = {
 
 export type CommentProps = {
   comment: CommentData;
-  pickerOpen: boolean;
-  onOpenPicker: (commentId: string, y: number, x: number) => void;
-  onClosePicker: () => void;
-  pickerAnchor: { y: number; x: number };
   onReact: (commentId: string, emoji: string) => void;
 };
 
@@ -68,37 +64,19 @@ const ReactionBadge = ({
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Comment({
-  comment,
-  pickerOpen,
-  onOpenPicker,
-  onClosePicker,
-  pickerAnchor,
-  onReact,
-}: CommentProps) {
-  const anchorRef = useRef<View>(null);
+export default function Comment({ comment, onReact }: CommentProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  const measureAndOpen = () => {
-    anchorRef.current?.measureInWindow((x, y) => {
-      onOpenPicker(comment.id, y, x);
-    });
-  };
-
-  const handleLongPress = () => measureAndOpen();
-
-  const handleSmilePress = () => {
-    if (pickerOpen) {
-      onClosePicker();
-    } else {
-      measureAndOpen();
-    }
+  const handleEmojiSelect = (emojiData: EmojiType) => {
+    onReact(comment.id, emojiData.emoji);
+    setPickerOpen(false);
   };
 
   const hasReactions = comment.reactions.length > 0;
 
   return (
-    <View>
-      <Pressable onLongPress={handleLongPress} delayLongPress={400}>
+    <>
+      <Pressable onLongPress={() => setPickerOpen(true)} delayLongPress={400}>
         <Box style={styles.container}>
           {/* Avatar */}
           <Avatar
@@ -128,14 +106,7 @@ export default function Comment({
               {comment.body}
             </Text>
 
-            {/*
-              Invisible anchor point — sits right after the body text so the
-              picker always appears at the same vertical position regardless
-              of whether the reactions row is rendered.
-            */}
-            <View ref={anchorRef} collapsable={false} />
-
-            {/* Reactions row (shown only when reactions exist) */}
+            {/* Reactions row */}
             {hasReactions && (
               <Box style={styles.reactionsRow}>
                 {comment.reactions.map((r) => (
@@ -146,9 +117,8 @@ export default function Comment({
                   />
                 ))}
 
-                {/* Add reaction button */}
                 <Pressable
-                  onPress={handleSmilePress}
+                  onPress={() => setPickerOpen(true)}
                   style={({ pressed }) => [
                     styles.addReactionButton,
                     pressed && styles.addReactionButtonPressed,
@@ -162,15 +132,44 @@ export default function Comment({
         </Box>
       </Pressable>
 
-      {/* Picker rendered as its own modal */}
-      <ReactionPicker
-        visible={pickerOpen}
-        anchorY={pickerAnchor.y}
-        anchorX={pickerAnchor.x}
-        onSelect={(emoji) => onReact(comment.id, emoji)}
-        onClose={onClosePicker}
+      <EmojiPicker
+        onEmojiSelected={handleEmojiSelect}
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        enableSearchBar
+        enableSearchAnimation={false}
+        enableCategoryChangeAnimation={false}
+        expandable={false}
+        defaultHeight="50%"
+        disableSafeArea
+        theme={{
+          backdrop: "rgba(0,0,0,0.3)",
+          knob: ColorPalette.gray300,
+          container: ColorPalette.white,
+          header: ColorPalette.gray500,
+          category: {
+            icon: ColorPalette.gray400,
+            iconActive: ColorPalette.gray900,
+            container: ColorPalette.white,
+            containerActive: ColorPalette.gray100,
+          },
+          search: {
+            background: ColorPalette.gray50,
+            text: ColorPalette.gray900,
+            placeholder: ColorPalette.gray400,
+            icon: ColorPalette.gray400,
+          },
+          emoji: { selected: ColorPalette.gray100 },
+        }}
+        styles={{
+          container: { borderTopLeftRadius: 20, borderTopRightRadius: 20 },
+          knob: { marginTop: 8 },
+          searchBar: {
+            container: { marginBottom: 8, borderRadius: 10 },
+          },
+        }}
       />
-    </View>
+    </>
   );
 }
 
