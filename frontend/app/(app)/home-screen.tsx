@@ -300,44 +300,49 @@ export default function HomeScreen() {
                 </Box>
               </LinearGradient>
             ) : (
-              <Box
-                backgroundColor="backgroundWarm"
-                paddingTop="sm"
-                paddingHorizontal="md"
-                paddingBottom="lg"
-                gap="sm"
+              <LinearGradient
+                colors={topSectionGradientColors}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
               >
-                <HomeHeader
-                  profilePhotoUri={profile.profilePhotoUri}
-                  seed={profile.seed}
-                  profileAccessibilityLabel={profile.accessibilityLabel}
-                  onPressProfile={() => router.push("/settings/accounts")}
-                  onPressCreateTrip={handleCreateTrip}
-                />
-                {tripsQueryEnabled && tripsQuery.isPending ? (
-                  <SkeletonRect
-                    width="full"
-                    borderRadius="lg"
-                    style={{ height: 260 }}
-                  />
-                ) : null}
-                {tripsQueryEnabled && tripsQuery.isError ? (
-                  <ErrorState
-                    title="Couldn’t load trips"
-                    description="Pull to refresh or try again in a moment."
-                    refresh={() => tripsQuery.refetch()}
-                  />
-                ) : null}
-                <Box gap="sm">
-                  <Text variant="headingMd" color="gray900">
-                    Welcome back, {profile.greetingName}
-                  </Text>
-                  <HomeUpcomingEmptyCard
+                <Box
+                  paddingTop="sm"
+                  paddingHorizontal="md"
+                  paddingBottom="lg"
+                  gap="sm"
+                >
+                  <HomeHeader
+                    profilePhotoUri={profile.profilePhotoUri}
+                    seed={profile.seed}
+                    profileAccessibilityLabel={profile.accessibilityLabel}
+                    onPressProfile={() => router.push("/settings/accounts")}
                     onPressCreateTrip={handleCreateTrip}
-                    onPressTripCode={() => router.push("/join-trip-code")}
                   />
+                  {tripsQueryEnabled && tripsQuery.isPending ? (
+                    <SkeletonRect
+                      width="full"
+                      borderRadius="lg"
+                      style={{ height: 260 }}
+                    />
+                  ) : null}
+                  {tripsQueryEnabled && tripsQuery.isError ? (
+                    <ErrorState
+                      title="Couldn’t load trips"
+                      description="Pull to refresh or try again in a moment."
+                      refresh={() => tripsQuery.refetch()}
+                    />
+                  ) : null}
+                  <Box gap="sm">
+                    <Text variant="headingMd" color="gray900">
+                      Welcome back, {profile.greetingName}
+                    </Text>
+                    <HomeUpcomingEmptyCard
+                      onPressCreateTrip={handleCreateTrip}
+                      onPressTripCode={() => router.push("/join-trip-code")}
+                    />
+                  </Box>
                 </Box>
-              </Box>
+              </LinearGradient>
             )}
           </Box>
 
