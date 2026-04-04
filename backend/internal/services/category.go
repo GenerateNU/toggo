@@ -230,8 +230,26 @@ func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.U
 		seenPositions[t.Position] = true
 	}
 
+	// Ensure no requested position conflicts with a hidden category's reserved position
+	allCategories, err := s.Category.FindByTripID(ctx, tripID, true)
+	if err != nil {
+		return err
+	}
+
+	hiddenPositions := make(map[int]bool)
+	for _, c := range allCategories {
+		if c.IsHidden {
+			hiddenPositions[c.Position] = true
+		}
+	}
+
+	for _, t := range req.Tabs {
+		if hiddenPositions[t.Position] {
+			return errs.BadRequest(errors.New("position conflicts with a hidden category"))
+		}
+	}
+
 	return s.Category.UpdateOrder(ctx, tripID, req.Tabs)
-  
 }
 
 func (s *CategoryService) toAPIResponse(category *models.Category) *models.CategoryAPIResponse {
