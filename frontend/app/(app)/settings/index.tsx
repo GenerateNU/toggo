@@ -1,8 +1,10 @@
 import { useDeleteUser } from "@/api";
 import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
+import { DeleteAccountSheet } from "@/app/(app)/components/delete-account-sheet";
+import { LogoutSheet } from "@/app/(app)/components/logout-sheet";
 import { useUser } from "@/contexts/user";
-import { Box, Dialog, Icon, ImagePicker, Text } from "@/design-system";
+import { Box, Icon, ImagePicker, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -18,14 +20,8 @@ import {
   Trash2,
   User,
 } from "lucide-react-native";
-import { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useRef } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -80,17 +76,21 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const AVATAR_SIZE = 120;
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const { currentUser, logout, isPending, refreshCurrentUser } = useUser();
+  const { currentUser, logout, refreshCurrentUser } = useUser();
   const { mutateAsync: uploadPhoto, isPending: isUploading } =
     useUploadProfilePicture();
   const { mutateAsync: updateUser } = useUpdateUser();
-  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser();
+  const { mutate: deleteUser } = useDeleteUser();
 
-  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
+  const logoutSheetRef = useRef<any>(null);
+  const deleteSheetRef = useRef<any>(null);
 
   const handlePhotoChange = async (uri: string | null) => {
     if (!uri || !currentUser?.id) return;
@@ -102,13 +102,20 @@ export default function Settings() {
       });
       await refreshCurrentUser();
     } catch {
-      // non-blocking — user sees old photo
+      // non-blocking
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (!currentUser?.id) return;
-    deleteUser({ userID: currentUser.id });
+  const handleLogoutConfirm = async () => {
+    logoutSheetRef.current?.close();
+    await logout();
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteSheetRef.current?.close();
+    if (currentUser?.id) {
+      deleteUser({ userID: currentUser.id });
+    }
   };
 
   return (
@@ -141,7 +148,6 @@ export default function Settings() {
           Settings
         </Text>
 
-        {/* Invisible spacer to balance the header */}
         <View style={styles.headerButton} />
       </Box>
 
@@ -196,12 +202,12 @@ export default function Settings() {
             <SettingsRow
               icon={LogOut}
               label="Logout"
-              onPress={() => setLogoutDialogVisible(true)}
+              onPress={() => logoutSheetRef.current?.snapToIndex(0)}
             />
             <SettingsRow
               icon={Trash2}
               label="Delete Account"
-              onPress={() => setDeleteDialogVisible(true)}
+              onPress={() => deleteSheetRef.current?.snapToIndex(0)}
               destructive
             />
           </Box>
@@ -218,56 +224,18 @@ export default function Settings() {
         </Box>
       </ScrollView>
 
-      <Dialog
-        visible={logoutDialogVisible}
-        onClose={() => setLogoutDialogVisible(false)}
-        title="Log out"
-        message="Are you sure you want to log out?"
-        actions={[
-          {
-            label: "Cancel",
-            style: "default",
-            onPress: () => setLogoutDialogVisible(false),
-          },
-          {
-            label: isPending ? "Logging out..." : "Log out",
-            style: "destructive",
-            onPress: async () => {
-              setLogoutDialogVisible(false);
-              await logout();
-            },
-          },
-        ]}
+      <LogoutSheet
+        bottomSheetRef={logoutSheetRef}
+        onConfirm={handleLogoutConfirm}
       />
 
-      <Dialog
-        visible={deleteDialogVisible}
-        onClose={() => setDeleteDialogVisible(false)}
-        title="Delete account"
-        message="This will permanently delete your account and all data. This cannot be undone."
-        actions={[
-          {
-            label: "Cancel",
-            style: "default",
-            onPress: () => setDeleteDialogVisible(false),
-          },
-          {
-            label: isDeleting ? "Deleting..." : "Delete",
-            style: "destructive",
-            onPress: () => {
-              setDeleteDialogVisible(false);
-              handleDeleteAccount();
-            },
-          },
-        ]}
+      <DeleteAccountSheet
+        bottomSheetRef={deleteSheetRef}
+        onConfirm={handleDeleteConfirm}
       />
     </SafeAreaView>
   );
 }
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const AVATAR_SIZE = 120;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
