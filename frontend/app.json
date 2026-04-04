@@ -34,8 +34,13 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
         "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "CAMERA",
         "READ_MEDIA_IMAGES"
-      ]
+      ],
+      "package": "com.generateneutoggo.frontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
