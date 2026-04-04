@@ -176,7 +176,8 @@ export default function Activities() {
                 disabled={activitiesWithLocation.length === 0}
                 style={({ pressed }) => [
                   styles.mapButton,
-                  activitiesWithLocation.length === 0 && styles.mapButtonDisabled,
+                  activitiesWithLocation.length === 0 &&
+                    styles.mapButtonDisabled,
                   pressed &&
                     activitiesWithLocation.length > 0 &&
                     styles.mapButtonPressed,

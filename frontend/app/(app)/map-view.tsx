@@ -162,10 +162,7 @@ export default function MapViewScreen() {
     return (
       <Screen>
         <Box flex={1} backgroundColor="gray50" justifyContent="center">
-          <ErrorState
-            title="Map couldn’t load"
-            description={input.message}
-          />
+          <ErrorState title="Map couldn’t load" description={input.message} />
           <Box paddingHorizontal="lg">
             <Button
               layout="textOnly"
