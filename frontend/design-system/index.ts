@@ -12,6 +12,10 @@ export type { ChipProps } from "./components/buttons/chip";
 export { default as Toggle } from "./components/buttons/toggle";
 export type { ToggleProps } from "./components/buttons/toggle";
 
+// ─── Cards ────────────────────────────────────────────────────────────────────
+export { TripCard } from "./components/cards/trip-card";
+export type { TripCardProps } from "./components/cards/trip-card";
+
 // ─── Avatars ──────────────────────────────────────────────────────────────────
 export { Avatar } from "./components/avatars/avatar";
 export { AvatarStack } from "./components/avatars/avatar-stack";
@@ -32,6 +36,8 @@ export { theme } from "./tokens/theme";
 
 // ─── Navigation ──────────────────────────────────────────────────────────────────────
 export { BackButton } from "./components/navigation/arrow";
+export { ProfileAvatarButton } from "./components/navigation/profile-avatar-button";
+export type { ProfileAvatarButtonProps } from "./components/navigation/profile-avatar-button";
 
 // ─── UI Kit Display (for testing/showcasing components) ──────────────────────────────
 export { default as UIKitDisplay } from "./components/ui-kit-display/display";

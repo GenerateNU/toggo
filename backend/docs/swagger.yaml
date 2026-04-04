@@ -215,6 +215,7 @@ definitions:
       is_default:
         type: boolean
       is_hidden:
+        description: only present for admins
         type: boolean
       label:
         type: string
@@ -233,6 +234,17 @@ definitions:
         items:
           $ref: '#/definitions/models.CategoryAPIResponse'
         type: array
+    type: object
+  models.CategoryTabOrder:
+    properties:
+      name:
+        minLength: 1
+        type: string
+      position:
+        minimum: 0
+        type: integer
+    required:
+    - name
     type: object
   models.Comment:
     properties:
@@ -582,8 +594,14 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        format: date-time
+        type: string
       name:
         minLength: 1
+        type: string
+      start_date:
+        format: date-time
         type: string
     required:
     - budget_max
@@ -1339,6 +1357,13 @@ definitions:
     required:
     - rankings
     type: object
+  models.TabListResponse:
+    properties:
+      tabs:
+        items:
+          $ref: '#/definitions/models.CategoryAPIResponse'
+        type: array
+    type: object
   models.Trip:
     properties:
       budget_max:
@@ -1351,9 +1376,15 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        format: date-time
+        type: string
       id:
         type: string
       name:
+        type: string
+      start_date:
+        format: date-time
         type: string
       updated_at:
         type: string
@@ -1370,9 +1401,15 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        format: date-time
+        type: string
       id:
         type: string
       name:
+        type: string
+      start_date:
+        format: date-time
         type: string
       updated_at:
         type: string
@@ -1453,6 +1490,16 @@ definitions:
         - afternoon
         - evening
     type: object
+  models.UpdateCategoryTabOrderRequest:
+    properties:
+      tabs:
+        items:
+          $ref: '#/definitions/models.CategoryTabOrder'
+        minItems: 1
+        type: array
+    required:
+    - tabs
+    type: object
   models.UpdateCommentRequest:
     properties:
       content:
@@ -1525,8 +1572,14 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        format: date-time
+        type: string
       name:
         minLength: 1
+        type: string
+      start_date:
+        format: date-time
         type: string
     type: object
   models.UpdateUserNotificationPreferencesRequest:
@@ -4699,6 +4752,96 @@ paths:
       summary: Get poll voters
       tags:
       - polls
+  /api/v1/trips/{tripID}/tabs:
+    get:
+      description: Retrieves all visible categories for a trip ordered by position
+      operationId: getTripTabs
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TabListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get trip tabs
+      tags:
+      - categories
+  /api/v1/trips/{tripID}/tabs/reorder:
+    put:
+      consumes:
+      - application/json
+      description: Updates the position of visible categories for a trip
+      operationId: reorderTripTabs
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Reorder request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCategoryTabOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Reorder trip tabs
+      tags:
+      - categories
   /api/v1/trips/{tripID}/vote-polls:
     get:
       description: Retrieves all polls for a trip with cursor-based pagination

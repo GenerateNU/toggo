@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "tabs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "created_at": { "type": "string" },
+          "icon": { "type": "string" },
+          "is_default": { "type": "boolean" },
+          "is_hidden": {
+            "description": "only present for admins",
+            "type": "boolean"
+          },
+          "label": { "type": "string" },
+          "name": { "type": "string" },
+          "position": { "type": "integer" },
+          "trip_id": { "type": "string" },
+          "updated_at": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.CategoryAPIResponse"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.TabListResponse"
+}

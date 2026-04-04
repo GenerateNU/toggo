@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "created_at": { "type": "string" },
+    "deadline_reminders": { "type": "boolean" },
+    "finalized_decisions": { "type": "boolean" },
+    "push_enabled": { "type": "boolean" },
+    "trip_activity": { "type": "boolean" },
+    "upcoming_trip": { "type": "boolean" },
+    "updated_at": { "type": "string" },
+    "user_id": { "type": "string" },
+    "voting_reminders": { "type": "boolean" }
+  },
+  "x-readme-ref-name": "models.NotificationPreferences"
+}

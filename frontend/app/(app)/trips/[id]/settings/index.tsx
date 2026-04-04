@@ -7,6 +7,7 @@ import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { useRemoveMember } from "@/api/memberships/useRemoveMember";
 import { useUpdateNotificationPreferences } from "@/api/memberships/useUpdateNotificationPreferences";
 import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { useDeleteTrip } from "@/api/trips/useDeleteTrip";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
@@ -198,6 +199,13 @@ export default function TripSettings() {
     setDeleteDialog(false);
     try {
       await deleteTripMutation.mutateAsync({ tripID });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: getAllTripsQueryKey({}),
+        }),
+        queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: getTripQueryKey(tripID) }),
+      ]);
       router.replace("/");
     } catch {
       toast.show({ message: "Couldn't delete the trip. Please try again." });
