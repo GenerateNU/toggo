@@ -1,17 +1,14 @@
-import { useGetNotificationPreferences } from "@/api/notification-preferences/useGetNotificationPreferences";
-import { getNotificationPreferencesQueryKey } from "@/api/notification-preferences/useGetNotificationPreferences";
+import { getNotificationPreferencesQueryKey, useGetNotificationPreferences } from "@/api/notification-preferences/useGetNotificationPreferences";
 import { useGetOrCreateDefaultNotificationPreferences } from "@/api/notification-preferences/useGetOrCreateDefaultNotificationPreferences";
 import { useUpdateNotificationPreferences } from "@/api/notification-preferences/useUpdateNotificationPreferences";
-import { Box, Text, Toggle } from "@/design-system";
+import { BackButton, Box, Text, Toggle } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsNotificationPreferences } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
-import { router, Stack } from "expo-router";
-import { ChevronRight } from "lucide-react-native";
+import { Stack } from "expo-router";
 import { useEffect } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -144,32 +141,20 @@ export default function NotificationsScreen() {
         paddingHorizontal="sm"
         paddingVertical="xs"
       >
-        <TouchableOpacity
-          onPress={router.back}
-          style={styles.backButton}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <ChevronRight
-            size={20}
-            color={ColorPalette.gray950}
-            style={{ transform: [{ rotate: "180deg" }] }}
-          />
-        </TouchableOpacity>
+        <BackButton />
 
         <Text variant="bodyMedium" color="gray950">
           Notifications
         </Text>
 
-        {/* Invisible spacer to balance header */}
-        <Box style={styles.backButton} />
+        <Box width={36} height={36} />
       </Box>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <Text variant="bodyXsDefault" color="gray500" style={styles.subtitle}>
+        <Text variant="bodyXxsDefault" color="gray500" style={styles.subtitle}>
           Customize your notifications to best match your needs.
         </Text>
 
@@ -195,19 +180,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: ColorPalette.white,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: CornerRadius.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: ColorPalette.white,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 4,
   },
   scrollContent: {
     paddingBottom: Layout.spacing.xxl,

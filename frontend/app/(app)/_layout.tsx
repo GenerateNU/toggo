@@ -1,7 +1,43 @@
 import { useUser } from "@/contexts/user";
-import { BackButton } from "@/design-system";
-import { ToastProvider } from "@/design-system";
-import { Redirect, Stack } from "expo-router";
+import { BackButton, Box, Button, Logo, ProfileAvatarButton, ToastProvider } from "@/design-system";
+import { useProfileAvatar } from "@/hooks/use-profile-avatar";
+import { useCreateTrip } from "@/index";
+import { Redirect, router, Stack } from "expo-router";
+import { PlusIcon } from "lucide-react-native";
+
+// ─── Home header components ───────────────────────────────────────────────────
+
+function HomeHeaderLeft() {
+  const profile = useProfileAvatar();
+  return (
+    <ProfileAvatarButton
+      profilePhoto={profile.profilePhotoUri}
+      seed={profile.seed}
+      size="lg"
+      accessibilityLabel={profile.accessibilityLabel}
+      onPress={() => router.push("/settings")}
+    />
+  );
+}
+
+function HomeHeaderRight() {
+  const createTripMutation = useCreateTrip();
+
+  const handleCreateTrip = async () => {
+    try {
+      const result = await createTripMutation.mutateAsync({
+        data: { name: "Trip Name", budget_min: 1, budget_max: 1000 },
+      });
+      if (result?.id) router.push(`/trips/${result.id}`);
+    } catch {}
+  };
+
+  return (
+    <Button accessibilityLabel="Create a trip" icon={PlusIcon} variant="IconSecondary" layout="iconOnly" onPress={handleCreateTrip} />
+  );
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
 
 const Layout = () => {
   const { isAuthenticated } = useUser();
@@ -16,9 +52,14 @@ const Layout = () => {
         <Stack.Screen
           name="index"
           options={{
-            headerShown: false,
+            headerShown: true,
+            headerTransparent: true,
+            headerTitle: () => <Box paddingTop="sm"><Logo size="xl" /></Box>,
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+            headerLeft: () => <HomeHeaderLeft />,
+            headerRight: () => <HomeHeaderRight />,
             gestureEnabled: false,
-            headerLeft: () => <BackButton />,
           }}
         />
         <Stack.Screen
@@ -34,11 +75,7 @@ const Layout = () => {
         <Stack.Screen
           name="settings"
           options={{
-            headerTransparent: true,
             headerShown: false,
-            headerTitle: "",
-            headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
           }}
         />
         <Stack.Screen

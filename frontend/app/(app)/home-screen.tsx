@@ -6,7 +6,6 @@ import {
   HOME_NULL_DATE_DISPLAY,
   HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
-import { HomeHeader } from "@/app/(app)/components/home/home-header";
 import { HomeUpcomingEmptyCard } from "@/app/(app)/components/home/home-upcoming-empty-card";
 import { PastTripCompactCard } from "@/app/(app)/components/home/past-trip-compact-card";
 import { RecommendedTripsRow } from "@/app/(app)/components/home/recommended-trips-row";
@@ -31,6 +30,7 @@ import {
   Text,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { Layout } from "@/design-system/tokens/layout";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
 import { useQueries } from "@tanstack/react-query";
@@ -241,16 +241,8 @@ export default function HomeScreen() {
                 <Box
                   paddingTop="sm"
                   paddingHorizontal="sm"
-                  paddingBottom="lg"
                   gap="sm"
                 >
-                  <HomeHeader
-                    profilePhotoUri={profile.profilePhotoUri}
-                    seed={profile.seed}
-                    profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings")}
-                    onPressCreateTrip={handleCreateTrip}
-                  />
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -265,39 +257,38 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm">
-                    <Text variant="headingMd" color="gray900">
-                      Upcoming Trips
-                    </Text>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      decelerationRate="fast"
-                      snapToAlignment="start"
-                      snapToInterval={upcomingCardWidth + upcomingCardGap}
-                      contentContainerStyle={{ paddingRight: upcomingCardGap }}
-                    >
-                      <Box flexDirection="row" gap="sm">
-                        {upcoming.map((trip) => {
-                          const id = trip.id;
-                          if (!id) return null;
-                          return (
-                            <UpcomingTripHeroCard
-                              key={id}
-                              trip={trip}
-                              width={upcomingCardWidth}
-                              currentUserId={currentUser?.id}
-                              dateLabel={formatTripDateLabel(
-                                trip,
-                                HOME_NULL_DATE_DISPLAY,
-                              )}
-                            />
-                          );
-                        })}
-                      </Box>
-                    </ScrollView>
-                  </Box>
+                  <Text variant="headingMd" color="gray900">
+                    Upcoming Trips
+                  </Text>
                 </Box>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  decelerationRate="fast"
+                  snapToAlignment="start"
+                  snapToInterval={upcomingCardWidth + upcomingCardGap}
+                  contentContainerStyle={{ paddingLeft: Layout.spacing.sm, paddingRight: Layout.spacing.sm }}
+                  style={{ paddingBottom: Layout.spacing.lg }}
+                >
+                  <Box flexDirection="row" gap="sm">
+                    {upcoming.map((trip) => {
+                      const id = trip.id;
+                      if (!id) return null;
+                      return (
+                        <UpcomingTripHeroCard
+                          key={id}
+                          trip={trip}
+                          width={upcomingCardWidth}
+                          currentUserId={currentUser?.id}
+                          dateLabel={formatTripDateLabel(
+                            trip,
+                            HOME_NULL_DATE_DISPLAY,
+                          )}
+                        />
+                      );
+                    })}
+                  </Box>
+                </ScrollView>
               </LinearGradient>
             ) : (
               <LinearGradient
@@ -311,13 +302,6 @@ export default function HomeScreen() {
                   paddingBottom="lg"
                   gap="sm"
                 >
-                  <HomeHeader
-                    profilePhotoUri={profile.profilePhotoUri}
-                    seed={profile.seed}
-                    profileAccessibilityLabel={profile.accessibilityLabel}
-                    onPressProfile={() => router.push("/settings")}
-                    onPressCreateTrip={handleCreateTrip}
-                  />
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -332,7 +316,7 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm">
+                  <Box gap="sm" paddingTop="xl">
                     <Text variant="headingMd" color="gray900">
                       Welcome back, {profile.greetingName}
                     </Text>
@@ -375,7 +359,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" paddingHorizontal="md">
+          <Box gap="sm" paddingHorizontal="sm">
             <Text variant="headingMd" color="gray900">
               Recommended Trips
             </Text>
