@@ -1,246 +1,178 @@
-import { useCreateActivity } from "@/api/activities";
-import { useDeleteImage, useUploadImage } from "@/api/files/custom";
-import { Box, Button, Screen, Spinner, Text } from "@/design-system";
-import type { ModelsActivityTimeOfDay } from "@/types/types.gen";
+import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
+import { Box, EmptyState, SkeletonRect, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, TextInput } from "react-native";
+import { Layout } from "@/design-system/tokens/layout";
+import type {
+  ModelsActivityAPIResponse,
+  ModelsParsedActivityData,
+} from "@/types/types.gen";
+import { useLocalSearchParams } from "expo-router";
+import { Plus } from "lucide-react-native";
+import { useCallback, useRef } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+} from "react-native";
+import { ActivityCard } from "../components/activity-card";
+import {
+  AddActivityEntrySheet,
+  type AddActivityEntrySheetHandle,
+} from "../components/add-activity-entry-sheet";
+import {
+  AddActivityManualSheet,
+  type AddActivityManualSheetHandle,
+} from "../components/add-activity-manual-sheet";
 
-export default function CreateActivity() {
-  const {
-    id: tripID,
-    date,
-    timeOfDay,
-  } = useLocalSearchParams<{
-    id: string;
-    date?: string;
-    timeOfDay?: string;
-  }>();
-  const router = useRouter();
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [imageUris, setImageUris] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const uploadImageMutation = useUploadImage();
-  const deleteImageMutation = useDeleteImage();
-  const createActivityMutation = useCreateActivity();
-
-  const pickImage = async () => {
-    if (imageUris.length >= 5) {
-      Alert.alert("Limit reached", "You can add up to 5 images.");
-      return;
-    }
-
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission denied", "Media library access is required.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 1,
-    });
-
-    const uri = result.assets?.[0]?.uri;
-    if (!result.canceled && uri) {
-      setImageUris((prev) => [...prev, uri]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImageUris((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleCreate = async () => {
-    if (!name.trim()) {
-      Alert.alert("Validation", "Activity name is required.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const uploadedImageIds: string[] = [];
-
-    try {
-      for (const uri of imageUris) {
-        const res = await uploadImageMutation.mutateAsync({
-          uri,
-          sizes: ["medium"],
-        });
-        uploadedImageIds.push(res.imageId);
-      }
-
-      const activity = await createActivityMutation.mutateAsync({
-        tripID,
-        data: {
-          trip_id: tripID,
-          name: name.trim(),
-          description: description.trim() || undefined,
-          image_ids: uploadedImageIds,
-          ...(date ? { dates: [{ start: date, end: date }] } : {}),
-          ...(timeOfDay
-            ? { time_of_day: timeOfDay as ModelsActivityTimeOfDay }
-            : {}),
-        },
-      });
-
-      router.replace(
-        `/trips/${tripID}/activities/${activity.id}?tripID=${tripID}`,
-      );
-    } catch {
-      await Promise.allSettled(
-        uploadedImageIds.map((id) => deleteImageMutation.mutateAsync(id)),
-      );
-      Alert.alert("Error", "Failed to create activity. Please try again.");
-      setIsSubmitting(false);
-    }
-  };
-
+function ActivitiesSkeleton() {
   return (
-    <Screen>
-      <Box flex={1} backgroundColor="gray50">
-        <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
-          <Text variant="bodySmMedium" color="gray500">
-            NEW
-          </Text>
-          <Text variant="headingMd" color="gray900">
-            Create Activity
-          </Text>
-        </Box>
-
-        <ScrollView>
-          <Box padding="sm" gap="md">
-            <Box gap="xs">
-              <Text variant="bodySmMedium" color="gray500">
-                NAME *
-              </Text>
-              <Box
-                backgroundColor="white"
-                borderRadius="sm"
-                borderWidth={1}
-                borderColor="gray300"
-                padding="sm"
-              >
-                <TextInput
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="Activity name"
-                  placeholderTextColor={ColorPalette.gray500}
-                  style={{ fontSize: 15, color: ColorPalette.gray900 }}
-                />
-              </Box>
-            </Box>
-
-            <Box gap="xs">
-              <Text variant="bodySmMedium" color="gray500">
-                DESCRIPTION
-              </Text>
-              <Box
-                backgroundColor="white"
-                borderRadius="sm"
-                borderWidth={1}
-                borderColor="gray300"
-                padding="sm"
-              >
-                <TextInput
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="Optional description"
-                  placeholderTextColor={ColorPalette.gray500}
-                  multiline
-                  numberOfLines={3}
-                  style={{
-                    fontSize: 15,
-                    color: ColorPalette.gray900,
-                    minHeight: 72,
-                    textAlignVertical: "top",
-                  }}
-                />
-              </Box>
-            </Box>
-
-            <Box gap="xs">
-              <Text variant="bodySmMedium" color="gray500">
-                IMAGES ({imageUris.length}/5)
-              </Text>
-              <Box flexDirection="row" flexWrap="wrap" gap="xs">
-                {imageUris.map((uri, i) => (
-                  <Box
-                    key={i}
-                    width={80}
-                    height={80}
-                    borderRadius="sm"
-                    overflow="hidden"
-                  >
-                    <Image source={{ uri }} style={{ width: 80, height: 80 }} />
-                    <Pressable
-                      onPress={() => removeImage(i)}
-                      style={{
-                        position: "absolute",
-                        top: -6,
-                        right: -6,
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        backgroundColor: ColorPalette.gray900,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text variant="bodySmMedium" color="gray900">
-                        ×
-                      </Text>
-                    </Pressable>
-                  </Box>
-                ))}
-
-                {imageUris.length < 5 && (
-                  <Pressable onPress={pickImage}>
-                    <Box
-                      width={80}
-                      height={80}
-                      borderRadius="sm"
-                      borderWidth={1}
-                      borderColor="gray300"
-                      backgroundColor="white"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <Text variant="bodyDefault" color="gray500">
-                        + Add
-                      </Text>
-                    </Box>
-                  </Pressable>
-                )}
-              </Box>
-            </Box>
-
-            {isSubmitting ? (
-              <Box
-                backgroundColor="white"
-                borderRadius="sm"
-                padding="sm"
-                alignItems="center"
-              >
-                <Spinner />
-              </Box>
-            ) : (
-              <Button
-                layout="textOnly"
-                label="Create Activity"
-                variant="Primary"
-                onPress={handleCreate}
-                disabled={isSubmitting}
-              />
-            )}
-          </Box>
-        </ScrollView>
-      </Box>
-    </Screen>
+    <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
+      {[1, 2, 3].map((i) => (
+        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
+      ))}
+    </Box>
   );
 }
+
+export default function ActivitiesScreen() {
+  const {
+    id: tripID,
+  } = useLocalSearchParams<{
+    id: string;
+    locationName?: string;
+    locationLat?: string;
+    locationLng?: string;
+  }>();
+
+  const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
+  const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
+
+  const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
+    useActivitiesList(tripID);
+
+  const handleAutofilled = useCallback((data: ModelsParsedActivityData) => {
+    entrySheetRef.current?.close();
+    setTimeout(() => manualSheetRef.current?.open(data), 300);
+  }, []);
+
+  const handleManual = useCallback(() => {
+    entrySheetRef.current?.close();
+    setTimeout(() => manualSheetRef.current?.open(), 300);
+  }, []);
+
+  const handleSaved = useCallback(
+    (activity: ModelsActivityAPIResponse) => {
+      manualSheetRef.current?.close();
+      prependActivity(activity);
+    },
+    [prependActivity],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: ModelsActivityAPIResponse }) => (
+      <ActivityCard activity={item} />
+    ),
+    [],
+  );
+
+  const renderFooter = useCallback(
+    () =>
+      isLoadingMore ? (
+        <Box paddingVertical="sm" alignItems="center">
+          <ActivityIndicator size="small" />
+        </Box>
+      ) : null,
+    [isLoadingMore],
+  );
+
+  return (
+    <Box flex={1} backgroundColor="gray50">
+      {isLoading ? (
+        <ActivitiesSkeleton />
+      ) : activities.length === 0 ? (
+        <Box flex={1} alignItems="center" justifyContent="center">
+          <EmptyState
+            title="No activities yet"
+            description="Add the first one!"
+          />
+        </Box>
+      ) : (
+        <>
+          <Box paddingHorizontal="sm" paddingTop="xs" paddingBottom="xxs">
+            <Text variant="bodyXsDefault" color="gray500">
+              {activities.length}{" "}
+              {activities.length === 1 ? "activity" : "activities"} added
+            </Text>
+          </Box>
+          <FlatList
+            data={activities}
+            keyExtractor={(item) => item.id ?? ""}
+            renderItem={renderItem}
+            onEndReached={fetchMore}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={renderFooter}
+            contentContainerStyle={styles.list}
+          />
+        </>
+      )}
+
+      {/* Add an activity button */}
+      <Pressable
+        onPress={() => entrySheetRef.current?.open()}
+        style={({ pressed }) => [
+          styles.addButton,
+          pressed && { opacity: 0.8 },
+        ]}
+      >
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="center"
+          gap="xs"
+          paddingVertical="sm"
+          borderRadius="sm"
+          style={styles.addButtonInner}
+        >
+          <Plus size={16} color={ColorPalette.gray500} />
+          <Text variant="bodySmMedium" color="gray500">
+            Add an activity
+          </Text>
+        </Box>
+      </Pressable>
+
+      <AddActivityEntrySheet
+        ref={entrySheetRef}
+        tripID={tripID ?? ""}
+        onManual={handleManual}
+        onAutofilled={handleAutofilled}
+        onClose={() => entrySheetRef.current?.close()}
+      />
+
+      <AddActivityManualSheet
+        ref={manualSheetRef}
+        tripID={tripID ?? ""}
+        onSaved={handleSaved}
+        onClose={() => manualSheetRef.current?.close()}
+      />
+    </Box>
+  );
+}
+
+const styles = StyleSheet.create({
+  list: {
+    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.xs,
+    gap: Layout.spacing.xs,
+  },
+  addButton: {
+    marginHorizontal: Layout.spacing.sm,
+    marginBottom: Layout.spacing.md,
+  },
+  addButtonInner: {
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.gray50,
+  },
+});
