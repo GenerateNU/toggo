@@ -1,9 +1,7 @@
 import { Box, Button, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
-import { ColorPalette } from "@/design-system/tokens/color";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { useEffect, useRef } from "react";
-import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface CancelConfirmModalProps {
@@ -72,18 +70,3 @@ export function CancelConfirmModal({
     </BottomSheetComponent>
   );
 }
-
-const styles = StyleSheet.create({
-  deleteBtn: {
-    backgroundColor: ColorPalette.statusError,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center" as const,
-  },
-  keepBtn: {
-    backgroundColor: ColorPalette.gray100,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center" as const,
-  },
-});

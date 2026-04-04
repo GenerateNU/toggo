@@ -4,7 +4,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { Pause, Play, RotateCcw } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { getPitchBarHeights } from "../../utils/waveform";
 
@@ -51,30 +51,7 @@ export function AudioPlayerSheet({
     setPrevVisible(visible);
   }
 
-  useEffect(() => {
-    if (visible) {
-      sheetRef.current?.snapToIndex(0);
-      // Pre-load audio as soon as the sheet opens so play is instant
-      preload();
-    } else {
-      sheetRef.current?.close();
-      const s = soundRef.current;
-      soundRef.current = null;
-      s?.stopAsync()
-        .catch(() => {})
-        .finally(() => s.unloadAsync().catch(() => {}));
-      setIsPlaying(false);
-      setPlayPosition(0);
-    }
-  }, [visible]);
-
-  useEffect(() => {
-    return () => {
-      soundRef.current?.unloadAsync();
-    };
-  }, []);
-
-  const createSound = async (shouldPlay: boolean) => {
+  const createSound = useCallback(async (shouldPlay: boolean) => {
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       playsInSilentModeIOS: true,
@@ -95,14 +72,37 @@ export function AudioPlayerSheet({
       },
     );
     soundRef.current = sound;
-  };
+  }, [audioUrl]);
 
-  const preload = async () => {
+  const preload = useCallback(async () => {
     if (soundRef.current) return;
     try {
       await createSound(false);
     } catch {}
-  };
+  }, [createSound]);
+
+  useEffect(() => {
+    if (visible) {
+      sheetRef.current?.snapToIndex(0);
+      // Pre-load audio as soon as the sheet opens so play is instant
+      preload();
+    } else {
+      sheetRef.current?.close();
+      const s = soundRef.current;
+      soundRef.current = null;
+      s?.stopAsync()
+        .catch(() => {})
+        .finally(() => s.unloadAsync().catch(() => {}));
+      setIsPlaying(false);
+      setPlayPosition(0);
+    }
+  }, [preload, visible]);
+
+  useEffect(() => {
+    return () => {
+      soundRef.current?.unloadAsync();
+    };
+  }, []);
 
   const loadAndPlay = async () => {
     setIsLoading(true);

@@ -17,25 +17,52 @@ export function LocationSearch({ onSelect }: LocationSearchProps) {
   const [results, setResults] = useState<ModelsPlacePrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const debouncedQuery = useDebouncedValue(query, 300);
+  const trimmedQuery = debouncedQuery.trim();
+  const visibleResults = trimmedQuery ? results : [];
 
-  useEffect(() => {
-    if (!debouncedQuery.trim()) {
+  const handleChangeQuery = (nextQuery: string) => {
+    setQuery(nextQuery);
+
+    if (!nextQuery.trim()) {
       setResults([]);
+      setIsLoading(false);
       return;
     }
+
     setIsLoading(true);
-    searchPlacesTypeahead(debouncedQuery, 5)
-      .then((res) => setResults(res?.data?.predictions ?? []))
-      .catch(() => setResults([]))
-      .finally(() => setIsLoading(false));
-  }, [debouncedQuery]);
+  };
+
+  useEffect(() => {
+    if (!trimmedQuery) {
+      return;
+    }
+
+    let isCancelled = false;
+    searchPlacesTypeahead(trimmedQuery, 5)
+      .then((res) => {
+        if (isCancelled) return;
+        setResults(res?.data?.predictions ?? []);
+      })
+      .catch(() => {
+        if (isCancelled) return;
+        setResults([]);
+      })
+      .finally(() => {
+        if (isCancelled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [trimmedQuery]);
 
   return (
     <Box flex={1} gap="md">
       <TextField
         placeholder="Search for a destination..."
         value={query}
-        onChangeText={setQuery}
+        onChangeText={handleChangeQuery}
         leftIcon={<Search size={18} color={ColorPalette.gray500} />}
         autoFocus
       />
@@ -48,7 +75,7 @@ export function LocationSearch({ onSelect }: LocationSearchProps) {
 
       <ScrollView keyboardShouldPersistTaps="handled">
         <Box gap="xs">
-          {results.map((prediction) => (
+          {visibleResults.map((prediction) => (
             <Pressable
               key={prediction.place_id}
               onPress={() => onSelect(prediction)}
