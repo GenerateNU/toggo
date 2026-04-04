@@ -2,7 +2,6 @@ import { useGetTrip } from "@/api/trips/useGetTrip";
 import { Box, Screen } from "@/design-system";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Alert } from "react-native";
 import { CreatePitchFlowSheet } from "./components/create-pitch-flow-sheet";
 
 export default function CreatePitch() {
@@ -13,7 +12,6 @@ export default function CreatePitch() {
   useEffect(() => {
     if (isTripLoading) return;
     if (trip?.pitch_deadline) return;
-    Alert.alert("Deadline required", "Set a trip deadline before pitching.");
     router.replace(`/trips/${tripID}/pitches`);
   }, [isTripLoading, router, trip?.pitch_deadline, tripID]);
 

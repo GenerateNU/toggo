@@ -8,7 +8,7 @@ export { Text } from "./primitives/text";
 export { BaseButton } from "./components/buttons/base";
 export { Button } from "./components/buttons/button";
 export { default as Chip } from "./components/buttons/chip";
-export type { ChipProps } from "./components/buttons/chip";
+export type { ChipProps, ChipVariant } from "./components/buttons/chip";
 export { default as Toggle } from "./components/buttons/toggle";
 export type { ToggleProps } from "./components/buttons/toggle";
 
