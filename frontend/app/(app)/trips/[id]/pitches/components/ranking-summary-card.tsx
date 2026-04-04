@@ -167,7 +167,6 @@ export function RankingSummaryCard({
               <PitchedBy
                 userId={pitch.user_id}
                 profilePhotoUrl={pitch.profile_picture_url}
-                username={pitch.username}
               />
             </Box>
 

@@ -3,7 +3,6 @@ import { Avatar, Box, Text } from "@/design-system";
 interface PitchedByProps {
   userId?: string | null;
   profilePhotoUrl?: string | null;
-  username?: string | null;
 }
 
 export function PitchedBy({ userId, profilePhotoUrl }: PitchedByProps) {
