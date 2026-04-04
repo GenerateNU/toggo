@@ -32,6 +32,9 @@ import {
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
+import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
+import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
+import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { useCreateTrip } from "@/index";
 import type { ModelsActivity } from "@/types/types.gen";
 import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
@@ -96,7 +99,9 @@ export default function HomeScreen() {
   const { width: viewportWidth } = useWindowDimensions();
   const profile = useProfileAvatar();
   const createTripMutation = useCreateTrip();
+  const updateTripMutation = useUpdateTrip();
   const bottomSheetRef = useRef<any>(null);
+  const createTripSheetRef = useRef<any>(null);
   const pendingTripCode = useUserStore((s) => s.pendingTripCode);
   const setPendingTripCode = useUserStore((s) => s.setPendingTripCode);
 
@@ -242,19 +247,31 @@ export default function HomeScreen() {
     }
   };
 
-  const handleCreateTrip = async () => {
-    const data = {
-      name: "Trip Name",
-      budget_min: 1,
-      budget_max: 1000,
-    };
+  const handleCreateTrip = () => {
+    createTripSheetRef.current?.snapToIndex(0);
+  };
+
+  const handleTripCreated = async (params: CreateTripParams) => {
+    createTripSheetRef.current?.close();
     try {
-      const result = await createTripMutation.mutateAsync({ data });
-      if (result?.id) {
-        router.push(`/trips/${result.id}`);
+      const result = await createTripMutation.mutateAsync({
+        data: { name: "New Trip", budget_min: 1, budget_max: 1000 },
+      });
+      if (!result?.id) return;
+
+      if (params.startDate) {
+        await updateTripMutation.mutateAsync({
+          tripID: result.id,
+          data: {
+            start_date: params.startDate,
+            ...(params.endDate ? { end_date: params.endDate } : {}),
+          },
+        });
       }
-    } catch (e) {
-      console.log("Error creating trip", e);
+
+      router.push(`/trips/${result.id}`);
+    } catch {
+      // mutation error state covers feedback
     }
   };
 
@@ -479,6 +496,11 @@ export default function HomeScreen() {
           />
         </Box>
       </BottomSheet>
+
+      <CreateTripSheet
+        bottomSheetRef={createTripSheetRef}
+        onCreate={handleTripCreated}
+      />
 
       {showToast && (
         <AnimatedBox
