@@ -1,6 +1,5 @@
 import { useGetUnreadActivityCount } from "@/api/activity-feed/useGetUnreadActivityCount";
-import { Box, Icon, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
+import { Box, Button, Icon, Text } from "@/design-system";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -34,10 +33,6 @@ export function UpcomingTripHeroCard({
   const updatesLabel = hasUnreadUpdates
     ? `View ${unreadCount} new update${unreadCount === 1 ? "" : "s"}`
     : "View updates";
-  const updatesColor = hasUnreadUpdates ? "blue500" : "brand600";
-  const updatesBackgroundColor = hasUnreadUpdates
-    ? ColorPalette.blue25
-    : ColorPalette.brand50;
 
   return (
     <Pressable onPress={() => router.push(`/trips/${tripId}`)}>
@@ -87,34 +82,19 @@ export function UpcomingTripHeroCard({
           ) : null}
         </Box>
 
-        <Box paddingHorizontal="xs" paddingVertical="xxs">
+        <Box paddingHorizontal="xs" gap="xxs">
           <Text variant="headingSm" color="gray900">
             {trip.name?.trim() || "Untitled trip"}
           </Text>
-        </Box>
-
-        <Box paddingHorizontal="xs">
           <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />
         </Box>
 
-        <Box paddingHorizontal="xs">
-          <Pressable onPress={() => router.push(`/trips/${tripId}`)}>
-            <Box
-              borderRadius="md"
-              padding="sm"
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-              gap="xs"
-              style={{ backgroundColor: updatesBackgroundColor }}
-            >
-              <Icon icon={BellDot} size="sm" color={updatesColor} />
-              <Text variant="bodySmStrong" color={updatesColor}>
-                {updatesLabel}
-              </Text>
-            </Box>
-          </Pressable>
-        </Box>
+        <Button
+          label={updatesLabel}
+          layout="leadingIcon"
+          variant="Blue"
+          leftIcon={BellDot}
+        />
       </Box>
     </Pressable>
   );

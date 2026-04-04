@@ -12,10 +12,11 @@ const Layout = () => {
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         headerLeft: () => <BackButton />,
         headerBackVisible: false,
         headerTitleAlign: "center",
-        headerTransparent: true,
+        headerShadowVisible: false,
         headerTitle: "",
       }}
     >

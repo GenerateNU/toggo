@@ -1,4 +1,5 @@
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
+import { Button } from "@/design-system/components/buttons/button";
 import { Icon } from "@/design-system/components/icons/icon";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
@@ -183,7 +184,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
     <>
       {variant === "circular" ? renderCircular() : renderRectangular()}
 
-      <BottomSheetModal ref={sheetRef} snapPoints={snapPoints} initialIndex={-1}>
+      <BottomSheetModal
+        ref={sheetRef}
+        snapPoints={snapPoints}
+        initialIndex={-1}
+      >
         <Box flex={1} paddingHorizontal="lg" paddingTop="md" gap="lg">
           <Box
             flexDirection="row"
@@ -191,7 +196,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             alignItems="flex-start"
           >
             <Box flex={1} gap="xxs">
-              <Text variant="headingMd" color="gray900">
+              <Text variant="bodyMedium" color="gray900">
                 {title}
               </Text>
               {subtitle ? (
@@ -206,57 +211,28 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
           </Box>
 
           <Box gap="sm">
-            <TouchableOpacity onPress={handleLibrary} activeOpacity={0.7}>
-              <Box
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="center"
-                gap="sm"
-                paddingVertical="lg"
-                backgroundColor="gray100"
-                borderRadius="lg"
-              >
-                <Icon icon={Images} size="md" color="gray900" />
-                <Text variant="bodyMedium" color="gray900">
-                  Choose from library
-                </Text>
-              </Box>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={handleCamera} activeOpacity={0.7}>
-              <Box
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="center"
-                gap="sm"
-                paddingVertical="lg"
-                backgroundColor="gray100"
-                borderRadius="lg"
-              >
-                <Icon icon={Camera} size="md" color="gray900" />
-                <Text variant="bodyMedium" color="gray900">
-                  Take photo
-                </Text>
-              </Box>
-            </TouchableOpacity>
-
+            <Button
+              layout="leadingIcon"
+              label="Choose from library"
+              leftIcon={Images}
+              variant="Secondary"
+              onPress={handleLibrary}
+            />
+            <Button
+              layout="leadingIcon"
+              label="Take photo"
+              leftIcon={Camera}
+              variant="Secondary"
+              onPress={handleCamera}
+            />
             {value && (
-              <TouchableOpacity onPress={handleRemove} activeOpacity={0.7}>
-                <Box
-                  flexDirection="row"
-                  alignItems="center"
-                  justifyContent="center"
-                  gap="sm"
-                  paddingVertical="lg"
-                  backgroundColor="gray100"
-                  borderRadius="lg"
-                >
-                  <Icon icon={Trash2} size="md" color="statusError" />
-                  <Text variant="bodyMedium" color="statusError">
-                    Remove photo
-                  </Text>
-                </Box>
-              </TouchableOpacity>
+              <Button
+                layout="leadingIcon"
+                label="Remove photo"
+                leftIcon={Trash2}
+                variant="Destructive"
+                onPress={handleRemove}
+              />
             )}
           </Box>
         </Box>

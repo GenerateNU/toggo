@@ -1,4 +1,5 @@
 import { useDeleteUser } from "@/api";
+import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUploadProfilePicture } from "@/api/files/custom/useUploadProfilePicture";
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { DeleteAccountSheet } from "@/app/(app)/components/delete-account-sheet";
@@ -84,6 +85,12 @@ const AVATAR_SIZE = 120;
 
 export default function Settings() {
   const { currentUser, logout, refreshCurrentUser } = useUser();
+  const { data: profileImageData } = useGetImage(
+    [currentUser?.profile_picture],
+    "small",
+  );
+  const profilePhotoUrl = profileImageData[0]?.url;
+
   const { mutateAsync: uploadPhoto, isPending: isUploading } =
     useUploadProfilePicture();
   const { mutateAsync: updateUser } = useUpdateUser();
@@ -129,7 +136,7 @@ export default function Settings() {
             <ImagePicker
               variant="circular"
               size={AVATAR_SIZE}
-              value={currentUser?.profile_picture ?? undefined}
+              value={profilePhotoUrl ?? undefined}
               onChange={handlePhotoChange}
               disabled={isUploading}
               title="Edit profile picture"

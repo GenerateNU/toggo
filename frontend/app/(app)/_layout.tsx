@@ -1,5 +1,12 @@
 import { useUser } from "@/contexts/user";
-import { BackButton, Box, Button, Logo, ProfileAvatarButton, ToastProvider } from "@/design-system";
+import {
+  BackButton,
+  Box,
+  Button,
+  Logo,
+  ProfileAvatarButton,
+  ToastProvider,
+} from "@/design-system";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
 import { Redirect, router, Stack } from "expo-router";
@@ -33,7 +40,13 @@ function HomeHeaderRight() {
   };
 
   return (
-    <Button accessibilityLabel="Create a trip" icon={PlusIcon} variant="IconSecondary" layout="iconOnly" onPress={handleCreateTrip} />
+    <Button
+      accessibilityLabel="Create a trip"
+      icon={PlusIcon}
+      variant="IconSecondary"
+      layout="iconOnly"
+      onPress={handleCreateTrip}
+    />
   );
 }
 
@@ -54,7 +67,11 @@ const Layout = () => {
           options={{
             headerShown: true,
             headerTransparent: true,
-            headerTitle: () => <Box paddingTop="sm"><Logo size="xl" /></Box>,
+            headerTitle: () => (
+              <Box paddingTop="sm">
+                <Logo size="xl" />
+              </Box>
+            ),
             headerTitleAlign: "center",
             headerShadowVisible: false,
             headerLeft: () => <HomeHeaderLeft />,

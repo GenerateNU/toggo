@@ -1,4 +1,7 @@
-import { getNotificationPreferencesQueryKey, useGetNotificationPreferences } from "@/api/notification-preferences/useGetNotificationPreferences";
+import {
+  getNotificationPreferencesQueryKey,
+  useGetNotificationPreferences,
+} from "@/api/notification-preferences/useGetNotificationPreferences";
 import { useGetOrCreateDefaultNotificationPreferences } from "@/api/notification-preferences/useGetOrCreateDefaultNotificationPreferences";
 import { useUpdateNotificationPreferences } from "@/api/notification-preferences/useUpdateNotificationPreferences";
 import { BackButton, Box, Text, Toggle } from "@/design-system";
