@@ -50,3 +50,5 @@ export function TripsSectionHeader({
     </Box>
   );
 }
+
+export default TripsSectionHeader;

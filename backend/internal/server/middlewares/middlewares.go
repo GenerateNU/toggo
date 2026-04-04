@@ -36,7 +36,7 @@ func SetUpMiddlewares(app *fiber.App, config *config.Configuration) {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 	}))
 	app.Use(favicon.New())
 	app.Use(compress.New(compress.Config{

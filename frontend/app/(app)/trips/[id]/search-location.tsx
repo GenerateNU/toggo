@@ -2,10 +2,11 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Icon, Screen, Text, TextField } from "@/design-system";
+import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import {
   Camera,
   MapView,
@@ -14,7 +15,6 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { locationSelectStore } from "@/utilities/locationSelectStore";
 import {
   ActivityIndicator,
   FlatList,
@@ -123,9 +123,13 @@ export default function SearchLocationScreen() {
   const showPredictions = predictions.length > 0;
   const showMap = !!selectedLocation && !showPredictions;
 
+  const handleConfirm = () => {
+    router.back();
+  };
+
   return (
     <Screen>
-      <Box flex={1} backgroundColor="gray25">
+      <Box flex={1} backgroundColor="gray50">
         <SearchHeader
           query={query}
           onChangeQuery={handleQueryChange}
@@ -146,6 +150,22 @@ export default function SearchLocationScreen() {
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
+        )}
+
+        {showMap && (
+          <Box
+            paddingHorizontal="sm"
+            paddingVertical="sm"
+            backgroundColor="white"
+            style={styles.confirmBar}
+          >
+            <Button
+              layout="textOnly"
+              label={`Select ${selectedLocation.name || selectedLocation.formatted_address}`}
+              variant="Primary"
+              onPress={handleConfirm}
+            />
+          </Box>
         )}
       </Box>
     </Screen>
@@ -180,7 +200,7 @@ function SearchHeader({
         alignItems="center"
         style={styles.titleRow}
       >
-        <Text variant="headingSm" color="gray900">
+        <Text variant="headingSm" color="gray500">
           Location
         </Text>
         {query.length > 0 && (
@@ -200,9 +220,9 @@ function SearchHeader({
         placeholder="Enter a city, neighborhood, or address"
         leftIcon={
           isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray500} />
+            <ActivityIndicator size="small" color={ColorPalette.gray400} />
           ) : (
-            <Icon icon={Search} color="gray500" size="sm" />
+            <Icon icon={Search} color="gray400" size="sm" />
           )
         }
       />
@@ -232,14 +252,14 @@ function PredictionsList({
             backgroundColor="white"
             style={styles.predictionItem}
           >
-            <Text variant="bodySmDefault" color="gray900">
+            <Text variant="bodyDefault" color="gray500">
               {item.description}
             </Text>
           </Box>
         </TouchableOpacity>
       )}
       ItemSeparatorComponent={() => (
-        <Box style={styles.separator} backgroundColor="gray100" />
+        <Box style={styles.separator} backgroundColor="gray50" />
       )}
       style={styles.predictionsList}
     />
@@ -282,7 +302,7 @@ function LocationMapView({ location }: { location: LocationDetails }) {
           paddingVertical="xs"
           style={styles.locationLabelInner}
         >
-          <Text variant="bodyXsDefault" color="gray700" numberOfLines={1}>
+          <Text variant="bodyXsMedium" color="gray500" numberOfLines={1}>
             {location.name || location.formatted_address}
           </Text>
         </Box>
@@ -367,6 +387,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
+    elevation: 4,
+  },
+  confirmBar: {
+    shadowColor: ColorPalette.black,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 4,
   },
 });

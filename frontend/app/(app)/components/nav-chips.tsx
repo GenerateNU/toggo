@@ -32,3 +32,5 @@ export function NavChips() {
     </Box>
   );
 }
+
+export default NavChips;

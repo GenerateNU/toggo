@@ -26,3 +26,5 @@ export function HomeHeader({ username }: HomeHeaderProps) {
     </Box>
   );
 }
+
+export default HomeHeader;

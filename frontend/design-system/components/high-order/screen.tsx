@@ -1,12 +1,14 @@
 import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export function Screen({ children }: { children: React.ReactNode }) {
+type ScreenProps = {
+  children: React.ReactNode;
+  backgroundColor?: string;
+};
+
+export function Screen({ children, backgroundColor = "#FFFFFF" }: ScreenProps) {
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-      edges={["top"]}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor }} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

@@ -42,3 +42,5 @@ export function CreateProfileSheet({
     </BottomSheet>
   );
 }
+
+export default CreateProfileSheet;

@@ -103,8 +103,10 @@ export const ColorPalette = {
   blue900: Blue[900],
   blue950: Blue[950],
 
+  // Home surface accents (Figma: upcoming sections)
+  brandSecondarySubtle: Blue[25], // #F2F3FF
   backgroundOverlay: "rgba(0,0,0,0.4)",
-  backgroundWarm: "#FFF3E8",
+  backgroundWarm: "#FFF3E8", // Figma warm surface
 
   statusSuccess: Green[500],
   statusError: Red[500],
