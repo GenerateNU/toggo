@@ -5,50 +5,52 @@ import (
 )
 
 type Repository struct {
-	User             UserRepository
-	Health           HealthRepository
-	Image            ImageRepository
-	Comment          CommentRepository
-	CommentReaction  CommentReactionRepository
-	Membership       MembershipRepository
-	Trip             TripRepository
-	PitchLink        PitchLinkRepository
-	Pitch            PitchRepository
-	Activity         ActivityRepository
-	Category         CategoryRepository
-	ActivityCategory ActivityCategoryRepository
-	Poll             PollRepository
-	PollRanking      PollRankingRepository
-	PollVoting       PollVotingRepository
-	PollCategory     PollCategoryRepository
-	TripInvite       TripInviteRepository
-	Search           SearchRepository
-	ActivityRSVP     ActivityRSVPRepository
-	db               *bun.DB
+	User                    UserRepository
+	Health                  HealthRepository
+	Image                   ImageRepository
+	Comment                 CommentRepository
+	CommentReaction         CommentReactionRepository
+	Membership              MembershipRepository
+	Trip                    TripRepository
+	Pitch                   PitchRepository
+	PitchLink               PitchLinkRepository
+	Activity                ActivityRepository
+	Category                CategoryRepository
+	ActivityCategory        ActivityCategoryRepository
+	Poll                    PollRepository
+	PollRanking             PollRankingRepository
+	PollVoting              PollVotingRepository
+	PollCategory            PollCategoryRepository
+	TripInvite              TripInviteRepository
+	Search                  SearchRepository
+	ActivityRSVP            ActivityRSVPRepository
+	NotificationPreferences NotificationPreferencesRepository
+	db                      *bun.DB
 }
 
 func NewRepository(db *bun.DB) *Repository {
 	return &Repository{
-		User:             NewUserRepository(db),
-		Health:           NewHealthRepository(db),
-		Image:            NewImageRepository(db),
-		Comment:          NewCommentRepository(db),
-		CommentReaction:  NewCommentReactionRepository(db),
-		Trip:             NewTripRepository(db),
-		PitchLink:        NewPitchLinkRepository(db),
-		Poll:             NewPollRepository(db),
-		PollRanking:      NewPollRankingRepository(db),
-		PollVoting:       NewPollVotingRepository(db),
-		PollCategory:     NewPollCategoryRepository(db),
-		Membership:       NewMembershipRepository(db),
-		Pitch:            NewPitchRepository(db),
-		Activity:         NewActivityRepository(db),
-		Category:         NewCategoryRepository(db),
-		ActivityCategory: NewActivityCategoryRepository(db),
-		ActivityRSVP:     NewActivityRSVPRepository(db),
-		TripInvite:       NewTripInviteRepository(db),
-		Search:           NewSearchRepository(db),
-		db:               db,
+		User:                    NewUserRepository(db),
+		Health:                  NewHealthRepository(db),
+		Image:                   NewImageRepository(db),
+		Comment:                 NewCommentRepository(db),
+		CommentReaction:         NewCommentReactionRepository(db),
+		Trip:                    NewTripRepository(db),
+		Poll:                    NewPollRepository(db),
+		PollRanking:             NewPollRankingRepository(db),
+		PollVoting:              NewPollVotingRepository(db),
+		PollCategory:            NewPollCategoryRepository(db),
+		Membership:              NewMembershipRepository(db),
+		Pitch:                   NewPitchRepository(db),
+		PitchLink:               NewPitchLinkRepository(db),
+		Activity:                NewActivityRepository(db),
+		Category:                NewCategoryRepository(db),
+		ActivityCategory:        NewActivityCategoryRepository(db),
+		ActivityRSVP:            NewActivityRSVPRepository(db),
+		TripInvite:              NewTripInviteRepository(db),
+		Search:                  NewSearchRepository(db),
+		NotificationPreferences: NewNotificationPreferencesRepository(db),
+		db:                      db,
 	}
 }
 

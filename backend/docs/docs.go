@@ -3319,7 +3319,7 @@ const docTemplate = `{
                     "memberships"
                 ],
                 "summary": "Update notification preferences",
-                "operationId": "updateNotificationPreferences",
+                "operationId": "updateMembershipNotificationPreferences",
                 "parameters": [
                     {
                         "type": "string",
@@ -5200,6 +5200,229 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/users/me/notification-preferences": {
+            "get": {
+                "description": "Retrieves the notification preferences for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Get notification preferences",
+                "operationId": "getNotificationPreferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates notification preferences for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Create notification preferences",
+                "operationId": "createNotificationPreferences",
+                "parameters": [
+                    {
+                        "description": "Create notification preferences request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes notification preferences for the authenticated user",
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Delete notification preferences",
+                "operationId": "deleteNotificationPreferences",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates notification preferences for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Update notification preferences",
+                "operationId": "updateNotificationPreferences",
+                "parameters": [
+                    {
+                        "description": "Update notification preferences request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateUserNotificationPreferencesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/me/notification-preferences/default": {
+            "post": {
+                "description": "Returns existing preferences or creates default preferences for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notification-preferences"
+                ],
+                "summary": "Get or create default notification preferences",
+                "operationId": "getOrCreateDefaultNotificationPreferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.NotificationPreferences"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/{userID}": {
             "get": {
                 "description": "Retrieves a user by ID",
@@ -6106,6 +6329,29 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.CreatePitchRequest": {
             "type": "object",
             "required": [
@@ -6531,6 +6777,38 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.NotificationPreferences": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7686,6 +7964,29 @@ const docTemplate = `{
                 },
                 "pitch_deadline": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateUserNotificationPreferencesRequest": {
+            "type": "object",
+            "properties": {
+                "deadline_reminders": {
+                    "type": "boolean"
+                },
+                "finalized_decisions": {
+                    "type": "boolean"
+                },
+                "push_enabled": {
+                    "type": "boolean"
+                },
+                "trip_activity": {
+                    "type": "boolean"
+                },
+                "upcoming_trip": {
+                    "type": "boolean"
+                },
+                "voting_reminders": {
+                    "type": "boolean"
                 }
             }
         },

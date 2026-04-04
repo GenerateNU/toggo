@@ -314,10 +314,10 @@ func (s *TripService) createTripRankPoll(ctx context.Context, trip *models.Trip,
 		Question:  rankPollQuestion,
 		PollType:  models.PollTypeRank,
 	}
-	if _, err := s.Repository.Poll.CreatePoll(ctx, bun.Tx{}, poll, nil); err != nil {
+	if _, err := s.Poll.CreatePoll(ctx, bun.Tx{}, poll, nil); err != nil {
 		return err
 	}
-	return s.Repository.Trip.SetRankPollID(ctx, trip.ID, poll.ID)
+	return s.Trip.SetRankPollID(ctx, trip.ID, poll.ID)
 }
 
 const defaultInviteExpiry = 7 * 24 * time.Hour
