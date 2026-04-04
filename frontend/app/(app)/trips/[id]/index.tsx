@@ -554,9 +554,7 @@ export default function Trip() {
         </Box>
       </SafeAreaView>
 
-      {activeTab === "polls" && (
-        <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
-      )}
+      <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
 
       <CreatePollSheet
         ref={createPollSheetRef}
