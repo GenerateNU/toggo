@@ -384,7 +384,6 @@ export function AudioPitchSheet({
                 : formatTime(elapsed)}
             </Text>
             <Box
-              backgroundColor="gray50"
               borderRadius="md"
               paddingHorizontal="sm"
               style={{ height: 80 }}

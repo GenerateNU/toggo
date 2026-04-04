@@ -1,18 +1,28 @@
 import type { ModelsPlacePrediction } from "@/types/types.gen";
 
-type Callback = (prediction: ModelsPlacePrediction) => void;
+type SelectCallback = (prediction: ModelsPlacePrediction) => void;
+type CancelCallback = () => void;
 
-let pendingCallback: Callback | null = null;
+let pendingCallback: SelectCallback | null = null;
+let cancelCallback: CancelCallback | null = null;
 
 export const locationSelectStore = {
-  set: (cb: Callback) => {
-    pendingCallback = cb;
+  set: (onSelect: SelectCallback, onCancel?: CancelCallback) => {
+    pendingCallback = onSelect;
+    cancelCallback = onCancel ?? null;
   },
   resolve: (prediction: ModelsPlacePrediction) => {
     pendingCallback?.(prediction);
     pendingCallback = null;
+    cancelCallback = null;
+  },
+  cancel: () => {
+    cancelCallback?.();
+    pendingCallback = null;
+    cancelCallback = null;
   },
   clear: () => {
     pendingCallback = null;
+    cancelCallback = null;
   },
 };

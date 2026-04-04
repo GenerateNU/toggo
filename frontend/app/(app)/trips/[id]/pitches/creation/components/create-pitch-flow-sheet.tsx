@@ -8,7 +8,7 @@ import type { ModelsPlacePrediction } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import * as ExpoImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -65,21 +65,21 @@ export function CreatePitchFlowSheet({
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clearTransitionTimer = () => {
+  const clearTransitionTimer = useCallback(() => {
     if (transitionTimerRef.current) {
       clearTimeout(transitionTimerRef.current);
       transitionTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const clearCloseTimer = () => {
+  const clearCloseTimer = useCallback(() => {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const resetDraft = () => {
+  const resetDraft = useCallback(() => {
     setSelectedLocation(null);
     setTitle("");
     setDescription("");
@@ -88,15 +88,30 @@ export function CreatePitchFlowSheet({
     setLinks([]);
     setIsSubmitting(false);
     setCancelModalVisible(false);
-  };
+  }, []);
 
-  const closeFlow = () => {
+  const closeFlow = useCallback(() => {
     clearCloseTimer();
     clearTransitionTimer();
     setActiveOverlay("hidden");
     resetDraft();
     onClose();
-  };
+  }, [onClose, clearCloseTimer, clearTransitionTimer, resetDraft]);
+
+  const handleSelectLocation = useCallback(
+    (prediction: ModelsPlacePrediction) => {
+      clearTransitionTimer();
+      setSelectedLocation(prediction);
+      setTitle(prediction.description ?? prediction.main_text ?? "");
+      setActiveOverlay("transition");
+
+      transitionTimerRef.current = setTimeout(() => {
+        setActiveOverlay("create");
+        transitionTimerRef.current = null;
+      }, LOCATION_TO_CREATE_TRANSITION_MS);
+    },
+    [clearTransitionTimer],
+  );
 
   useEffect(() => {
     if (!visible) {
@@ -107,41 +122,29 @@ export function CreatePitchFlowSheet({
       return;
     }
     setActiveOverlay("location");
-  }, [visible]);
+  }, [visible, clearTransitionTimer]);
 
   useEffect(() => {
     if (!visible || activeOverlay !== "location") return;
-    locationSelectStore.set((prediction) => {
-      handleSelectLocation(prediction);
-    });
+    locationSelectStore.set(
+      (prediction) => handleSelectLocation(prediction),
+      () => closeFlow(),
+    );
     router.push(`/trips/${tripID}/search-location?mode=select`);
-  }, [visible, activeOverlay]);
+  }, [visible, activeOverlay, closeFlow, handleSelectLocation, router, tripID]);
 
   useEffect(() => {
-    return () => clearTransitionTimer();
-  }, []);
-
-  useEffect(() => {
-    return () => clearCloseTimer();
-  }, []);
+    return () => {
+      clearTransitionTimer();
+      clearCloseTimer();
+    };
+  }, [clearTransitionTimer, clearCloseTimer]);
 
   const selectedLocationLabel =
     selectedLocation?.description ??
     selectedLocation?.main_text ??
     selectedLocation?.secondary_text ??
     "";
-
-  const handleSelectLocation = (prediction: ModelsPlacePrediction) => {
-    clearTransitionTimer();
-    setSelectedLocation(prediction);
-    setTitle(prediction.description ?? prediction.main_text ?? "");
-    setActiveOverlay("transition");
-
-    transitionTimerRef.current = setTimeout(() => {
-      setActiveOverlay("create");
-      transitionTimerRef.current = null;
-    }, LOCATION_TO_CREATE_TRANSITION_MS);
-  };
 
   const pickImage = async () => {
     const { status } =

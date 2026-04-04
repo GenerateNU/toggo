@@ -64,6 +64,13 @@ export default function SearchLocationScreen() {
   const debouncedQuery = useDebouncedValue(query, 300);
 
   useEffect(() => {
+    if (!isSelectMode) return;
+    return () => {
+      locationSelectStore.cancel();
+    };
+  }, [isSelectMode]);
+
+  useEffect(() => {
     if (isSelectingPlace) return;
     if (!debouncedQuery.trim()) {
       setPredictions([]);
