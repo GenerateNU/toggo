@@ -17,3 +17,5 @@ export function HomeGreeting({ greetingName }: HomeGreetingProps) {
     </Box>
   );
 }
+
+export default HomeGreeting;

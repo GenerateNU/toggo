@@ -40,3 +40,5 @@ export function RecommendedTripsRow() {
     </ScrollView>
   );
 }
+
+export default RecommendedTripsRow;

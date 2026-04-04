@@ -47,3 +47,5 @@ export function HomeUpcomingEmptyCard({
     </Box>
   );
 }
+
+export default HomeUpcomingEmptyCard;

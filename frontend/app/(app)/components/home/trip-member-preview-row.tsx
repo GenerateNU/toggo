@@ -112,3 +112,5 @@ export function TripMemberPreviewRow({
     </Box>
   );
 }
+
+export default TripMemberPreviewRow;

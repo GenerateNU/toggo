@@ -72,3 +72,5 @@ export function PastTripCompactCard({
     </Pressable>
   );
 }
+
+export default PastTripCompactCard;

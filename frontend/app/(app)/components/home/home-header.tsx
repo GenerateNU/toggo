@@ -49,3 +49,5 @@ export function HomeHeader({
     </Box>
   );
 }
+
+export default HomeHeader;

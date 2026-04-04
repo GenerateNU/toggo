@@ -51,3 +51,7 @@ export const RECOMMENDED_DESTINATIONS: RecommendedTripDestination[] = [
       "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7",
   },
 ];
+
+export default function HomeConstantsRoute() {
+  return null;
+}

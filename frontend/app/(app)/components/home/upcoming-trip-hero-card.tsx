@@ -126,3 +126,5 @@ export function UpcomingTripHeroCard({
     </Pressable>
   );
 }
+
+export default UpcomingTripHeroCard;

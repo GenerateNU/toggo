@@ -123,3 +123,7 @@ export function fallbackRangeFromCreatedAt(
     end: end.toISOString(),
   };
 }
+
+export default function TripDateUtilsRoute() {
+  return null;
+}
