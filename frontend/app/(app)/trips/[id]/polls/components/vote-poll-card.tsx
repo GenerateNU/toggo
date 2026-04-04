@@ -2,8 +2,10 @@ import { useCastVote } from "@/api/polls/useCastVote";
 import { Box, Text, useToast } from "@/design-system";
 import { UserAvatar } from "@/design-system/components/avatars/user-avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -88,6 +90,10 @@ export default function VotePollCard({
 
   // Local selection state — initialized from server vote, synced on prop change
   const [selectedIds, setSelectedIds] = useState<string[]>(serverVotedIds);
+
+  useEffect(() => {
+    setSelectedIds(serverVotedIds);
+  }, [serverVotedIds]);
 
   // True when selection is identical to what's already on the server
   const isUnchanged = useMemo(() => {
@@ -232,7 +238,7 @@ export default function VotePollCard({
         </Box>
 
         {/* Submit */}
-        <Box alignItems="flex-end" style={{ marginTop: 4 }}>
+        <Box alignItems="flex-end" style={{ marginTop: Layout.spacing.xxs }}>
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={submitDisabled}
@@ -269,7 +275,7 @@ const styles = StyleSheet.create({
   },
   cardInner: {
     padding: 12,
-    gap: 16,
+    gap: Layout.spacing.sm,
   },
   optionsList: {
     gap: 10,
@@ -279,8 +285,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 20,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: Layout.spacing.sm,
+    gap: Layout.spacing.xs,
   },
   optionRowSelected: {
     backgroundColor: ColorPalette.gray900,
@@ -326,9 +332,9 @@ const styles = StyleSheet.create({
   submitButton: {
     width: SUBMIT_BUTTON_WIDTH,
     backgroundColor: ColorPalette.brand500,
-    borderRadius: 12,
+    borderRadius: CornerRadius.md,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: Layout.spacing.sm,
     alignItems: "center",
     justifyContent: "center",
   },

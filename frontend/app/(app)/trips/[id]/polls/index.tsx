@@ -13,6 +13,7 @@ import {
   Text,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { Layout } from "@/design-system/tokens/layout";
 import {
   ModelsPollAPIResponse,
   ModelsRankPollResultsResponse,
@@ -379,10 +380,34 @@ function RankPollResultsRow({
   tripId: string;
   showDivider: boolean;
 }) {
-  const { data } = useGetRankPollResults(tripId, poll.id ?? "", {
-    query: { enabled: !!(tripId && poll.id) },
-  });
-  if (!data) return null;
+  const { data, isLoading, isError } = useGetRankPollResults(
+    tripId,
+    poll.id ?? "",
+    { query: { enabled: !!(tripId && poll.id) } },
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        {showDivider && <Divider />}
+        <Box alignItems="center" paddingVertical="sm">
+          <ActivityIndicator color={ColorPalette.brand500} />
+        </Box>
+      </>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <>
+        {showDivider && <Divider />}
+        <Text variant="bodyXsDefault" color="gray500">
+          Results unavailable
+        </Text>
+      </>
+    );
+  }
+
   return (
     <>
       {showDivider && <Divider />}
@@ -399,16 +424,16 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.gray25,
   },
   content: {
-    padding: 16,
+    padding: Layout.spacing.sm,
     gap: 12,
-    paddingBottom: 48,
+    paddingBottom: Layout.spacing.xl,
   },
   loadingCard: {
     borderWidth: 1,
     borderColor: ColorPalette.gray100,
   },
   resultsCard: {
-    padding: 16,
+    padding: Layout.spacing.sm,
     gap: 12,
     borderWidth: 1,
     borderColor: ColorPalette.gray100,
@@ -430,7 +455,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: Layout.spacing.xs,
     paddingVertical: 5,
   },
   rankBadgeSmall: {

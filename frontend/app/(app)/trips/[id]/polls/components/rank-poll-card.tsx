@@ -3,6 +3,7 @@ import { Box, Text, useToast } from "@/design-system";
 import { UserAvatar } from "@/design-system/components/avatars/user-avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { ModelsRankPollResultsResponse } from "@/types/types.gen";
 import { GripVertical } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -212,6 +213,8 @@ export default function RankPollCard({
     [],
   );
 
+  const hasVoted = poll.user_has_voted ?? false;
+
   // ─── Submit ───────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
@@ -238,8 +241,6 @@ export default function RankPollCard({
       toast.show({ message: "Failed to submit ranking. Please try again." });
     }
   };
-
-  const hasVoted = poll.user_has_voted ?? false;
 
   // True when the current order matches the user's saved ranking
   const isUnchanged = useMemo(() => {
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   list: {
-    gap: 8,
+    gap: Layout.spacing.xs,
   },
   row: {
     flexDirection: "row",
@@ -362,9 +363,9 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.gray100,
     borderRadius: 20,
     paddingVertical: 12,
-    paddingLeft: 16,
+    paddingLeft: Layout.spacing.sm,
     paddingRight: 10,
-    gap: 8,
+    gap: Layout.spacing.xs,
     height: ITEM_HEIGHT,
   },
   badge: {
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
     color: ColorPalette.gray700,
   },
   handle: {
-    paddingHorizontal: 4,
+    paddingHorizontal: Layout.spacing.xxs,
     paddingVertical: 6,
     justifyContent: "center",
     alignItems: "center",
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.brand500,
     borderRadius: CornerRadius.md,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: Layout.spacing.sm,
     alignItems: "center",
   },
   submitDisabled: {
