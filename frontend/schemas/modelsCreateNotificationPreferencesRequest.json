@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "deadline_reminders": { "type": "boolean" },
+    "finalized_decisions": { "type": "boolean" },
+    "push_enabled": { "type": "boolean" },
+    "trip_activity": { "type": "boolean" },
+    "upcoming_trip": { "type": "boolean" },
+    "voting_reminders": { "type": "boolean" }
+  },
+  "x-readme-ref-name": "models.CreateNotificationPreferencesRequest"
+}

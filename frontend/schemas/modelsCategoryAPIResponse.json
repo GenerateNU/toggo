@@ -4,7 +4,10 @@
     "created_at": { "type": "string" },
     "icon": { "type": "string" },
     "is_default": { "type": "boolean" },
-    "is_hidden": { "type": "boolean" },
+    "is_hidden": {
+      "description": "only present for admins",
+      "type": "boolean"
+    },
     "label": { "type": "string" },
     "name": { "type": "string" },
     "position": { "type": "integer" },

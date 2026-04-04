@@ -1,7 +1,7 @@
 {
   "type": "object",
   "properties": {
-    "categories": {
+    "tabs": {
       "type": "array",
       "items": {
         "type": "object",
@@ -23,5 +23,5 @@
       }
     }
   },
-  "x-readme-ref-name": "models.CategoryListResponse"
+  "x-readme-ref-name": "models.TabListResponse"
 }

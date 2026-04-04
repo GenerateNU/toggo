@@ -370,6 +370,7 @@ export type ModelsCategoryAPIResponse = {
    */
   is_default?: boolean;
   /**
+   * @description only present for admins
    * @type boolean | undefined
    */
   is_hidden?: boolean;
@@ -400,6 +401,19 @@ export type ModelsCategoryListResponse = {
    * @type array | undefined
    */
   categories?: ModelsCategoryAPIResponse[];
+};
+
+export type ModelsCategoryTabOrder = {
+  /**
+   * @minLength 1
+   * @type string
+   */
+  name: string;
+  /**
+   * @minLength 0
+   * @type integer | undefined
+   */
+  position?: number;
 };
 
 export const modelsEntityType = {
@@ -755,6 +769,33 @@ export type ModelsCreateMembershipRequest = {
    * @type string
    */
   user_id: string;
+};
+
+export type ModelsCreateNotificationPreferencesRequest = {
+  /**
+   * @type boolean | undefined
+   */
+  deadline_reminders?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  finalized_decisions?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  push_enabled?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  trip_activity?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  upcoming_trip?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  voting_reminders?: boolean;
 };
 
 export type ModelsCreatePitchRequest = {
@@ -1236,6 +1277,45 @@ export type ModelsNotificationError = {
    * @type string | undefined
    */
   user_id?: string;
+};
+
+export type ModelsNotificationPreferences = {
+  /**
+   * @type string | undefined
+   */
+  created_at?: string;
+  /**
+   * @type boolean | undefined
+   */
+  deadline_reminders?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  finalized_decisions?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  push_enabled?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  trip_activity?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  upcoming_trip?: boolean;
+  /**
+   * @type string | undefined
+   */
+  updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type boolean | undefined
+   */
+  voting_reminders?: boolean;
 };
 
 export type ModelsNotificationResponse = {
@@ -2004,6 +2084,13 @@ export type ModelsSubmitRankingRequest = {
   rankings: ModelsRankingItem[];
 };
 
+export type ModelsTabListResponse = {
+  /**
+   * @type array | undefined
+   */
+  tabs?: ModelsCategoryAPIResponse[];
+};
+
 export type ModelsTrip = {
   /**
    * @type integer | undefined
@@ -2151,6 +2238,13 @@ export type ModelsUpdateActivityRequest = {
   time_of_day?: ModelsActivityTimeOfDay;
 };
 
+export type ModelsUpdateCategoryTabOrderRequest = {
+  /**
+   * @type array
+   */
+  tabs: ModelsCategoryTabOrder[];
+};
+
 export type ModelsUpdateCommentRequest = {
   /**
    * @minLength 1
@@ -2260,6 +2354,33 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined
    */
   pitch_deadline?: string;
+};
+
+export type ModelsUpdateUserNotificationPreferencesRequest = {
+  /**
+   * @type boolean | undefined
+   */
+  deadline_reminders?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  finalized_decisions?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  push_enabled?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  trip_activity?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  upcoming_trip?: boolean;
+  /**
+   * @type boolean | undefined
+   */
+  voting_reminders?: boolean;
 };
 
 export type ModelsUpdateUserRequest = {
@@ -5096,7 +5217,7 @@ export type DemoteFromAdminMutation = {
     | DemoteFromAdmin500;
 };
 
-export type UpdateNotificationPreferencesPathParams = {
+export type UpdateMembershipNotificationPreferencesPathParams = {
   /**
    * @description Trip ID
    * @type string
@@ -5112,58 +5233,58 @@ export type UpdateNotificationPreferencesPathParams = {
 /**
  * @description OK
  */
-export type UpdateNotificationPreferences200 = ModelsMembership;
+export type UpdateMembershipNotificationPreferences200 = ModelsMembership;
 
 /**
  * @description Bad Request
  */
-export type UpdateNotificationPreferences400 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences400 = ErrsAPIError;
 
 /**
  * @description Unauthorized
  */
-export type UpdateNotificationPreferences401 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences401 = ErrsAPIError;
 
 /**
  * @description Forbidden
  */
-export type UpdateNotificationPreferences403 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences403 = ErrsAPIError;
 
 /**
  * @description Not Found
  */
-export type UpdateNotificationPreferences404 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences404 = ErrsAPIError;
 
 /**
  * @description Unprocessable Entity
  */
-export type UpdateNotificationPreferences422 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences422 = ErrsAPIError;
 
 /**
  * @description Internal Server Error
  */
-export type UpdateNotificationPreferences500 = ErrsAPIError;
+export type UpdateMembershipNotificationPreferences500 = ErrsAPIError;
 
 /**
  * @description Notification preferences
  */
-export type UpdateNotificationPreferencesMutationRequest =
+export type UpdateMembershipNotificationPreferencesMutationRequest =
   ModelsUpdateNotificationPreferencesRequest;
 
-export type UpdateNotificationPreferencesMutationResponse =
-  UpdateNotificationPreferences200;
+export type UpdateMembershipNotificationPreferencesMutationResponse =
+  UpdateMembershipNotificationPreferences200;
 
-export type UpdateNotificationPreferencesMutation = {
-  Response: UpdateNotificationPreferences200;
-  Request: UpdateNotificationPreferencesMutationRequest;
-  PathParams: UpdateNotificationPreferencesPathParams;
+export type UpdateMembershipNotificationPreferencesMutation = {
+  Response: UpdateMembershipNotificationPreferences200;
+  Request: UpdateMembershipNotificationPreferencesMutationRequest;
+  PathParams: UpdateMembershipNotificationPreferencesPathParams;
   Errors:
-    | UpdateNotificationPreferences400
-    | UpdateNotificationPreferences401
-    | UpdateNotificationPreferences403
-    | UpdateNotificationPreferences404
-    | UpdateNotificationPreferences422
-    | UpdateNotificationPreferences500;
+    | UpdateMembershipNotificationPreferences400
+    | UpdateMembershipNotificationPreferences401
+    | UpdateMembershipNotificationPreferences403
+    | UpdateMembershipNotificationPreferences404
+    | UpdateMembershipNotificationPreferences422
+    | UpdateMembershipNotificationPreferences500;
 };
 
 export type PromoteToAdminPathParams = {
@@ -6004,6 +6125,121 @@ export type GetRankPollVotersQuery = {
     | GetRankPollVoters500;
 };
 
+export type GetTripTabsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetTripTabs200 = ModelsTabListResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetTripTabs400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetTripTabs401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetTripTabs403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetTripTabs404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetTripTabs500 = ErrsAPIError;
+
+export type GetTripTabsQueryResponse = GetTripTabs200;
+
+export type GetTripTabsQuery = {
+  Response: GetTripTabs200;
+  PathParams: GetTripTabsPathParams;
+  Errors:
+    | GetTripTabs400
+    | GetTripTabs401
+    | GetTripTabs403
+    | GetTripTabs404
+    | GetTripTabs500;
+};
+
+export type ReorderTripTabsPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type ReorderTripTabs204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type ReorderTripTabs400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type ReorderTripTabs401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type ReorderTripTabs403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type ReorderTripTabs404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type ReorderTripTabs422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type ReorderTripTabs500 = ErrsAPIError;
+
+/**
+ * @description Reorder request
+ */
+export type ReorderTripTabsMutationRequest =
+  ModelsUpdateCategoryTabOrderRequest;
+
+export type ReorderTripTabsMutationResponse = ReorderTripTabs204;
+
+export type ReorderTripTabsMutation = {
+  Response: ReorderTripTabs204;
+  Request: ReorderTripTabsMutationRequest;
+  PathParams: ReorderTripTabsPathParams;
+  Errors:
+    | ReorderTripTabs400
+    | ReorderTripTabs401
+    | ReorderTripTabs403
+    | ReorderTripTabs404
+    | ReorderTripTabs422
+    | ReorderTripTabs500;
+};
+
 export type GetPollsByTripIDPathParams = {
   /**
    * @description Trip ID
@@ -6637,6 +6873,186 @@ export type GetCurrentUserQueryResponse = GetCurrentUser200;
 export type GetCurrentUserQuery = {
   Response: GetCurrentUser200;
   Errors: GetCurrentUser401 | GetCurrentUser404 | GetCurrentUser500;
+};
+
+/**
+ * @description OK
+ */
+export type GetNotificationPreferences200 = ModelsNotificationPreferences;
+
+/**
+ * @description Unauthorized
+ */
+export type GetNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetNotificationPreferences404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetNotificationPreferences500 = ErrsAPIError;
+
+export type GetNotificationPreferencesQueryResponse =
+  GetNotificationPreferences200;
+
+export type GetNotificationPreferencesQuery = {
+  Response: GetNotificationPreferences200;
+  Errors:
+    | GetNotificationPreferences401
+    | GetNotificationPreferences404
+    | GetNotificationPreferences500;
+};
+
+/**
+ * @description Created
+ */
+export type CreateNotificationPreferences201 = ModelsNotificationPreferences;
+
+/**
+ * @description Bad Request
+ */
+export type CreateNotificationPreferences400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type CreateNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Conflict
+ */
+export type CreateNotificationPreferences409 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type CreateNotificationPreferences422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type CreateNotificationPreferences500 = ErrsAPIError;
+
+/**
+ * @description Create notification preferences request
+ */
+export type CreateNotificationPreferencesMutationRequest =
+  ModelsCreateNotificationPreferencesRequest;
+
+export type CreateNotificationPreferencesMutationResponse =
+  CreateNotificationPreferences201;
+
+export type CreateNotificationPreferencesMutation = {
+  Response: CreateNotificationPreferences201;
+  Request: CreateNotificationPreferencesMutationRequest;
+  Errors:
+    | CreateNotificationPreferences400
+    | CreateNotificationPreferences401
+    | CreateNotificationPreferences409
+    | CreateNotificationPreferences422
+    | CreateNotificationPreferences500;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteNotificationPreferences204 = any;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteNotificationPreferences500 = ErrsAPIError;
+
+export type DeleteNotificationPreferencesMutationResponse =
+  DeleteNotificationPreferences204;
+
+export type DeleteNotificationPreferencesMutation = {
+  Response: DeleteNotificationPreferences204;
+  Errors: DeleteNotificationPreferences401 | DeleteNotificationPreferences500;
+};
+
+/**
+ * @description OK
+ */
+export type UpdateNotificationPreferences200 = ModelsNotificationPreferences;
+
+/**
+ * @description Bad Request
+ */
+export type UpdateNotificationPreferences400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type UpdateNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type UpdateNotificationPreferences404 = ErrsAPIError;
+
+/**
+ * @description Unprocessable Entity
+ */
+export type UpdateNotificationPreferences422 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type UpdateNotificationPreferences500 = ErrsAPIError;
+
+/**
+ * @description Update notification preferences request
+ */
+export type UpdateNotificationPreferencesMutationRequest =
+  ModelsUpdateUserNotificationPreferencesRequest;
+
+export type UpdateNotificationPreferencesMutationResponse =
+  UpdateNotificationPreferences200;
+
+export type UpdateNotificationPreferencesMutation = {
+  Response: UpdateNotificationPreferences200;
+  Request: UpdateNotificationPreferencesMutationRequest;
+  Errors:
+    | UpdateNotificationPreferences400
+    | UpdateNotificationPreferences401
+    | UpdateNotificationPreferences404
+    | UpdateNotificationPreferences422
+    | UpdateNotificationPreferences500;
+};
+
+/**
+ * @description OK
+ */
+export type GetOrCreateDefaultNotificationPreferences200 =
+  ModelsNotificationPreferences;
+
+/**
+ * @description Unauthorized
+ */
+export type GetOrCreateDefaultNotificationPreferences401 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetOrCreateDefaultNotificationPreferences500 = ErrsAPIError;
+
+export type GetOrCreateDefaultNotificationPreferencesMutationResponse =
+  GetOrCreateDefaultNotificationPreferences200;
+
+export type GetOrCreateDefaultNotificationPreferencesMutation = {
+  Response: GetOrCreateDefaultNotificationPreferences200;
+  Errors:
+    | GetOrCreateDefaultNotificationPreferences401
+    | GetOrCreateDefaultNotificationPreferences500;
 };
 
 export type GetUserPathParams = {
