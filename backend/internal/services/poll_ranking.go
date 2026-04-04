@@ -29,14 +29,16 @@ type RankPollServiceInterface interface {
 var _ RankPollServiceInterface = (*RankPollService)(nil)
 
 type RankPollService struct {
-	repository  *repository.Repository
-	pollService PollServiceInterface
+	repository          *repository.Repository
+	pollService         PollServiceInterface
+	notificationService NotificationService
 }
 
-func NewRankPollService(repo *repository.Repository, pollService PollServiceInterface) RankPollServiceInterface {
+func NewRankPollService(repo *repository.Repository, pollService PollServiceInterface, notificationService NotificationService) RankPollServiceInterface {
 	return &RankPollService{
-		repository:  repo,
-		pollService: pollService,
+		repository:          repo,
+		pollService:         pollService,
+		notificationService: notificationService,
 	}
 }
 
@@ -61,8 +63,31 @@ func (s *RankPollService) CreateRankPoll(ctx context.Context, tripID uuid.UUID, 
 
 	resp := s.toRankPollAPIResponse(created, categoryNames)
 	s.pollService.PublishEvent(ctx, realtime.EventTopicPollCreated, tripID.String(), resp)
+	if created.ShouldNotifyMembers {
+		go s.notifyNewPoll(tripID, userID)
+	}
 
 	return resp, nil
+}
+
+func (s *RankPollService) notifyNewPoll(tripID uuid.UUID, actorID uuid.UUID) {
+	if s.notificationService == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), notificationTimeout)
+	defer cancel()
+	err := s.notificationService.NotifyTripMembers(
+		ctx,
+		tripID,
+		actorID,
+		models.NotificationPreferenceNewPoll,
+		"New poll",
+		"A new poll has been created for your trip",
+		nil,
+	)
+	if err != nil {
+		log.Printf("Failed to send new poll notification: %v", err)
+	}
 }
 
 func (s *RankPollService) UpdateRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.UpdatePollWithCategoriesRequest) (*models.RankPollAPIResponse, error) {

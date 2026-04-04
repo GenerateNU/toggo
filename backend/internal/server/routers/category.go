@@ -22,5 +22,11 @@ func CategoryRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	tripCategoryGroup.Put("/:name/hide", categoryController.HideCategory)
 	tripCategoryGroup.Put("/:name/show", categoryController.ShowCategory)
 
+	// /api/v1/trips/:tripID/tabs
+	tripTabGroup := apiGroup.Group("/trips/:tripID/tabs")
+	tripTabGroup.Use(middlewares.TripMemberRequired(routeParams.ServiceParams.Repository))
+	tripTabGroup.Get("", categoryController.GetTabs)
+	tripTabGroup.Put("/reorder", categoryController.ReorderTabs)
+
 	return tripCategoryGroup
 }

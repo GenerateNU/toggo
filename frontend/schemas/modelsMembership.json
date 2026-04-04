@@ -6,6 +6,9 @@
     "budget_min": { "type": "integer" },
     "created_at": { "type": "string" },
     "is_admin": { "type": "boolean" },
+    "notify_new_comments": { "type": "boolean" },
+    "notify_new_pitches": { "type": "boolean" },
+    "notify_new_polls": { "type": "boolean" },
     "trip_id": { "type": "string" },
     "updated_at": { "type": "string" },
     "user_id": { "type": "string" }

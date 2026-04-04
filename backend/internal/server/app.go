@@ -27,7 +27,6 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 
 	middlewares.SetUpMiddlewares(app, config)
 
-	// Register WebSocket route before other routes
 	if wsHandler != nil {
 		app.Use("/ws", wsHandler.Middleware())
 		app.Get("/ws", wsHandler.Handler())
@@ -51,6 +50,12 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 		scheduler = notifications.NewPollScheduler(temporalClient)
 	}
 
+	notificationService := services.NewNotificationService(
+		repository.User,
+		repository.Membership,
+		services.NewExpoClient(""),
+	)
+
 	routeParams := types.RouteParams{
 		Validator: validator,
 		ServiceParams: &types.ServiceParams{
@@ -58,6 +63,7 @@ func CreateApp(config *config.Configuration, db *bun.DB, publisher realtime.Even
 			Config:              config,
 			EventPublisher:      publisher,
 			FileService:         fileService,
+			NotificationService: notificationService,
 			PollService:         services.NewPollService(repository, publisher, scheduler),
 			ActivityFeedService: activityFeedService,
 			HTTPClient:          services.DefaultHTTPClient(),

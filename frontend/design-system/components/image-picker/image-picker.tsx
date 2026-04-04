@@ -5,7 +5,7 @@ import { Text } from "@/design-system/primitives/text";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
-import { Camera, ImageIcon, Pencil, Trash2, X } from "lucide-react-native";
+import { Camera, ImageIcon, Trash2, X } from "lucide-react-native";
 import React, { useRef } from "react";
 import {
   Alert,
@@ -127,22 +127,6 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
           <Icon icon={ImageIcon} size="md" color="gray500" />
         )}
       </Box>
-
-      <Box
-        position="absolute"
-        bottom={0}
-        right={0}
-        width={size * 0.32}
-        height={size * 0.32}
-        borderRadius="full"
-        backgroundColor="gray900"
-        justifyContent="center"
-        alignItems="center"
-        borderWidth={2}
-        borderColor="white"
-      >
-        <Icon icon={Pencil} size="xs" color="gray900" />
-      </Box>
     </Pressable>
   );
 
@@ -154,9 +138,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
     >
       <Box
         borderRadius="md"
-        backgroundColor="gray200"
-        borderWidth={1}
-        borderColor="gray300"
+        backgroundColor="gray100"
         overflow="hidden"
         style={{ height }}
         justifyContent="center"
@@ -188,19 +170,6 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             <Text variant="bodySmMedium" color="gray500">
               {placeholder}
             </Text>
-          </Box>
-        )}
-
-        {value && (
-          <Box
-            position="absolute"
-            bottom={0}
-            right={0}
-            backgroundColor="white"
-            padding="xs"
-            borderTopLeftRadius="sm"
-          >
-            <Icon icon={Pencil} size="xs" color="gray900" />
           </Box>
         )}
       </Box>
