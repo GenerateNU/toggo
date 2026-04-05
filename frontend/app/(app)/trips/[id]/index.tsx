@@ -409,7 +409,7 @@ export default function Trip() {
 
   const handleVoteOnDestination = () => {
     locationSheetRef.current?.close();
-    router.push(`/trips/${tripID}/pitches/creation` as any);
+    router.push(`/trips/${tripID}/pitches` as any);
   };
 
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);

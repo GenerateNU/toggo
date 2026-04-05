@@ -13,7 +13,6 @@ import { router } from "expo-router";
 import {
   ArrowRight,
   Bell,
-  Languages,
   LogOut,
   Map,
   PenLine,
@@ -32,6 +31,7 @@ type SettingsRowProps = {
   label: string;
   onPress: () => void;
   destructive?: boolean;
+  subtitle?: string;
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -41,6 +41,7 @@ function SettingsRow({
   label,
   onPress,
   destructive = false,
+  subtitle,
 }: SettingsRowProps) {
   const textColor = destructive ? "statusError" : "gray950";
   const iconColor = destructive
@@ -59,9 +60,16 @@ function SettingsRow({
       >
         <Box flex={1} flexDirection="row" alignItems="center" gap="sm">
           <IconComponent size={20} color={iconColor} />
-          <Text variant="bodyMedium" color={textColor}>
-            {label}
-          </Text>
+          <Box gap="xxs">
+            <Text variant="bodyMedium" color={textColor}>
+              {label}
+            </Text>
+            {subtitle ? (
+              <Text variant="bodyXsDefault" color="gray500">
+                {subtitle}
+              </Text>
+            ) : null}
+          </Box>
         </Box>
         <Icon icon={ArrowRight} size="sm" color="gray500" />
       </Box>
@@ -194,8 +202,12 @@ export default function Settings() {
           <SectionHeader title="Preferences" />
           <Box gap="xs">
             <SettingsRow icon={Map} label="Map View" onPress={() => {}} />
-            <SettingsRow icon={Languages} label="Language" onPress={() => {}} />
-            <SettingsRow icon={Timer} label="Time Zone" onPress={() => {}} />
+            <SettingsRow
+              icon={Timer}
+              label="Time Zone"
+              subtitle={currentUser?.timezone ?? undefined}
+              onPress={() => router.push("/settings/timezone" as any)}
+            />
           </Box>
         </Box>
       </ScrollView>

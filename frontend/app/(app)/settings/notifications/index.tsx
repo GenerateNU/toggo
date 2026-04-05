@@ -101,15 +101,20 @@ export default function NotificationsScreen() {
   const queryClient = useQueryClient();
   const { data: prefs } = useGetNotificationPreferences();
   const { mutate: ensureDefaults } =
-    useGetOrCreateDefaultNotificationPreferences();
+    useGetOrCreateDefaultNotificationPreferences({
+      mutation: {
+        onSuccess: (data) => {
+          queryClient.setQueryData(getNotificationPreferencesQueryKey(), data);
+        },
+      },
+    });
   const { mutate: updatePrefs } = useUpdateNotificationPreferences();
 
-  // Ensure notification preferences exist on first visit
+  // Always ensure preferences exist on mount before relying on the GET query
   useEffect(() => {
-    if (!prefs) {
-      ensureDefaults(undefined);
-    }
-  }, [prefs, ensureDefaults]);
+    ensureDefaults(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleToggle = (field: ToggleField, value: boolean) => {
     const queryKey = getNotificationPreferencesQueryKey();
