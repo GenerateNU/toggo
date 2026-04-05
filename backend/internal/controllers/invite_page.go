@@ -18,6 +18,17 @@ func NewInvitePageController(invitePageService services.InvitePageServiceInterfa
 	}
 }
 
+// InvitePage handles GET /invite/:code — universal link landing page.
+// When the app is installed, iOS/Android intercepts this URL before it reaches the browser.
+// When the app is not installed, this renders the invite HTML page as a fallback.
+func (ctrl *InvitePageController) InvitePage(c *fiber.Ctx) error {
+	code := c.Params("code")
+	if code == "" {
+		return c.Redirect("/join", http.StatusMovedPermanently)
+	}
+	return ctrl.renderTripInvitePage(c, code)
+}
+
 // JoinPage handles GET /join
 // If ?code= is present, fetches trip data and renders the invite page.
 // If no code, renders the "enter code" form.

@@ -1,7 +1,6 @@
 import { useMembersList } from "@/api/memberships/custom/useMembersList";
 import { useGetMembership } from "@/api/memberships/useGetMembership";
 import { usePromoteToAdmin } from "@/api/memberships/usePromoteToAdmin";
-import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { useUser } from "@/contexts/user";
 import {
   Avatar,
@@ -17,7 +16,7 @@ import {
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import type { ModelsMembershipAPIResponse } from "@/types/types.gen";
-import * as Linking from "expo-linking";
+import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import { useLocalSearchParams } from "expo-router";
 import { Crown } from "lucide-react-native";
 import {
@@ -26,7 +25,6 @@ import {
   NativeSyntheticEvent,
   Pressable,
   ScrollView,
-  Share,
 } from "react-native";
 
 function MemberRowSkeleton() {
@@ -128,7 +126,9 @@ export default function MembersSettings() {
     currentUser?.id ?? "",
   );
   const promoteToAdminMutation = usePromoteToAdmin();
-  const createInviteMutation = useCreateTripInvite();
+  const { shareInvite, isPending: isInvitePending } = useShareTripInvite(
+    tripID!,
+  );
 
   const isAdmin = myMembership?.is_admin ?? false;
 
@@ -136,26 +136,6 @@ export default function MembersSettings() {
     const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
     if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 80) {
       fetchMore();
-    }
-  };
-
-  const handleInvite = async () => {
-    try {
-      const invite = await createInviteMutation.mutateAsync({
-        tripID: tripID!,
-        data: {},
-      });
-      const code = invite.code;
-      if (!code) return;
-      const deepLink = Linking.createURL("join", { queryParams: { code } });
-      await Share.share({
-        message: `Join my trip on Toggo! ${deepLink}`,
-        url: deepLink,
-      });
-    } catch {
-      toast.show({
-        message: "Couldn't generate invite link. Please try again.",
-      });
     }
   };
 
@@ -256,14 +236,10 @@ export default function MembersSettings() {
       </Box>
       <Button
         layout="textOnly"
-        label={
-          createInviteMutation.isPending
-            ? "Generating link..."
-            : "Add New Member"
-        }
+        label={isInvitePending ? "Generating link..." : "Add New Member"}
         variant="Secondary"
-        disabled={createInviteMutation.isPending}
-        onPress={handleInvite}
+        disabled={isInvitePending}
+        onPress={shareInvite}
       />
     </ScrollView>
   );

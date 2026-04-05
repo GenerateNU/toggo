@@ -21,11 +21,19 @@ func InvitePageRoutes(app *fiber.App, routeParams types.RouteParams) {
 	invitePageService := services.NewInvitePageService(
 		routeParams.ServiceParams.Repository,
 		routeParams.ServiceParams.FileService,
+		routeParams.ServiceParams.Config.App,
 	)
 	invitePageController := controllers.NewInvitePageController(invitePageService)
+	wellKnownController := controllers.NewWellKnownController(routeParams.ServiceParams.Config.App)
 
-	// GET /join — public, no auth required, relaxed COEP for CDN/S3
+	// GET /invite/:code — universal link landing page (iOS intercepts if app is installed)
+	app.Get("/invite/:code", relaxCOEP, invitePageController.InvitePage)
+
+	// GET /join — legacy invite link, kept for backwards compatibility
 	app.Get("/join", relaxCOEP, invitePageController.JoinPage)
+
+	// GET /.well-known/* — required for iOS universal links validation
+	app.Get("/.well-known/apple-app-site-association", wellKnownController.AppleAppSiteAssociation)
 
 	// GET /static/* — embedded assets for server-rendered pages (logo, favicon, etc.)
 	app.Get("/static/*", relaxCOEP, templates.ServeStatic())

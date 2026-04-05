@@ -41,11 +41,24 @@ export const getAuthToken = async (): Promise<string | null> => {
 };
 
 const resolveBaseUrl = (): string => {
+  const isProd = process.env.EXPO_PUBLIC_ENVIRONMENT === "prod";
   const configuredUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+  if (isProd) {
+    if (!configuredUrl) {
+      throw new Error(
+        "EXPO_PUBLIC_API_BASE_URL is required in production. Set it in your environment.",
+      );
+    }
+    return configuredUrl;
+  }
+
+  // Dev: prefer explicitly configured URL (set to Mac IP in .env.local for physical devices)
   if (configuredUrl) {
     return configuredUrl;
   }
 
+  // Fallback: detect host from Expo dev server (works in Expo Go / simulators)
   const constants = Constants as Record<string, any>;
   const debuggerHost =
     constants.expoConfig?.hostUri ??
@@ -67,13 +80,7 @@ const resolveBaseUrl = (): string => {
     return "http://10.0.2.2:8000";
   }
 
-  if (__DEV__) {
-    return "http://localhost:8000";
-  }
-
-  throw new Error(
-    "API base URL is not configured. Set EXPO_PUBLIC_API_BASE_URL in your environment.",
-  );
+  return "http://localhost:8000";
 };
 
 const BASE_URL = resolveBaseUrl();
