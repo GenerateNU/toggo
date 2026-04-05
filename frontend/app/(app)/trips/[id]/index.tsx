@@ -3,7 +3,6 @@ import {
   useGetPollsByTripID,
 } from "@/api/polls/useGetPollsByTripID";
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
-import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
@@ -30,7 +29,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import * as Linking from "expo-linking";
+import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import {
   router,
   Stack,
@@ -55,7 +54,6 @@ import {
   ActivityIndicator,
   Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -319,7 +317,9 @@ function PollsTabContent({ tripId }: { tripId: string }) {
 export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
-  const createInviteMutation = useCreateTripInvite();
+  const { shareInvite, isPending: isInvitePending } = useShareTripInvite(
+    tripID!,
+  );
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
   const dateSheetRef = useRef<any>(null);
@@ -348,25 +348,6 @@ export default function Trip() {
       queryKey: getPollsByTripIDQueryKey(tripID!),
     });
   }, [queryClient, tripID]);
-
-  const handleInvite = async () => {
-    try {
-      const invite = await createInviteMutation.mutateAsync({
-        tripID: tripID!,
-        data: {},
-      });
-      const code = invite.code;
-      if (!code) return;
-
-      const deepLink = Linking.createURL(`invite/${code}`);
-      await Share.share({
-        message: `Join my trip on Toggo! ${deepLink}`,
-        url: deepLink,
-      });
-    } catch {
-      // silently handled
-    }
-  };
 
   const handleDateSet = async (range: DateRange) => {
     if (!range.start) return;
@@ -479,8 +460,8 @@ export default function Trip() {
 
                 <Box flexDirection="row" alignItems="center" gap="sm">
                   <InviteFriendsButton
-                    onPress={handleInvite}
-                    loading={createInviteMutation.isPending}
+                    onPress={shareInvite}
+                    loading={isInvitePending}
                   />
                   <Pressable
                     onPress={() =>
