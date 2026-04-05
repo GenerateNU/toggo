@@ -44,6 +44,12 @@ const Layout = () => {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="timezone"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

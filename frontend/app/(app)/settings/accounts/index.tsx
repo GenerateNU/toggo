@@ -15,16 +15,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function splitName(fullName: string): { firstName: string; lastName: string } {
-  const parts = fullName.trim().split(" ");
-  return {
-    firstName: parts[0] ?? "",
-    lastName: parts.slice(1).join(" "),
-  };
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function FieldRow({ label, value }: { label: string; value?: string | null }) {
@@ -57,26 +47,29 @@ export default function AccountScreen() {
   const { mutateAsync: updateUser, isPending: isSaving } = useUpdateUser();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   useEffect(() => {
-    if (currentUser?.name) {
-      const { firstName: fn, lastName: ln } = splitName(currentUser.name);
-      setFirstName(fn);
-      setLastName(ln);
-    }
-  }, [currentUser?.name]);
+    setName(currentUser?.name ?? "");
+    setUsername(currentUser?.username ?? "");
+    setPhoneNumber(currentUser?.phone_number ?? "");
+  }, [currentUser]);
 
   const handleEdit = () => setIsEditing(true);
 
   const handleDone = async () => {
     if (!currentUser?.id) return;
-    const fullName = [firstName.trim(), lastName.trim()]
-      .filter(Boolean)
-      .join(" ");
     try {
-      await updateUser({ userID: currentUser.id, data: { name: fullName } });
+      await updateUser({
+        userID: currentUser.id,
+        data: {
+          name: name.trim() || undefined,
+          username: username.trim() || undefined,
+          phone_number: phoneNumber.trim() || undefined,
+        },
+      });
       await refreshCurrentUser();
     } catch {
       // non-blocking
@@ -86,11 +79,9 @@ export default function AccountScreen() {
   };
 
   const handleCancel = () => {
-    if (currentUser?.name) {
-      const { firstName: fn, lastName: ln } = splitName(currentUser.name);
-      setFirstName(fn);
-      setLastName(ln);
-    }
+    setName(currentUser?.name ?? "");
+    setUsername(currentUser?.username ?? "");
+    setPhoneNumber(currentUser?.phone_number ?? "");
     setIsEditing(false);
   };
 
@@ -125,15 +116,11 @@ export default function AccountScreen() {
             accessibilityLabel={isEditing ? "Done" : "Edit"}
           >
             {isSaving ? (
-              <ActivityIndicator size="small" color={ColorPalette.blue400} />
+              <ActivityIndicator size="small" color="blue400" />
             ) : (
               <Text
+                color={isEditing ? "gray950" : "blue400"}
                 variant="bodySmDefault"
-                style={{
-                  color: isEditing
-                    ? ColorPalette.gray950
-                    : ColorPalette.blue400,
-                }}
               >
                 {isEditing ? "Done" : "Edit"}
               </Text>
@@ -150,22 +137,21 @@ export default function AccountScreen() {
             // ─── Edit mode ───────────────────────────────────────────────
             <Box paddingHorizontal="sm" gap="lg">
               <TextField
-                label="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
+                label="Name"
+                value={name}
+                onChangeText={setName}
                 autoCapitalize="words"
               />
               <TextField
-                label="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-                autoCapitalize="words"
+                label="Username"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
               />
               <TextField
                 label="Phone Number"
-                value={currentUser?.phone_number ?? ""}
-                onChangeText={() => {}}
-                disabled
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
                 keyboardType="phone-pad"
               />
             </Box>
@@ -176,14 +162,11 @@ export default function AccountScreen() {
               borderRadius="md"
               marginHorizontal="sm"
             >
-              <FieldRow label="First Name" value={firstName} />
+              <FieldRow label="Name" value={name} />
               <RowDivider />
-              <FieldRow label="Last Name" value={lastName || "—"} />
+              <FieldRow label="Username" value={username} />
               <RowDivider />
-              <FieldRow
-                label="Phone Number"
-                value={currentUser?.phone_number}
-              />
+              <FieldRow label="Phone Number" value={phoneNumber} />
             </Box>
           )}
         </ScrollView>

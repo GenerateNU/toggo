@@ -1,3 +1,4 @@
+import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
 import { useUser } from "@/contexts/user";
 import {
   BackButton,
@@ -8,11 +9,8 @@ import {
   ToastProvider,
 } from "@/design-system";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
-import { useCreateTrip } from "@/index";
 import { Redirect, router, Stack } from "expo-router";
 import { PlusIcon } from "lucide-react-native";
-
-// ─── Home header components ───────────────────────────────────────────────────
 
 function HomeHeaderLeft() {
   const profile = useProfileAvatar();
@@ -28,16 +26,9 @@ function HomeHeaderLeft() {
 }
 
 function HomeHeaderRight() {
-  const createTripMutation = useCreateTrip();
-
-  const handleCreateTrip = async () => {
-    try {
-      const result = await createTripMutation.mutateAsync({
-        data: { name: "Trip Name", budget_min: 1, budget_max: 1000 },
-      });
-      if (result?.id) router.push(`/trips/${result.id}`);
-    } catch {}
-  };
+  const requestCreateTripSheet = useHomeUIStore(
+    (s) => s.requestCreateTripSheet,
+  );
 
   return (
     <Button
@@ -45,12 +36,10 @@ function HomeHeaderRight() {
       icon={PlusIcon}
       variant="IconSecondary"
       layout="iconOnly"
-      onPress={handleCreateTrip}
+      onPress={requestCreateTripSheet}
     />
   );
 }
-
-// ─── Layout ───────────────────────────────────────────────────────────────────
 
 const Layout = () => {
   const { isAuthenticated } = useUser();
@@ -66,7 +55,7 @@ const Layout = () => {
           name="index"
           options={{
             headerShown: true,
-            headerTransparent: true,
+            headerTransparent: false,
             headerTitle: () => (
               <Box paddingTop="sm">
                 <Logo size="xl" />

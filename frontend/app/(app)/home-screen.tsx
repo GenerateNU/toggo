@@ -17,6 +17,7 @@ import {
   partitionTripsForHome,
 } from "@/app/(app)/components/home/trip-date-utils";
 import { UpcomingTripHeroCard } from "@/app/(app)/components/home/upcoming-trip-hero-card";
+import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
 import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
@@ -28,7 +29,6 @@ import {
   ErrorState,
   Icon,
   ImagePicker,
-  Screen,
   SkeletonRect,
   Text,
 } from "@/design-system";
@@ -104,6 +104,12 @@ export default function HomeScreen() {
   const createTripSheetRef = useRef<any>(null);
   const pendingTripCode = useUserStore((s) => s.pendingTripCode);
   const setPendingTripCode = useUserStore((s) => s.setPendingTripCode);
+  const createTripSheetRequested = useHomeUIStore(
+    (s) => s.createTripSheetRequested,
+  );
+  const clearCreateTripSheetRequest = useHomeUIStore(
+    (s) => s.clearCreateTripSheetRequest,
+  );
 
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
@@ -163,6 +169,13 @@ export default function HomeScreen() {
       return () => clearTimeout(t);
     }
   }, [needsProfile]);
+
+  useEffect(() => {
+    if (createTripSheetRequested) {
+      createTripSheetRef.current?.snapToIndex(0);
+      clearCreateTripSheetRequest();
+    }
+  }, [createTripSheetRequested, clearCreateTripSheetRequest]);
 
   const triggerToast = (
     message: string,
@@ -282,7 +295,7 @@ export default function HomeScreen() {
     toastVariant === "error" ? "statusError" : "statusSuccess";
 
   return (
-    <Screen>
+    <Box flex={1} backgroundColor="white">
       <ScrollView
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
@@ -303,7 +316,7 @@ export default function HomeScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box paddingTop="sm" paddingHorizontal="sm" gap="sm">
+                <Box paddingHorizontal="sm" gap="sm">
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -322,7 +335,7 @@ export default function HomeScreen() {
                     variant="headingMd"
                     color="gray900"
                     paddingBottom="sm"
-                    paddingTop="xl"
+                    paddingTop="sm"
                   >
                     Upcoming Trips
                   </Text>
@@ -550,6 +563,6 @@ export default function HomeScreen() {
           </Pressable>
         </AnimatedBox>
       )}
-    </Screen>
+    </Box>
   );
 }
