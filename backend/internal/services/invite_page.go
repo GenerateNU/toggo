@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"os"
 	"strings"
 	"time"
+	"toggo/internal/config"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/repository"
@@ -21,13 +21,21 @@ var _ InvitePageServiceInterface = (*InvitePageService)(nil)
 
 type InvitePageService struct {
 	*repository.Repository
-	fileService FileServiceInterface
+	fileService     FileServiceInterface
+	deepLinkBaseURL string
+	publicURL       string
 }
 
-func NewInvitePageService(repo *repository.Repository, fileService FileServiceInterface) InvitePageServiceInterface {
+func NewInvitePageService(repo *repository.Repository, fileService FileServiceInterface, appConfig config.AppConfig) InvitePageServiceInterface {
+	deepLinkBaseURL := appConfig.DeepLinkBaseURL
+	if deepLinkBaseURL == "" {
+		deepLinkBaseURL = "toggo-app://"
+	}
 	return &InvitePageService{
-		Repository:  repo,
-		fileService: fileService,
+		Repository:      repo,
+		fileService:     fileService,
+		deepLinkBaseURL: deepLinkBaseURL,
+		publicURL:       appConfig.PublicURL,
 	}
 }
 
@@ -81,19 +89,13 @@ func (s *InvitePageService) GetTripInvitePageData(ctx context.Context, code stri
 		}
 	}
 
-	// Build deep link
-	// Expo Go local dev: exp://localhost:8081/--/invite/CODE
-	// Production:        toggo://invite/CODE
-	deepLinkBase := os.Getenv("DEEPLINK_BASE_URL")
-	if deepLinkBase == "" {
-		deepLinkBase = "exp://localhost:8081/--"
-	}
-	data.DeepLink = template.URL(fmt.Sprintf("%s/invite/%s", strings.TrimRight(deepLinkBase, "/"), code))
+	// Build deep link using injected config (falls back to toggo-app:// if not set)
+	base := strings.TrimSuffix(s.deepLinkBaseURL, "/")
+	data.DeepLink = template.URL(fmt.Sprintf("%s/invite/%s", base, code))
 
 	// Build canonical URL
-	baseURL := os.Getenv("APP_PUBLIC_URL")
-	if baseURL != "" {
-		trimmed := strings.TrimRight(baseURL, "/")
+	if s.publicURL != "" {
+		trimmed := strings.TrimRight(s.publicURL, "/")
 		data.CanonicalURL = trimmed + "/join?code=" + code
 	}
 

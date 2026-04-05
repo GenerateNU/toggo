@@ -1,6 +1,7 @@
 import { useCreateTripInvite } from "@/api/trips/useCreateTripInvite";
-import * as Linking from "expo-linking";
 import { Share } from "react-native";
+
+const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export function useShareTripInvite(tripID: string) {
   const createInviteMutation = useCreateTripInvite();
@@ -14,10 +15,10 @@ export function useShareTripInvite(tripID: string) {
       const code = invite.code;
       if (!code) return;
 
-      const deepLink = Linking.createURL("join", { queryParams: { code } });
+      const inviteLink = `${API_URL}/invite/${code}`;
       await Share.share({
         message: "Join my trip on Toggo!",
-        url: deepLink,
+        url: inviteLink,
       });
     } catch {
       // silently handled — callers can check isPending/isError if needed
