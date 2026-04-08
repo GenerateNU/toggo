@@ -443,11 +443,11 @@ export default function HomeScreen() {
             </Box>
           </Box>
 
-          <Box gap="sm">
-            <Box paddingHorizontal="sm" paddingVertical="xs">
+          <Box gap="xxs">
+            <Box paddingHorizontal="sm" paddingTop="xs">
               <Text variant="headingXl">Recommended Trips</Text>
             </Box>
-            <Box paddingHorizontal="sm">
+            <Box>
               <RecommendedTripsRow />
             </Box>
           </Box>

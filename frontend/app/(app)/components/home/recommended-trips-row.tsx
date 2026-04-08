@@ -9,13 +9,17 @@ import {
 export function RecommendedTripsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <Box flexDirection="row" gap="sm" paddingRight="md">
+      <Box flexDirection="row" gap="sm" paddingHorizontal="sm" paddingVertical="sm">
         {RECOMMENDED_DESTINATIONS.map((destination) => (
           <Box
             key={destination.id}
             width={HOME_RECOMMENDED_CARD_WIDTH}
             borderRadius="md"
             backgroundColor="white"
+            shadowColor="black"
+            shadowOpacity={0.2}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowRadius={4}
             padding="xs"
             gap="sm"
           >
