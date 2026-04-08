@@ -1,74 +1,38 @@
-import {
-  getPollsByTripIDQueryKey,
-  useGetPollsByTripID,
-} from "@/api/polls/useGetPollsByTripID";
-import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
+import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import ItineraryEmptyState from "@/app/(app)/trips/[id]/components/itinerary-empty-state";
+import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
+import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
+import TripTabBar, { type TabKey } from "@/app/(app)/trips/[id]/components/trip-tab-bar";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
-import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
-import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
-import {
-  Box,
-  Chip,
-  ErrorState,
-  Text,
-} from "@/design-system";
-import { BackButton } from "@/design-system/components/navigation/arrow";
+import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
+import { Box } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { ModelsPollAPIResponse } from "@/types/types.gen";
-import { useQueryClient } from "@tanstack/react-query";
-import { Image } from "expo-image";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   router,
   Stack,
   useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
-import {
-  BellDot,
-  Binoculars,
-  Calendar,
-  ChartColumnBig,
-  House,
-  List,
-  Map,
-  MapPin,
-  PiggyBank,
-  Settings,
-  type LucideIcon,
-} from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-type TabKey =
-  | "new"
-  | "itinerary"
-  | "polls"
-  | "housing"
-  | "budget"
-  | "activities"
-  | "settings";
-
 const INITIAL_TAB: TabKey = "itinerary";
+const CARD_TOP_OFFSET = 120;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -79,179 +43,6 @@ function formatTripDates(startDate?: string, endDate?: string): string | null {
   if (!endDate) return start;
   const end = new Date(endDate).toLocaleDateString("en-US", opts);
   return `${start} – ${end}`;
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function InviteFriendsButton({
-  onPress,
-  loading,
-}: {
-  onPress: () => void;
-  loading: boolean;
-}) {
-  if (loading) {
-    return <ActivityIndicator size="small" color={ColorPalette.gray500} />;
-  }
-  return <Chip label="+ Invite Friends" onPress={onPress} />;
-}
-
-type TripTabBarProps = {
-  activeTab: TabKey;
-  onTabPress: (tab: TabKey) => void;
-};
-
-function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
-  const tabs: { key: TabKey; label?: string; icon: LucideIcon | undefined }[] =
-    [
-      { key: "new", label: "New", icon: BellDot },
-      { key: "itinerary", label: "Itinerary", icon: List },
-      { key: "polls", label: "Polls", icon: ChartColumnBig },
-      { key: "housing", label: "Housing", icon: House },
-      { key: "budget", label: "Budget", icon: PiggyBank },
-      { key: "activities", label: "Activities", icon: Binoculars },
-    ];
-
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.tabBarContent}
-    >
-      {tabs.map(({ key, label, icon }) => (
-        <Chip
-          key={key}
-          label={label ?? ""}
-          icon={icon}
-          selected={activeTab === key}
-          onPress={() => onTabPress(key)}
-          variant="filled"
-        />
-      ))}
-    </ScrollView>
-  );
-}
-
-function ItineraryEmptyState() {
-  return (
-    <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
-      <Box alignItems="center" paddingVertical="lg">
-        <Text
-          variant="bodySmDefault"
-          color="gray950"
-          style={styles.emptyStateText}
-        >
-          No activites planned. Get planning!
-        </Text>
-      </Box>
-    </Box>
-  );
-}
-
-// ─── Polls tab ────────────────────────────────────────────────────────────────
-
-function RankPollRow({
-  poll,
-  tripId,
-  onRanked,
-}: {
-  poll: ModelsPollAPIResponse;
-  tripId: string;
-  onRanked: () => void;
-}) {
-  const { data, isLoading, isError, refetch } = useGetRankPollResults(
-    tripId,
-    poll.id ?? "",
-    { query: { enabled: !!(tripId && poll.id) } },
-  );
-
-  if (isLoading) {
-    return (
-      <Box
-        backgroundColor="white"
-        borderRadius="md"
-        alignItems="center"
-        padding="lg"
-        style={styles.loadingCard}
-      >
-        <ActivityIndicator color={ColorPalette.brand500} />
-      </Box>
-    );
-  }
-  if (isError) {
-    return (
-      <Box backgroundColor="white" borderRadius="md" style={styles.loadingCard}>
-        <ErrorState title="Couldn't load poll" refresh={refetch} />
-      </Box>
-    );
-  }
-  if (!data) return null;
-  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
-}
-
-function PollsTabContent({ tripId }: { tripId: string }) {
-  const {
-    data: pollsData,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetPollsByTripID(tripId, {}, { query: { enabled: !!tripId } });
-
-  const polls = pollsData?.items ?? [];
-  const votePolls = polls.filter((p) => p.poll_type !== "rank");
-  const rankPolls = polls.filter((p) => p.poll_type === "rank");
-
-  const handleVoted = useCallback(() => refetch(), [refetch]);
-  const handleRanked = useCallback(() => refetch(), [refetch]);
-
-  if (isLoading) {
-    return (
-      <Box alignItems="center" paddingVertical="xl">
-        <ActivityIndicator color={ColorPalette.brand500} />
-      </Box>
-    );
-  }
-
-  if (isError) {
-    return <ErrorState title="Couldn't load polls" />;
-  }
-
-  if (polls.length === 0) {
-    return (
-      <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
-        <Box alignItems="center" paddingVertical="lg">
-          <Text
-            variant="bodyDefault"
-            color="gray950"
-            style={styles.emptyStateText}
-          >
-            No polls yet. Create one!
-          </Text>
-        </Box>
-      </Box>
-    );
-  }
-
-  return (
-    <Box gap="sm">
-      {votePolls.map((poll) => (
-        <VotePollCard
-          key={poll.id}
-          poll={poll}
-          tripId={tripId}
-          onVoted={handleVoted}
-        />
-      ))}
-      {rankPolls.map((poll) => (
-        <RankPollRow
-          key={poll.id}
-          poll={poll}
-          tripId={tripId}
-          onRanked={handleRanked}
-        />
-      ))}
-    </Box>
-  );
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -349,118 +140,33 @@ export default function Trip() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {trip?.cover_image_url ? (
-        <Image
-          source={{ uri: trip.cover_image_url }}
-          style={styles.coverImage}
-          contentFit="cover"
-        />
-      ) : (
-        <View style={[styles.coverImage, styles.coverImageFallback]} />
-      )}
+      <TripHeader
+        coverImageUrl={trip?.cover_image_url}
+        onMapPress={() => router.push(`/trips/${tripID}/search-location` as any)}
+      />
 
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          paddingHorizontal="sm"
-          paddingVertical="xs"
-        >
-          <BackButton />
-
-          <Pressable
-            onPress={() =>
-              router.push(`/trips/${tripID}/search-location` as any)
-            }
-            style={styles.mapButton}
-            accessibilityRole="button"
-            accessibilityLabel="View map"
-          >
-            <Map size={16} color={ColorPalette.gray950} />
-            <Text variant="bodySmMedium" color="gray950">
-              Map
-            </Text>
-          </Pressable>
-        </Box>
-
         <Box style={styles.card}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
-              <Box
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                {isLoading ? (
-                  <Box
-                    width={160}
-                    height={28}
-                    backgroundColor="gray100"
-                    borderRadius="xs"
-                  />
-                ) : (
-                  <Text variant="headingMd" color="gray950">
-                    {trip?.name ?? "Trip"}
-                  </Text>
-                )}
-
-                <Box flexDirection="row" alignItems="center" gap="sm">
-                  <InviteFriendsButton
-                    onPress={shareInvite}
-                    loading={isInvitePending}
-                  />
-                  <Pressable
-                    onPress={() =>
-                      router.push(`/trips/${tripID}/settings` as any)
-                    }
-                    hitSlop={styles.hitSlop}
-                    accessibilityRole="button"
-                    accessibilityLabel="Trip settings"
-                  >
-                    <Settings size={20} color={ColorPalette.gray950} />
-                  </Pressable>
-                </Box>
-              </Box>
-
-              <Box gap="xs">
-                <Pressable
-                  onPress={() => dateSheetRef.current?.snapToIndex(0)}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                  accessibilityRole="button"
-                  accessibilityLabel="Set trip dates"
-                >
-                  <Box flexDirection="row" alignItems="center" gap="xs">
-                    <Calendar size={16} color={ColorPalette.gray500} />
-                    <Text variant="bodySmDefault" color="gray500">
-                      {tripDate ?? "Add dates"}
-                    </Text>
-                  </Box>
-                </Pressable>
-                <Pressable
-                  onPress={handleLocationPress}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                  accessibilityRole="button"
-                  accessibilityLabel="Set trip location"
-                >
-                  <Box flexDirection="row" alignItems="center" gap="xs">
-                    <MapPin size={16} color={ColorPalette.gray500} />
-                    <Text variant="bodySmDefault" color="gray500">
-                      {trip?.location ?? "Add location"}
-                    </Text>
-                  </Box>
-                </Pressable>
-              </Box>
-            </Box>
+            <TripMetadata
+              tripName={trip?.name}
+              tripDate={tripDate}
+              tripLocation={trip?.location}
+              isLoading={isLoading}
+              isInvitePending={isInvitePending}
+              onInviteFriends={shareInvite}
+              onSettingsPress={() => router.push(`/trips/${tripID}/settings` as any)}
+              onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
+              onLocationPress={handleLocationPress}
+            />
 
             <Box paddingTop="sm">
               <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
             </Box>
 
-            {/* Tab content */}
             <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
               {activeTab === "itinerary" && <ItineraryEmptyState />}
               {activeTab === "polls" && <PollsTabContent tripId={tripID!} />}
@@ -501,57 +207,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: ColorPalette.gray950,
   },
-  coverImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 260,
-  },
-  coverImageFallback: {
-    backgroundColor: ColorPalette.gray100,
-  },
   safeArea: {
     flex: 1,
     backgroundColor: "transparent",
   },
-  mapButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Layout.spacing.xxs,
-    backgroundColor: ColorPalette.white,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xxs,
-    borderRadius: CornerRadius.full,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
   card: {
     flex: 1,
     backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: CornerRadius.xl,
+    borderTopRightRadius: CornerRadius.xl,
     overflow: "hidden",
-    marginTop: 120,
+    marginTop: CARD_TOP_OFFSET,
   },
   scrollContent: {
     paddingBottom: Layout.spacing.xl,
-    gap: 0,
   },
-  tabBarContent: {
-    flexDirection: "row",
-    gap: Layout.spacing.xs,
-    paddingHorizontal: Layout.spacing.sm,
-  },
-  emptyStateText: {
-    fontStyle: "italic",
-  },
-  loadingCard: {
-    borderWidth: 1,
-    borderColor: ColorPalette.gray100,
-  },
-  hitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
 });
