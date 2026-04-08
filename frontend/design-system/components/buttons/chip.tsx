@@ -24,20 +24,28 @@ const VARIANT_STYLES = {
     unselected: {
       backgroundColor: ColorPalette.white,
       borderColor: ColorPalette.gray100,
+      textVariant: "bodyXsMedium",
+      cornerRadius: CornerRadius.full,
     },
     selected: {
       backgroundColor: ColorPalette.gray900,
       borderColor: "transparent",
+      textVariant: "bodyXsMedium",
+      cornerRadius: CornerRadius.full,
     },
   },
   filled: {
     unselected: {
       backgroundColor: ColorPalette.gray50,
       borderColor: "transparent",
+      textVariant: "bodySmMedium",
+      cornerRadius: CornerRadius.sm,
     },
     selected: {
       backgroundColor: ColorPalette.gray950,
       borderColor: "transparent",
+      textVariant: "bodySmMedium",
+      cornerRadius: CornerRadius.sm,
     },
   },
 } as const;
@@ -65,8 +73,7 @@ export default function Chip({
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderWidth: 1,
-        borderRadius:
-          variant === "filled" ? CornerRadius.sm : CornerRadius.full,
+        borderRadius: variantStyle.cornerRadius,
         borderColor: variantStyle.borderColor,
         backgroundColor: variantStyle.backgroundColor,
         opacity: disabled ? 0.5 : 1,
@@ -75,7 +82,7 @@ export default function Chip({
     >
       {Icon && <Icon size={16} color={iconColor} />}
       <Text
-        variant={variant === "filled" ? "bodySmMedium" : "bodyXsMedium"}
+        variant={variantStyle.textVariant}
         style={{ color: iconColor }}
       >
         {label}
