@@ -327,7 +327,6 @@ export default function Trip() {
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
   const [locationDraft, setLocationDraft] = useState("");
-  const [locationText, setLocationText] = useState<string | null>(null);
 
   const { data: trip, isLoading } = useGetTrip(tripID!);
 
@@ -370,6 +369,9 @@ export default function Trip() {
   };
 
   const handleLocationPress = () => {
+    if (trip?.location) {
+      setLocationDraft(trip.location);
+    }
     locationSheetRef.current?.snapToIndex(0);
   };
 
@@ -381,11 +383,28 @@ export default function Trip() {
     }, []),
   );
 
-  const handleLocationConfirm = () => {
-    if (locationDraft.trim()) {
-      setLocationText(locationDraft.trim());
+  const handleLocationConfirm = async () => {
+    const trimmedLocation = locationDraft.trim();
+    if (!trimmedLocation) {
+      locationSheetRef.current?.close();
+      return;
     }
-    locationSheetRef.current?.close();
+
+    try {
+      await updateTripMutation.mutateAsync({
+        tripID: tripID!,
+        data: {
+          location: trimmedLocation,
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getTripQueryKey(tripID!),
+      });
+    } catch {
+      // non-blocking
+    } finally {
+      locationSheetRef.current?.close();
+    }
   };
 
   const handleVoteOnDestination = () => {
@@ -499,7 +518,7 @@ export default function Trip() {
                   <Box flexDirection="row" alignItems="center" gap="xs">
                     <MapPin size={16} color={ColorPalette.gray500} />
                     <Text variant="bodySmDefault" color="gray500">
-                      {locationText ?? "Add location"}
+                      {trip?.location ?? "Add location"}
                     </Text>
                   </Box>
                 </Pressable>
