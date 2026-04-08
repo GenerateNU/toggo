@@ -16,6 +16,7 @@ import React, {
   useRef,
 } from "react";
 import { Keyboard, Platform } from "react-native";
+import { CornerRadius } from "../../tokens/corner-radius";
 
 export const InsideBottomSheetContext = createContext(false);
 
@@ -148,6 +149,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           enableHandlePanningGesture={!disableClose}
           onClose={handleClose}
           style={{ flex: 1, zIndex: 9999 }}
+          backgroundStyle={{
+            borderTopLeftRadius: CornerRadius.xl,
+            borderTopRightRadius: CornerRadius.xl,
+          }}
         >
           <BottomSheetScrollView
             keyboardShouldPersistTaps="handled"
