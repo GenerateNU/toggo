@@ -10,7 +10,7 @@ import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { Calendar } from "lucide-react-native";
+import { Calendar, X } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
@@ -62,14 +62,24 @@ export function TripReminderDateSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={["50%"]}
+        size="sm"
         onClose={onDismiss}
       >
-        <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
+        <Box flex={1} paddingHorizontal="sm" paddingBottom="lg" justifyContent="flex-end" gap="sm">
           <Box gap="xxs">
-            <Text variant="headingMd" color="gray950">
-              Lock in the dates
-            </Text>
+            <Box flexDirection="row" justifyContent="space-between">
+              <Text variant="headingMd" color="gray950">
+                Lock in the dates
+              </Text>
+              <TouchableOpacity
+                onPress={onSkip}
+                hitSlop={styles.hitSlop}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
+                <X size={20} color={ColorPalette.gray950} />
+              </TouchableOpacity>
+            </Box>
             <Text variant="bodyDefault" color="gray500">
               Set your trip dates
             </Text>
