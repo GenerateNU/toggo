@@ -2,7 +2,8 @@ import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { LucideIcon } from "lucide-react-native";
-import { Pressable } from "react-native";
+import { useMemo } from "react";
+import { Animated, Pressable } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,31 +63,59 @@ export default function Chip({
     VARIANT_STYLES[variant][selected ? "selected" : "unselected"];
   const iconColor = selected ? ColorPalette.white : ColorPalette.gray900;
 
+  const scaleAnim = useMemo(() => new Animated.Value(1), []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
+    <Animated.View
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderWidth: 1,
-        borderRadius: variantStyle.cornerRadius,
-        borderColor: variantStyle.borderColor,
-        backgroundColor: variantStyle.backgroundColor,
-        opacity: disabled ? 0.5 : 1,
-        overflow: "hidden",
+        transform: [{ scale: scaleAnim }],
       }}
     >
-      {Icon && <Icon size={16} color={iconColor} />}
-      <Text
-        variant={variantStyle.textVariant}
-        style={{ color: iconColor }}
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        style={({ pressed }) => ({
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderWidth: 1,
+          borderRadius: variantStyle.cornerRadius,
+          borderColor: variantStyle.borderColor,
+          backgroundColor: variantStyle.backgroundColor,
+          opacity: disabled ? 0.5 : pressed ? 0.9 : 1,
+          overflow: "hidden",
+        })}
       >
-        {label}
-      </Text>
-    </Pressable>
+        {Icon && <Icon size={16} color={iconColor} />}
+        <Text
+          variant={variantStyle.textVariant}
+          style={{ color: iconColor }}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
