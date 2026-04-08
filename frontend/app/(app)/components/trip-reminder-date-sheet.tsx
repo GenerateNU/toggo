@@ -23,6 +23,8 @@ type TripReminderDateSheetProps = {
   onSkip: () => void;
   /** Called when the sheet is dismissed by gesture or backdrop tap (not button presses). */
   onDismiss?: () => void;
+  /** Error message to display in the sheet. */
+  error?: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -47,6 +49,7 @@ export function TripReminderDateSheet({
   onSetDate,
   onSkip,
   onDismiss,
+  error,
 }: TripReminderDateSheetProps) {
   const [dateRange, setDateRange] = useState<DateRange>({
     start: null,
@@ -114,6 +117,20 @@ export function TripReminderDateSheet({
                 </Text>
               </Box>
             </TouchableOpacity>
+
+            {error && (
+              <Box
+                padding="sm"
+                backgroundColor="gray50"
+                borderRadius="sm"
+                borderWidth={1}
+                borderColor="statusError"
+              >
+                <Text variant="bodySmDefault" color="statusError">
+                  {error}
+                </Text>
+              </Box>
+            )}
 
             <Button
               layout="textOnly"

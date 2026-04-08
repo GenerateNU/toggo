@@ -2,6 +2,7 @@ import { Box, Text } from "@/design-system";
 import { Image } from "expo-image";
 import { ScrollView } from "react-native";
 import {
+  HOME_CARD_FLOATING_SHADOW,
   HOME_RECOMMENDED_CARD_WIDTH,
   RECOMMENDED_DESTINATIONS,
 } from "./constants";
@@ -21,15 +22,12 @@ export function RecommendedTripsRow() {
             width={HOME_RECOMMENDED_CARD_WIDTH}
             borderRadius="md"
             backgroundColor="white"
-            shadowColor="black"
-            shadowOpacity={0.2}
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowRadius={7}
             padding="xs"
             gap="sm"
-            style={
-              index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined
-            }
+            style={[
+              HOME_CARD_FLOATING_SHADOW,
+              index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined,
+            ]}
           >
             <Box height={166} borderRadius="sm" overflow="hidden">
               <Image

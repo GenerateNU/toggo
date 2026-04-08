@@ -51,10 +51,9 @@ type UploadError = ResponseErrorConfig<UploadError400 | UploadError500>;
  * ```
  */
 export function useUploadTripCoverImage(
-  options?: UseMutationOptions<
-    UploadImageResponse,
-    UploadError,
-    { uri: string }
+  options?: Omit<
+    UseMutationOptions<UploadImageResponse, UploadError, { uri: string }>,
+    "mutationKey" | "mutationFn"
   >,
 ) {
   return useMutation<UploadImageResponse, UploadError, { uri: string }>({

@@ -41,7 +41,7 @@ export function TripReminderLocationSheet({
               Know where you're going?
             </Text>
             <TouchableOpacity
-              onPress={onDismiss}
+              onPress={() => bottomSheetRef.current?.close()}
               hitSlop={styles.hitSlop}
               accessibilityRole="button"
               accessibilityLabel="Close"

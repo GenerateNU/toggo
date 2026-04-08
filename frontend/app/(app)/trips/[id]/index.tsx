@@ -49,6 +49,7 @@ function formatTripDates(startDate?: string, endDate?: string): string | null {
 export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
+  const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
@@ -80,6 +81,7 @@ export default function Trip() {
 
   const handleDateSet = async (range: DateRange) => {
     if (!range.start) return;
+    setDateSheetError(null);
     try {
       await updateTripMutation.mutateAsync({
         tripID: tripID,
@@ -91,10 +93,9 @@ export default function Trip() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
       });
-    } catch {
-      // non-blocking
-    } finally {
       dateSheetRef.current?.close();
+    } catch {
+      setDateSheetError("Could not update trip dates. Please try again.");
     }
   };
 
@@ -212,6 +213,7 @@ export default function Trip() {
         onSetDate={handleDateSet}
         onSkip={() => dateSheetRef.current?.close()}
         onDismiss={() => dateSheetRef.current?.close()}
+        error={dateSheetError}
       />
 
       <TripReminderLocationSheet
