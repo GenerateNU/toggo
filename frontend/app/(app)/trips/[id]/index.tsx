@@ -7,7 +7,9 @@ import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import ItineraryEmptyState from "@/app/(app)/trips/[id]/components/itinerary-empty-state";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
-import TripTabBar, { type TabKey } from "@/app/(app)/trips/[id]/components/trip-tab-bar";
+import TripTabBar, {
+  type TabKey,
+} from "@/app/(app)/trips/[id]/components/trip-tab-bar";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
@@ -20,11 +22,7 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-} from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -157,7 +155,9 @@ export default function Trip() {
           <BackButton />
 
           <Pressable
-            onPress={() => router.push(`/trips/${tripID}/search-location` as any)}
+            onPress={() =>
+              router.push(`/trips/${tripID}/search-location` as any)
+            }
             style={styles.mapButton}
             accessibilityRole="button"
             accessibilityLabel="View map"
@@ -180,7 +180,9 @@ export default function Trip() {
               tripLocation={(trip as any)?.location}
               isLoading={isLoading}
               onInviteFriends={shareInvite}
-              onSettingsPress={() => router.push(`/trips/${tripID}/settings` as any)}
+              onSettingsPress={() =>
+                router.push(`/trips/${tripID}/settings` as any)
+              }
               onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
               onLocationPress={handleLocationPress}
             />
