@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   DateRangePicker,
-  Divider,
   Text,
 } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -62,7 +61,7 @@ export function TripReminderDateSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        size="sm"
+        size="xs"
         onClose={onDismiss}
       >
         <Box flex={1} paddingHorizontal="sm" paddingBottom="lg" justifyContent="flex-end" gap="sm">
@@ -128,8 +127,6 @@ export function TripReminderDateSheet({
               onPress={onSkip}
             />
           </Box>
-
-          <Divider />
         </Box>
       </BottomSheet>
 

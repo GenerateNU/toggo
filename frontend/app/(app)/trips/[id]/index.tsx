@@ -6,6 +6,7 @@ import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
+import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import CreatePollSheet, {
   CreatePollSheetMethods,
@@ -13,13 +14,10 @@ import CreatePollSheet, {
 import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
 import {
-  BottomSheet,
   Box,
-  Button,
   Chip,
   ErrorState,
   Text,
-  TextField,
 } from "@/design-system";
 import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -150,62 +148,6 @@ function ItineraryEmptyState() {
   );
 }
 
-// ─── Location sheet ───────────────────────────────────────────────────────────
-
-type LocationOptionsSheetProps = {
-  bottomSheetRef: React.RefObject<any>;
-  locationDraft: string;
-  onLocationDraftChange: (text: string) => void;
-  onLocationConfirm: () => void;
-  onVoteOnDestination: () => void;
-  onDismiss: () => void;
-};
-
-function LocationOptionsSheet({
-  bottomSheetRef,
-  locationDraft,
-  onLocationDraftChange,
-  onLocationConfirm,
-  onVoteOnDestination,
-  onDismiss,
-}: LocationOptionsSheetProps) {
-  return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={["45%"]} onClose={onDismiss}>
-      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
-        <Box gap="xxs">
-          <Text variant="headingMd" color="gray950">
-            Where are you going?
-          </Text>
-          <Text variant="bodyDefault" color="gray500">
-            Set your trip destination
-          </Text>
-        </Box>
-        <Box gap="sm">
-          <TextField
-            value={locationDraft}
-            onChangeText={onLocationDraftChange}
-            placeholder="e.g. Paris, France"
-            returnKeyType="done"
-            onSubmitEditing={onLocationConfirm}
-          />
-          <Button
-            layout="textOnly"
-            label="Set Location"
-            variant="Primary"
-            onPress={onLocationConfirm}
-          />
-          <Button
-            layout="textOnly"
-            label="Vote on a Destination"
-            variant="Secondary"
-            onPress={onVoteOnDestination}
-          />
-        </Box>
-      </Box>
-    </BottomSheet>
-  );
-}
-
 // ─── Polls tab ────────────────────────────────────────────────────────────────
 
 function RankPollRow({
@@ -326,8 +268,6 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
-  const [locationDraft, setLocationDraft] = useState("");
-
   const { data: trip, isLoading } = useGetTrip(tripID!);
 
   const handleTabPress = (tab: TabKey) => {
@@ -369,9 +309,6 @@ export default function Trip() {
   };
 
   const handleLocationPress = () => {
-    if (trip?.location) {
-      setLocationDraft(trip.location);
-    }
     locationSheetRef.current?.snapToIndex(0);
   };
 
@@ -383,18 +320,12 @@ export default function Trip() {
     }, []),
   );
 
-  const handleLocationConfirm = async () => {
-    const trimmedLocation = locationDraft.trim();
-    if (!trimmedLocation) {
-      locationSheetRef.current?.close();
-      return;
-    }
-
+  const handleSetLocation = async (destination: string) => {
     try {
       await updateTripMutation.mutateAsync({
         tripID: tripID!,
         data: {
-          location: trimmedLocation,
+          location: destination,
         },
       });
       await queryClient.invalidateQueries({
@@ -407,7 +338,7 @@ export default function Trip() {
     }
   };
 
-  const handleVoteOnDestination = () => {
+  const handleVoteOnLocation = () => {
     locationSheetRef.current?.close();
     router.push(`/trips/${tripID}/pitches` as any);
   };
@@ -553,12 +484,10 @@ export default function Trip() {
         onDismiss={() => dateSheetRef.current?.close()}
       />
 
-      <LocationOptionsSheet
+      <TripReminderLocationSheet
         bottomSheetRef={locationSheetRef}
-        locationDraft={locationDraft}
-        onLocationDraftChange={setLocationDraft}
-        onLocationConfirm={handleLocationConfirm}
-        onVoteOnDestination={handleVoteOnDestination}
+        onSetLocation={handleSetLocation}
+        onVoteOnLocation={handleVoteOnLocation}
         onDismiss={() => locationSheetRef.current?.close()}
       />
     </View>
