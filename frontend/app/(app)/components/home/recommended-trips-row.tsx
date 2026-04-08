@@ -10,7 +10,7 @@ export function RecommendedTripsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <Box flexDirection="row" gap="sm" paddingHorizontal="sm" paddingVertical="sm">
-        {RECOMMENDED_DESTINATIONS.map((destination) => (
+        {RECOMMENDED_DESTINATIONS.map((destination, index) => (
           <Box
             key={destination.id}
             width={HOME_RECOMMENDED_CARD_WIDTH}
@@ -22,6 +22,7 @@ export function RecommendedTripsRow() {
             shadowRadius={4}
             padding="xs"
             gap="sm"
+            style={index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined}
           >
             <Box height={166} borderRadius="sm" overflow="hidden">
               <Image
