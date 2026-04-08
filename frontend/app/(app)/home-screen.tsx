@@ -332,7 +332,7 @@ export default function HomeScreen() {
                     />
                   ) : null}
                   <Text
-                    variant="headingMd"
+                    variant="headingXl"
                     color="gray900"
                     paddingBottom="sm"
                     paddingTop="sm"
@@ -413,8 +413,8 @@ export default function HomeScreen() {
           </Box>
 
           <Box gap="sm">
-            <Box paddingHorizontal="sm" paddingVertical="xs">
-              <Text variant="headingMd">Past Trips</Text>
+            <Box paddingHorizontal="sm" paddingVertical="xxs">
+              <Text variant="headingXl">Past Trips</Text>
             </Box>
             <Box paddingHorizontal="sm" gap="sm">
               {past.length === 0 ? (
@@ -445,7 +445,7 @@ export default function HomeScreen() {
 
           <Box gap="sm">
             <Box paddingHorizontal="sm" paddingVertical="xs">
-              <Text variant="headingMd">Recommended Trips</Text>
+              <Text variant="headingXl">Recommended Trips</Text>
             </Box>
             <Box paddingHorizontal="sm">
               <RecommendedTripsRow />
