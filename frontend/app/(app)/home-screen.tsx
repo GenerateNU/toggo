@@ -29,6 +29,8 @@ import {
   ErrorState,
   Icon,
   ImagePicker,
+  Logo,
+  ProfileAvatarButton,
   SkeletonRect,
   Text,
 } from "@/design-system";
@@ -41,7 +43,7 @@ import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
 import { useQueries } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { Check, X } from "lucide-react-native";
+import { Check, PlusIcon, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -50,6 +52,7 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /** Example pins around San Francisco for the dev map shortcut. */
 const DEV_MAP_SAMPLE_ACTIVITIES: ModelsActivity[] = [
@@ -294,8 +297,40 @@ export default function HomeScreen() {
   const toastIconColor =
     toastVariant === "error" ? "statusError" : "statusSuccess";
 
+  const requestCreateTripSheet = useHomeUIStore(
+    (s) => s.requestCreateTripSheet,
+  );
+
   return (
     <Box flex={1} backgroundColor="white">
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: "white" }}>
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="space-between"
+          paddingHorizontal="md"
+          paddingVertical="sm"
+        >
+          <ProfileAvatarButton
+            profilePhoto={profile.profilePhotoUri}
+            seed={profile.seed}
+            size="lg"
+            accessibilityLabel={profile.accessibilityLabel}
+            onPress={() => router.push("/settings")}
+          />
+          <Box paddingTop="sm">
+            <Logo size="xl" />
+          </Box>
+          <Button
+            accessibilityLabel="Create a trip"
+            icon={PlusIcon}
+            variant="IconSecondary"
+            layout="iconOnly"
+            onPress={requestCreateTripSheet}
+          />
+        </Box>
+      </SafeAreaView>
+
       <ScrollView
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
