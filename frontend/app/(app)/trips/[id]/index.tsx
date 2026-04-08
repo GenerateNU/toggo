@@ -22,7 +22,6 @@ import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   router,
-  Stack,
   useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
@@ -52,9 +51,7 @@ function formatTripDates(startDate?: string, endDate?: string): string | null {
 export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
-  const { shareInvite, isPending: isInvitePending } = useShareTripInvite(
-    tripID!,
-  );
+  const { shareInvite } = useShareTripInvite(tripID!);
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
   const dateSheetRef = useRef<any>(null);
@@ -140,8 +137,6 @@ export default function Trip() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-
       <TripHeader coverImageUrl={trip?.cover_image_url} />
 
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -177,7 +172,6 @@ export default function Trip() {
               tripDate={tripDate}
               tripLocation={trip?.location}
               isLoading={isLoading}
-              isInvitePending={isInvitePending}
               onInviteFriends={shareInvite}
               onSettingsPress={() => router.push(`/trips/${tripID}/settings` as any)}
               onDatePress={() => dateSheetRef.current?.snapToIndex(0)}

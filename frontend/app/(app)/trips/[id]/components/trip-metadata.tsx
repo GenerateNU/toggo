@@ -2,7 +2,7 @@ import { Box, Chip, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { Calendar, MapPin, Settings } from "lucide-react-native";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,6 @@ type TripMetadataProps = {
   tripDate: string | null;
   tripLocation?: string;
   isLoading: boolean;
-  isInvitePending: boolean;
   onInviteFriends: () => void;
   onSettingsPress: () => void;
   onDatePress: () => void;
@@ -25,7 +24,6 @@ export function TripMetadata({
   tripDate,
   tripLocation,
   isLoading,
-  isInvitePending,
   onInviteFriends,
   onSettingsPress,
   onDatePress,
@@ -35,8 +33,9 @@ export function TripMetadata({
     <Box gap="sm" paddingHorizontal="sm" paddingTop="sm">
       <Box
         flexDirection="row"
-        alignItems="center"
+        alignItems="flex-start"
         justifyContent="space-between"
+        gap="md"
       >
         {isLoading ? (
           <Box
@@ -46,17 +45,15 @@ export function TripMetadata({
             borderRadius="xs"
           />
         ) : (
-          <Text variant="headingXl" color="gray950">
-            {tripName ?? "Trip"}
-          </Text>
+          <Box flex={1} style={{ maxWidth: "65%" }}>
+            <Text variant="headingXl" color="gray950">
+              {tripName ?? "Trip"}
+            </Text>
+          </Box>
         )}
 
-        <Box flexDirection="row" alignItems="center" gap="sm">
-          {isInvitePending ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray500} />
-          ) : (
-            <Chip label="+ Invite Friends" onPress={onInviteFriends} />
-          )}
+        <Box flexDirection="row" alignItems="center" gap="sm" flexShrink={0}>
+          <Chip label="+ Invite Friends" onPress={onInviteFriends} />
           <Pressable
             onPress={onSettingsPress}
             hitSlop={styles.hitSlop}
