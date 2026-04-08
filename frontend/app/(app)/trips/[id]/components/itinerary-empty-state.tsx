@@ -12,7 +12,7 @@ export function ItineraryEmptyState() {
           color="gray950"
           style={styles.emptyStateText}
         >
-          No activites planned. Get planning!
+          No activities planned. Get planning!
         </Text>
       </Box>
     </Box>
