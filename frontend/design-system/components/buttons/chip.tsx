@@ -23,7 +23,7 @@ const VARIANT_STYLES = {
   outlined: {
     unselected: {
       backgroundColor: ColorPalette.white,
-      borderColor: ColorPalette.gray300,
+      borderColor: ColorPalette.gray100,
     },
     selected: {
       backgroundColor: ColorPalette.gray900,
