@@ -10,7 +10,7 @@ import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { Calendar, X } from "lucide-react-native";
+import { Calendar } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
@@ -38,7 +38,7 @@ function formatDateRange(range: DateRange): string | null {
   const start = range.start.toLocaleDateString("en-US", DATE_FORMAT_OPTIONS);
   if (!range.end) return start;
   const end = range.end.toLocaleDateString("en-US", DATE_FORMAT_OPTIONS);
-  return `${start} – ${end}`;
+  return `${start} - ${end}`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -66,17 +66,6 @@ export function TripReminderDateSheet({
         onClose={onDismiss}
       >
         <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
-          <Box flexDirection="row" justifyContent="flex-end">
-            <TouchableOpacity
-              onPress={onSkip}
-              hitSlop={styles.hitSlop}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <X size={20} color={ColorPalette.gray950} />
-            </TouchableOpacity>
-          </Box>
-
           <Box gap="xxs">
             <Text variant="headingMd" color="gray950">
               Lock in the dates
