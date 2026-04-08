@@ -20,7 +20,15 @@ import { CornerRadius } from "../../tokens/corner-radius";
 
 export const InsideBottomSheetContext = createContext(false);
 
-type BottomSheetSize = "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "full";
+type BottomSheetSize =
+  | "xxs"
+  | "xs"
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "xxl"
+  | "full";
 
 const SIZE_MAP: Record<BottomSheetSize, string[]> = {
   xxs: ["25%"],
@@ -67,7 +75,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
 
     // Determine snapPoints: size prop takes precedence, then explicit snapPoints, then default
     const resolvedSnapPoints = useMemo(
-      () => (size ? SIZE_MAP[size] : snapPoints ?? ["80%", "95%"]),
+      () => (size ? SIZE_MAP[size] : (snapPoints ?? ["80%", "95%"])),
       [size, snapPoints],
     );
 

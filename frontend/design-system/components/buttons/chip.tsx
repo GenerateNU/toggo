@@ -94,10 +94,7 @@ export default function Chip({
         })}
       >
         {Icon && <Icon size={16} color={iconColor} />}
-        <Text
-          variant={variantStyle.textVariant}
-          style={{ color: iconColor }}
-        >
+        <Text variant={variantStyle.textVariant} style={{ color: iconColor }}>
           {label}
         </Text>
       </Pressable>

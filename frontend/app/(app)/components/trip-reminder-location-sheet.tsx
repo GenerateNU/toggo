@@ -1,10 +1,4 @@
-import {
-  BottomSheet,
-  Box,
-  Button,
-  Text,
-  TextField,
-} from "@/design-system";
+import { BottomSheet, Box, Button, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { X } from "lucide-react-native";
 import { useState } from "react";

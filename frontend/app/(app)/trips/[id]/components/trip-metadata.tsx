@@ -106,7 +106,12 @@ export function TripMetadata({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  hitSlop: { top: Layout.spacing.xs, bottom: Layout.spacing.xs, left: Layout.spacing.xs, right: Layout.spacing.xs },
+  hitSlop: {
+    top: Layout.spacing.xs,
+    bottom: Layout.spacing.xs,
+    left: Layout.spacing.xs,
+    right: Layout.spacing.xs,
+  },
 });
 
 export default TripMetadata;

@@ -59,12 +59,14 @@ export function TripReminderDateSheet({
 
   return (
     <>
-      <BottomSheet
-        ref={bottomSheetRef}
-        size="xs"
-        onClose={onDismiss}
-      >
-        <Box flex={1} paddingHorizontal="sm" paddingBottom="lg" justifyContent="flex-end" gap="sm">
+      <BottomSheet ref={bottomSheetRef} size="xs" onClose={onDismiss}>
+        <Box
+          flex={1}
+          paddingHorizontal="sm"
+          paddingBottom="lg"
+          justifyContent="flex-end"
+          gap="sm"
+        >
           <Box gap="xxs">
             <Box flexDirection="row" justifyContent="space-between">
               <Text variant="headingMd" color="gray950">

@@ -62,10 +62,6 @@ export default function Trip() {
     query: { enabled: !!tripID },
   });
 
-  if (!tripID) {
-    return null;
-  }
-
   const handleTabPress = (tab: TabKey) => {
     if (tab === "settings") {
       router.push(`/trips/${tripID}/settings` as any);
@@ -122,7 +118,7 @@ export default function Trip() {
         tripID: tripID,
         data: {
           location: destination,
-        },
+        } as any, // TODO: Regenerate types after backend location field is added
       });
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
@@ -141,6 +137,10 @@ export default function Trip() {
   };
 
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
+
+  if (!tripID) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -177,7 +177,7 @@ export default function Trip() {
             <TripMetadata
               tripName={trip?.name}
               tripDate={tripDate}
-              tripLocation={trip?.location}
+              tripLocation={(trip as any)?.location}
               isLoading={isLoading}
               onInviteFriends={shareInvite}
               onSettingsPress={() => router.push(`/trips/${tripID}/settings` as any)}
