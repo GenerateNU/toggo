@@ -38,7 +38,7 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
   }
 
   if (isError) {
-    return <ErrorState title="Couldn't load polls" />;
+    return <ErrorState title="Couldn't load polls" refresh={refetch} />;
   }
 
   if (polls.length === 0) {
@@ -59,17 +59,17 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
 
   return (
     <Box gap="sm">
-      {votePolls.map((poll) => (
+      {votePolls.map((poll, index) => (
         <VotePollCard
-          key={poll.id}
+          key={poll.id ?? `vote-poll-${index}`}
           poll={poll}
           tripId={tripId}
           onVoted={handleVoted}
         />
       ))}
-      {rankPolls.map((poll) => (
+      {rankPolls.map((poll, index) => (
         <RankPollRow
-          key={poll.id}
+          key={poll.id ?? `rank-poll-${index}`}
           poll={poll}
           tripId={tripId}
           onRanked={handleRanked}

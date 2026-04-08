@@ -51,14 +51,20 @@ function formatTripDates(startDate?: string, endDate?: string): string | null {
 export default function Trip() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
-  const { shareInvite } = useShareTripInvite(tripID!);
+  const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
-  const { data: trip, isLoading } = useGetTrip(tripID!);
+  const { data: trip, isLoading } = useGetTrip(tripID ?? "", {
+    query: { enabled: !!tripID },
+  });
+
+  if (!tripID) {
+    return null;
+  }
 
   const handleTabPress = (tab: TabKey) => {
     if (tab === "settings") {
@@ -74,7 +80,7 @@ export default function Trip() {
 
   const handlePollCreated = useCallback(() => {
     queryClient.invalidateQueries({
-      queryKey: getPollsByTripIDQueryKey(tripID!),
+      queryKey: getPollsByTripIDQueryKey(tripID),
     });
   }, [queryClient, tripID]);
 
@@ -82,14 +88,14 @@ export default function Trip() {
     if (!range.start) return;
     try {
       await updateTripMutation.mutateAsync({
-        tripID: tripID!,
+        tripID: tripID,
         data: {
           start_date: range.start.toISOString(),
           ...(range.end ? { end_date: range.end.toISOString() } : {}),
         },
       });
       await queryClient.invalidateQueries({
-        queryKey: getTripQueryKey(tripID!),
+        queryKey: getTripQueryKey(tripID),
       });
     } catch {
       // non-blocking
@@ -113,16 +119,17 @@ export default function Trip() {
   const handleSetLocation = async (destination: string) => {
     try {
       await updateTripMutation.mutateAsync({
-        tripID: tripID!,
+        tripID: tripID,
         data: {
           location: destination,
         },
       });
       await queryClient.invalidateQueries({
-        queryKey: getTripQueryKey(tripID!),
+        queryKey: getTripQueryKey(tripID),
       });
-    } catch {
-      // non-blocking
+    } catch (error) {
+      console.error("Failed to update trip location:", error);
+      // TODO: Show error toast to user
     } finally {
       locationSheetRef.current?.close();
     }
@@ -184,17 +191,17 @@ export default function Trip() {
 
             <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
               {activeTab === "itinerary" && <ItineraryEmptyState />}
-              {activeTab === "polls" && <PollsTabContent tripId={tripID!} />}
+              {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             </Box>
           </ScrollView>
         </Box>
       </SafeAreaView>
 
-      <CreateFAB tripID={tripID!} onCreatePoll={handleOpenCreatePoll} />
+      <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
 
       <CreatePollSheet
         ref={createPollSheetRef}
-        tripID={tripID!}
+        tripID={tripID}
         onCreated={handlePollCreated}
       />
 

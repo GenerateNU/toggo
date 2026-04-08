@@ -303,7 +303,7 @@ export default function HomeScreen() {
 
   return (
     <Box flex={1} backgroundColor="white">
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: "white" }}>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: ColorPalette.white }}>
         <Box
           flexDirection="row"
           alignItems="center"

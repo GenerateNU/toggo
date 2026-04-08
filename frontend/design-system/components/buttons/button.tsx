@@ -1,9 +1,10 @@
+import { usePressScale } from "@/design-system/hooks/usePressScale";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorName } from "@/design-system/tokens/color";
 import { useTheme } from "@/design-system/tokens/theme";
 import { LucideProps } from "lucide-react-native";
-import React, { useMemo } from "react";
+import React from "react";
 import { Animated, Pressable, StyleProp, ViewStyle } from "react-native";
 import { ButtonSize, ButtonVariant, resolveButtonStyle } from "./variant";
 
@@ -56,26 +57,10 @@ export const Button: React.FC<ButtonProps> = ({
       ? layoutProps.accessibilityLabel
       : layoutProps.label;
 
-  const scaleAnim = useMemo(() => new Animated.Value(1), []);
-
-  const handlePressIn = () => {
-    if (isDisabled) return;
-    Animated.spring(scaleAnim, {
-      toValue: 0.97,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
+  const { scaleAnim, onPressIn, onPressOut } = usePressScale({
+    pressedScale: 0.97,
+    isDisabled,
+  });
 
   const renderContent = () => {
     if (loading) {
@@ -149,8 +134,8 @@ export const Button: React.FC<ButtonProps> = ({
     >
       <Pressable
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         disabled={isDisabled}
         accessible
         accessibilityRole="button"

@@ -4,6 +4,12 @@ import { Layout } from "@/design-system/tokens/layout";
 import { Calendar, MapPin, Settings } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SKELETON_WIDTH = 160;
+const SKELETON_HEIGHT = 28;
+const TITLE_MAX_WIDTH = "65%";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type TripMetadataProps = {
@@ -39,13 +45,13 @@ export function TripMetadata({
       >
         {isLoading ? (
           <Box
-            width={160}
-            height={28}
+            width={SKELETON_WIDTH}
+            height={SKELETON_HEIGHT}
             backgroundColor="gray100"
             borderRadius="xs"
           />
         ) : (
-          <Box flex={1} style={{ maxWidth: "65%" }}>
+          <Box flex={1} style={{ maxWidth: TITLE_MAX_WIDTH }}>
             <Text variant="headingXl" color="gray950">
               {tripName ?? "Trip"}
             </Text>

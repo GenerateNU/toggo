@@ -1,8 +1,8 @@
+import { usePressScale } from "@/design-system/hooks/usePressScale";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { LucideIcon } from "lucide-react-native";
-import { useMemo } from "react";
 import { Animated, Pressable } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -63,25 +63,10 @@ export default function Chip({
     VARIANT_STYLES[variant][selected ? "selected" : "unselected"];
   const iconColor = selected ? ColorPalette.white : ColorPalette.gray900;
 
-  const scaleAnim = useMemo(() => new Animated.Value(1), []);
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.95,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
+  const { scaleAnim, onPressIn, onPressOut } = usePressScale({
+    pressedScale: 0.95,
+    isDisabled: disabled,
+  });
 
   return (
     <Animated.View
@@ -91,8 +76,8 @@ export default function Chip({
     >
       <Pressable
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         disabled={disabled}
         style={({ pressed }) => ({
           flexDirection: "row",
