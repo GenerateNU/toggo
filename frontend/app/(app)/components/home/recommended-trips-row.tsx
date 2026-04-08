@@ -19,7 +19,7 @@ export function RecommendedTripsRow() {
             shadowColor="black"
             shadowOpacity={0.2}
             shadowOffset={{ width: 0, height: 2 }}
-            shadowRadius={4}
+            shadowRadius={7}
             padding="xs"
             gap="sm"
             style={index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined}
