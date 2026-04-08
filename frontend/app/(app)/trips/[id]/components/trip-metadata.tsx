@@ -32,7 +32,7 @@ export function TripMetadata({
   onLocationPress,
 }: TripMetadataProps) {
   return (
-    <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
+    <Box gap="sm" paddingHorizontal="sm" paddingTop="sm">
       <Box
         flexDirection="row"
         alignItems="center"
@@ -46,7 +46,7 @@ export function TripMetadata({
             borderRadius="xs"
           />
         ) : (
-          <Text variant="headingMd" color="gray950">
+          <Text variant="headingXl" color="gray950">
             {tripName ?? "Trip"}
           </Text>
         )}

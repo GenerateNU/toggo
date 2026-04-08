@@ -12,7 +12,8 @@ import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
-import { Box } from "@/design-system";
+import { BackButton } from "@/design-system/components/navigation/arrow";
+import { Box, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -25,8 +26,9 @@ import {
   useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
+import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -140,12 +142,31 @@ export default function Trip() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <TripHeader
-        coverImageUrl={trip?.cover_image_url}
-        onMapPress={() => router.push(`/trips/${tripID}/search-location` as any)}
-      />
+      <TripHeader coverImageUrl={trip?.cover_image_url} />
 
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="sm"
+          paddingVertical="xs"
+        >
+          <BackButton />
+
+          <Pressable
+            onPress={() => router.push(`/trips/${tripID}/search-location` as any)}
+            style={styles.mapButton}
+            accessibilityRole="button"
+            accessibilityLabel="View map"
+          >
+            <Map size={16} color={ColorPalette.gray950} />
+            <Text variant="bodySmMedium" color="gray950">
+              Map
+            </Text>
+          </Pressable>
+        </Box>
+
         <Box style={styles.card}>
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -210,6 +231,20 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "transparent",
+  },
+  mapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Layout.spacing.xxs,
+    backgroundColor: ColorPalette.white,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.xxs,
+    borderRadius: CornerRadius.full,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   card: {
     flex: 1,
