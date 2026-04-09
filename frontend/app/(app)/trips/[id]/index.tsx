@@ -35,13 +35,18 @@ const CARD_TOP_OFFSET = 120;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function parseLocalDate(iso: string): Date {
+  const [year, month, day] = iso.split("T")[0]!.split("-").map(Number);
+  return new Date(year!, month! - 1, day!);
+}
+
 function formatTripDates(startDate?: string, endDate?: string): string | null {
   if (!startDate) return null;
   const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  const start = new Date(startDate).toLocaleDateString("en-US", opts);
+  const start = parseLocalDate(startDate).toLocaleDateString("en-US", opts);
   if (!endDate) return start;
-  const end = new Date(endDate).toLocaleDateString("en-US", opts);
-  return `${start} – ${end}`;
+  const end = parseLocalDate(endDate).toLocaleDateString("en-US", opts);
+  return `${start} - ${end}`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
