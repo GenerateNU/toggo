@@ -201,6 +201,7 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			RankPollID:    tripData.RankPollID,
 			StartDate:     tripData.StartDate,
 			EndDate:       tripData.EndDate,
+			Location:      tripData.Location,
 			CreatedAt:     tripData.CreatedAt,
 			UpdatedAt:     tripData.UpdatedAt,
 		})
@@ -318,6 +319,7 @@ func (s *TripService) toAPIResponse(ctx context.Context, tripData *models.TripDa
 		RankPollID:    tripData.RankPollID,
 		StartDate:     tripData.StartDate,
 		EndDate:       tripData.EndDate,
+		Location:      tripData.Location,
 		CreatedAt:     tripData.CreatedAt,
 		UpdatedAt:     tripData.UpdatedAt,
 	}, nil

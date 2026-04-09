@@ -17,6 +17,7 @@ type Trip struct {
 	RankPollID    *uuid.UUID `bun:"rank_poll_id,type:uuid" json:"rank_poll_id,omitempty"`
 	StartDate     *time.Time `bun:"start_date" json:"start_date,omitempty"`
 	EndDate       *time.Time `bun:"end_date" json:"end_date,omitempty"`
+	Location      *string    `bun:"location" json:"location,omitempty"`
 	CreatedAt     time.Time  `bun:"created_at,nullzero" json:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at,nullzero" json:"updated_at"`
 }
@@ -30,6 +31,7 @@ type UpdateTripRequest struct {
 	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
 	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
+	Location      *string    `json:"location,omitempty"`
 }
 
 type CreateTripRequest struct {
@@ -73,6 +75,7 @@ type TripDatabaseResponse struct {
 	RankPollID    *uuid.UUID `bun:"rank_poll_id"`
 	StartDate     *time.Time `bun:"start_date"`
 	EndDate       *time.Time `bun:"end_date"`
+	Location      *string    `bun:"location"`
 	CreatedAt     time.Time  `bun:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at"`
 }
@@ -88,6 +91,7 @@ type TripAPIResponse struct {
 	RankPollID    *uuid.UUID `json:"rank_poll_id,omitempty"`
 	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
 	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	Location      *string    `json:"location,omitempty"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }
