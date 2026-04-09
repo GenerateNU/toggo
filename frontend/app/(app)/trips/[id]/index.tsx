@@ -21,6 +21,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
+import { formatTripDates } from "@/utils/date-helpers";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
@@ -32,22 +33,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const INITIAL_TAB: TabKey = "itinerary";
 const CARD_TOP_OFFSET = 120;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function parseLocalDate(iso: string): Date {
-  const [year, month, day] = iso.split("T")[0]!.split("-").map(Number);
-  return new Date(year!, month! - 1, day!);
-}
-
-function formatTripDates(startDate?: string, endDate?: string): string | null {
-  if (!startDate) return null;
-  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  const start = parseLocalDate(startDate).toLocaleDateString("en-US", opts);
-  if (!endDate) return start;
-  const end = parseLocalDate(endDate).toLocaleDateString("en-US", opts);
-  return `${start} - ${end}`;
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
