@@ -498,21 +498,29 @@ export default function HomeScreen() {
               onPress={() => router.push("/trips")}
             />
             {__DEV__ ? (
-              <Button
-                layout="textOnly"
-                label="Map view (dev)"
-                variant="Tertiary"
-                onPress={() =>
-                  router.push({
-                    pathname: "/map-view",
-                    params: {
-                      activities: encodeMapViewActivitiesParam(
-                        DEV_MAP_SAMPLE_ACTIVITIES,
-                      ),
-                    },
-                  })
-                }
-              />
+              <>
+                <Button
+                  layout="textOnly"
+                  label="Map view (dev)"
+                  variant="Tertiary"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/map-view",
+                      params: {
+                        activities: encodeMapViewActivitiesParam(
+                          DEV_MAP_SAMPLE_ACTIVITIES,
+                        ),
+                      },
+                    })
+                  }
+                />
+                <Button
+                  layout="textOnly"
+                  label="Join trip with code (dev)"
+                  variant="Tertiary"
+                  onPress={() => router.push("/join-trip-code")}
+                />
+              </>
             ) : null}
           </Box>
         </Box>
