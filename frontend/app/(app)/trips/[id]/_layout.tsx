@@ -22,10 +22,8 @@ const Layout = () => {
       <Stack.Screen
         name="index"
         options={{
-          headerShown: true,
-          headerTitle: "",
-          headerTransparent: true,
-          gestureEnabled: false,
+          headerShown: false,
+          gestureEnabled: true,
         }}
       />
       <Stack.Screen

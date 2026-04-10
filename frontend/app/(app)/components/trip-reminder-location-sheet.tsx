@@ -1,11 +1,4 @@
-import {
-  BottomSheet,
-  Box,
-  Button,
-  Divider,
-  Text,
-  TextField,
-} from "@/design-system";
+import { BottomSheet, Box, Button, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { X } from "lucide-react-native";
 import { useState } from "react";
@@ -34,23 +27,29 @@ export function TripReminderLocationSheet({
   const [destination, setDestination] = useState("");
 
   return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={["55%"]} onClose={onDismiss}>
-      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
-        <Box flexDirection="row" justifyContent="flex-end">
-          <TouchableOpacity
-            onPress={onDismiss}
-            hitSlop={styles.hitSlop}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-          >
-            <X size={20} color={ColorPalette.gray950} />
-          </TouchableOpacity>
-        </Box>
-
+    <BottomSheet ref={bottomSheetRef} size="xs" onClose={onDismiss}>
+      <Box
+        flex={1}
+        paddingHorizontal="sm"
+        paddingBottom="lg"
+        justifyContent="flex-end"
+        gap="sm"
+      >
         <Box gap="xxs">
-          <Text variant="headingMd" color="gray950">
-            Know where you're going?
-          </Text>
+          <Box flexDirection="row" justifyContent="space-between">
+            <Text variant="headingMd" color="gray950">
+              Know where you're going?
+            </Text>
+            <TouchableOpacity
+              onPress={() => bottomSheetRef.current?.close()}
+              hitSlop={styles.hitSlop}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <X size={20} color={ColorPalette.gray950} />
+            </TouchableOpacity>
+          </Box>
+
           <Text variant="bodyDefault" color="gray500">
             Set your trip location
           </Text>
@@ -76,8 +75,6 @@ export function TripReminderLocationSheet({
             onPress={onVoteOnLocation}
           />
         </Box>
-
-        <Divider />
       </Box>
     </BottomSheet>
   );

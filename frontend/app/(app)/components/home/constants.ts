@@ -1,7 +1,7 @@
 /** First page of trips on the home screen; matches API default max page size intent. */
 export const HOME_TRIPS_PAGE_SIZE = 20;
 
-export const HOME_UPCOMING_IMAGE_HEIGHT = 140;
+export const HOME_UPCOMING_IMAGE_HEIGHT = 170;
 export const HOME_PAST_TRIP_IMAGE_SIZE = 72;
 export const HOME_RECOMMENDED_CARD_WIDTH = 250;
 

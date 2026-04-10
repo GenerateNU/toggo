@@ -12,15 +12,41 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from "react";
 import { Keyboard, Platform } from "react-native";
+import { CornerRadius } from "../../tokens/corner-radius";
 
 export const InsideBottomSheetContext = createContext(false);
+
+type BottomSheetSize =
+  | "xxs"
+  | "xs"
+  | "sm"
+  | "md"
+  | "lg"
+  | "xl"
+  | "xxl"
+  | "full";
+
+const SIZE_MAP: Record<BottomSheetSize, string[]> = {
+  xxs: ["25%"],
+  xs: ["33%"],
+  sm: ["40%"],
+  md: ["50%"],
+  lg: ["60%"],
+  xl: ["70%"],
+  xxl: ["80%"],
+  full: ["95%"],
+};
 
 interface BottomSheetModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** Size variant - overrides snapPoints if provided */
+  size?: BottomSheetSize;
+  /** Custom snap points - ignored if size is provided */
   snapPoints?: (string | number)[];
   initialIndex?: number;
   onClose?: () => void;
@@ -36,7 +62,8 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       onChange,
       children,
       footer,
-      snapPoints = ["80%", "95%"],
+      size,
+      snapPoints,
       initialIndex = -1,
       onClose,
       disableClose = false,
@@ -45,6 +72,12 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
   ) => {
     const innerRef = useRef<BottomSheet>(null);
     const currentIndex = useRef(initialIndex);
+
+    // Determine snapPoints: size prop takes precedence, then explicit snapPoints, then default
+    const resolvedSnapPoints = useMemo(
+      () => (size ? SIZE_MAP[size] : (snapPoints ?? ["80%", "95%"])),
+      [size, snapPoints],
+    );
 
     useImperativeHandle(ref, () => ({
       snapToIndex: (...args: Parameters<BottomSheetMethods["snapToIndex"]>) =>
@@ -64,12 +97,12 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
 
     const handleChange = useCallback(
       (index: number) => {
-        if (index >= -1 && index <= snapPoints.length - 1) {
+        if (index >= -1 && index <= resolvedSnapPoints.length - 1) {
           currentIndex.current = index;
         }
         onChange?.(index);
       },
-      [onChange, snapPoints],
+      [onChange, resolvedSnapPoints],
     );
 
     useEffect(() => {
@@ -115,7 +148,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
         <BottomSheet
           ref={innerRef}
           index={initialIndex}
-          snapPoints={snapPoints}
+          snapPoints={resolvedSnapPoints}
           onChange={handleChange}
           backdropComponent={renderBackdrop}
           footerComponent={footer ? renderFooter : undefined}
@@ -124,6 +157,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           enableHandlePanningGesture={!disableClose}
           onClose={handleClose}
           style={{ flex: 1, zIndex: 9999 }}
+          backgroundStyle={{
+            borderTopLeftRadius: CornerRadius.xl,
+            borderTopRightRadius: CornerRadius.xl,
+          }}
         >
           <BottomSheetScrollView
             keyboardShouldPersistTaps="handled"

@@ -1,10 +1,11 @@
+import { usePressScale } from "@/design-system/hooks/usePressScale";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorName } from "@/design-system/tokens/color";
 import { useTheme } from "@/design-system/tokens/theme";
 import { LucideProps } from "lucide-react-native";
 import React from "react";
-import { StyleProp, TouchableOpacity, ViewStyle } from "react-native";
+import { Animated, Pressable, StyleProp, ViewStyle } from "react-native";
 import { ButtonSize, ButtonVariant, resolveButtonStyle } from "./variant";
 
 type LucideIconComponent = React.ComponentType<LucideProps>;
@@ -55,6 +56,11 @@ export const Button: React.FC<ButtonProps> = ({
     layoutProps.layout === "iconOnly"
       ? layoutProps.accessibilityLabel
       : layoutProps.label;
+
+  const { scaleAnim, onPressIn, onPressOut } = usePressScale({
+    pressedScale: 0.97,
+    isDisabled,
+  });
 
   const renderContent = () => {
     if (loading) {
@@ -121,41 +127,51 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={isDisabled}
-      activeOpacity={0.7}
-      accessible
-      accessibilityRole="button"
-      accessibilityLabel={loading ? "Loading" : a11yLabel}
-      accessibilityState={{ disabled: isDisabled, busy: loading }}
+    <Animated.View
+      style={{
+        transform: [{ scale: scaleAnim }],
+      }}
     >
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="center"
-        alignSelf="stretch"
-        style={[
-          {
-            minHeight: resolved.minHeight,
-            paddingHorizontal: isIconOnly ? 0 : resolved.paddingHorizontal,
-            borderRadius: resolved.borderRadius,
-            borderWidth: resolved.borderWidth,
-            borderStyle: variant === "Dashed" ? "dashed" : "solid",
-            borderColor: resolved.borderColor
-              ? colors[resolved.borderColor as keyof typeof colors]
-              : undefined,
-            backgroundColor:
-              resolved.backgroundColor === "transparent"
-                ? "transparent"
-                : colors[resolved.backgroundColor as keyof typeof colors],
-            width: isIconOnly ? resolved.minHeight : "auto",
-          },
-          style,
-        ]}
+      <Pressable
+        onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        disabled={isDisabled}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={loading ? "Loading" : a11yLabel}
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
       >
-        {renderContent()}
-      </Box>
-    </TouchableOpacity>
+        {({ pressed }) => (
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="center"
+            alignSelf="stretch"
+            style={[
+              {
+                minHeight: resolved.minHeight,
+                paddingHorizontal: isIconOnly ? 0 : resolved.paddingHorizontal,
+                borderRadius: resolved.borderRadius,
+                borderWidth: resolved.borderWidth,
+                borderStyle: variant === "Dashed" ? "dashed" : "solid",
+                borderColor: resolved.borderColor
+                  ? colors[resolved.borderColor as keyof typeof colors]
+                  : undefined,
+                backgroundColor:
+                  resolved.backgroundColor === "transparent"
+                    ? "transparent"
+                    : colors[resolved.backgroundColor as keyof typeof colors],
+                width: isIconOnly ? resolved.minHeight : "auto",
+                opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
+              },
+              style,
+            ]}
+          >
+            {renderContent()}
+          </Box>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
