@@ -40,7 +40,7 @@ export function UpcomingTripHeroCard({
         backgroundColor="white"
         borderRadius="md"
         padding="xs"
-        gap="sm"
+        gap="xs"
         style={[HOME_CARD_FLOATING_SHADOW, width ? { width } : undefined]}
       >
         <Box borderRadius="sm" overflow="hidden">
@@ -83,7 +83,7 @@ export function UpcomingTripHeroCard({
         </Box>
 
         <Box paddingHorizontal="xs" gap="xxs">
-          <Text variant="headingSm" color="gray900">
+          <Text variant="headingMd" color="gray900">
             {trip.name?.trim() || "Untitled trip"}
           </Text>
           <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />

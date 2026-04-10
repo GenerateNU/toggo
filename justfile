@@ -36,6 +36,10 @@ down-db:
 
 # === Database ===
 
+# Seed the database with demo data (use: just seed [command] [user_id])
+seed *args:
+    cd backend {{ sep }} bash scripts/seed.sh {{ args }}
+
 # Connect to local database
 connect-db:
     cd backend {{ sep }} make db-connect{{ suffix }}

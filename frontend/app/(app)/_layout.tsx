@@ -1,45 +1,6 @@
-import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
 import { useUser } from "@/contexts/user";
-import {
-  BackButton,
-  Box,
-  Button,
-  Logo,
-  ProfileAvatarButton,
-  ToastProvider,
-} from "@/design-system";
-import { useProfileAvatar } from "@/hooks/use-profile-avatar";
-import { Redirect, router, Stack } from "expo-router";
-import { PlusIcon } from "lucide-react-native";
-
-function HomeHeaderLeft() {
-  const profile = useProfileAvatar();
-  return (
-    <ProfileAvatarButton
-      profilePhoto={profile.profilePhotoUri}
-      seed={profile.seed}
-      size="lg"
-      accessibilityLabel={profile.accessibilityLabel}
-      onPress={() => router.push("/settings")}
-    />
-  );
-}
-
-function HomeHeaderRight() {
-  const requestCreateTripSheet = useHomeUIStore(
-    (s) => s.requestCreateTripSheet,
-  );
-
-  return (
-    <Button
-      accessibilityLabel="Create a trip"
-      icon={PlusIcon}
-      variant="IconSecondary"
-      layout="iconOnly"
-      onPress={requestCreateTripSheet}
-    />
-  );
-}
+import { BackButton, ToastProvider } from "@/design-system";
+import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {
   const { isAuthenticated } = useUser();
@@ -54,18 +15,7 @@ const Layout = () => {
         <Stack.Screen
           name="index"
           options={{
-            headerShown: true,
-            headerTransparent: false,
-            headerTitle: () => (
-              <Box paddingTop="sm">
-                <Logo size="xl" />
-              </Box>
-            ),
-            headerTitleAlign: "center",
-            headerShadowVisible: false,
-            headerLeft: () => <HomeHeaderLeft />,
-            headerRight: () => <HomeHeaderRight />,
-            gestureEnabled: false,
+            headerShown: false,
           }}
         />
         <Stack.Screen

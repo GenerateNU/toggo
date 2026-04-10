@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   DateRangePicker,
-  Divider,
   Text,
 } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -24,6 +23,8 @@ type TripReminderDateSheetProps = {
   onSkip: () => void;
   /** Called when the sheet is dismissed by gesture or backdrop tap (not button presses). */
   onDismiss?: () => void;
+  /** Error message to display in the sheet. */
+  error?: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ function formatDateRange(range: DateRange): string | null {
   const start = range.start.toLocaleDateString("en-US", DATE_FORMAT_OPTIONS);
   if (!range.end) return start;
   const end = range.end.toLocaleDateString("en-US", DATE_FORMAT_OPTIONS);
-  return `${start} – ${end}`;
+  return `${start} - ${end}`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ export function TripReminderDateSheet({
   onSetDate,
   onSkip,
   onDismiss,
+  error,
 }: TripReminderDateSheetProps) {
   const [dateRange, setDateRange] = useState<DateRange>({
     start: null,
@@ -60,27 +62,28 @@ export function TripReminderDateSheet({
 
   return (
     <>
-      <BottomSheet
-        ref={bottomSheetRef}
-        snapPoints={["50%"]}
-        onClose={onDismiss}
-      >
-        <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
-          <Box flexDirection="row" justifyContent="flex-end">
-            <TouchableOpacity
-              onPress={onSkip}
-              hitSlop={styles.hitSlop}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <X size={20} color={ColorPalette.gray950} />
-            </TouchableOpacity>
-          </Box>
-
+      <BottomSheet ref={bottomSheetRef} size="xs" onClose={onDismiss}>
+        <Box
+          flex={1}
+          paddingHorizontal="sm"
+          paddingBottom="lg"
+          justifyContent="flex-end"
+          gap="sm"
+        >
           <Box gap="xxs">
-            <Text variant="headingMd" color="gray950">
-              Lock in the dates
-            </Text>
+            <Box flexDirection="row" justifyContent="space-between">
+              <Text variant="headingMd" color="gray950">
+                Lock in the dates
+              </Text>
+              <TouchableOpacity
+                onPress={onSkip}
+                hitSlop={styles.hitSlop}
+                accessibilityRole="button"
+                accessibilityLabel="Close"
+              >
+                <X size={20} color={ColorPalette.gray950} />
+              </TouchableOpacity>
+            </Box>
             <Text variant="bodyDefault" color="gray500">
               Set your trip dates
             </Text>
@@ -115,6 +118,20 @@ export function TripReminderDateSheet({
               </Box>
             </TouchableOpacity>
 
+            {error && (
+              <Box
+                padding="sm"
+                backgroundColor="gray50"
+                borderRadius="sm"
+                borderWidth={1}
+                borderColor="statusError"
+              >
+                <Text variant="bodySmDefault" color="statusError">
+                  {error}
+                </Text>
+              </Box>
+            )}
+
             <Button
               layout="textOnly"
               label="Set Date"
@@ -129,8 +146,6 @@ export function TripReminderDateSheet({
               onPress={onSkip}
             />
           </Box>
-
-          <Divider />
         </Box>
       </BottomSheet>
 
