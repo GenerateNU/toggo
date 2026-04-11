@@ -1,5 +1,6 @@
 export const Gray = {
   0: "#FFFFFF",
+  10: "#F4F4F4",
   25: "#F9F9F9",
   50: "#F2F2F2",
   100: "#E6E6E6",
@@ -65,6 +66,7 @@ export const ColorPalette = {
   white: Gray[0],
   black: "#000000",
 
+  gray10: Gray[10],
   gray25: Gray[25],
   gray50: Gray[50],
   gray100: Gray[100],

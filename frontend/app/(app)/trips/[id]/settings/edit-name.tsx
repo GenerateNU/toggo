@@ -4,6 +4,8 @@ import { Box, Button, Text, TextField, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
+import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { useState } from "react";
 import { ScrollView } from "react-native";
 
@@ -15,7 +17,8 @@ export default function EditTripName() {
   const { data: trip } = useGetTrip(tripID!);
   const updateTripMutation = useUpdateTrip();
 
-  const [name, setName] = useState(trip?.name ?? "");
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const name = draftName ?? trip?.name ?? "";
 
   const handleSave = async () => {
     const trimmed = name.trim();
@@ -36,6 +39,10 @@ export default function EditTripName() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID!),
       });
+      await queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY });
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey({}),
+      });
       toast.show({ message: "Trip name updated." });
       router.back();
     } catch {
@@ -55,7 +62,7 @@ export default function EditTripName() {
         </Text>
         <TextField
           value={name}
-          onChangeText={setName}
+          onChangeText={setDraftName}
           placeholder="Enter trip name"
         />
       </Box>

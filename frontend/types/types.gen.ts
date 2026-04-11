@@ -102,6 +102,10 @@ export type ModelsActivityGoingUserResponse = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -188,6 +192,10 @@ export type ModelsActivityAPIResponse = {
   /**
    * @type string | undefined
    */
+  proposer_name?: string;
+  /**
+   * @type string | undefined
+   */
   proposer_picture_url?: string;
   /**
    * @type string | undefined
@@ -261,6 +269,10 @@ export type ModelsActivityRSVPAPIResponse = {
    * @type string | undefined
    */
   created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
   /**
    * @type string | undefined
    */
@@ -483,6 +495,10 @@ export type ModelsCommentAPIResponse = {
    */
   id?: string;
   /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
    * @description pointer since some users don\'t have their avatar set
    * @type string | undefined
    */
@@ -547,6 +563,10 @@ export type ModelsCommentReactionUser = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -585,6 +605,10 @@ export type ModelsCommentReactionsSummaryResponse = {
 };
 
 export type ModelsCommenterPreview = {
+  /**
+   * @type string | undefined
+   */
+  name?: string;
   /**
    * @type string | undefined
    */
@@ -914,6 +938,10 @@ export type ModelsPitchAPIResponse = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -1052,6 +1080,10 @@ export type ModelsCreateTripRequest = {
    * @type string
    */
   name: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
   /**
    * @type string | undefined, date-time
    */
@@ -1219,6 +1251,10 @@ export type ModelsMembershipAPIResponse = {
    * @type boolean | undefined
    */
   is_admin?: boolean;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
   /**
    * @type boolean | undefined
    */
@@ -1750,6 +1786,10 @@ export type ModelsVoterInfo = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   user_id?: string;
   /**
    * @type string | undefined
@@ -1990,6 +2030,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  location?: string;
+  /**
+   * @type string | undefined
+   */
   name?: string;
   /**
    * @type string | undefined
@@ -2127,7 +2171,15 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  end_date?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
+  /**
+   * @type string | undefined
+   */
+  location?: string;
   /**
    * @type string | undefined
    */
@@ -2140,6 +2192,10 @@ export type ModelsTrip = {
    * @type string | undefined
    */
   rank_poll_id?: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
   /**
    * @type string | undefined
    */
@@ -2354,10 +2410,6 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
-  created_at?: string;
-  /**
-   * @type string | undefined
-   */
   currency?: string;
   /**
    * @type string | undefined, date-time
@@ -2366,7 +2418,7 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
-  id?: string;
+  location?: string;
   /**
    * @type string | undefined
    */
@@ -2379,10 +2431,6 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined, date-time
    */
   start_date?: string;
-  /**
-   * @type string | undefined
-   */
-  updated_at?: string;
 };
 
 export type ModelsUpdateUserNotificationPreferencesRequest = {

@@ -8,6 +8,7 @@
     "currency": { "type": "string" },
     "end_date": { "type": "string", "format": "date-time" },
     "name": { "type": "string", "minLength": 1 },
+    "pitch_deadline": { "type": "string" },
     "start_date": { "type": "string", "format": "date-time" }
   },
   "x-readme-ref-name": "models.CreateTripRequest"

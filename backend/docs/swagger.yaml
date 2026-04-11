@@ -81,6 +81,8 @@ definitions:
         type: string
       proposed_by:
         type: string
+      proposer_name:
+        type: string
       proposer_picture_url:
         type: string
       proposer_username:
@@ -118,6 +120,8 @@ definitions:
     type: object
   models.ActivityGoingUserResponse:
     properties:
+      name:
+        type: string
       profile_picture_url:
         type: string
       user_id:
@@ -137,6 +141,8 @@ definitions:
       activity_id:
         type: string
       created_at:
+        type: string
+      name:
         type: string
       profile_picture_url:
         type: string
@@ -277,6 +283,8 @@ definitions:
         $ref: '#/definitions/models.EntityType'
       id:
         type: string
+      name:
+        type: string
       profile_picture_url:
         description: pointer since some users don't have their avatar set
         type: string
@@ -313,6 +321,8 @@ definitions:
     type: object
   models.CommentReactionUser:
     properties:
+      name:
+        type: string
       profile_picture_url:
         type: string
       user_id:
@@ -342,6 +352,8 @@ definitions:
     type: object
   models.CommenterPreview:
     properties:
+      name:
+        type: string
       profile_picture_url:
         type: string
       user_id:
@@ -609,6 +621,8 @@ definitions:
       name:
         minLength: 1
         type: string
+      pitch_deadline:
+        type: string
       start_date:
         format: date-time
         type: string
@@ -764,6 +778,8 @@ definitions:
         type: string
       is_admin:
         type: boolean
+      name:
+        type: string
       notify_new_comments:
         type: boolean
       notify_new_pitches:
@@ -947,6 +963,8 @@ definitions:
         items:
           $ref: '#/definitions/models.PitchLink'
         type: array
+      name:
+        type: string
       profile_picture_url:
         type: string
       title:
@@ -1424,13 +1442,19 @@ definitions:
         type: string
       currency:
         type: string
+      end_date:
+        type: string
       id:
+        type: string
+      location:
         type: string
       name:
         type: string
       pitch_deadline:
         type: string
       rank_poll_id:
+        type: string
+      start_date:
         type: string
       updated_at:
         type: string
@@ -1451,6 +1475,8 @@ definitions:
         format: date-time
         type: string
       id:
+        type: string
+      location:
         type: string
       name:
         type: string
@@ -1618,14 +1644,12 @@ definitions:
         type: integer
       cover_image_id:
         type: string
-      created_at:
-        type: string
       currency:
         type: string
       end_date:
         format: date-time
         type: string
-      id:
+      location:
         type: string
       name:
         type: string
@@ -1633,8 +1657,6 @@ definitions:
         type: string
       start_date:
         format: date-time
-        type: string
-      updated_at:
         type: string
     type: object
   models.UpdateUserNotificationPreferencesRequest:
@@ -1737,6 +1759,8 @@ definitions:
     properties:
       has_voted:
         type: boolean
+      name:
+        type: string
       user_id:
         type: string
       username:

@@ -5863,6 +5863,9 @@ const docTemplate = `{
                 "proposed_by": {
                     "type": "string"
                 },
+                "proposer_name": {
+                    "type": "string"
+                },
                 "proposer_picture_url": {
                     "type": "string"
                 },
@@ -5920,6 +5923,9 @@ const docTemplate = `{
         "models.ActivityGoingUserResponse": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -5949,6 +5955,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "profile_picture_url": {
@@ -6161,6 +6170,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "description": "pointer since some users don't have their avatar set",
                     "type": "string"
@@ -6216,6 +6228,9 @@ const docTemplate = `{
         "models.CommentReactionUser": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6261,6 +6276,9 @@ const docTemplate = `{
         "models.CommenterPreview": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6662,6 +6680,9 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
+                "pitch_deadline": {
+                    "type": "string"
+                },
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
@@ -6879,6 +6900,9 @@ const docTemplate = `{
                 },
                 "is_admin": {
                     "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "notify_new_comments": {
                     "type": "boolean"
@@ -7158,6 +7182,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.PitchLink"
                     }
+                },
+                "name": {
+                    "type": "string"
                 },
                 "profile_picture_url": {
                     "type": "string"
@@ -7860,7 +7887,13 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -7870,6 +7903,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rank_poll_id": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7900,6 +7936,9 @@ const docTemplate = `{
                     "format": "date-time"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8144,9 +8183,6 @@ const docTemplate = `{
                 "cover_image_id": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
                 "currency": {
                     "type": "string"
                 },
@@ -8154,7 +8190,7 @@ const docTemplate = `{
                     "type": "string",
                     "format": "date-time"
                 },
-                "id": {
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8166,9 +8202,6 @@ const docTemplate = `{
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -8320,6 +8353,9 @@ const docTemplate = `{
             "properties": {
                 "has_voted": {
                     "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "string"

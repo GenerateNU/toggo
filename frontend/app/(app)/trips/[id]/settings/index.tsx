@@ -7,8 +7,8 @@ import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { useRemoveMember } from "@/api/memberships/useRemoveMember";
 import { useUpdateNotificationPreferences } from "@/api/memberships/useUpdateNotificationPreferences";
 import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
-import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { useDeleteTrip } from "@/api/trips/useDeleteTrip";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { useUser } from "@/contexts/user";
@@ -25,20 +25,31 @@ import {
   useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
+import { formatTripDates } from "@/utils/date-helpers";
 
+import type { ModelsPlacePrediction } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronRight, LogOut, Trash2 } from "lucide-react-native";
-import { useState } from "react";
+import { ArrowRight, LogOut, Trash2 } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 
 type SettingsRowProps = {
   label: string;
   value?: string;
   onPress?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 };
 
-function SettingsRow({ label, value, onPress }: SettingsRowProps) {
+function SettingsRow({
+  label,
+  value,
+  onPress,
+  isFirst,
+  isLast,
+}: SettingsRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -48,20 +59,21 @@ function SettingsRow({ label, value, onPress }: SettingsRowProps) {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingHorizontal="md"
-        paddingVertical="xs"
+        paddingHorizontal="sm"
+        paddingTop={isFirst ? "sm" : "xs"}
+        paddingBottom={isLast ? "sm" : "xs"}
         backgroundColor="gray25"
         gap="xs"
       >
         <Box flex={1} gap="xxs">
-          <Text variant="bodySmDefault" color="gray500">
+          <Text variant="bodySmMedium" color="gray400">
             {label}
           </Text>
-          <Text variant="bodySmDefault" color={value ? "gray900" : "gray500"}>
+          <Text variant="bodyMedium" color="gray600">
             {value ?? "—"}
           </Text>
         </Box>
-        {onPress && <Icon icon={ChevronRight} size="xs" color="gray500" />}
+        {onPress && <Icon icon={ArrowRight} size="iconSm" color="black" />}
       </Box>
     </Pressable>
   );
@@ -71,12 +83,37 @@ type NotificationRowProps = {
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 };
 
-function NotificationRow({ label, value, onChange }: NotificationRowProps) {
+function NotificationRow({
+  label,
+  value,
+  onChange,
+  isFirst,
+  isLast,
+}: NotificationRowProps) {
   return (
-    <Box paddingHorizontal="md" backgroundColor="gray25">
+    <Box
+      paddingHorizontal="sm"
+      paddingTop={isFirst ? "xs" : "xxs"}
+      paddingBottom={isLast ? "xs" : "xxs"}
+      backgroundColor="gray25"
+    >
       <Toggle label={label} value={value} onChange={onChange} />
+    </Box>
+  );
+}
+
+function SettingsDivider() {
+  return (
+    <Box paddingVertical="xs" paddingHorizontal="sm" backgroundColor="gray25">
+      <Divider
+        width={1}
+        color={ColorPalette.gray50}
+        style={{ marginVertical: 0 }}
+      />
     </Box>
   );
 }
@@ -115,6 +152,14 @@ export default function TripSettings() {
 
   const isCoverUploading =
     uploadImageMutation.isPending || updateTripMutation.isPending;
+  const tripDates = formatTripDates(trip?.start_date, trip?.end_date);
+  const tripLocation = (trip as any)?.location as string | undefined;
+
+  useEffect(() => {
+    return () => {
+      locationSelectStore.clear();
+    };
+  }, []);
 
   const handleNotifChange = (
     field: "notify_new_pitches" | "notify_new_polls" | "notify_new_comments",
@@ -176,6 +221,47 @@ export default function TripSettings() {
     }
   };
 
+  const handleDestinationPress = () => {
+    if (!tripID) return;
+
+    locationSelectStore.set(
+      async (prediction: ModelsPlacePrediction) => {
+        const destination =
+          prediction.description ?? prediction.main_text ?? "";
+
+        if (!destination) return;
+
+        try {
+          await updateTripMutation.mutateAsync({
+            tripID,
+            data: {
+              location: destination,
+            } as any,
+          });
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: getTripQueryKey(tripID),
+            }),
+            queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY }),
+            queryClient.invalidateQueries({
+              queryKey: getAllTripsQueryKey({}),
+            }),
+          ]);
+          toast.show({ message: "Destination updated." });
+        } catch {
+          toast.show({
+            message: "Couldn't update destination. Please try again.",
+          });
+        }
+      },
+      () => {
+        locationSelectStore.clear();
+      },
+    );
+
+    router.push(`/trips/${tripID}/search-location?mode=select` as any);
+  };
+
   const confirmLeaveTrip = async () => {
     if (!tripID || !currentUser) return;
     setLeaveDialog(null);
@@ -231,24 +317,35 @@ export default function TripSettings() {
         </Box>
 
         <Box gap="lg" paddingHorizontal="md">
-          <Box gap="xs">
-            <Text variant="bodyMedium" color="gray900">
+          <Box gap="xs" paddingTop="sm">
+            <Text variant="headingMd" color="gray900">
               General
             </Text>
-            <Box
-              paddingVertical="sm"
-              backgroundColor="gray25"
-              borderRadius="sm"
-              overflow="hidden"
-            >
+            <Box backgroundColor="gray25" borderRadius="xl" overflow="hidden">
               <SettingsRow
                 label="Trip Name"
                 value={isLoadingTrip ? "Loading..." : trip?.name}
+                isFirst
                 onPress={() =>
                   router.push(`/trips/${tripID}/settings/edit-name` as any)
                 }
               />
-              <Divider />
+              <SettingsDivider />
+              <SettingsRow
+                label="Destination"
+                value={isLoadingTrip ? "Loading..." : tripLocation}
+                onPress={handleDestinationPress}
+              />
+              <SettingsDivider />
+              <SettingsRow
+                label="Dates"
+                value={isLoadingTrip ? "Loading..." : (tripDates ?? undefined)}
+                isLast={false}
+                onPress={() =>
+                  router.push(`/trips/${tripID}/settings/edit-dates` as any)
+                }
+              />
+              <SettingsDivider />
               <Pressable
                 onPress={() =>
                   router.push(`/trips/${tripID}/settings/members` as any)
@@ -258,54 +355,52 @@ export default function TripSettings() {
                 <Box
                   flexDirection="row"
                   alignItems="center"
-                  paddingHorizontal="md"
+                  paddingHorizontal="sm"
+                  paddingTop="xs"
+                  paddingBottom="sm"
                   backgroundColor="gray25"
                   gap="sm"
-                  paddingBottom="xs"
                 >
                   <Box flex={1} gap="xxs">
-                    <Text variant="bodySmDefault" color="gray500">
+                    <Text variant="bodySmMedium" color="gray400">
                       Members
                     </Text>
                     <AvatarStack
                       members={members.map((m) => ({
                         userId: m.user_id ?? "",
                         profilePhotoUrl: m.profile_picture_url,
-                        username: m.username,
+                        name: m.name,
                       }))}
                     />
                   </Box>
-                  <Icon icon={ChevronRight} size="xs" color="gray500" />
+                  <Icon icon={ArrowRight} size="iconSm" color="black" />
                 </Box>
               </Pressable>
             </Box>
           </Box>
 
           <Box gap="xs">
-            <Text variant="bodyMedium" color="gray900">
+            <Text variant="headingMd" color="gray900">
               Notifications
             </Text>
-            <Box
-              paddingVertical="sm"
-              backgroundColor="gray25"
-              borderRadius="sm"
-              overflow="hidden"
-            >
+            <Box backgroundColor="gray25" borderRadius="xl" overflow="hidden">
               <NotificationRow
                 label="New Pitches"
                 value={myMembership?.notify_new_pitches ?? true}
+                isFirst
                 onChange={(v) => handleNotifChange("notify_new_pitches", v)}
               />
-              <Divider />
+              <SettingsDivider />
               <NotificationRow
                 label="New Polls"
                 value={myMembership?.notify_new_polls ?? true}
                 onChange={(v) => handleNotifChange("notify_new_polls", v)}
               />
-              <Divider />
+              <SettingsDivider />
               <NotificationRow
                 label="Comments"
                 value={myMembership?.notify_new_comments ?? true}
+                isLast
                 onChange={(v) => handleNotifChange("notify_new_comments", v)}
               />
             </Box>

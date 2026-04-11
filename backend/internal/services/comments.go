@@ -170,6 +170,7 @@ func (s *CommentService) GetPaginatedComments(
 			EntityType:        comment.EntityType,
 			EntityID:          comment.EntityID,
 			UserID:            comment.UserID,
+			Name:              comment.Name,
 			Username:          comment.Username,
 			ProfilePictureURL: profilePictureURL,
 			Content:           comment.Content,

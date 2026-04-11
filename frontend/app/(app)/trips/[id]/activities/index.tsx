@@ -214,7 +214,7 @@ export default function Activities() {
           isLoadingMore={isLoadingMoreComments}
           onLoadMore={fetchNextPage}
           currentUserId={currentUser?.id ?? ""}
-          currentUserName={currentUser?.username ?? currentUser?.name ?? ""}
+          currentUserName={currentUser?.name ?? ""}
           currentUserAvatar={currentUser?.profile_picture}
           currentUserSeed={currentUser?.id}
           onSubmitComment={onSubmitComment}

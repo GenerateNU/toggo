@@ -12,7 +12,7 @@ interface AudioPlayerSheetProps {
   onClose: () => void;
   audioUrl: string;
   pitchId: string;
-  username?: string;
+  name?: string;
   profilePictureUrl?: string;
   userId?: string;
 }
@@ -22,7 +22,7 @@ export function AudioPlayerSheet({
   onClose,
   audioUrl,
   pitchId,
-  username,
+  name,
   profilePictureUrl,
   userId,
 }: AudioPlayerSheetProps) {
@@ -59,7 +59,7 @@ export function AudioPlayerSheet({
       >
         <Avatar profilePhoto={profilePictureUrl} seed={userId} variant="sm" />
         <Text variant="bodySmMedium" color="gray700">
-          {username ?? "Unknown"}
+          {name ?? "Unknown"}
         </Text>
       </Box>
 

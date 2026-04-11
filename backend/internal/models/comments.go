@@ -34,6 +34,7 @@ type CommentDatabaseResponse struct {
 	EntityType        EntityType `json:"entity_type"`
 	EntityID          uuid.UUID  `json:"entity_id"`
 	UserID            uuid.UUID  `json:"user_id"`
+	Name              string     `json:"name"`
 	Username          string     `json:"username"`
 	ProfilePictureID  *uuid.UUID `json:"profile_picture_id"` // pointer since some users don't have their avatar set
 	ProfilePictureKey *string    `bun:"profile_picture_key" json:"-"`
@@ -48,6 +49,7 @@ type CommentAPIResponse struct {
 	EntityType        EntityType `json:"entity_type"`
 	EntityID          uuid.UUID  `json:"entity_id"`
 	UserID            uuid.UUID  `json:"user_id"`
+	Name              string     `json:"name"`
 	Username          string     `json:"username"`
 	ProfilePictureURL *string    `json:"profile_picture_url"` // pointer since some users don't have their avatar set
 	Content           string     `json:"content"`

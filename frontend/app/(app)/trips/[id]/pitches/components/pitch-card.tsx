@@ -132,7 +132,7 @@ export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
                       members={(pitch.comment_previews ?? []).map((p) => ({
                         userId: p.user_id ?? "",
                         profilePhotoUrl: p.profile_picture_url,
-                        username: p.username,
+                        name: p.name,
                       }))}
                       maxVisible={3}
                       showName={false}
@@ -156,7 +156,7 @@ export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
           onClose={() => setAudioSheetVisible(false)}
           audioUrl={pitch.audio_url}
           pitchId={pitch.id ?? ""}
-          username={pitch.username}
+          name={pitch.name}
           profilePictureUrl={pitch.profile_picture_url}
           userId={pitch.user_id}
         />
