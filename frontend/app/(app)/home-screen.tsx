@@ -422,21 +422,14 @@ export default function HomeScreen() {
                   paddingBottom="lg"
                   gap="sm"
                 >
-                  {tripsQueryEnabled && tripsQuery.isPending ? (
-                    <SkeletonRect
-                      width="full"
-                      borderRadius="lg"
-                      style={{ height: 260 }}
-                    />
-                  ) : null}
                   {tripsQueryEnabled && tripsQuery.isError ? (
                     <ErrorState
-                      title="Couldn’t load trips"
+                      title="Couldn't load trips"
                       description="Pull to refresh or try again in a moment."
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm" paddingTop="xl">
+                  <Box gap="sm">
                     <Text variant="headingMd" color="gray900">
                       Welcome back, {profile.greetingName}
                     </Text>

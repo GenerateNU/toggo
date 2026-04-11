@@ -18,14 +18,15 @@ export function HomeUpcomingEmptyCard({
       gap="sm"
       style={HOME_CARD_FLOATING_SHADOW}
     >
-      <Box alignItems="center" paddingVertical="md" gap="sm">
-        <Text variant="headingXl" color="gray900">
-          {"\uD83C\uDF0E"}
-        </Text>
+      <Box alignItems="center" paddingVertical="md" gap="xxs">
+        <Text style={{ fontSize: 48, lineHeight: 64 }}>🌎</Text>
         <Text
           variant="bodySmDefault"
           color="gray900"
-          style={{ fontStyle: "italic", textAlign: "center" }}
+          style={{
+            textAlign: "center",
+            fontFamily: "Figtree-Italic",
+          }}
         >
           No upcoming trips. Get planning!
         </Text>
