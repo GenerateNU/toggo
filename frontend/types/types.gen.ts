@@ -1816,6 +1816,29 @@ export type ModelsPollVotersResponse = {
   voters?: ModelsVoterInfo[];
 };
 
+export type ModelsRankChoiceVotersResponse = {
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  rank_position?: number;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type array | undefined
+   */
+  voters?: ModelsVoterInfo[];
+};
+
 export type ModelsRankPollAPIResponse = {
   /**
    * @type array | undefined
@@ -6074,6 +6097,72 @@ export type DeleteRankPollOptionMutation = {
     | DeleteRankPollOption404
     | DeleteRankPollOption409
     | DeleteRankPollOption500;
+};
+
+export type GetRankChoiceVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+  /**
+   * @description Rank position (1-3)
+   * @type integer
+   */
+  rankPosition: number;
+};
+
+/**
+ * @description OK
+ */
+export type GetRankChoiceVoters200 = ModelsRankChoiceVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetRankChoiceVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetRankChoiceVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetRankChoiceVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetRankChoiceVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetRankChoiceVoters500 = ErrsAPIError;
+
+export type GetRankChoiceVotersQueryResponse = GetRankChoiceVoters200;
+
+export type GetRankChoiceVotersQuery = {
+  Response: GetRankChoiceVoters200;
+  PathParams: GetRankChoiceVotersPathParams;
+  Errors:
+    | GetRankChoiceVoters400
+    | GetRankChoiceVoters401
+    | GetRankChoiceVoters403
+    | GetRankChoiceVoters404
+    | GetRankChoiceVoters500;
 };
 
 export type SubmitRankingPathParams = {

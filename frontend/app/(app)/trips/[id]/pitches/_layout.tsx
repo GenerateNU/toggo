@@ -46,6 +46,16 @@ const Layout = () => {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="ranking"
+        options={{
+          headerShown: true,
+          headerTitle: "My ranking",
+          headerTransparent: false,
+          headerShadowVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 };

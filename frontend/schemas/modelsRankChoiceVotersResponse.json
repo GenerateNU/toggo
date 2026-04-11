@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "option_id": { "type": "string" },
+    "poll_id": { "type": "string" },
+    "rank_position": { "type": "integer" },
+    "total_voters": { "type": "integer" },
+    "voters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "has_voted": { "type": "boolean" },
+          "name": { "type": "string" },
+          "user_id": { "type": "string" },
+          "username": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.VoterInfo"
+      }
+    }
+  },
+  "x-readme-ref-name": "models.RankChoiceVotersResponse"
+}

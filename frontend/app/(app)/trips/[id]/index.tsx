@@ -4,6 +4,7 @@ import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import ItineraryEmptyState from "@/app/(app)/trips/[id]/components/itinerary-empty-state";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
@@ -183,6 +184,17 @@ export default function Trip() {
             </Box>
 
             <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
+              {activeTab === "new" &&
+                trip?.pitch_deadline &&
+                new Date(trip.pitch_deadline) > new Date() && (
+                  <PitchingActiveCard
+                    tripID={tripID}
+                    deadline={new Date(trip.pitch_deadline)}
+                    onViewPitches={() =>
+                      router.push(`/trips/${tripID}/pitches` as any)
+                    }
+                  />
+                )}
               {activeTab === "itinerary" && <ItineraryEmptyState />}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             </Box>

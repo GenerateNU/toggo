@@ -15,6 +15,7 @@ type PollRankingRepository interface {
 	FindByPollID(ctx context.Context, pollID uuid.UUID) ([]*models.PollRanking, error)
 	FindByPollAndUser(ctx context.Context, pollID uuid.UUID, userID uuid.UUID) ([]*models.PollRanking, error)
 	GetVoterStatus(ctx context.Context, pollID uuid.UUID, tripID uuid.UUID) ([]models.VoterInfo, error)
+	GetChoiceVoters(ctx context.Context, pollID uuid.UUID, optionID uuid.UUID, rankPosition int) ([]models.VoterInfo, error)
 	GetAggregatedResults(ctx context.Context, pollID uuid.UUID) ([]models.OptionWithScore, error)
 	HasAnyRankings(ctx context.Context, pollID uuid.UUID) (bool, error)
 }
@@ -102,6 +103,26 @@ func (r *pollRankingRepository) GetVoterStatus(ctx context.Context, pollID uuid.
 		Where("m.trip_id = ?", tripID).
 		Group("m.user_id", "u.name", "u.username").
 		Order("has_voted DESC", "u.username ASC").
+		Scan(ctx, &voters)
+	if err != nil {
+		return nil, err
+	}
+
+	return voters, nil
+}
+
+func (r *pollRankingRepository) GetChoiceVoters(ctx context.Context, pollID uuid.UUID, optionID uuid.UUID, rankPosition int) ([]models.VoterInfo, error) {
+	var voters []models.VoterInfo
+	err := r.db.NewSelect().
+		TableExpr("poll_rankings AS pr").
+		ColumnExpr("pr.user_id").
+		ColumnExpr("u.name, u.username").
+		ColumnExpr("TRUE AS has_voted").
+		Join("JOIN users AS u ON u.id = pr.user_id").
+		Where("pr.poll_id = ?", pollID).
+		Where("pr.option_id = ?", optionID).
+		Where("pr.rank_position = ?", rankPosition).
+		Order("u.username ASC").
 		Scan(ctx, &voters)
 	if err != nil {
 		return nil, err

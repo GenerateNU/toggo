@@ -1,4 +1,5 @@
 import { Box, Icon, Text } from "@/design-system";
+import { ColorPalette } from "@/design-system/tokens/color";
 import { PlusIcon } from "lucide-react-native";
 import { Pressable } from "react-native";
 
@@ -14,15 +15,23 @@ export function AddDeadline({ onPress }: AddDeadlineProps) {
         gap="sm"
         flexDirection="row"
         alignItems="center"
-        borderColor="gray200"
+        borderColor="blue100"
         borderWidth={1}
         borderRadius="lg"
-        backgroundColor="gray25"
+        backgroundColor="blue25"
+        style={{
+          shadowColor: ColorPalette.blue500,
+          shadowOpacity: 0.06,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+        }}
       >
         <PlusButton />
         <Box flex={1} flexDirection="column" gap="xxs">
-          <Text variant="bodySmMedium">Add a deadline</Text>
-          <Text variant="bodyXsDefault" color="gray400">
+          <Text variant="headingSm" color="gray900">
+            Add a deadline
+          </Text>
+          <Text variant="bodySmDefault" color="gray500">
             Start a timer to encourage participants to pitch locations
           </Text>
         </Box>
@@ -33,8 +42,8 @@ export function AddDeadline({ onPress }: AddDeadlineProps) {
 
 function PlusButton() {
   return (
-    <Box padding="xxs" borderRadius="full" backgroundColor="gray100">
-      <Icon icon={PlusIcon} color="black" size="md" />
+    <Box padding="xxs" borderRadius="full" backgroundColor="blue50">
+      <Icon icon={PlusIcon} color="blue500" size="md" />
     </Box>
   );
 }

@@ -40,7 +40,7 @@ export function AudioPlayerSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["52%"]}
+      snapPoints={["45%"]}
       initialIndex={-1}
       onClose={onClose}
     >

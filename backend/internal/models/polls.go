@@ -213,6 +213,15 @@ type PollVotersResponse struct {
 	Voters       []VoterInfo `json:"voters"`
 }
 
+// RankChoiceVotersResponse shows who voted for a specific option at a specific rank position.
+type RankChoiceVotersResponse struct {
+	PollID       uuid.UUID   `json:"poll_id"`
+	OptionID     uuid.UUID   `json:"option_id"`
+	RankPosition int         `json:"rank_position"`
+	TotalVoters  int         `json:"total_voters"`
+	Voters       []VoterInfo `json:"voters"`
+}
+
 // VoterInfo contains a trip member's voting status for a rank poll.
 type VoterInfo struct {
 	UserID   uuid.UUID `json:"user_id"`

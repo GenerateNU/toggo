@@ -1,6 +1,7 @@
 import type { RankedPitchItem } from "@/api/pitches/custom/useRankingData";
 import { Box, Icon, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { Elevation } from "@/design-system/tokens/elevation";
 import { ArrowUpDown, ChevronRight } from "lucide-react-native";
 import { ActivityIndicator, Pressable, ScrollView } from "react-native";
 import { RankingSummaryCard } from "./ranking-summary-card";
@@ -15,6 +16,13 @@ interface RankingTabContentProps {
   hasPitches: boolean;
   onOpenRankingSheet: () => void;
   onOpenPitch: (pitchID: string) => void;
+  onSetDestination: (locationName: string) => void;
+  onOpenVoters: (
+    position: number,
+    count: number,
+    optionID?: string,
+    pitchName?: string,
+  ) => void;
 }
 
 export function RankingTabContent({
@@ -27,27 +35,29 @@ export function RankingTabContent({
   hasPitches,
   onOpenRankingSheet,
   onOpenPitch,
+  onSetDestination,
+  onOpenVoters,
 }: RankingTabContentProps) {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
       <Pressable onPress={onOpenRankingSheet}>
         <Box
-          backgroundColor="gray50"
+          backgroundColor="white"
           flexDirection="row"
           alignItems="center"
           padding="sm"
+          marginTop="xs"
           marginHorizontal="sm"
           marginBottom="sm"
           gap="sm"
           borderRadius="lg"
-          borderWidth={1}
-          borderColor="gray200"
+          style={{ ...Elevation.sm, shadowOffset: { width: 0, height: 0 } }}
         >
           <Box
             width={44}
             height={44}
             borderRadius="md"
-            backgroundColor="gray100"
+            backgroundColor="gray50"
             alignItems="center"
             justifyContent="center"
           >
@@ -85,7 +95,7 @@ export function RankingTabContent({
       </Pressable>
 
       <Box paddingHorizontal="sm" paddingBottom="md" paddingVertical="xs">
-        <Text variant="bodySmMedium" color="gray900">
+        <Text variant="bodyDefault" color="gray500">
           Ranking Summary
         </Text>
       </Box>
@@ -99,6 +109,12 @@ export function RankingTabContent({
           totalVoters={totalVoters}
           isFirst={index === 0}
           onPress={() => pitch.id && onOpenPitch(pitch.id)}
+          onSetDestination={() =>
+            onSetDestination(pitch.title ?? pitch.name ?? "this destination")
+          }
+          onOpenVoters={(position, count, selectedPitch, optionID) =>
+            onOpenVoters(position, count, optionID, selectedPitch.title)
+          }
         />
       ))}
 

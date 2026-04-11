@@ -1239,6 +1239,21 @@ definitions:
     - RSVPStatusGoing
     - RSVPStatusMaybe
     - RSVPStatusNotGoing
+  models.RankChoiceVotersResponse:
+    properties:
+      option_id:
+        type: string
+      poll_id:
+        type: string
+      rank_position:
+        type: integer
+      total_voters:
+        type: integer
+      voters:
+        items:
+          $ref: '#/definitions/models.VoterInfo'
+        type: array
+    type: object
   models.RankPollAPIResponse:
     properties:
       categories:
@@ -4726,6 +4741,61 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Delete a rank poll option
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/rank-polls/{pollId}/options/{optionId}/ranks/{rankPosition}/voters:
+    get:
+      description: Returns who ranked an option at a specific rank position
+      operationId: getRankChoiceVoters
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      - description: Rank position (1-3)
+        in: path
+        name: rankPosition
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RankChoiceVotersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get voters for a ranked choice
       tags:
       - polls
   /api/v1/trips/{tripID}/rank-polls/{pollId}/rank:

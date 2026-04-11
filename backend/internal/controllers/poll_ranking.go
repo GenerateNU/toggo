@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
@@ -338,6 +339,52 @@ func (rc *RankPollController) GetPollVoters(c *fiber.Ctx) error {
 	}
 
 	voters, err := rc.rankPollService.GetPollVoters(c.Context(), tripID, pollID, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(voters)
+}
+
+// @Summary      Get voters for a ranked choice
+// @Description  Returns who ranked an option at a specific rank position
+// @Tags         polls
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        optionId path string true "Option ID"
+// @Param        rankPosition path int true "Rank position (1-3)"
+// @Success      200 {object} models.RankChoiceVotersResponse
+// @Failure      400,401,403,404,500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/rank-polls/{pollId}/options/{optionId}/ranks/{rankPosition}/voters [get]
+// @ID           getRankChoiceVoters
+func (rc *RankPollController) GetChoiceVoters(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	optionID, err := validators.ValidateID(c.Params("optionId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	rankPosition, err := strconv.Atoi(c.Params("rankPosition"))
+	if err != nil {
+		return errs.BadRequest(errors.New("invalid rankPosition"))
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	voters, err := rc.rankPollService.GetChoiceVoters(c.Context(), tripID, pollID, optionID, rankPosition, userID)
 	if err != nil {
 		return err
 	}

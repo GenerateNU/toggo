@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@/design-system";
+import { Avatar, Box, Button, Icon, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Elevation } from "@/design-system/tokens/elevation";
 import type {
@@ -6,9 +6,9 @@ import type {
   ModelsPitchAPIResponse,
 } from "@/types/types.gen";
 import { Image } from "expo-image";
-import { Medal } from "lucide-react-native";
-import { Pressable } from "react-native";
-import { PitchedBy } from "./pitched-by";
+import { ChevronDown, ChevronUp, UsersRound } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import { LayoutAnimation, Platform, Pressable, UIManager } from "react-native";
 
 const COVER_IMAGE_HEIGHT = 200;
 
@@ -26,14 +26,18 @@ interface RankingSummaryCardProps {
   isFirst: boolean;
   onPress?: () => void;
   onSetDestination?: () => void;
+  onOpenVoters?: (
+    position: number,
+    count: number,
+    pitch: ModelsPitchAPIResponse,
+    optionID?: string,
+  ) => void;
 }
 
 function RankBadge({ rank }: { rank: number }) {
-  const isTopRank = rank === 1;
-
   return (
     <Box
-      borderRadius="sm"
+      borderRadius="lg"
       borderWidth={1}
       backgroundColor="brand50"
       borderColor="brand200"
@@ -43,11 +47,6 @@ function RankBadge({ rank }: { rank: number }) {
       paddingVertical="xxs"
       gap="xxs"
     >
-      {isTopRank ? (
-        <Box width={30} height={30} alignItems="center" justifyContent="center">
-          <Medal size={24} color={ColorPalette.brand500} />
-        </Box>
-      ) : null}
       <Text variant="headingMd" color="brand800">
         #{rank}
       </Text>
@@ -59,13 +58,14 @@ function RankRow({
   position,
   count,
   totalVoters,
+  onOpenVoters,
 }: {
   position: number;
   count: number;
   totalVoters: number;
+  onOpenVoters?: (position: number, count: number) => void;
 }) {
   const fillPercent = totalVoters > 0 ? (count / totalVoters) * 100 : 0;
-  const label = count === 1 ? "person" : "people";
   const barColors: Record<number, string> = {
     1: ColorPalette.brand500,
     2: ColorPalette.brand400,
@@ -79,19 +79,25 @@ function RankRow({
         alignItems="center"
         justifyContent="space-between"
       >
-        <Text variant="bodySmMedium" color="gray700">
+        <Text variant="bodyXsMedium" color="gray500">
           {RANK_CHOICE_LABELS[position]}
         </Text>
-        <Box
-          backgroundColor="gray50"
-          borderRadius="full"
-          paddingHorizontal="sm"
-          paddingVertical="xxs"
-        >
-          <Text variant="bodySmMedium" color="gray700">
-            {count} {label}
-          </Text>
-        </Box>
+        <Pressable onPress={() => onOpenVoters?.(position, count)}>
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            gap="xxs"
+            backgroundColor="gray50"
+            borderRadius="full"
+            paddingHorizontal="sm"
+            paddingVertical="xxs"
+          >
+            <Icon icon={UsersRound} size="xs" color="gray500" />
+            <Text variant="bodyXsDefault" color="blue500">
+              {count}
+            </Text>
+          </Box>
+        </Pressable>
       </Box>
       <Box
         height={6}
@@ -122,17 +128,33 @@ export function RankingSummaryCard({
   isFirst,
   onPress,
   onSetDestination,
+  onOpenVoters,
 }: RankingSummaryCardProps) {
   const coverImage = pitch.images?.[0]?.medium_url;
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (
+      Platform.OS === "android" &&
+      UIManager.setLayoutAnimationEnabledExperimental
+    ) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
+  const toggleExpanded = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((prev) => !prev);
+  };
 
   return (
-    <Pressable onPress={onPress} disabled={!onPress}>
-      <Box
-        marginHorizontal="sm"
-        marginBottom="sm"
-        style={{ ...Elevation.md, shadowOffset: { width: 0, height: 0 } }}
-      >
-        <Box backgroundColor="white" borderRadius="xl" overflow="hidden">
+    <Box
+      marginHorizontal="sm"
+      marginBottom="sm"
+      style={{ ...Elevation.md, shadowOffset: { width: 0, height: 0 } }}
+    >
+      <Box backgroundColor="white" borderRadius="xl" overflow="hidden">
+        <Pressable onPress={onPress} disabled={!onPress}>
           <Box paddingHorizontal="xs" paddingTop="xs">
             <Box borderRadius="lg" overflow="hidden">
               {coverImage ? (
@@ -153,32 +175,50 @@ export function RankingSummaryCard({
               <RankBadge rank={rank} />
             </Box>
           </Box>
+        </Pressable>
 
-          <Box paddingHorizontal="sm" paddingTop="md" gap="sm">
-            <Box flexDirection="row" alignItems="center">
+        <Box
+          paddingHorizontal="xs"
+          paddingTop="sm"
+          paddingBottom={expanded ? undefined : "sm"}
+          gap="sm"
+        >
+          <Pressable onPress={toggleExpanded}>
+            <Box flexDirection="row" alignItems="center" gap="xs">
+              <Avatar
+                profilePhoto={pitch.profile_picture_url}
+                seed={pitch.user_id}
+                variant="sm"
+              />
               <Text
-                variant="headingSm"
+                variant="headingMd"
                 color="gray900"
                 style={{ flex: 1 }}
                 numberOfLines={1}
               >
                 {pitch.title}
               </Text>
-              <PitchedBy
-                userId={pitch.user_id}
-                profilePhotoUrl={pitch.profile_picture_url}
+              <Icon
+                icon={expanded ? ChevronUp : ChevronDown}
+                size="sm"
+                color="gray500"
               />
             </Box>
+          </Pressable>
 
-            <Box height={1} backgroundColor="gray50" />
+          {expanded ? <Box height={1} backgroundColor="gray50" /> : null}
 
-            <Box gap="md" paddingBottom="md">
+          {expanded ? (
+            <Box gap="md" paddingBottom="xs">
               {[1, 2, 3].map((position) => (
                 <RankRow
                   key={position}
                   position={position}
                   count={option.rank_breakdown?.[position] ?? 0}
                   totalVoters={totalVoters}
+                  onOpenVoters={(pos, count) =>
+                    onOpenVoters?.(pos, count, pitch, option.option_id)
+                  }
                 />
               ))}
 
@@ -191,9 +231,9 @@ export function RankingSummaryCard({
                 />
               )}
             </Box>
-          </Box>
+          ) : null}
         </Box>
       </Box>
-    </Pressable>
+    </Box>
   );
 }
