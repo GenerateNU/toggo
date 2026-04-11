@@ -316,9 +316,14 @@ export function AudioPitchSheet({
       footer={
         state === "done" ? (
           <Box
+            backgroundColor="white"
             paddingHorizontal="sm"
             paddingTop="xs"
-            style={{ paddingBottom: Math.max(bottom, 16) }}
+            style={{
+              paddingBottom: Math.max(bottom, 16),
+              borderTopWidth: 1,
+              borderTopColor: ColorPalette.gray100,
+            }}
           >
             <Button
               layout="textOnly"
@@ -352,9 +357,10 @@ export function AudioPitchSheet({
         </Text>
 
         {state === "idle" || state === "processing" ? (
-          <Box alignItems="center" gap="md" paddingTop="lg">
+          <Box alignItems="center" gap="md" paddingTop="lg" paddingBottom="md">
             {state === "processing" ? (
               <Box
+                backgroundColor="brand500"
                 style={styles.micBtn}
                 alignItems="center"
                 justifyContent="center"
@@ -428,15 +434,15 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: ColorPalette.gray900,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: ColorPalette.brand500,
   },
   stopBtn: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.brand500,
     alignItems: "center",
     justifyContent: "center",
   },

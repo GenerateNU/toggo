@@ -1,8 +1,9 @@
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { Timer } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
+import { StyleSheet } from "react-native";
 
 interface CountdownProps {
   deadline: Date;
@@ -35,10 +36,11 @@ function TimeUnit({ value, label }: { value: number; label: string }) {
       backgroundColor="white"
       alignItems="center"
       justifyContent="center"
-      borderRadius="lg"
+      borderRadius="xl"
       paddingVertical="sm"
+      style={styles.timeUnit}
     >
-      <Text variant="headingMd" color="gray900">
+      <Text variant="headingMd" color="gray900" style={styles.tabular}>
         {pad(value)}
       </Text>
       <Text variant="bodyXsDefault" color="gray500">
@@ -61,39 +63,69 @@ export function Countdown({ deadline }: CountdownProps) {
   }, [deadline]);
 
   return (
-    <Box backgroundColor="brand50" borderRadius="xl" padding="md" gap="sm">
-      <Box flexDirection="row" alignItems="center" gap="sm">
-        <Box
-          width={40}
-          height={40}
-          borderRadius="full"
-          alignItems="center"
-          justifyContent="center"
-          style={{ backgroundColor: ColorPalette.brand100 }}
+    <Box borderRadius="xl" backgroundColor="white" style={styles.cardShadow}>
+      <Box borderRadius="xl" overflow="hidden">
+        <LinearGradient
+          colors={[
+            ColorPalette.brand200,
+            ColorPalette.brand50,
+            ColorPalette.white,
+            ColorPalette.brand100,
+            ColorPalette.brand200,
+            ColorPalette.brand400,
+          ]}
+          locations={[0, 0.14, 0.34, 0.62, 0.82, 1]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 1, y: 0.05 }}
+          style={styles.card}
         >
-          <Timer size={22} color={ColorPalette.brand500} />
-        </Box>
-        <Box flexShrink={1}>
-          <Text variant="bodySmMedium" color="gray900">
-            Pitching is happening now!
-          </Text>
-          <Text variant="bodyXsDefault" color="gray700">
-            Time remaining until pitching ends:
-          </Text>
-        </Box>
-      </Box>
+          <Box gap="sm">
+            <Box gap="xxs">
+              <Text variant="bodySmMedium" color="gray900">
+                Pitching is happening now!
+              </Text>
+              <Text variant="bodyXsDefault" color="gray700">
+                Time remaining until pitching ends:
+              </Text>
+            </Box>
 
-      <Box flexDirection="row" alignItems="center" gap="xs">
-        <TimeUnit value={timeLeft.hours} label="Hours" />
-        <Text variant="bodyMedium" color="gray700">
-          :
-        </Text>
-        <TimeUnit value={timeLeft.minutes} label="Minutes" />
-        <Text variant="bodyMedium" color="gray700">
-          :
-        </Text>
-        <TimeUnit value={timeLeft.seconds} label="Seconds" />
+            <Box flexDirection="row" alignItems="center" gap="xs">
+              <TimeUnit value={timeLeft.hours} label="Hours" />
+              <Text variant="bodyMedium" color="gray700">
+                :
+              </Text>
+              <TimeUnit value={timeLeft.minutes} label="Minutes" />
+              <Text variant="bodyMedium" color="gray700">
+                :
+              </Text>
+              <TimeUnit value={timeLeft.seconds} label="Seconds" />
+            </Box>
+          </Box>
+        </LinearGradient>
       </Box>
     </Box>
   );
 }
+
+const styles = StyleSheet.create({
+  cardShadow: {
+    shadowColor: ColorPalette.black,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  card: {
+    padding: 16,
+  },
+  timeUnit: {
+    shadowColor: ColorPalette.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  tabular: {
+    fontVariant: ["tabular-nums"],
+  },
+});

@@ -1,15 +1,17 @@
 import { Box, Text } from "@/design-system";
+import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import type {
   ModelsOptionWithScore,
   ModelsPitchAPIResponse,
 } from "@/types/types.gen";
+import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import { X } from "lucide-react-native";
-import { Modal, Pressable, ScrollView, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRef } from "react";
+import { Pressable, StyleSheet } from "react-native";
 
-const THUMBNAIL_SIZE = 60;
+const THUMBNAIL_SIZE = 48;
 
 interface PitchPickerSheetProps {
   visible: boolean;
@@ -26,7 +28,6 @@ interface PitchPickerSheetProps {
 
 interface PitchRowProps {
   pitch: ModelsPitchAPIResponse;
-  option: ModelsOptionWithScore;
   disabled: boolean;
   onPress: () => void;
 }
@@ -35,13 +36,21 @@ function PitchRow({ pitch, disabled, onPress }: PitchRowProps) {
   const thumbnail = pitch.images?.[0]?.medium_url;
 
   return (
-    <Pressable onPress={disabled ? undefined : onPress}>
+    <Pressable
+      onPress={disabled ? undefined : onPress}
+      style={{ opacity: disabled ? 0.5 : 1 }}
+    >
       <Box
         flexDirection="row"
         alignItems="center"
         gap="sm"
-        padding="sm"
-        style={disabled ? styles.disabledRow : undefined}
+        paddingVertical="sm"
+        paddingHorizontal="md"
+        marginHorizontal="sm"
+        marginBottom="sm"
+        borderRadius="lg"
+        backgroundColor="white"
+        style={styles.rowCard}
       >
         {thumbnail ? (
           <Image
@@ -64,9 +73,11 @@ function PitchRow({ pitch, disabled, onPress }: PitchRowProps) {
           >
             {pitch.title}
           </Text>
-          <Text variant="bodyXsDefault" color="gray400" numberOfLines={2}>
-            {disabled ? "Already selected" : pitch.description}
-          </Text>
+          {pitch.description ? (
+            <Text variant="bodyXsDefault" color="gray500" numberOfLines={2}>
+              {pitch.description}
+            </Text>
+          ) : null}
         </Box>
       </Box>
     </Pressable>
@@ -82,7 +93,11 @@ export function PitchPickerSheet({
   slotNumber,
   excludeOptionIds,
 }: PitchPickerSheetProps) {
-  const { bottom } = useSafeAreaInsets();
+  const sheetRef = useRef<BottomSheetMethods>(null);
+
+  if (!visible) {
+    return null;
+  }
 
   const availablePitches = pitches.flatMap((pitch) => {
     const option = pollOptions.find((o) => o.entity_id === pitch.id);
@@ -97,35 +112,35 @@ export function PitchPickerSheet({
   });
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
+    <BottomSheetComponent
+      ref={sheetRef}
+      initialIndex={0}
+      snapPoints={["42%"]}
+      onClose={onClose}
+      hideHandle={true}
     >
-      <Box flex={1} backgroundColor="white">
+      <Box style={{ paddingBottom: 16, paddingTop: 12 }}>
         <Box
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between"
           paddingHorizontal="sm"
-          paddingVertical="sm"
-          style={styles.header}
+          paddingBottom="md"
+          style={{ paddingTop: 0 }}
         >
-          <Text variant="bodySmMedium" color="gray900">
+          <Text variant="bodyMedium" color="gray900">
             Select your #{slotNumber} choice
           </Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <X size={20} color={ColorPalette.gray900} />
+            <X size={18} color={ColorPalette.gray900} />
           </Pressable>
         </Box>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: bottom + 16 }}>
+        <Box>
           {availablePitches.map(({ pitch, option, disabled }) => (
             <PitchRow
               key={pitch.id}
               pitch={pitch}
-              option={option}
               disabled={disabled}
               onPress={() => {
                 onSelect(option, pitch);
@@ -133,23 +148,20 @@ export function PitchPickerSheet({
               }}
             />
           ))}
-        </ScrollView>
+        </Box>
       </Box>
-    </Modal>
+    </BottomSheetComponent>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    borderBottomWidth: 1,
-    borderBottomColor: ColorPalette.gray100,
-  },
   thumbnail: {
     width: THUMBNAIL_SIZE,
     height: THUMBNAIL_SIZE,
     borderRadius: 8,
   },
-  disabledRow: {
-    opacity: 0.5,
+  rowCard: {
+    borderWidth: 1,
+    borderColor: ColorPalette.gray100,
   },
 });

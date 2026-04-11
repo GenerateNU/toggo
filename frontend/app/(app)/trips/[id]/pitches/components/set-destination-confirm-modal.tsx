@@ -4,22 +4,22 @@ import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { useEffect, useRef } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-interface CancelConfirmModalProps {
+interface SetDestinationConfirmModalProps {
   visible: boolean;
-  pitchTitle: string;
-  onKeep: () => void;
-  onDelete: () => void;
+  destinationName: string;
+  onCancel: () => void;
+  onConfirm: () => void;
 }
 
-export function CancelConfirmModal({
+export function SetDestinationConfirmModal({
   visible,
-  pitchTitle,
-  onKeep,
-  onDelete,
-}: CancelConfirmModalProps) {
+  destinationName,
+  onCancel,
+  onConfirm,
+}: SetDestinationConfirmModalProps) {
   const sheetRef = useRef<BottomSheetMethods>(null);
   const { bottom } = useSafeAreaInsets();
-  const label = pitchTitle.trim() || "New Pitch";
+  const label = destinationName.trim() || "this destination";
 
   useEffect(() => {
     if (visible) {
@@ -32,10 +32,10 @@ export function CancelConfirmModal({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["25%"]}
+      snapPoints={["28%"]}
       initialIndex={-1}
       hideHandle={true}
-      onClose={onKeep}
+      onClose={onCancel}
     >
       <Box
         backgroundColor="white"
@@ -45,26 +45,26 @@ export function CancelConfirmModal({
         style={{ paddingBottom: Math.max(bottom, 16) }}
       >
         <Box gap="xs">
-          <Text variant="headingSm" color="gray900">
-            Cancel Adding "{label}"?
+          <Text variant="bodyMedium" color="gray900">
+            Set “{label}” as Destination?
           </Text>
           <Text variant="bodySmDefault" color="gray500">
-            You'll lose any additions you made
+            {label} will become your new destination.
           </Text>
         </Box>
 
-        <Box gap="xs">
+        <Box gap="sm">
           <Button
             layout="textOnly"
-            label={`Delete "${label}"`}
-            variant="Destructive"
-            onPress={onDelete}
+            label="Set as Destination"
+            variant="Blue"
+            onPress={onConfirm}
           />
           <Button
             layout="textOnly"
-            label={`Keep editing "${label}"`}
+            label="Cancel"
             variant="Secondary"
-            onPress={onKeep}
+            onPress={onCancel}
           />
         </Box>
       </Box>

@@ -25,6 +25,7 @@ type RankPollServiceInterface interface {
 	SubmitRanking(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID, req models.SubmitRankingRequest) error
 	GetRankPollResults(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.RankPollResultsResponse, error)
 	GetPollVoters(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.PollVotersResponse, error)
+	GetChoiceVoters(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, rankPosition int, userID uuid.UUID) (*models.RankChoiceVotersResponse, error)
 	DeleteRankPoll(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, userID uuid.UUID) (*models.RankPollAPIResponse, error)
 }
 
@@ -295,6 +296,45 @@ func (s *RankPollService) GetPollVoters(ctx context.Context, tripID uuid.UUID, p
 		PollID:       pollID,
 		TotalMembers: len(voters),
 		TotalVoters:  totalVoters,
+		Voters:       voters,
+	}, nil
+}
+
+func (s *RankPollService) GetChoiceVoters(ctx context.Context, tripID uuid.UUID, pollID uuid.UUID, optionID uuid.UUID, rankPosition int, userID uuid.UUID) (*models.RankChoiceVotersResponse, error) {
+	if rankPosition < 1 || rankPosition > 3 {
+		return nil, errs.BadRequest(errors.New("rank_position must be between 1 and 3"))
+	}
+
+	if _, err := s.validateRankPollAccess(ctx, tripID, pollID, userID); err != nil {
+		return nil, err
+	}
+
+	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+
+	optionExists := false
+	for _, option := range poll.Options {
+		if option.ID == optionID {
+			optionExists = true
+			break
+		}
+	}
+	if !optionExists {
+		return nil, errs.ErrNotFound
+	}
+
+	voters, err := s.repository.PollRanking.GetChoiceVoters(ctx, pollID, optionID, rankPosition)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.RankChoiceVotersResponse{
+		PollID:       pollID,
+		OptionID:     optionID,
+		RankPosition: rankPosition,
+		TotalVoters:  len(voters),
 		Voters:       voters,
 	}, nil
 }

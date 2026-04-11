@@ -8,15 +8,16 @@ import { getPitchBarHeights } from "../utils/waveform";
 import { WaveformBars } from "./waveform";
 
 const BAR_COUNT = 40;
-
 interface InlineAudioPlayerProps {
   audioUrl: string;
   pitchId: string;
+  onPlayPress?: () => void;
 }
 
 export function InlineAudioPlayer({
   audioUrl,
   pitchId,
+  onPlayPress,
 }: InlineAudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,16 @@ export function InlineAudioPlayer({
   const waveformPageXRef = useRef(0);
 
   const barHeights = getPitchBarHeights(pitchId, BAR_COUNT);
+  const usesExternalPlayHandler = typeof onPlayPress === "function";
   const progress = duration > 0 ? playPosition / duration : 0;
+  const playButtonSize = 34;
+  const playIconSize = 26;
+  const waveformHeight = 65;
+  const maxBaseBarHeight = Math.max(...barHeights, 1);
+  const targetMaxBarHeight = waveformHeight - 6;
+  const visualBarHeights = barHeights.map((height) =>
+    Math.max(6, (height / maxBaseBarHeight) * targetMaxBarHeight),
+  );
 
   const loadSound = async (shouldPlay: boolean) => {
     setIsLoading(true);
@@ -63,14 +73,23 @@ export function InlineAudioPlayer({
   };
 
   useEffect(() => {
+    if (usesExternalPlayHandler) {
+      return;
+    }
+
     loadSound(false);
     return () => {
       soundRef.current?.unloadAsync();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [usesExternalPlayHandler]);
 
   const togglePlayback = async () => {
+    if (usesExternalPlayHandler) {
+      onPlayPress?.();
+      return;
+    }
+
     if (isLoading) return;
 
     if (isPlaying) {
@@ -94,6 +113,8 @@ export function InlineAudioPlayer({
   };
 
   const seekToRatio = async (ratio: number) => {
+    if (usesExternalPlayHandler) return;
+
     const clamped = Math.max(0, Math.min(1, ratio));
     if (!soundRef.current) {
       await loadSound(false);
@@ -105,15 +126,17 @@ export function InlineAudioPlayer({
   };
 
   const waveformResponder = {
-    onStartShouldSetResponder: () => true,
-    onMoveShouldSetResponder: () => true,
+    onStartShouldSetResponder: () => !usesExternalPlayHandler,
+    onMoveShouldSetResponder: () => !usesExternalPlayHandler,
     onResponderGrant: (e: any) => {
+      if (usesExternalPlayHandler) return;
       const ratio =
         (e.nativeEvent.pageX - waveformPageXRef.current) /
         waveformWidthRef.current;
       seekToRatio(ratio);
     },
     onResponderMove: (e: any) => {
+      if (usesExternalPlayHandler) return;
       const ratio =
         (e.nativeEvent.pageX - waveformPageXRef.current) /
         waveformWidthRef.current;
@@ -121,6 +144,7 @@ export function InlineAudioPlayer({
       setPlayPosition(targetMs);
     },
     onResponderRelease: (e: any) => {
+      if (usesExternalPlayHandler) return;
       const ratio =
         (e.nativeEvent.pageX - waveformPageXRef.current) /
         waveformWidthRef.current;
@@ -137,22 +161,33 @@ export function InlineAudioPlayer({
         backgroundColor="gray50"
         borderRadius="md"
         paddingHorizontal="xs"
-        paddingVertical="xs"
+        paddingVertical="xxs"
       >
-        <Pressable onPress={togglePlayback} style={styles.playBtn} hitSlop={8}>
+        <Pressable
+          onPress={togglePlayback}
+          style={[
+            styles.playBtn,
+            {
+              width: playButtonSize,
+              height: playButtonSize,
+              borderRadius: playButtonSize / 2,
+            },
+          ]}
+          hitSlop={8}
+        >
           {isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.white} />
+            <ActivityIndicator size="small" color={ColorPalette.gray900} />
           ) : isPlaying ? (
             <Pause
-              size={13}
-              color={ColorPalette.white}
-              fill={ColorPalette.white}
+              size={playIconSize}
+              color={ColorPalette.gray900}
+              fill={ColorPalette.gray900}
             />
           ) : (
             <Play
-              size={13}
-              color={ColorPalette.white}
-              fill={ColorPalette.white}
+              size={playIconSize}
+              color={ColorPalette.gray900}
+              fill={ColorPalette.gray900}
             />
           )}
         </Pressable>
@@ -169,10 +204,10 @@ export function InlineAudioPlayer({
           style={{ flex: 1 }}
         >
           <WaveformBars
-            barHeights={barHeights}
+            barHeights={visualBarHeights}
             progress={progress}
             barWidth={2}
-            style={{ flex: 1, height: 28 }}
+            style={{ flex: 1, height: waveformHeight }}
           />
         </View>
       </Box>
@@ -182,10 +217,7 @@ export function InlineAudioPlayer({
 
 const styles = StyleSheet.create({
   playBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
   },

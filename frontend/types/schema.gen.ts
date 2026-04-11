@@ -112,6 +112,7 @@ import type {
   ModelsPollCursorPageResult,
   ModelsVoterInfo,
   ModelsPollVotersResponse,
+  ModelsRankChoiceVotersResponse,
   ModelsRankPollAPIResponse,
   ModelsUserRankingItem,
   ModelsRankPollResultsResponse,
@@ -628,6 +629,14 @@ import type {
   DeleteRankPollOption500,
   DeleteRankPollOptionMutationResponse,
   DeleteRankPollOptionPathParams,
+  GetRankChoiceVoters200,
+  GetRankChoiceVoters400,
+  GetRankChoiceVoters401,
+  GetRankChoiceVoters403,
+  GetRankChoiceVoters404,
+  GetRankChoiceVoters500,
+  GetRankChoiceVotersPathParams,
+  GetRankChoiceVotersQueryResponse,
   SubmitRanking200,
   SubmitRanking400,
   SubmitRanking401,
@@ -1601,6 +1610,16 @@ export const modelsPollVotersResponseSchema = z.object({
     return z.array(modelsVoterInfoSchema).optional();
   },
 }) as unknown as z.ZodType<ModelsPollVotersResponse>;
+
+export const modelsRankChoiceVotersResponseSchema = z.object({
+  option_id: z.optional(z.string()),
+  poll_id: z.optional(z.string()),
+  rank_position: z.optional(z.int()),
+  total_voters: z.optional(z.int()),
+  get voters() {
+    return z.array(modelsVoterInfoSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsRankChoiceVotersResponse>;
 
 export const modelsRankPollAPIResponseSchema = z.object({
   categories: z.optional(z.array(z.string())),
@@ -5243,6 +5262,59 @@ export const deleteRankPollOption500Schema = z.lazy(
 export const deleteRankPollOptionMutationResponseSchema = z.lazy(
   () => deleteRankPollOption200Schema,
 ) as unknown as z.ZodType<DeleteRankPollOptionMutationResponse>;
+
+export const getRankChoiceVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+  optionId: z.string().describe("Option ID"),
+  rankPosition: z.coerce.number().int().describe("Rank position (1-3)"),
+}) as unknown as z.ZodType<GetRankChoiceVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getRankChoiceVoters200Schema = z.lazy(
+  () => modelsRankChoiceVotersResponseSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getRankChoiceVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getRankChoiceVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getRankChoiceVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getRankChoiceVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getRankChoiceVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters500>;
+
+export const getRankChoiceVotersQueryResponseSchema = z.lazy(
+  () => getRankChoiceVoters200Schema,
+) as unknown as z.ZodType<GetRankChoiceVotersQueryResponse>;
 
 export const submitRankingPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
