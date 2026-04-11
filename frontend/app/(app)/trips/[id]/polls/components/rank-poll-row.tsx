@@ -11,11 +11,17 @@ type RankPollRowProps = {
   poll: ModelsPollAPIResponse;
   tripId: string;
   onRanked: () => void;
+  onPress?: () => void;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function RankPollRow({ poll, tripId, onRanked }: RankPollRowProps) {
+export function RankPollRow({
+  poll,
+  tripId,
+  onRanked,
+  onPress,
+}: RankPollRowProps) {
   const { data, isLoading, isError, refetch } = useGetRankPollResults(
     tripId,
     poll.id ?? "",
@@ -46,7 +52,14 @@ export function RankPollRow({ poll, tripId, onRanked }: RankPollRowProps) {
 
   if (!data) return null;
 
-  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
+  return (
+    <RankPollCard
+      poll={data}
+      tripId={tripId}
+      onRanked={onRanked}
+      onPress={onPress}
+    />
+  );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────

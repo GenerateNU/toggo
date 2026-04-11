@@ -14,6 +14,7 @@ type PollVotingRepository interface {
 	GetPollVotes(ctx context.Context, pollID, userID uuid.UUID) (*models.PollVoteSummary, error)
 	GetPollsVotes(ctx context.Context, pollIDs []uuid.UUID, userID uuid.UUID) (map[uuid.UUID]*models.PollVoteSummary, error)
 	GetVoterStatus(ctx context.Context, pollID uuid.UUID, tripID uuid.UUID) ([]models.VoterInfo, error)
+	GetOptionVoters(ctx context.Context, pollID, optionID uuid.UUID) ([]models.VoterInfo, error)
 }
 
 var _ PollVotingRepository = (*pollVotingRepository)(nil)
@@ -113,11 +114,32 @@ func (r *pollVotingRepository) GetVoterStatus(ctx context.Context, pollID uuid.U
 		ColumnExpr("m.user_id").
 		ColumnExpr("u.name, u.username").
 		ColumnExpr("BOOL_OR(pv.user_id IS NOT NULL) AS has_voted").
+		ColumnExpr("MAX(pv.created_at) AS voted_at").
 		Join("JOIN users AS u ON u.id = m.user_id").
 		Join("LEFT JOIN poll_votes AS pv ON pv.poll_id = ? AND pv.user_id = m.user_id", pollID).
 		Where("m.trip_id = ?", tripID).
 		Group("m.user_id", "u.name", "u.username").
 		Order("has_voted DESC", "u.username ASC").
+		Scan(ctx, &voters)
+	if err != nil {
+		return nil, err
+	}
+	return voters, nil
+}
+
+// GetOptionVoters returns all users who voted for a specific option on a vote poll.
+func (r *pollVotingRepository) GetOptionVoters(ctx context.Context, pollID, optionID uuid.UUID) ([]models.VoterInfo, error) {
+	var voters []models.VoterInfo
+	err := r.db.NewSelect().
+		TableExpr("poll_votes AS pv").
+		ColumnExpr("pv.user_id").
+		ColumnExpr("u.name, u.username").
+		ColumnExpr("TRUE AS has_voted").
+		ColumnExpr("pv.created_at AS voted_at").
+		Join("JOIN users AS u ON u.id = pv.user_id").
+		Where("pv.poll_id = ?", pollID).
+		Where("pv.option_id = ?", optionID).
+		Order("u.username ASC").
 		Scan(ctx, &voters)
 	if err != nil {
 		return nil, err

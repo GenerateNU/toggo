@@ -1399,6 +1399,52 @@ export type ModelsOpeningHours = {
   weekday_text?: string[];
 };
 
+export type ModelsVoterInfo = {
+  /**
+   * @type boolean | undefined
+   */
+  has_voted?: boolean;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+  /**
+   * @type string | undefined
+   */
+  voted_at?: string;
+};
+
+export type ModelsOptionVotersResponse = {
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  option_name?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type array | undefined
+   */
+  voters?: ModelsVoterInfo[];
+};
+
 export type ModelsOptionWithScore = {
   /**
    * @type number | undefined
@@ -1776,25 +1822,6 @@ export type ModelsPollCursorPageResult = {
    * @type string | undefined
    */
   next_cursor?: string;
-};
-
-export type ModelsVoterInfo = {
-  /**
-   * @type boolean | undefined
-   */
-  has_voted?: boolean;
-  /**
-   * @type string | undefined
-   */
-  name?: string;
-  /**
-   * @type string | undefined
-   */
-  user_id?: string;
-  /**
-   * @type string | undefined
-   */
-  username?: string;
 };
 
 export type ModelsPollVotersResponse = {
@@ -6838,6 +6865,67 @@ export type DeletePollOptionMutation = {
     | DeletePollOption500;
 };
 
+export type GetVoteOptionVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetVoteOptionVoters200 = ModelsOptionVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetVoteOptionVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetVoteOptionVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetVoteOptionVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetVoteOptionVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetVoteOptionVoters500 = ErrsAPIError;
+
+export type GetVoteOptionVotersQueryResponse = GetVoteOptionVoters200;
+
+export type GetVoteOptionVotersQuery = {
+  Response: GetVoteOptionVoters200;
+  PathParams: GetVoteOptionVotersPathParams;
+  Errors:
+    | GetVoteOptionVoters400
+    | GetVoteOptionVoters401
+    | GetVoteOptionVoters403
+    | GetVoteOptionVoters404
+    | GetVoteOptionVoters500;
+};
+
 export type CastVotePathParams = {
   /**
    * @description Trip ID
@@ -6904,6 +6992,62 @@ export type CastVoteMutation = {
     | CastVote404
     | CastVote422
     | CastVote500;
+};
+
+export type GetVotePollVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetVotePollVoters200 = ModelsPollVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetVotePollVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetVotePollVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetVotePollVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetVotePollVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetVotePollVoters500 = ErrsAPIError;
+
+export type GetVotePollVotersQueryResponse = GetVotePollVoters200;
+
+export type GetVotePollVotersQuery = {
+  Response: GetVotePollVoters200;
+  PathParams: GetVotePollVotersPathParams;
+  Errors:
+    | GetVotePollVoters400
+    | GetVotePollVoters401
+    | GetVotePollVoters403
+    | GetVotePollVoters404
+    | GetVotePollVoters500;
 };
 
 export type GetPaginatedCommentsPathParams = {

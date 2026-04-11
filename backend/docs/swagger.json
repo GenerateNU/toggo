@@ -5147,6 +5147,80 @@
                 }
             }
         },
+        "/api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId}/voters": {
+            "get": {
+                "description": "Returns all users who voted for a specific option in a vote poll",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "polls"
+                ],
+                "summary": "Get option voters",
+                "operationId": "getVoteOptionVoters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OptionVotersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/vote-polls/{pollId}/vote": {
             "post": {
                 "description": "Casts or replaces the user's vote(s) on a poll",
@@ -5219,6 +5293,73 @@
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/vote-polls/{pollId}/voters": {
+            "get": {
+                "description": "Returns who has voted vs who hasn't for a vote poll",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "polls"
+                ],
+                "summary": "Get vote poll voters",
+                "operationId": "getVotePollVoters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PollVotersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -7116,6 +7257,29 @@
                 "OptionTypeCustom"
             ]
         },
+        "models.OptionVotersResponse": {
+            "type": "object",
+            "properties": {
+                "option_id": {
+                    "type": "string"
+                },
+                "option_name": {
+                    "type": "string"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "total_voters": {
+                    "type": "integer"
+                },
+                "voters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VoterInfo"
+                    }
+                }
+            }
+        },
         "models.OptionWithScore": {
             "type": "object",
             "properties": {
@@ -8459,6 +8623,9 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                },
+                "voted_at": {
                     "type": "string"
                 }
             }

@@ -1,13 +1,13 @@
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
-import { Box, Button, Text, TextField, useToast } from "@/design-system";
+import { Box, Text, TextField, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { useQueryClient } from "@tanstack/react-query";
-import { router, useLocalSearchParams } from "expo-router";
 import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
 import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
-import { useState } from "react";
-import { ScrollView } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { useCallback, useState } from "react";
+import { Pressable, ScrollView } from "react-native";
 
 export default function EditTripName() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
@@ -20,7 +20,7 @@ export default function EditTripName() {
   const [draftName, setDraftName] = useState<string | null>(null);
   const name = draftName ?? trip?.name ?? "";
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const trimmed = name.trim();
     if (!trimmed || trimmed === trip?.name) {
       router.back();
@@ -48,33 +48,53 @@ export default function EditTripName() {
     } catch {
       toast.show({ message: "Couldn't update name. Please try again." });
     }
-  };
+  }, [name, trip, tripID, updateTripMutation, queryClient, toast]);
+
+  const isDoneDisabled = !name.trim() || updateTripMutation.isPending;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: ColorPalette.white }}
-      contentContainerStyle={{ padding: 16, gap: 16 }}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Box gap="xs">
-        <Text variant="bodySmMedium" color="gray500" marginLeft="xs">
-          Trip Name
-        </Text>
-        <TextField
-          value={name}
-          onChangeText={setDraftName}
-          placeholder="Enter trip name"
-        />
-      </Box>
-      <Button
-        layout="textOnly"
-        label="Save"
-        variant="Primary"
-        loading={updateTripMutation.isPending}
-        loadingLabel="Saving..."
-        disabled={!name.trim() || updateTripMutation.isPending}
-        onPress={handleSave}
+    <>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={handleSave}
+              hitSlop={8}
+              disabled={isDoneDisabled}
+            >
+              <Text
+                variant="bodySmMedium"
+                style={{
+                  color: isDoneDisabled
+                    ? ColorPalette.gray400
+                    : ColorPalette.blue500,
+                }}
+              >
+                {updateTripMutation.isPending ? "Saving…" : "Done"}
+              </Text>
+            </Pressable>
+          ),
+        }}
       />
-    </ScrollView>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: ColorPalette.white }}
+        contentContainerStyle={{ padding: 16 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Box gap="xs">
+          <Text variant="bodySmMedium" color="gray500" marginLeft="xs">
+            Trip Name
+          </Text>
+          <TextField
+            value={name}
+            onChangeText={setDraftName}
+            placeholder="Enter trip name"
+            returnKeyType="done"
+            onSubmitEditing={handleSave}
+            autoCapitalize="words"
+          />
+        </Box>
+      </ScrollView>
+    </>
   );
 }

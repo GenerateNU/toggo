@@ -235,10 +235,12 @@ export function CreatePitchFormSheet({
 
         {!recording || !links.length ? (
           <Box>
-            <Divider
-              color={ColorPalette.gray100}
-              style={{ marginTop: 4, marginBottom: 6 }}
-            />
+            {!recording && audioEditable && (
+              <Divider
+                color={ColorPalette.gray100}
+                style={{ marginTop: 4, marginBottom: 6 }}
+              />
+            )}
 
             {!recording && audioEditable ? (
               <Pressable onPress={onOpenAudio}>
