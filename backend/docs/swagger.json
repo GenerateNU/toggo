@@ -5857,6 +5857,9 @@
                 "proposed_by": {
                     "type": "string"
                 },
+                "proposer_name": {
+                    "type": "string"
+                },
                 "proposer_picture_url": {
                     "type": "string"
                 },
@@ -5914,6 +5917,9 @@
         "models.ActivityGoingUserResponse": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -5943,6 +5949,9 @@
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "profile_picture_url": {
@@ -6155,6 +6164,9 @@
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "description": "pointer since some users don't have their avatar set",
                     "type": "string"
@@ -6210,6 +6222,9 @@
         "models.CommentReactionUser": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6255,6 +6270,9 @@
         "models.CommenterPreview": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6656,6 +6674,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "pitch_deadline": {
+                    "type": "string"
+                },
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
@@ -6873,6 +6894,9 @@
                 },
                 "is_admin": {
                     "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "notify_new_comments": {
                     "type": "boolean"
@@ -7152,6 +7176,9 @@
                     "items": {
                         "$ref": "#/definitions/models.PitchLink"
                     }
+                },
+                "name": {
+                    "type": "string"
                 },
                 "profile_picture_url": {
                     "type": "string"
@@ -7854,7 +7881,13 @@
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -7864,6 +7897,9 @@
                     "type": "string"
                 },
                 "rank_poll_id": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7894,6 +7930,9 @@
                     "format": "date-time"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8138,9 +8177,6 @@
                 "cover_image_id": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
                 "currency": {
                     "type": "string"
                 },
@@ -8148,7 +8184,7 @@
                     "type": "string",
                     "format": "date-time"
                 },
-                "id": {
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8160,9 +8196,6 @@
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -8314,6 +8347,9 @@
             "properties": {
                 "has_voted": {
                     "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "string"

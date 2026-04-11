@@ -77,7 +77,7 @@ export default function Toggle({
     >
       {label && (
         <Text
-          variant="bodySmMedium"
+          variant="bodyMedium"
           color={disabled ? "gray400" : "gray900"}
           style={{ flex: 1 }}
         >

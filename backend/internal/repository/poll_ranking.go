@@ -95,12 +95,12 @@ func (r *pollRankingRepository) GetVoterStatus(ctx context.Context, pollID uuid.
 	err := r.db.NewSelect().
 		TableExpr("memberships AS m").
 		ColumnExpr("m.user_id").
-		ColumnExpr("u.username").
+		ColumnExpr("u.name, u.username").
 		ColumnExpr("BOOL_OR(pr.user_id IS NOT NULL) AS has_voted").
 		Join("JOIN users AS u ON u.id = m.user_id").
 		Join("LEFT JOIN poll_rankings AS pr ON pr.poll_id = ? AND pr.user_id = m.user_id", pollID).
 		Where("m.trip_id = ?", tripID).
-		Group("m.user_id", "u.username").
+		Group("m.user_id", "u.name", "u.username").
 		Order("has_voted DESC", "u.username ASC").
 		Scan(ctx, &voters)
 	if err != nil {

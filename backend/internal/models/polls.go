@@ -216,6 +216,7 @@ type PollVotersResponse struct {
 // VoterInfo contains a trip member's voting status for a rank poll.
 type VoterInfo struct {
 	UserID   uuid.UUID `json:"user_id"`
+	Name     string    `json:"name"`
 	Username string    `json:"username"`
 	HasVoted bool      `json:"has_voted"`
 }

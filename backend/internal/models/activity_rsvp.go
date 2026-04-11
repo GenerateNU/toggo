@@ -50,6 +50,7 @@ type ActivityRSVP struct {
 
 type ActivityRSVPAPIResponse struct {
 	UserID            uuid.UUID  `json:"user_id"`
+	Name              string     `json:"name"`
 	Username          string     `json:"username"`
 	ActivityID        uuid.UUID  `json:"activity_id"`
 	ProfilePictureURL *string    `json:"profile_picture_url,omitempty"`
@@ -64,6 +65,7 @@ type ActivityRSVPDatabaseResponse struct {
 	Status            RSVPStatus `bun:"status" json:"status"`
 	CreatedAt         time.Time  `bun:"created_at" json:"created_at"`
 	UpdatedAt         time.Time  `bun:"updated_at" json:"updated_at"`
+	Name              string     `bun:"name" json:"name"`
 	Username          string     `bun:"username" json:"username"`
 	ProfilePictureKey *string    `bun:"profile_picture_key" json:"profile_picture_key,omitempty"`
 }
@@ -77,6 +79,7 @@ type ActivityRSVPsPageResult struct {
 // GoingUser is the DB-level shape returned from the going_users_json subquery.
 type GoingUser struct {
 	UserID            uuid.UUID `json:"user_id"`
+	Name              string    `json:"name"`
 	Username          string    `json:"username"`
 	ProfilePictureKey *string   `json:"profile_picture_key,omitempty"`
 }
@@ -101,6 +104,7 @@ func (g *GoingUserList) Scan(src any) error {
 // ActivityGoingUserResponse is the API-facing representation of a user who RSVPed "yes".
 type ActivityGoingUserResponse struct {
 	UserID            uuid.UUID `json:"user_id"`
+	Name              string    `json:"name"`
 	Username          string    `json:"username"`
 	ProfilePictureURL *string   `json:"profile_picture_url,omitempty"`
 }

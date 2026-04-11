@@ -79,7 +79,7 @@ function MemberRow({
             numberOfLines={1}
             style={{ flexShrink: 1 }}
           >
-            {member.username ?? "Unknown"}
+            {member.name ?? "Unknown"}
           </Text>
           {isCurrentUser && (
             <Text variant="bodyXsDefault" color="gray500">
@@ -142,7 +142,7 @@ export default function MembersSettings() {
   const handlePromote = (member: ModelsMembershipAPIResponse) => {
     Alert.alert(
       "Make Admin?",
-      `${member.username ?? "This member"} will be able to manage the trip and its members.`,
+      `${member.name ?? "This member"} will be able to manage the trip and its members.`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -154,7 +154,7 @@ export default function MembersSettings() {
                 userID: member.user_id!,
               });
               toast.show({
-                message: `${member.username ?? "Member"} is now an admin.`,
+                message: `${member.name ?? "Member"} is now an admin.`,
               });
             } catch {
               toast.show({

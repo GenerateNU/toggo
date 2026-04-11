@@ -6,7 +6,14 @@ import { Text } from "@/design-system/primitives/text";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
-import { Camera, ImagePlus, Images, Trash2, X } from "lucide-react-native";
+import {
+  Camera,
+  ImagePlus,
+  Images,
+  Image as LucideIconImage,
+  Trash2,
+  X,
+} from "lucide-react-native";
 import React, { useRef } from "react";
 import { Alert, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
@@ -66,7 +73,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   height = 200,
   placeholder = "Add photo",
   disabled = false,
-  title = "Select photo",
+  title = "Add media",
   subtitle,
 }) => {
   const sheetRef = useRef<BottomSheetMethods>(null);
@@ -136,7 +143,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
       style={{ width: width as any }}
     >
       <Box
-        borderRadius="md"
+        borderRadius="xl"
         backgroundColor="gray100"
         overflow="hidden"
         style={{ height }}
@@ -160,7 +167,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               alignItems="center"
               justifyContent="center"
             >
-              <Icon icon={Images} size="md" color="white" />
+              <Icon icon={LucideIconImage} size="iconSm" color="white" />
               <Text variant="bodySmMedium" color="white">
                 Change cover image
               </Text>

@@ -41,6 +41,7 @@ type CommentReactionsSummaryResponse struct {
 // CommentReactionUser represents a user who reacted with a specific emoji.
 type CommentReactionUser struct {
 	UserID            uuid.UUID `json:"user_id"`
+	Name              string    `json:"name"`
 	Username          string    `json:"username"`
 	ProfilePictureURL *string   `json:"profile_picture_url"`
 }

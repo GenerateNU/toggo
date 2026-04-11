@@ -48,7 +48,7 @@ func (r *commentRepository) FindPaginatedComments(ctx context.Context, tripID uu
 	query := r.db.NewSelect().
 		TableExpr("comments AS c").
 		ColumnExpr("c.id, c.trip_id, c.entity_type, c.entity_id, c.user_id, c.content, c.created_at, c.updated_at").
-		ColumnExpr("u.username").
+		ColumnExpr("u.name, u.username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = c.user_id").
@@ -112,6 +112,7 @@ func (r *commentRepository) GetCommentStatsForPitches(ctx context.Context, pitch
 	type statsRow struct {
 		PitchID           uuid.UUID `bun:"pitch_id"`
 		UserID            uuid.UUID `bun:"user_id"`
+		CommenterName     string    `bun:"commenter_name"`
 		CommenterUsername string    `bun:"commenter_username"`
 		CommenterPfpKey   *string   `bun:"commenter_pfp_key"`
 		TotalCommentCount int       `bun:"total_comment_count"`
@@ -123,6 +124,7 @@ func (r *commentRepository) GetCommentStatsForPitches(ctx context.Context, pitch
 			SELECT
 				c.entity_id                                                                               AS pitch_id,
 				c.user_id,
+				u.name                                                                                    AS commenter_name,
 				u.username                                                                                AS commenter_username,
 				pfp.file_key                                                                              AS commenter_pfp_key,
 				SUM(COUNT(c.id)) OVER (PARTITION BY c.entity_id)                                         AS total_comment_count,
@@ -136,14 +138,14 @@ func (r *commentRepository) GetCommentStatsForPitches(ctx context.Context, pitch
 				AND pfp.status = ?
 			WHERE c.entity_type = ?
 			  AND c.entity_id IN (?)
-			GROUP BY c.entity_id, c.user_id, u.username, pfp.file_key
+			GROUP BY c.entity_id, c.user_id, u.name, u.username, pfp.file_key
 		) AS ranked`,
 			models.ImageSizeSmall,
 			models.UploadStatusConfirmed,
 			models.PitchEntity,
 			bun.In(pitchIDs),
 		).
-		ColumnExpr("pitch_id, user_id, commenter_username, commenter_pfp_key, total_comment_count").
+		ColumnExpr("pitch_id, user_id, commenter_name, commenter_username, commenter_pfp_key, total_comment_count").
 		Where("rn <= ?", maxCommentPreviewCount).
 		Scan(ctx, &rows)
 	if err != nil {
@@ -158,6 +160,7 @@ func (r *commentRepository) GetCommentStatsForPitches(ctx context.Context, pitch
 		}
 		stats.Previews = append(stats.Previews, models.PitchCommenterDB{
 			UserID:            row.UserID,
+			Name:              row.CommenterName,
 			Username:          row.CommenterUsername,
 			ProfilePictureKey: row.CommenterPfpKey,
 		})

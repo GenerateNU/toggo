@@ -8,6 +8,7 @@
       "items": {
         "type": "object",
         "properties": {
+          "name": { "type": "string" },
           "profile_picture_url": { "type": "string" },
           "user_id": { "type": "string" },
           "username": { "type": "string" }

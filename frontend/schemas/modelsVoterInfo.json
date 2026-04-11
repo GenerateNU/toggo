@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "has_voted": { "type": "boolean" },
+    "name": { "type": "string" },
     "user_id": { "type": "string" },
     "username": { "type": "string" }
   },

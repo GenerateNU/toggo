@@ -361,6 +361,7 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 		NotifyNewPitches:  &notifyNewPitches,
 		NotifyNewPolls:    &notifyNewPolls,
 		NotifyNewComments: &notifyNewComments,
+		Name:              membership.Name,
 		Username:          membership.Username,
 		ProfilePictureURL: profilePictureURL,
 	}, nil
@@ -387,6 +388,7 @@ func (s *MembershipService) convertToAPIMemberships(memberships []*models.Member
 			BudgetMin:         membership.BudgetMin,
 			BudgetMax:         membership.BudgetMax,
 			Availability:      membership.Availability,
+			Name:              membership.Name,
 			Username:          membership.Username,
 			ProfilePictureURL: profilePictureURL,
 		})

@@ -34,5 +34,5 @@ export function formatTripDates(
     "en-US",
     DATE_FORMAT_OPTIONS,
   );
-  return `${start} - ${end}`;
+  return `${start}-${end}`;
 }
