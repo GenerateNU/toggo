@@ -480,7 +480,7 @@ export default function DateRangePicker({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.gray50;
+const RANGE_TINT = ColorPalette.blue25;
 
 const styles = StyleSheet.create({
   /* Sheet */

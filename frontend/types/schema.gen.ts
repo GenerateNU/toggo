@@ -96,6 +96,8 @@ import type {
   ModelsNotificationResponse,
   ModelsPeriod,
   ModelsOpeningHours,
+  ModelsVoterInfo,
+  ModelsOptionVotersResponse,
   ModelsOptionWithScore,
   ModelsPaginatedCommentsResponse,
   ModelsParseLinkRequest,
@@ -110,7 +112,6 @@ import type {
   ModelsPollOptionAPIResponse,
   ModelsPollAPIResponse,
   ModelsPollCursorPageResult,
-  ModelsVoterInfo,
   ModelsPollVotersResponse,
   ModelsRankChoiceVotersResponse,
   ModelsRankPollAPIResponse,
@@ -736,6 +737,14 @@ import type {
   DeletePollOption500,
   DeletePollOptionMutationResponse,
   DeletePollOptionPathParams,
+  GetVoteOptionVoters200,
+  GetVoteOptionVoters400,
+  GetVoteOptionVoters401,
+  GetVoteOptionVoters403,
+  GetVoteOptionVoters404,
+  GetVoteOptionVoters500,
+  GetVoteOptionVotersPathParams,
+  GetVoteOptionVotersQueryResponse,
   CastVote200,
   CastVote400,
   CastVote401,
@@ -746,6 +755,14 @@ import type {
   CastVoteMutationRequest,
   CastVoteMutationResponse,
   CastVotePathParams,
+  GetVotePollVoters200,
+  GetVotePollVoters400,
+  GetVotePollVoters401,
+  GetVotePollVoters403,
+  GetVotePollVoters404,
+  GetVotePollVoters500,
+  GetVotePollVotersPathParams,
+  GetVotePollVotersQueryResponse,
   GetPaginatedComments200,
   GetPaginatedComments400,
   GetPaginatedComments401,
@@ -1392,6 +1409,24 @@ export const modelsOpeningHoursSchema = z.object({
   weekday_text: z.optional(z.array(z.string())),
 }) as unknown as z.ZodType<ModelsOpeningHours>;
 
+export const modelsVoterInfoSchema = z.object({
+  has_voted: z.optional(z.boolean()),
+  name: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+  voted_at: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsVoterInfo>;
+
+export const modelsOptionVotersResponseSchema = z.object({
+  option_id: z.optional(z.string()),
+  option_name: z.optional(z.string()),
+  poll_id: z.optional(z.string()),
+  total_voters: z.optional(z.int()),
+  get voters() {
+    return z.array(modelsVoterInfoSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsOptionVotersResponse>;
+
 export const modelsOptionWithScoreSchema = z.object({
   average_rank: z.optional(z.number()),
   borda_score: z.optional(z.int()),
@@ -1594,13 +1629,6 @@ export const modelsPollCursorPageResultSchema = z.object({
   limit: z.optional(z.int()),
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPollCursorPageResult>;
-
-export const modelsVoterInfoSchema = z.object({
-  has_voted: z.optional(z.boolean()),
-  name: z.optional(z.string()),
-  user_id: z.optional(z.string()),
-  username: z.optional(z.string()),
-}) as unknown as z.ZodType<ModelsVoterInfo>;
 
 export const modelsPollVotersResponseSchema = z.object({
   poll_id: z.optional(z.string()),
@@ -5957,6 +5985,58 @@ export const deletePollOptionMutationResponseSchema = z.lazy(
   () => deletePollOption200Schema,
 ) as unknown as z.ZodType<DeletePollOptionMutationResponse>;
 
+export const getVoteOptionVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+  optionId: z.string().describe("Option ID"),
+}) as unknown as z.ZodType<GetVoteOptionVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getVoteOptionVoters200Schema = z.lazy(
+  () => modelsOptionVotersResponseSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getVoteOptionVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getVoteOptionVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getVoteOptionVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getVoteOptionVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getVoteOptionVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters500>;
+
+export const getVoteOptionVotersQueryResponseSchema = z.lazy(
+  () => getVoteOptionVoters200Schema,
+) as unknown as z.ZodType<GetVoteOptionVotersQueryResponse>;
+
 export const castVotePathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
   pollId: z.string().describe("Poll ID"),
@@ -6021,6 +6101,57 @@ export const castVoteMutationRequestSchema = z.lazy(
 export const castVoteMutationResponseSchema = z.lazy(
   () => castVote200Schema,
 ) as unknown as z.ZodType<CastVoteMutationResponse>;
+
+export const getVotePollVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+}) as unknown as z.ZodType<GetVotePollVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getVotePollVoters200Schema = z.lazy(
+  () => modelsPollVotersResponseSchema,
+) as unknown as z.ZodType<GetVotePollVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getVotePollVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getVotePollVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getVotePollVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getVotePollVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getVotePollVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters500>;
+
+export const getVotePollVotersQueryResponseSchema = z.lazy(
+  () => getVotePollVoters200Schema,
+) as unknown as z.ZodType<GetVotePollVotersQueryResponse>;
 
 export const getPaginatedCommentsPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

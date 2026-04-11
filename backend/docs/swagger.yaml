@@ -870,6 +870,21 @@ definitions:
     x-enum-varnames:
     - OptionTypeEntity
     - OptionTypeCustom
+  models.OptionVotersResponse:
+    properties:
+      option_id:
+        type: string
+      option_name:
+        type: string
+      poll_id:
+        type: string
+      total_voters:
+        type: integer
+      voters:
+        items:
+          $ref: '#/definitions/models.VoterInfo'
+        type: array
+    type: object
   models.OptionWithScore:
     properties:
       average_rank:
@@ -1779,6 +1794,8 @@ definitions:
       user_id:
         type: string
       username:
+        type: string
+      voted_at:
         type: string
     type: object
   realtime.Event:
@@ -5343,6 +5360,56 @@ paths:
       summary: Delete a poll option
       tags:
       - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId}/voters:
+    get:
+      description: Returns all users who voted for a specific option in a vote poll
+      operationId: getVoteOptionVoters
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OptionVotersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get option voters
+      tags:
+      - polls
   /api/v1/trips/{tripID}/vote-polls/{pollId}/vote:
     post:
       consumes:
@@ -5398,6 +5465,51 @@ paths:
           schema:
             $ref: '#/definitions/errs.APIError'
       summary: Cast a vote
+      tags:
+      - polls
+  /api/v1/trips/{tripID}/vote-polls/{pollId}/voters:
+    get:
+      description: Returns who has voted vs who hasn't for a vote poll
+      operationId: getVotePollVoters
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Poll ID
+        in: path
+        name: pollId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PollVotersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Get vote poll voters
       tags:
       - polls
   /api/v1/users:

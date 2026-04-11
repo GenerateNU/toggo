@@ -4,7 +4,8 @@
     "has_voted": { "type": "boolean" },
     "name": { "type": "string" },
     "user_id": { "type": "string" },
-    "username": { "type": "string" }
+    "username": { "type": "string" },
+    "voted_at": { "type": "string" }
   },
   "x-readme-ref-name": "models.VoterInfo"
 }

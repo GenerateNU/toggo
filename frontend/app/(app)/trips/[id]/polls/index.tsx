@@ -5,6 +5,7 @@ import {
 } from "@/api/polls/useGetRankPollResults";
 import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
+import PollDetailSheet from "@/app/(app)/trips/[id]/polls/components/poll-detail-sheet";
 import { Box, Divider, ErrorState, Screen, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -134,10 +135,12 @@ function RankPollRow({
   poll,
   tripId,
   onRanked,
+  onPress,
 }: {
   poll: ModelsPollAPIResponse;
   tripId: string;
   onRanked: () => void;
+  onPress?: () => void;
 }) {
   const { data, isLoading, isError, refetch } = useGetRankPollResults(
     tripId,
@@ -166,7 +169,14 @@ function RankPollRow({
     );
   }
   if (!data) return null;
-  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
+  return (
+    <RankPollCard
+      poll={data}
+      tripId={tripId}
+      onRanked={onRanked}
+      onPress={onPress}
+    />
+  );
 }
 
 // ─── Main screen ─────────────────────────────────────────────────────────────
@@ -176,6 +186,9 @@ export default function PollsScreen() {
   const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [detailPoll, setDetailPoll] = useState<ModelsPollAPIResponse | null>(
+    null,
+  );
 
   const {
     data: pollsData,
@@ -315,6 +328,7 @@ export default function PollsScreen() {
             poll={poll}
             tripId={tripId ?? ""}
             onVoted={handleVoted}
+            onPress={() => setDetailPoll(poll)}
           />
         ))}
 
@@ -324,6 +338,7 @@ export default function PollsScreen() {
             poll={poll}
             tripId={tripId ?? ""}
             onRanked={() => handleRanked(poll.id ?? "")}
+            onPress={() => setDetailPoll(poll)}
           />
         ))}
 
@@ -357,6 +372,14 @@ export default function PollsScreen() {
           </>
         )}
       </ScrollView>
+
+      <PollDetailSheet
+        poll={detailPoll}
+        tripId={tripId ?? ""}
+        visible={detailPoll !== null}
+        onClose={() => setDetailPoll(null)}
+        onRefresh={() => refetchPollsRef.current()}
+      />
     </Screen>
   );
 }
