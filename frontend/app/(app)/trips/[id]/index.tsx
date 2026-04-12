@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: CornerRadius.xxl,
-    borderTopRightRadius: CornerRadius.xxl,
+    borderTopLeftRadius: CornerRadius.xxxl,
+    borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
     marginTop: CARD_TOP_OFFSET,
   },
