@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
     height: TRIP_HEADER_IMAGE_HEIGHT,
   },
   coverImageFallback: {
-    backgroundColor: ColorPalette.gray100,
+    backgroundColor: ColorPalette.brand400,
   },
 });
 
