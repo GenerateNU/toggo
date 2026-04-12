@@ -1,16 +1,52 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
+import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { GripVertical, MapPin } from "lucide-react-native";
-import { Image, StyleSheet } from "react-native";
+import { Image } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
-import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { THUMBNAIL_SIZE } from "../constants";
 import { useActivityCardGestures } from "../hooks/useActivityCardGestures";
 import type { ItineraryActivityCardProps } from "../types";
 import { formatPrice } from "../utils";
+
+// ─── Tag ─────────────────────────────────────────────────────────────────────
+
+function Tag({
+  icon,
+  label,
+  truncate = false,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  truncate?: boolean;
+}) {
+  return (
+    <Box
+      flexDirection="row"
+      alignItems="center"
+      flexShrink={truncate ? 1 : 0}
+      minWidth={truncate ? 0 : undefined}
+      gap="xxs"
+      backgroundColor="gray50"
+      borderRadius="sm"
+      paddingHorizontal="xs"
+      paddingVertical="xxs"
+    >
+      {icon}
+      <Text
+        variant="bodyXsDefault"
+        numberOfLines={1}
+        style={truncate ? { flexShrink: 1 } : undefined}
+      >
+        {label}
+      </Text>
+    </Box>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -37,7 +73,7 @@ export function ItineraryActivityCard({
   return (
     <GestureDetector gesture={composedGesture}>
       <Animated.View
-        style={[styles.container, animatedStyle]}
+        style={[containerStyle, animatedStyle]}
         accessibilityRole="button"
         accessibilityLabel={activity.name ?? "Activity"}
       >
@@ -51,52 +87,31 @@ export function ItineraryActivityCard({
           {thumbnailUrl ? (
             <Image
               source={{ uri: thumbnailUrl }}
-              style={styles.thumbnail}
+              style={thumbnailStyle}
               resizeMode="cover"
             />
           ) : null}
         </Box>
 
         <Box flex={1} gap="xxs">
-          <Text variant="bodySmMedium" color="gray950" numberOfLines={1}>
+          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
             {activity.name ?? "Unnamed Activity"}
           </Text>
 
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            gap="xs"
-            flexWrap="wrap"
-          >
-            {priceLabel && (
-              <Box
-                backgroundColor="gray100"
-                borderRadius="xs"
-                paddingHorizontal="xs"
-                paddingVertical="xxs"
-              >
-                <Text variant="bodyXxsMedium" color="gray700">
-                  {priceLabel}
-                </Text>
-              </Box>
-            )}
+          <Box flexDirection="row" alignItems="center" gap="xxs">
+            {priceLabel && <Tag label={priceLabel} />}
 
             {activity.location_name && (
-              <Box flexDirection="row" alignItems="center" gap="xxs">
-                <MapPin size={12} color={ColorPalette.gray500} />
-                <Text
-                  variant="bodyXxsDefault"
-                  color="gray500"
-                  numberOfLines={1}
-                >
-                  {activity.location_name}
-                </Text>
-              </Box>
+              <Tag
+                icon={<MapPin size={12} color={ColorPalette.gray500} />}
+                label={activity.location_name}
+                truncate
+              />
             )}
           </Box>
 
           {activity.description && (
-            <Text variant="bodyXxsDefault" color="gray400" numberOfLines={1}>
+            <Text variant="bodyXsDefault" color="gray400" numberOfLines={1}>
               {activity.description}
             </Text>
           )}
@@ -110,22 +125,19 @@ export function ItineraryActivityCard({
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Layout.spacing.sm,
-    padding: Layout.spacing.xs,
-    backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.xl,
-    borderWidth: 1,
-    borderColor: ColorPalette.gray100,
-    shadowColor: "#000",
-  },
-  thumbnail: {
-    width: THUMBNAIL_SIZE,
-    height: THUMBNAIL_SIZE,
-  },
-});
+const containerStyle = {
+  flexDirection: "row" as const,
+  alignItems: "center" as const,
+  gap: Layout.spacing.xs,
+  padding: Layout.spacing.xs,
+  backgroundColor: ColorPalette.white,
+  borderRadius: CornerRadius.xl,
+  ...Elevation.sm,
+};
+
+const thumbnailStyle = {
+  width: THUMBNAIL_SIZE,
+  height: THUMBNAIL_SIZE,
+};
 
 export default ItineraryActivityCard;
