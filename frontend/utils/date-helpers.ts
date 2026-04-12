@@ -101,4 +101,3 @@ export function formatTripDates(
   );
   return `${start}-${end}`;
 }
-

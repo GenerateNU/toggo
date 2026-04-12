@@ -19,9 +19,7 @@ export function useItineraryActivities({
   const startDateKey = startDate ? toDateKey(startDate) : null;
   const endDateKey = endDate ? toDateKey(endDate) : null;
 
-  const [selectedDate, setSelectedDate] = useState<string>(
-    startDateKey ?? "",
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(startDateKey ?? "");
 
   if (startDateKey && !selectedDate) {
     setSelectedDate(startDateKey);

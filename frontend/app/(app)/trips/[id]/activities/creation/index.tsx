@@ -16,7 +16,11 @@ import {
 } from "react-native";
 
 export default function CreateActivity() {
-  const { id: tripID, date, timeOfDay } = useLocalSearchParams<{
+  const {
+    id: tripID,
+    date,
+    timeOfDay,
+  } = useLocalSearchParams<{
     id: string;
     date?: string;
     timeOfDay?: string;

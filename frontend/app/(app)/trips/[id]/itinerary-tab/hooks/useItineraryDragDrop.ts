@@ -131,11 +131,7 @@ export function useItineraryDragDrop({
           const chipStart = chipIndex * CHIP_TOTAL_WIDTH;
           const withinChip = relX - chipStart < CHIP_SIZE;
 
-          if (
-            chipIndex >= 0 &&
-            chipIndex < dateStrings.length &&
-            withinChip
-          ) {
+          if (chipIndex >= 0 && chipIndex < dateStrings.length && withinChip) {
             return { type: "date", date: dateStrings[chipIndex]! };
           }
         }
@@ -157,15 +153,12 @@ export function useItineraryDragDrop({
     [dateStrings],
   );
 
-  const updateHoveredTarget = useCallback(
-    (target: DropTarget | null) => {
-      if (!dropTargetsEqual(target, hoveredTargetRef.current)) {
-        hoveredTargetRef.current = target;
-        setHoveredTarget(target);
-      }
-    },
-    [],
-  );
+  const updateHoveredTarget = useCallback((target: DropTarget | null) => {
+    if (!dropTargetsEqual(target, hoveredTargetRef.current)) {
+      hoveredTargetRef.current = target;
+      setHoveredTarget(target);
+    }
+  }, []);
 
   const startAutoScroll = () => {
     if (autoScrollIntervalRef.current) return;
@@ -177,11 +170,7 @@ export function useItineraryDragDrop({
 
       // ── Vertical auto-scroll (parent ScrollView) ──
       const container = parentContainerLayoutRef.current;
-      if (
-        container &&
-        parentScrollViewRef?.current &&
-        parentScrollOffset
-      ) {
+      if (container && parentScrollViewRef?.current && parentScrollOffset) {
         const topEdge = container.y + AUTO_SCROLL_EDGE;
         const bottomEdge = container.y + container.height - AUTO_SCROLL_EDGE;
 
@@ -211,9 +200,11 @@ export function useItineraryDragDrop({
 
       // ── Horizontal auto-scroll (date selector) ──
       const sv = scrollViewLayoutRef.current;
-      const adjustedAbsY = absY + (parentScrollOffset
-        ? parentScrollOffset.current - dragStartScrollOffsetRef.current
-        : 0);
+      const adjustedAbsY =
+        absY +
+        (parentScrollOffset
+          ? parentScrollOffset.current - dragStartScrollOffsetRef.current
+          : 0);
 
       if (sv && dateSelectorRef.current) {
         const isNearSelector =

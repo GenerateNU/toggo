@@ -63,9 +63,7 @@ export function ItineraryTabContent({
         endDate={endDateKey}
         selectedDate={selectedDate}
         onSelectDate={setSelectedDate}
-        hoveredDate={
-          hoveredTarget?.type === "date" ? hoveredTarget.date : null
-        }
+        hoveredDate={hoveredTarget?.type === "date" ? hoveredTarget.date : null}
       />
 
       {isLoading && (
@@ -99,7 +97,9 @@ export function ItineraryTabContent({
                 activities={sectionActivities}
                 onActivityPress={handleActivityPress}
                 onAddActivity={() => handleAddActivity(section.key)}
-                hideAddButton={isSelectedDatePast || section.key === "unscheduled"}
+                hideAddButton={
+                  isSelectedDatePast || section.key === "unscheduled"
+                }
                 draggable={!isSelectedDatePast}
                 isDropHovered={
                   hoveredTarget?.type === "time" &&

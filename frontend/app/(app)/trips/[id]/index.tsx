@@ -193,7 +193,13 @@ export default function Trip() {
               </Box>
             </Box>
 
-            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl" backgroundColor="gray50" style={styles.tabContent}>
+            <Box
+              paddingHorizontal="sm"
+              paddingTop="sm"
+              paddingBottom="xl"
+              backgroundColor="gray50"
+              style={styles.tabContent}
+            >
               {activeTab === "new" &&
                 trip?.pitch_deadline &&
                 new Date(trip.pitch_deadline) > new Date() && (

@@ -123,9 +123,7 @@ export function ItineraryActivityCard({
           )}
         </Box>
 
-        {draggable && (
-          <GripVertical size={16} color={ColorPalette.gray300} />
-        )}
+        {draggable && <GripVertical size={16} color={ColorPalette.gray300} />}
       </Animated.View>
     </GestureDetector>
   );

@@ -35,9 +35,7 @@ export const ItineraryDateSelector = forwardRef<
   const viewportWidthRef = useRef(0);
 
   useEffect(() => {
-    const selectedIndex = dates.findIndex(
-      (d) => d.dateString === selectedDate,
-    );
+    const selectedIndex = dates.findIndex((d) => d.dateString === selectedDate);
     if (selectedIndex > 0 && scrollViewRef.current) {
       const scrollX = selectedIndex * CHIP_TOTAL_WIDTH - Layout.spacing.sm;
       scrollViewRef.current.scrollTo({
@@ -88,7 +86,11 @@ export const ItineraryDateSelector = forwardRef<
   );
 
   return (
-    <View ref={scrollViewNativeRef} collapsable={false} style={styles.container}>
+    <View
+      ref={scrollViewNativeRef}
+      collapsable={false}
+      style={styles.container}
+    >
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -101,8 +103,7 @@ export const ItineraryDateSelector = forwardRef<
       >
         {dates.map((item) => {
           const isSelected = item.dateString === selectedDate;
-          const isHovered =
-            !isSelected && item.dateString === hoveredDate;
+          const isHovered = !isSelected && item.dateString === hoveredDate;
           const chipState = isHovered
             ? CHIP_STATES.hovered
             : isSelected

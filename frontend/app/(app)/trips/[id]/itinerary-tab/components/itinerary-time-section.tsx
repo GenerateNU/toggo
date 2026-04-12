@@ -58,11 +58,8 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
           </Text>
         </Box>
 
-        <Box
-          gap="sm"
-          overflow="visible"
-        >
-          {activities.length > 0 && (
+        <Box gap="sm" overflow="visible">
+          {activities.length > 0 &&
             activities.map((activity) => (
               <ItineraryActivityCard
                 key={activity.id}
@@ -74,8 +71,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
                 onDragEnd={handleCardDragEnd}
                 dragScrollCompensationY={dragScrollCompensationY}
               />
-            ))
-          )}
+            ))}
 
           {!hideAddButton && (
             <Pressable
