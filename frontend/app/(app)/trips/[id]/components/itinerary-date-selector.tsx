@@ -140,7 +140,7 @@ export const ItineraryDateSelector = forwardRef<
   );
 
   return (
-    <View ref={scrollViewNativeRef} collapsable={false}>
+    <View ref={scrollViewNativeRef} collapsable={false} style={styles.container}>
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -219,9 +219,13 @@ export const ItineraryDateSelector = forwardRef<
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: -Layout.spacing.sm,
+  },
   content: {
     flexDirection: "row",
     gap: Layout.spacing.xs,
+    paddingHorizontal: Layout.spacing.sm,
   },
   chipSelected: {
     backgroundColor: ColorPalette.brand500,
