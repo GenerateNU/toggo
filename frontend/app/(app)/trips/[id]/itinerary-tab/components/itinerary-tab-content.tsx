@@ -1,9 +1,8 @@
-import { Box, ErrorState, Text } from "@/design-system";
+import { Box, ErrorState, Spinner } from "@/design-system";
 import { TIME_SECTIONS } from "../constants";
 import { useItineraryActivities } from "../hooks/useItineraryActivities";
 import { useItineraryDragDrop } from "../hooks/useItineraryDragDrop";
 import type { GroupedActivities, ItineraryTabContentProps } from "../types";
-import ActivityCardSkeleton from "./activity-card-skeleton";
 import ItineraryDateSelector from "./itinerary-date-selector";
 import ItineraryEmptyState from "./itinerary-empty-state";
 import ItineraryTimeSection from "./itinerary-time-section";
@@ -70,26 +69,8 @@ export function ItineraryTabContent({
       />
 
       {isLoading && (
-        <Box gap="xs">
-          {TIME_SECTIONS.map((section) => (
-            <Box key={section.key}>
-              <Box paddingVertical="xs">
-                <Text variant="bodySmMedium" color="gray950">
-                  {section.title}
-                </Text>
-              </Box>
-              <Box gap="xs" padding="xs">
-                {section.key === "unscheduled" || section.key === "morning" ? (
-                  <>
-                    <ActivityCardSkeleton />
-                    <ActivityCardSkeleton />
-                  </>
-                ) : (
-                  <ActivityCardSkeleton />
-                )}
-              </Box>
-            </Box>
-          ))}
+        <Box alignItems="center" paddingVertical="xl">
+          <Spinner />
         </Box>
       )}
 
