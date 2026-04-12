@@ -63,12 +63,18 @@ export function useItineraryActivities({
     [tripID],
   );
 
-  const handleAddActivity = useCallback(() => {
-    router.push({
-      pathname: `/trips/${tripID}/activities/creation` as any,
-      params: { date: selectedDate },
-    });
-  }, [tripID, selectedDate]);
+  const handleAddActivity = useCallback(
+    (timeOfDay?: string) => {
+      router.push({
+        pathname: `/trips/${tripID}/activities/creation` as any,
+        params: {
+          date: selectedDate,
+          ...(timeOfDay ? { timeOfDay } : {}),
+        },
+      });
+    },
+    [tripID, selectedDate],
+  );
 
   const dateStrings = useMemo(() => {
     if (!startDateKey || !endDateKey) return [];

@@ -25,7 +25,7 @@ export const VERTICAL_AUTO_SCROLL_SPEED = 8;
 // ─── Date Selector ───────────────────────────────────────────────────────────
 
 export const CHIP_SIZE = 68;
-export const CHIP_TOTAL_WIDTH = CHIP_SIZE + Layout.spacing.xs;
+export const CHIP_TOTAL_WIDTH = CHIP_SIZE + Layout.spacing.sm;
 
 // ─── Activity Card ───────────────────────────────────────────────────────────
 

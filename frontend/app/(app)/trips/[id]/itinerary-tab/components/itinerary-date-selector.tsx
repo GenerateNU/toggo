@@ -31,6 +31,8 @@ export const ItineraryDateSelector = forwardRef<
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollViewNativeRef = useRef<View>(null);
   const scrollOffsetRef = useRef(0);
+  const contentWidthRef = useRef(0);
+  const viewportWidthRef = useRef(0);
 
   useEffect(() => {
     const selectedIndex = dates.findIndex(
@@ -54,7 +56,15 @@ export const ItineraryDateSelector = forwardRef<
       }),
     getScrollOffset: () => scrollOffsetRef.current,
     scrollBy: (dx: number) => {
-      const newOffset = Math.max(0, scrollOffsetRef.current + dx);
+      const maxOffset = Math.max(
+        0,
+        contentWidthRef.current - viewportWidthRef.current,
+      );
+      const newOffset = Math.min(
+        maxOffset,
+        Math.max(0, scrollOffsetRef.current + dx),
+      );
+      scrollOffsetRef.current = newOffset;
       scrollViewRef.current?.scrollTo({ x: newOffset, animated: false });
     },
   }));
@@ -62,6 +72,17 @@ export const ItineraryDateSelector = forwardRef<
   const handleScroll = useCallback(
     (e: { nativeEvent: { contentOffset: { x: number } } }) => {
       scrollOffsetRef.current = e.nativeEvent.contentOffset.x;
+    },
+    [],
+  );
+
+  const handleContentSizeChange = useCallback((w: number) => {
+    contentWidthRef.current = w;
+  }, []);
+
+  const handleLayout = useCallback(
+    (e: { nativeEvent: { layout: { width: number } } }) => {
+      viewportWidthRef.current = e.nativeEvent.layout.width;
     },
     [],
   );
@@ -74,6 +95,8 @@ export const ItineraryDateSelector = forwardRef<
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.content}
         onScroll={handleScroll}
+        onContentSizeChange={handleContentSizeChange}
+        onLayout={handleLayout}
         scrollEventThrottle={16}
       >
         {dates.map((item) => {

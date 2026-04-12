@@ -98,7 +98,7 @@ export function ItineraryTabContent({
                 title={section.title}
                 activities={sectionActivities}
                 onActivityPress={handleActivityPress}
-                onAddActivity={handleAddActivity}
+                onAddActivity={() => handleAddActivity(section.key)}
                 hideAddButton={isSelectedDatePast || section.key === "unscheduled"}
                 draggable={!isSelectedDatePast}
                 isDropHovered={

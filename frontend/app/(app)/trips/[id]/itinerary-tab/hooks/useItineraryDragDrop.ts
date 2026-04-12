@@ -173,6 +173,7 @@ export function useItineraryDragDrop({
     autoScrollIntervalRef.current = setInterval(() => {
       const absX = lastAbsXRef.current;
       const absY = lastAbsYRef.current;
+      let scrolled = false;
 
       // ── Vertical auto-scroll (parent ScrollView) ──
       const container = parentContainerLayoutRef.current;
@@ -193,6 +194,7 @@ export function useItineraryDragDrop({
             y: newOffset,
             animated: false,
           });
+          scrolled = true;
         } else if (absY > bottomEdge) {
           const newOffset =
             parentScrollOffset.current + VERTICAL_AUTO_SCROLL_SPEED;
@@ -200,6 +202,7 @@ export function useItineraryDragDrop({
             y: newOffset,
             animated: false,
           });
+          scrolled = true;
         }
 
         dragScrollCompensationY.value =
@@ -208,29 +211,27 @@ export function useItineraryDragDrop({
 
       // ── Horizontal auto-scroll (date selector) ──
       const sv = scrollViewLayoutRef.current;
-      if (!sv || !dateSelectorRef.current) return;
-
       const adjustedAbsY = absY + (parentScrollOffset
         ? parentScrollOffset.current - dragStartScrollOffsetRef.current
         : 0);
 
-      if (
-        adjustedAbsY < sv.y - AUTO_SCROLL_EDGE ||
-        adjustedAbsY > sv.y + sv.height + AUTO_SCROLL_EDGE
-      ) {
-        return;
-      }
+      if (sv && dateSelectorRef.current) {
+        const isNearSelector =
+          adjustedAbsY >= sv.y - AUTO_SCROLL_EDGE &&
+          adjustedAbsY <= sv.y + sv.height + AUTO_SCROLL_EDGE;
 
-      const leftEdge = sv.x + AUTO_SCROLL_EDGE;
-      const rightEdge = sv.x + sv.width - AUTO_SCROLL_EDGE;
+        if (isNearSelector) {
+          const leftEdge = sv.x + AUTO_SCROLL_EDGE;
+          const rightEdge = sv.x + sv.width - AUTO_SCROLL_EDGE;
 
-      let scrolled = false;
-      if (absX < leftEdge && absX > sv.x) {
-        dateSelectorRef.current.scrollBy(-AUTO_SCROLL_SPEED);
-        scrolled = true;
-      } else if (absX > rightEdge && absX < sv.x + sv.width) {
-        dateSelectorRef.current.scrollBy(AUTO_SCROLL_SPEED);
-        scrolled = true;
+          if (absX < leftEdge && absX > sv.x) {
+            dateSelectorRef.current.scrollBy(-AUTO_SCROLL_SPEED);
+            scrolled = true;
+          } else if (absX > rightEdge && absX < sv.x + sv.width) {
+            dateSelectorRef.current.scrollBy(AUTO_SCROLL_SPEED);
+            scrolled = true;
+          }
+        }
       }
 
       if (scrolled) {
