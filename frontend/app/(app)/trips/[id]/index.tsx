@@ -43,6 +43,9 @@ export default function Trip() {
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
+  const parentScrollViewRef = useRef<ScrollView>(null);
+  const parentScrollOffsetRef = useRef(0);
+  const cardContainerRef = useRef<View>(null);
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
@@ -160,10 +163,15 @@ export default function Trip() {
           </Pressable>
         </Box>
 
-        <Box style={styles.card}>
+        <View ref={cardContainerRef} style={styles.card}>
           <ScrollView
+            ref={parentScrollViewRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
+            onScroll={(e) => {
+              parentScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
           >
             <TripMetadata
               tripName={trip?.name}
@@ -188,12 +196,15 @@ export default function Trip() {
                   tripID={tripID}
                   startDate={trip?.start_date}
                   endDate={trip?.end_date}
+                  parentScrollViewRef={parentScrollViewRef}
+                  parentScrollOffset={parentScrollOffsetRef}
+                  parentContainerRef={cardContainerRef}
                 />
               )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             </Box>
           </ScrollView>
-        </Box>
+        </View>
       </SafeAreaView>
 
       <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />

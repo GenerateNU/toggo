@@ -1,86 +1,95 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { ChevronDown, Plus } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { LayoutAnimation, Platform, Pressable, StyleSheet, UIManager } from "react-native";
+import { Plus } from "lucide-react-native";
+import React, { forwardRef, useCallback, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 import ItineraryActivityCard from "./itinerary-activity-card";
-
-// ─── Enable LayoutAnimation on Android ───────────────────────────────────────
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ItineraryTimeSectionProps = {
   title: string;
   activities: ModelsActivityAPIResponse[];
-  defaultExpanded?: boolean;
   onActivityPress: (activityID: string) => void;
   onAddActivity: () => void;
   hideAddButton?: boolean;
+  isDropHovered?: boolean;
+  onDragStart?: (activityId: string) => void;
+  onDragMove?: (absoluteX: number, absoluteY: number) => void;
+  onDragEnd?: () => void;
+  dragScrollCompensationY?: SharedValue<number>;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function ItineraryTimeSection({
-  title,
-  activities,
-  defaultExpanded = false,
-  onActivityPress,
-  onAddActivity,
-  hideAddButton = false,
-}: ItineraryTimeSectionProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
+  function ItineraryTimeSection(
+    {
+      title,
+      activities,
+      onActivityPress,
+      onAddActivity,
+      hideAddButton = false,
+      isDropHovered = false,
+      onDragStart,
+      onDragMove,
+      onDragEnd,
+      dragScrollCompensationY,
+    },
+    ref,
+  ) {
+    const [hasDraggingCard, setHasDraggingCard] = useState(false);
 
-  const toggleExpanded = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded((prev) => !prev);
-  }, []);
+    const handleCardDragStart = useCallback(
+      (activityId: string) => {
+        setHasDraggingCard(true);
+        onDragStart?.(activityId);
+      },
+      [onDragStart],
+    );
 
-  return (
-    <Box>
-      <Pressable
-        onPress={toggleExpanded}
-        accessibilityRole="button"
-        accessibilityLabel={`${title} section, ${activities.length} activities`}
-        accessibilityState={{ expanded }}
-        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    const handleCardDragEnd = useCallback(() => {
+      setHasDraggingCard(false);
+      onDragEnd?.();
+    }, [onDragEnd]);
+
+    return (
+      <View
+        ref={ref}
+        collapsable={false}
+        style={hasDraggingCard ? styles.elevated : undefined}
       >
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          paddingVertical="xs"
-        >
+        <Box paddingVertical="xs">
           <Text variant="bodySmMedium" color="gray950">
             {title}
           </Text>
-          <Box
-            style={{
-              transform: [{ rotate: expanded ? "180deg" : "0deg" }],
-            }}
-          >
-            <ChevronDown size={18} color={ColorPalette.gray500} />
-          </Box>
         </Box>
-      </Pressable>
 
-      {expanded && (
-        <Box gap="xs" paddingTop="xxs">
+        <Box
+          gap="xs"
+          padding="xs"
+          borderRadius="md"
+          borderWidth={2}
+          style={
+            isDropHovered
+              ? styles.dropHighlight
+              : styles.dropDefault
+          }
+        >
           {activities.length > 0 ? (
             activities.map((activity) => (
               <ItineraryActivityCard
                 key={activity.id}
                 activity={activity}
                 onPress={() => onActivityPress(activity.id ?? "")}
+                onDragStart={handleCardDragStart}
+                onDragMove={onDragMove}
+                onDragEnd={handleCardDragEnd}
+                dragScrollCompensationY={dragScrollCompensationY}
               />
             ))
           ) : (
@@ -112,10 +121,10 @@ export function ItineraryTimeSection({
             </Pressable>
           )}
         </Box>
-      )}
-    </Box>
-  );
-}
+      </View>
+    );
+  },
+);
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -130,6 +139,16 @@ const styles = StyleSheet.create({
   },
   addButtonPressed: {
     opacity: 0.6,
+  },
+  elevated: {
+    zIndex: 100,
+  },
+  dropDefault: {
+    borderColor: "transparent",
+  },
+  dropHighlight: {
+    borderColor: ColorPalette.blue500,
+    backgroundColor: ColorPalette.blue50,
   },
 });
 
