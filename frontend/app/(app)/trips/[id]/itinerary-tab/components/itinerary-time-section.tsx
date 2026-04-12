@@ -48,15 +48,16 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
         style={hasDraggingCard ? styles.elevated : undefined}
       >
         <Box paddingVertical="xs">
-          <Text variant="bodySmMedium" color="gray950">
+          <Text variant="bodyMedium" color="gray500">
             {title}
           </Text>
         </Box>
 
         <Box
-          gap="xs"
+          gap="sm"
           padding="xs"
           borderRadius="md"
+          overflow="visible"
           borderWidth={2}
           style={
             isDropHovered
@@ -64,7 +65,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
               : styles.dropDefault
           }
         >
-          {activities.length > 0 ? (
+          {activities.length > 0 && (
             activities.map((activity) => (
               <ItineraryActivityCard
                 key={activity.id}
@@ -76,19 +77,6 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
                 dragScrollCompensationY={dragScrollCompensationY}
               />
             ))
-          ) : (
-            <Box
-              alignItems="center"
-              paddingVertical="sm"
-              borderWidth={1}
-              borderColor="gray100"
-              borderRadius="md"
-              borderStyle="dashed"
-            >
-              <Text variant="bodyXsDefault" color="gray400">
-                No activities scheduled
-              </Text>
-            </Box>
           )}
 
           {!hideAddButton && (
@@ -118,8 +106,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: Layout.spacing.xs,
     borderWidth: 1,
-    borderColor: ColorPalette.gray200,
+    borderColor: ColorPalette.gray500,
     borderRadius: CornerRadius.xl,
+    borderStyle: "dashed",
   },
   addButtonPressed: {
     opacity: 0.6,
