@@ -147,7 +147,7 @@ export default function Trip() {
           paddingHorizontal="sm"
           paddingVertical="xs"
         >
-          <BackButton />
+          <BackButton hasBackground />
 
           <Pressable
             onPress={() =>
@@ -191,7 +191,7 @@ export default function Trip() {
               <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
             </Box>
 
-            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
+            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl" backgroundColor="gray50" marginTop="sm">
               {activeTab === "new" &&
                 trip?.pitch_deadline &&
                 new Date(trip.pitch_deadline) > new Date() && (
@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: CornerRadius.xl,
-    borderTopRightRadius: CornerRadius.xl,
+    borderTopLeftRadius: CornerRadius.xxl,
+    borderTopRightRadius: CornerRadius.xxl,
     overflow: "hidden",
     marginTop: CARD_TOP_OFFSET,
   },
