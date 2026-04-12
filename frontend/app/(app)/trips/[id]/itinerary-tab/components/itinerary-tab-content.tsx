@@ -45,6 +45,7 @@ export function ItineraryTabContent({
   } = useItineraryDragDrop({
     tripID,
     activities,
+    selectedDate,
     dateStrings,
     parentScrollViewRef,
     parentScrollOffset,

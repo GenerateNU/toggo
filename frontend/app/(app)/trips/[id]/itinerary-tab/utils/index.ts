@@ -1,53 +1,11 @@
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
-import { parseLocalDate } from "@/utils/date-helpers";
-import type { DateItem, DropTarget, GroupedActivities } from "../types";
+import type { DropTarget, GroupedActivities } from "../types";
 
-// ─── Intl Formatters ─────────────────────────────────────────────────────────
-
-const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
-const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
-
-// ─── Date Helpers ────────────────────────────────────────────────────────────
-
-export function toDateKey(iso: string): string {
-  return iso.split("T")[0]!;
-}
-
-export function formatDateLabel(dateStr: string): string {
-  const d = parseLocalDate(dateStr);
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-export function generateDateRange(
-  startISO: string,
-  endISO: string,
-): DateItem[] {
-  const start = parseLocalDate(startISO);
-  const end = parseLocalDate(endISO);
-  const dates: DateItem[] = [];
-
-  const current = new Date(start);
-  while (current <= end) {
-    const year = current.getFullYear();
-    const month = String(current.getMonth() + 1).padStart(2, "0");
-    const day = String(current.getDate()).padStart(2, "0");
-
-    dates.push({
-      dateString: `${year}-${month}-${day}`,
-      dayAbbrev: dayFormatter.format(current).toUpperCase(),
-      dayNumber: current.getDate(),
-      monthAbbrev: monthFormatter.format(current).toUpperCase(),
-    });
-
-    current.setDate(current.getDate() + 1);
-  }
-
-  return dates;
-}
+export {
+  formatDateLabel,
+  generateDateRange,
+  toDateKey,
+} from "@/utils/date-helpers";
 
 // ─── Activity Helpers ────────────────────────────────────────────────────────
 

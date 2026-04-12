@@ -22,6 +22,7 @@ import { dropTargetsEqual, formatDateLabel } from "../utils";
 type UseItineraryDragDropParams = {
   tripID: string;
   activities: ModelsActivityAPIResponse[];
+  selectedDate: string;
   dateStrings: string[];
   parentScrollViewRef?: React.RefObject<ScrollView | null>;
   parentScrollOffset?: React.RefObject<number>;
@@ -31,6 +32,7 @@ type UseItineraryDragDropParams = {
 export function useItineraryDragDrop({
   tripID,
   activities,
+  selectedDate,
   dateStrings,
   parentScrollViewRef,
   parentScrollOffset,
@@ -47,6 +49,7 @@ export function useItineraryDragDrop({
 
   const draggedActivityIdRef = useRef<string | null>(null);
   const draggedActivityNameRef = useRef<string | null>(null);
+  const draggedActivityTimeRef = useRef<string | null>(null);
   const hoveredTargetRef = useRef<DropTarget | null>(null);
   const scrollViewLayoutRef = useRef<{
     x: number;
@@ -248,6 +251,7 @@ export function useItineraryDragDrop({
     draggedActivityIdRef.current = activityId;
     const activity = activities.find((a) => a.id === activityId);
     draggedActivityNameRef.current = activity?.name ?? "Activity";
+    draggedActivityTimeRef.current = activity?.time_of_day ?? null;
     dragStartScrollOffsetRef.current = parentScrollOffset?.current ?? 0;
     await measureDropZones();
     startAutoScroll();
@@ -280,12 +284,20 @@ export function useItineraryDragDrop({
     const activityName = draggedActivityNameRef.current ?? "Activity";
     const target = hoveredTargetRef.current;
 
+    const activityTime = draggedActivityTimeRef.current;
+
     draggedActivityIdRef.current = null;
     draggedActivityNameRef.current = null;
+    draggedActivityTimeRef.current = null;
     hoveredTargetRef.current = null;
     setHoveredTarget(null);
 
     if (!activityId || !target) return;
+
+    // Skip no-op drops: same time section or same date
+    const currentTimeKey = activityTime || "unscheduled";
+    if (target.type === "time" && target.key === currentTimeKey) return;
+    if (target.type === "date" && target.date === selectedDate) return;
 
     try {
       if (target.type === "time") {

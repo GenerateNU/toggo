@@ -26,13 +26,6 @@ export type DropTarget =
 
 // ─── Date Selector ───────────────────────────────────────────────────────────
 
-export type DateItem = {
-  dateString: string;
-  dayAbbrev: string;
-  dayNumber: number;
-  monthAbbrev: string;
-};
-
 export type ItineraryDateSelectorProps = {
   startDate: string;
   endDate: string;

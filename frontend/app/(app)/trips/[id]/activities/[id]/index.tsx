@@ -2,6 +2,7 @@ import { useGetActivity } from "@/api/activities";
 import { Box, Screen, Text } from "@/design-system";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
+import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { useLocalSearchParams } from "expo-router";
 import { Image, ScrollView, StyleSheet } from "react-native";
 
@@ -38,7 +39,7 @@ export default function ActivityDetail() {
   });
 
   const activity = isDummy ? DUMMY_ACTIVITY : fetchedActivity;
-  const thumbnailUrl = activity?.thumbnail_url ?? activity?.media_url;
+  const thumbnailUrl = getActivityThumbnailUrl(activity);
 
   return (
     <Screen>
