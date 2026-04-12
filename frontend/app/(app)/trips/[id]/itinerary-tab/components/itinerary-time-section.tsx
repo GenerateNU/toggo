@@ -52,7 +52,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
           isDropHovered ? styles.dropHighlight : styles.dropDefault,
         ]}
       >
-        <Box paddingBottom="xxs">
+        <Box paddingBottom="sm">
           <Text variant="bodyMedium" color="gray500">
             {title}
           </Text>
