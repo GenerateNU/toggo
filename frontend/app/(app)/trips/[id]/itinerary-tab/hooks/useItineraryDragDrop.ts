@@ -160,7 +160,7 @@ export function useItineraryDragDrop({
     }
   }, []);
 
-  const startAutoScroll = () => {
+  const startAutoScroll = useCallback(() => {
     if (autoScrollIntervalRef.current) return;
 
     autoScrollIntervalRef.current = setInterval(() => {
@@ -230,7 +230,13 @@ export function useItineraryDragDrop({
         updateHoveredTarget(target);
       }
     }, 16);
-  };
+  }, [
+    parentScrollViewRef,
+    parentScrollOffset,
+    dragScrollCompensationY,
+    findDropTarget,
+    updateHoveredTarget,
+  ]);
 
   const stopAutoScroll = useCallback(() => {
     if (autoScrollIntervalRef.current) {
