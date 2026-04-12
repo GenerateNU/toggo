@@ -76,7 +76,7 @@ func (r *pitchRepository) FindByIDAndTripID(ctx context.Context, id, tripID uuid
 	err := r.db.NewSelect().
 		TableExpr("trip_pitches AS tp").
 		ColumnExpr("tp.id, tp.trip_id, tp.user_id, tp.title, tp.description, tp.audio_s3_key, tp.duration, tp.created_at, tp.updated_at").
-		ColumnExpr("u.username").
+		ColumnExpr("u.name, u.username").
 		ColumnExpr("pfp.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = tp.user_id").
 		Join("LEFT JOIN images AS pfp ON u.profile_picture IS NOT NULL AND pfp.image_id = u.profile_picture AND pfp.size = ? AND pfp.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).
@@ -96,7 +96,7 @@ func (r *pitchRepository) FindByTripIDWithCursor(ctx context.Context, tripID uui
 	query := r.db.NewSelect().
 		TableExpr("trip_pitches AS tp").
 		ColumnExpr("tp.id, tp.trip_id, tp.user_id, tp.title, tp.description, tp.audio_s3_key, tp.duration, tp.created_at, tp.updated_at").
-		ColumnExpr("u.username").
+		ColumnExpr("u.name, u.username").
 		ColumnExpr("pfp.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = tp.user_id").
 		Join("LEFT JOIN images AS pfp ON u.profile_picture IS NOT NULL AND pfp.image_id = u.profile_picture AND pfp.size = ? AND pfp.status = ?", models.ImageSizeSmall, models.UploadStatusConfirmed).

@@ -4,10 +4,22 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { Typography } from "@/design-system/tokens/typography";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
-import { CheckCircle, ImagePlus, Link, Mic, X } from "lucide-react-native";
-import { useEffect, useRef } from "react";
+import { ImagePlus, Link, Mic, X } from "lucide-react-native";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, TextInput } from "react-native";
+import { PitchContentSections } from "../../components/pitch-content-sections";
 import type { RecordingResult } from "./audio-pitch-sheet";
+
+const DESCRIPTION_BASE_HEIGHT = Typography.bodyXsDefault.lineHeight;
+
+function getLinkDomain(url: string): string {
+  try {
+    const domain = new URL(url).hostname;
+    return domain.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
 
 interface CreatePitchFormSheetProps {
   visible: boolean;
@@ -29,6 +41,13 @@ interface CreatePitchFormSheetProps {
   onRemoveLink: (index: number) => void;
   onSubmit: () => void;
   onCancel: () => void;
+  formTitle?: string;
+  submitLabel?: string;
+  cancelLabel?: string;
+  requireRecordingForSubmit?: boolean;
+  locationEditable?: boolean;
+  imageEditable?: boolean;
+  audioEditable?: boolean;
 }
 
 export function CreatePitchFormSheet({
@@ -51,11 +70,20 @@ export function CreatePitchFormSheet({
   onRemoveLink,
   onSubmit,
   onCancel,
+  formTitle = "Add new pitch",
+  submitLabel = "Submit pitch",
+  cancelLabel = "Cancel",
+  requireRecordingForSubmit = true,
+  locationEditable = true,
+  imageEditable = true,
+  audioEditable = true,
 }: CreatePitchFormSheetProps) {
   const sheetRef = useRef<BottomSheetMethods>(null);
   const isProgrammaticCloseRef = useRef(false);
-  const titleDraftRef = useRef(title);
-  const descriptionDraftRef = useRef(description);
+  const [descriptionValue, setDescriptionValue] = useState(description);
+  const [descriptionHeight, setDescriptionHeight] = useState<number>(
+    DESCRIPTION_BASE_HEIGHT,
+  );
 
   useEffect(() => {
     if (visible) {
@@ -67,7 +95,12 @@ export function CreatePitchFormSheet({
     }
   }, [visible]);
 
+  useEffect(() => {
+    setDescriptionValue(description);
+  }, [description]);
+
   const handleClose = () => {
+    setDescriptionHeight(DESCRIPTION_BASE_HEIGHT);
     if (isProgrammaticCloseRef.current) {
       isProgrammaticCloseRef.current = false;
       return;
@@ -76,16 +109,17 @@ export function CreatePitchFormSheet({
   };
 
   const handleSubmit = () => {
-    onChangeTitle(titleDraftRef.current);
-    onChangeDescription(descriptionDraftRef.current);
+    onChangeTitle(title);
+    onChangeDescription(descriptionValue);
     onSubmit();
   };
 
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["88%"]}
+      snapPoints={["92%"]}
       initialIndex={-1}
+      hideHandle={true}
       onClose={handleClose}
       footer={
         <Box
@@ -101,15 +135,15 @@ export function CreatePitchFormSheet({
         >
           <Button
             layout="textOnly"
-            label="Submit pitch"
+            label={submitLabel}
             variant="Primary"
             onPress={handleSubmit}
             loading={isSubmitting}
-            disabled={isSubmitting || !recording}
+            disabled={isSubmitting || (requireRecordingForSubmit && !recording)}
           />
           <Button
             layout="textOnly"
-            label="Cancel"
+            label={cancelLabel}
             variant="Red"
             onPress={onCancel}
             disabled={isSubmitting}
@@ -119,15 +153,15 @@ export function CreatePitchFormSheet({
     >
       <Box backgroundColor="white" paddingHorizontal="sm" paddingTop="sm">
         <Text
-          variant="bodyMedium"
+          variant="headingSm"
           color="gray900"
           textAlign="center"
           marginBottom="sm"
         >
-          Add new pitch
+          {formTitle}
         </Text>
 
-        <Pressable onPress={onPickImage}>
+        <Pressable onPress={imageEditable ? onPickImage : undefined}>
           <Box style={styles.heroImageBox}>
             {imageUri ? (
               <>
@@ -136,137 +170,143 @@ export function CreatePitchFormSheet({
                   style={StyleSheet.absoluteFillObject}
                   contentFit="cover"
                 />
-                <Pressable
-                  onPress={onRemoveImage}
-                  style={styles.photoRemoveBtn}
-                  hitSlop={8}
-                >
-                  <X size={14} color={ColorPalette.white} />
-                </Pressable>
+                {imageEditable ? (
+                  <Pressable
+                    onPress={onRemoveImage}
+                    style={styles.photoRemoveBtn}
+                    hitSlop={8}
+                  >
+                    <X size={14} color={ColorPalette.white} />
+                  </Pressable>
+                ) : null}
               </>
             ) : (
-              <ImagePlus size={28} color={ColorPalette.gray500} />
+              <Box alignItems="center" gap="xs">
+                <ImagePlus size={28} color={ColorPalette.gray500} />
+                <Text variant="bodyXsDefault" color="gray500">
+                  Add media
+                </Text>
+              </Box>
             )}
           </Box>
         </Pressable>
 
         <Box paddingTop="sm" gap="xs">
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between"
+          <Pressable
+            onPress={locationEditable ? onChangeLocation : undefined}
+            hitSlop={8}
           >
-            <Text variant="bodyXsDefault" color="gray500">
-              {selectedLocationLabel}
-            </Text>
-            <Pressable onPress={onChangeLocation}>
-              <Text variant="bodyXsMedium" color="brand500">
-                Change location
+            <Box flexDirection="row" alignItems="center" gap="xxs">
+              <Text
+                variant="headingSm"
+                color="gray900"
+                numberOfLines={1}
+                style={{ flex: 1 }}
+              >
+                {title || selectedLocationLabel}
               </Text>
-            </Pressable>
-          </Box>
+            </Box>
+          </Pressable>
 
           <TextInput
-            defaultValue={title}
+            value={descriptionValue}
             onChangeText={(value) => {
-              titleDraftRef.current = value;
+              setDescriptionValue(value);
+              onChangeDescription(value);
             }}
-            onBlur={() => onChangeTitle(titleDraftRef.current)}
-            placeholder="Add title"
-            placeholderTextColor={ColorPalette.gray400}
-            style={styles.titleInput}
-          />
-
-          <TextInput
-            defaultValue={description}
-            onChangeText={(value) => {
-              descriptionDraftRef.current = value;
+            onContentSizeChange={(event) => {
+              const contentHeight = event.nativeEvent.contentSize.height;
+              const nextHeight = Math.max(
+                DESCRIPTION_BASE_HEIGHT,
+                Math.ceil(contentHeight),
+              );
+              setDescriptionHeight((prevHeight) =>
+                Math.abs(prevHeight - nextHeight) > 1 ? nextHeight : prevHeight,
+              );
             }}
-            onBlur={() => onChangeDescription(descriptionDraftRef.current)}
             placeholder="Add a description"
             placeholderTextColor={ColorPalette.gray400}
             multiline
+            scrollEnabled={false}
             textAlignVertical="top"
-            style={styles.descriptionInput}
+            style={[styles.descriptionInput, { height: descriptionHeight }]}
           />
         </Box>
 
-        <Divider style={{ marginVertical: 6 }} />
+        {!recording || !links.length ? (
+          <Box>
+            {!recording && audioEditable && (
+              <Divider
+                color={ColorPalette.gray100}
+                style={{ marginTop: 4, marginBottom: 6 }}
+              />
+            )}
 
-        <Pressable onPress={onOpenAudio}>
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            gap="sm"
-            paddingVertical="xs"
-          >
-            <Mic
-              size={18}
-              color={recording ? ColorPalette.gray950 : ColorPalette.gray500}
-            />
-            <Text
-              variant="bodySmMedium"
-              color={recording ? "gray950" : "gray500"}
-              style={{ flex: 1 }}
-            >
-              Audio Pitch
-            </Text>
-            {recording ? (
-              <Box flexDirection="row" alignItems="center" gap="xs">
-                <Text variant="bodyXsDefault" color="gray500">
-                  {recording.durationSeconds}s
-                </Text>
-                <CheckCircle size={16} color={ColorPalette.brand500} />
-              </Box>
+            {!recording && audioEditable ? (
+              <Pressable onPress={onOpenAudio}>
+                <Box
+                  flexDirection="row"
+                  alignItems="center"
+                  gap="xs"
+                  paddingVertical="xxs"
+                >
+                  <Box style={styles.actionIconBox}>
+                    <Mic size={16} color={ColorPalette.gray500} />
+                  </Box>
+                  <Text
+                    variant="bodySmMedium"
+                    color="blue500"
+                    style={{ flex: 1 }}
+                  >
+                    Add Audio Pitch
+                  </Text>
+                </Box>
+              </Pressable>
+            ) : null}
+
+            {!links.length ? (
+              <Pressable onPress={onOpenLinks}>
+                <Box
+                  flexDirection="row"
+                  alignItems="center"
+                  gap="xs"
+                  paddingVertical="xxs"
+                >
+                  <Box style={styles.actionIconBox}>
+                    <Link size={16} color={ColorPalette.gray500} />
+                  </Box>
+                  <Text
+                    variant="bodySmMedium"
+                    color="blue500"
+                    style={{ flex: 1 }}
+                  >
+                    Links
+                  </Text>
+                </Box>
+              </Pressable>
             ) : null}
           </Box>
-        </Pressable>
+        ) : null}
 
-        <Pressable onPress={onOpenLinks}>
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            gap="sm"
-            paddingVertical="sm"
-          >
-            <Link size={18} color={ColorPalette.gray500} />
-            <Text variant="bodySmMedium" color="gray500" style={{ flex: 1 }}>
-              Links
-            </Text>
-            {links.length > 0 && (
-              <Text variant="bodyXsDefault" color="gray500">
-                {links.length}
-              </Text>
-            )}
-          </Box>
-        </Pressable>
-
-        {links.map((url, i) => (
-          <Box
-            key={i}
-            flexDirection="row"
-            alignItems="center"
-            gap="xs"
-            paddingVertical="xs"
-            paddingLeft="lg"
-          >
-            <Text
-              variant="bodyXsDefault"
-              color="brand500"
-              numberOfLines={1}
-              style={{ flex: 1 }}
-            >
-              {url}
-            </Text>
-            <Pressable onPress={() => onRemoveLink(i)} hitSlop={8}>
-              <X size={14} color={ColorPalette.gray400} />
-            </Pressable>
-          </Box>
-        ))}
-
-        {links.length > 0 && <Divider />}
-
-        <Box height={140} />
+        {(recording || links.length > 0) && (
+          <PitchContentSections
+            audioUrl={recording?.uri}
+            audioPitchId={
+              recording
+                ? `draft-${selectedLocationLabel}-${recording.durationSeconds}`
+                : undefined
+            }
+            onEditAudio={recording && audioEditable ? onOpenAudio : undefined}
+            links={links.map((url, index) => ({
+              id: `${index}-${url}`,
+              url,
+              title: url,
+              domain: getLinkDomain(url),
+              onRemove: () => onRemoveLink(index),
+            }))}
+            onAddMoreLinks={links.length > 0 ? onOpenLinks : undefined}
+          />
+        )}
       </Box>
     </BottomSheetComponent>
   );
@@ -292,25 +332,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  titleInput: {
-    fontSize: Typography.bodySmStrong.fontSize,
-    fontWeight: "600",
-    color: ColorPalette.gray900,
-    paddingVertical: 0,
-    marginTop: 2,
-  },
   descriptionInput: {
     fontSize: Typography.bodyXsDefault.fontSize,
+    lineHeight: Typography.bodyXsDefault.lineHeight,
     color: ColorPalette.gray700,
-    minHeight: 40,
     paddingVertical: 0,
     marginBottom: 0,
   },
-  cancelBtn: {
+  actionIconBox: {
+    width: 24,
+    height: 24,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: ColorPalette.gray50,
   },
 });

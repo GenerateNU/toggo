@@ -43,7 +43,7 @@ const VARIANT_STYLES = {
       cornerRadius: CornerRadius.sm,
     },
     selected: {
-      backgroundColor: ColorPalette.gray950,
+      backgroundColor: ColorPalette.brand500,
       borderColor: "transparent",
       textVariant: "bodySmMedium",
       cornerRadius: CornerRadius.sm,

@@ -1,8 +1,8 @@
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
-import { Elevation } from "@/design-system/tokens/elevation";
 import { CoreSize } from "@/design-system/tokens/core-size";
+import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
 import React from "react";
 
@@ -12,7 +12,7 @@ const OVERFLOW_BADGE_SIZE = CoreSize.sm;
 export interface AvatarStackMember {
   userId: string;
   profilePhotoUrl?: string | null;
-  username?: string | null;
+  name?: string | null;
 }
 
 export interface AvatarStackProps {
@@ -30,7 +30,7 @@ export const AvatarStack: React.FC<AvatarStackProps> = ({
   const overflow = members.length - maxVisible;
   const [first] = members;
 
-  const summaryPrefix = first?.username ?? "";
+  const summaryPrefix = first?.name ?? "";
   const summarySuffix =
     members.length <= 1
       ? ""
@@ -75,11 +75,11 @@ export const AvatarStack: React.FC<AvatarStackProps> = ({
 
       {showName && members.length > 0 && (
         <Box flexDirection="row" flexShrink={1}>
-          <Text variant="bodySmDefault" color="gray600" numberOfLines={1}>
+          <Text variant="bodyMedium" color="gray600" numberOfLines={1}>
             {summaryPrefix}
           </Text>
           {summarySuffix ? (
-            <Text variant="bodySmDefault" color="gray600" numberOfLines={1}>
+            <Text variant="bodyMedium" color="gray600" numberOfLines={1}>
               {summarySuffix}
             </Text>
           ) : null}

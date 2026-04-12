@@ -11,6 +11,7 @@
       "x-readme-ref-name": "models.EntityType"
     },
     "id": { "type": "string" },
+    "name": { "type": "string" },
     "profile_picture_url": {
       "description": "pointer since some users don't have their avatar set",
       "type": "string"

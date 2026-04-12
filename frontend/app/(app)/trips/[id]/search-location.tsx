@@ -188,7 +188,7 @@ function SearchHeader({
   return (
     <Box
       backgroundColor="white"
-      paddingHorizontal="lg"
+      paddingHorizontal="sm"
       paddingTop="lg"
       paddingBottom="sm"
       gap="sm"
@@ -200,8 +200,8 @@ function SearchHeader({
         alignItems="center"
         style={styles.titleRow}
       >
-        <Text variant="headingSm" color="gray500">
-          Location
+        <Text variant="headingSm" color="gray900">
+          Destination
         </Text>
         {query.length > 0 && (
           <TouchableOpacity
@@ -209,7 +209,7 @@ function SearchHeader({
             hitSlop={styles.hitSlop}
             style={styles.dismissButton}
           >
-            <Icon icon={X} color="gray500" size="sm" />
+            <Icon icon={X} color="gray900" size="sm" />
           </TouchableOpacity>
         )}
       </Box>

@@ -70,18 +70,21 @@ type PitchDatabaseResponse struct {
 	Duration          *int      `bun:"duration"`
 	CreatedAt         time.Time `bun:"created_at"`
 	UpdatedAt         time.Time `bun:"updated_at"`
+	Name              string    `bun:"name"`
 	Username          string    `bun:"username"`
 	ProfilePictureKey *string   `bun:"profile_picture_key"`
 }
 
 type CommenterPreview struct {
 	UserID            uuid.UUID `json:"user_id"`
+	Name              string    `json:"name"`
 	Username          string    `json:"username"`
 	ProfilePictureURL *string   `json:"profile_picture_url,omitempty"`
 }
 
 type PitchCommenterDB struct {
 	UserID            uuid.UUID `bun:"user_id"`
+	Name              string    `bun:"commenter_name"`
 	Username          string    `bun:"commenter_username"`
 	ProfilePictureKey *string   `bun:"commenter_pfp_key"`
 }
@@ -95,6 +98,7 @@ type PitchAPIResponse struct {
 	ID                uuid.UUID          `json:"id"`
 	TripID            uuid.UUID          `json:"trip_id"`
 	UserID            uuid.UUID          `json:"user_id"`
+	Name              string             `json:"name,omitempty"`
 	Username          string             `json:"username,omitempty"`
 	ProfilePictureURL *string            `json:"profile_picture_url,omitempty"`
 	Title             string             `json:"title"`

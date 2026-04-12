@@ -44,9 +44,14 @@ export function AddLinkSheet({ onClose, onAdd }: AddLinkSheetProps) {
       onClose={handleClose}
       footer={
         <Box
+          backgroundColor="white"
           paddingHorizontal="sm"
           paddingTop="xs"
-          style={{ paddingBottom: Math.max(bottom, 16) }}
+          style={{
+            paddingBottom: Math.max(bottom, 16),
+            borderTopWidth: 1,
+            borderTopColor: ColorPalette.gray100,
+          }}
         >
           <Button
             layout="textOnly"

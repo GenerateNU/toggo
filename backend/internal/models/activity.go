@@ -134,6 +134,7 @@ type ActivityDatabaseResponse struct {
 	EstimatedPrice     *float64           `json:"estimated_price,omitempty"`
 	CreatedAt          time.Time          `json:"created_at"`
 	UpdatedAt          time.Time          `json:"updated_at"`
+	ProposerName       string             `json:"proposer_name"`
 	ProposerUsername   string             `json:"proposer_username"`
 	ProposerPictureID  *uuid.UUID         `json:"proposer_picture_id,omitempty"`
 	ProposerPictureKey *string            `bun:"proposer_picture_key" json:"-"`
@@ -164,6 +165,7 @@ type ActivityAPIResponse struct {
 	EstimatedPrice     *float64                    `json:"estimated_price,omitempty"`
 	CreatedAt          time.Time                   `json:"created_at"`
 	UpdatedAt          time.Time                   `json:"updated_at"`
+	ProposerName       string                      `json:"proposer_name"`
 	ProposerUsername   string                      `json:"proposer_username"`
 	ProposerPictureURL *string                     `json:"proposer_picture_url,omitempty"`
 	CategoryNames      []string                    `json:"category_names"`

@@ -480,7 +480,7 @@ export default function DateRangePicker({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.gray50;
+const RANGE_TINT = ColorPalette.blue25;
 
 const styles = StyleSheet.create({
   /* Sheet */
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dayCircleSelected: {
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.blue500,
     borderRadius: CIRCLE_SIZE / 2,
   },
   dayCircleToday: {
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.gray100,
   },
   saveButton: {
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.brand500,
   },
   saveButtonPressed: {
     opacity: 0.85,

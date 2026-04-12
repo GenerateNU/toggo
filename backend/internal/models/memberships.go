@@ -69,6 +69,7 @@ type MembershipDatabaseResponse struct {
 	NotifyNewPitches  bool                    `bun:"notify_new_pitches" json:"notify_new_pitches"`
 	NotifyNewPolls    bool                    `bun:"notify_new_polls" json:"notify_new_polls"`
 	NotifyNewComments bool                    `bun:"notify_new_comments" json:"notify_new_comments"`
+	Name              string                  `json:"name"`
 	Username          string                  `json:"username"`
 	ProfilePictureID  *uuid.UUID              `json:"profile_picture_id"`
 	ProfilePictureKey *string                 `bun:"profile_picture_key" json:"-"`
@@ -86,6 +87,7 @@ type MembershipAPIResponse struct {
 	NotifyNewPitches  *bool                   `json:"notify_new_pitches,omitempty"`
 	NotifyNewPolls    *bool                   `json:"notify_new_polls,omitempty"`
 	NotifyNewComments *bool                   `json:"notify_new_comments,omitempty"`
+	Name              string                  `json:"name"`
 	Username          string                  `json:"username"`
 	ProfilePictureURL *string                 `json:"profile_picture_url"`
 }

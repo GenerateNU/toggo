@@ -96,6 +96,8 @@ import type {
   ModelsNotificationResponse,
   ModelsPeriod,
   ModelsOpeningHours,
+  ModelsVoterInfo,
+  ModelsOptionVotersResponse,
   ModelsOptionWithScore,
   ModelsPaginatedCommentsResponse,
   ModelsParseLinkRequest,
@@ -110,8 +112,8 @@ import type {
   ModelsPollOptionAPIResponse,
   ModelsPollAPIResponse,
   ModelsPollCursorPageResult,
-  ModelsVoterInfo,
   ModelsPollVotersResponse,
+  ModelsRankChoiceVotersResponse,
   ModelsRankPollAPIResponse,
   ModelsUserRankingItem,
   ModelsRankPollResultsResponse,
@@ -628,6 +630,14 @@ import type {
   DeleteRankPollOption500,
   DeleteRankPollOptionMutationResponse,
   DeleteRankPollOptionPathParams,
+  GetRankChoiceVoters200,
+  GetRankChoiceVoters400,
+  GetRankChoiceVoters401,
+  GetRankChoiceVoters403,
+  GetRankChoiceVoters404,
+  GetRankChoiceVoters500,
+  GetRankChoiceVotersPathParams,
+  GetRankChoiceVotersQueryResponse,
   SubmitRanking200,
   SubmitRanking400,
   SubmitRanking401,
@@ -727,6 +737,14 @@ import type {
   DeletePollOption500,
   DeletePollOptionMutationResponse,
   DeletePollOptionPathParams,
+  GetVoteOptionVoters200,
+  GetVoteOptionVoters400,
+  GetVoteOptionVoters401,
+  GetVoteOptionVoters403,
+  GetVoteOptionVoters404,
+  GetVoteOptionVoters500,
+  GetVoteOptionVotersPathParams,
+  GetVoteOptionVotersQueryResponse,
   CastVote200,
   CastVote400,
   CastVote401,
@@ -737,6 +755,14 @@ import type {
   CastVoteMutationRequest,
   CastVoteMutationResponse,
   CastVotePathParams,
+  GetVotePollVoters200,
+  GetVotePollVoters400,
+  GetVotePollVoters401,
+  GetVotePollVoters403,
+  GetVotePollVoters404,
+  GetVotePollVoters500,
+  GetVotePollVotersPathParams,
+  GetVotePollVotersQueryResponse,
   GetPaginatedComments200,
   GetPaginatedComments400,
   GetPaginatedComments401,
@@ -851,6 +877,7 @@ export const modelsActivitySchema = z.object({
 }) as unknown as z.ZodType<ModelsActivity>;
 
 export const modelsActivityGoingUserResponseSchema = z.object({
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
   user_id: z.optional(z.string()),
   username: z.optional(z.string()),
@@ -883,6 +910,7 @@ export const modelsActivityAPIResponseSchema = z.object({
   media_url: z.optional(z.string()),
   name: z.optional(z.string()),
   proposed_by: z.optional(z.string()),
+  proposer_name: z.optional(z.string()),
   proposer_picture_url: z.optional(z.string()),
   proposer_username: z.optional(z.string()),
   thumbnail_url: z.optional(z.string()),
@@ -916,6 +944,7 @@ export const modelsRSVPStatusSchema = z.enum([
 export const modelsActivityRSVPAPIResponseSchema = z.object({
   activity_id: z.optional(z.string()),
   created_at: z.optional(z.string()),
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
   get status() {
     return modelsRSVPStatusSchema.optional();
@@ -1016,6 +1045,7 @@ export const modelsCommentAPIResponseSchema = z.object({
     return modelsEntityTypeSchema.optional();
   },
   id: z.optional(z.string()),
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(
     z.string().describe("pointer since some users don't have their avatar set"),
   ),
@@ -1040,6 +1070,7 @@ export const modelsCommentReactionSummarySchema = z.object({
 }) as unknown as z.ZodType<ModelsCommentReactionSummary>;
 
 export const modelsCommentReactionUserSchema = z.object({
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
   user_id: z.optional(z.string()),
   username: z.optional(z.string()),
@@ -1061,6 +1092,7 @@ export const modelsCommentReactionsSummaryResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsCommentReactionsSummaryResponse>;
 
 export const modelsCommenterPreviewSchema = z.object({
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
   user_id: z.optional(z.string()),
   username: z.optional(z.string()),
@@ -1185,6 +1217,7 @@ export const modelsPitchAPIResponseSchema = z.object({
   get links() {
     return z.array(modelsPitchLinkSchema).optional();
   },
+  name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
   title: z.optional(z.string()),
   trip_id: z.optional(z.string()),
@@ -1246,6 +1279,7 @@ export const modelsCreateTripRequestSchema = z.object({
   currency: z.optional(z.string()),
   end_date: z.optional(z.iso.datetime()),
   name: z.string().min(1),
+  pitch_deadline: z.optional(z.string()),
   start_date: z.optional(z.iso.datetime()),
 }) as unknown as z.ZodType<ModelsCreateTripRequest>;
 
@@ -1313,6 +1347,7 @@ export const modelsMembershipAPIResponseSchema = z.object({
   budget_min: z.optional(z.int()),
   created_at: z.optional(z.string()),
   is_admin: z.optional(z.boolean()),
+  name: z.optional(z.string()),
   notify_new_comments: z.optional(z.boolean()),
   notify_new_pitches: z.optional(z.boolean()),
   notify_new_polls: z.optional(z.boolean()),
@@ -1373,6 +1408,24 @@ export const modelsOpeningHoursSchema = z.object({
   },
   weekday_text: z.optional(z.array(z.string())),
 }) as unknown as z.ZodType<ModelsOpeningHours>;
+
+export const modelsVoterInfoSchema = z.object({
+  has_voted: z.optional(z.boolean()),
+  name: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+  voted_at: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsVoterInfo>;
+
+export const modelsOptionVotersResponseSchema = z.object({
+  option_id: z.optional(z.string()),
+  option_name: z.optional(z.string()),
+  poll_id: z.optional(z.string()),
+  total_voters: z.optional(z.int()),
+  get voters() {
+    return z.array(modelsVoterInfoSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsOptionVotersResponse>;
 
 export const modelsOptionWithScoreSchema = z.object({
   average_rank: z.optional(z.number()),
@@ -1577,12 +1630,6 @@ export const modelsPollCursorPageResultSchema = z.object({
   next_cursor: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsPollCursorPageResult>;
 
-export const modelsVoterInfoSchema = z.object({
-  has_voted: z.optional(z.boolean()),
-  user_id: z.optional(z.string()),
-  username: z.optional(z.string()),
-}) as unknown as z.ZodType<ModelsVoterInfo>;
-
 export const modelsPollVotersResponseSchema = z.object({
   poll_id: z.optional(z.string()),
   total_members: z.optional(z.int()),
@@ -1591,6 +1638,16 @@ export const modelsPollVotersResponseSchema = z.object({
     return z.array(modelsVoterInfoSchema).optional();
   },
 }) as unknown as z.ZodType<ModelsPollVotersResponse>;
+
+export const modelsRankChoiceVotersResponseSchema = z.object({
+  option_id: z.optional(z.string()),
+  poll_id: z.optional(z.string()),
+  rank_position: z.optional(z.int()),
+  total_voters: z.optional(z.int()),
+  get voters() {
+    return z.array(modelsVoterInfoSchema).optional();
+  },
+}) as unknown as z.ZodType<ModelsRankChoiceVotersResponse>;
 
 export const modelsRankPollAPIResponseSchema = z.object({
   categories: z.optional(z.array(z.string())),
@@ -1683,6 +1740,7 @@ export const modelsTripAPIResponseSchema = z.object({
   currency: z.optional(z.string()),
   end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
+  location: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
   rank_poll_id: z.optional(z.string()),
@@ -1738,10 +1796,13 @@ export const modelsTripSchema = z.object({
   cover_image_id: z.optional(z.string()),
   created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
+  end_date: z.optional(z.string()),
   id: z.optional(z.string()),
+  location: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
   rank_poll_id: z.optional(z.string()),
+  start_date: z.optional(z.string()),
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsTrip>;
 
@@ -1833,14 +1894,12 @@ export const modelsUpdateTripRequestSchema = z.object({
   budget_max: z.optional(z.int()),
   budget_min: z.optional(z.int()),
   cover_image_id: z.optional(z.string()),
-  created_at: z.optional(z.string()),
   currency: z.optional(z.string()),
   end_date: z.optional(z.iso.datetime()),
-  id: z.optional(z.string()),
+  location: z.optional(z.string()),
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
   start_date: z.optional(z.iso.datetime()),
-  updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsUpdateTripRequest>;
 
 export const modelsUpdateUserNotificationPreferencesRequestSchema = z.object({
@@ -5232,6 +5291,59 @@ export const deleteRankPollOptionMutationResponseSchema = z.lazy(
   () => deleteRankPollOption200Schema,
 ) as unknown as z.ZodType<DeleteRankPollOptionMutationResponse>;
 
+export const getRankChoiceVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+  optionId: z.string().describe("Option ID"),
+  rankPosition: z.coerce.number().int().describe("Rank position (1-3)"),
+}) as unknown as z.ZodType<GetRankChoiceVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getRankChoiceVoters200Schema = z.lazy(
+  () => modelsRankChoiceVotersResponseSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getRankChoiceVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getRankChoiceVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getRankChoiceVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getRankChoiceVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getRankChoiceVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetRankChoiceVoters500>;
+
+export const getRankChoiceVotersQueryResponseSchema = z.lazy(
+  () => getRankChoiceVoters200Schema,
+) as unknown as z.ZodType<GetRankChoiceVotersQueryResponse>;
+
 export const submitRankingPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
   pollId: z.string().describe("Poll ID"),
@@ -5873,6 +5985,58 @@ export const deletePollOptionMutationResponseSchema = z.lazy(
   () => deletePollOption200Schema,
 ) as unknown as z.ZodType<DeletePollOptionMutationResponse>;
 
+export const getVoteOptionVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+  optionId: z.string().describe("Option ID"),
+}) as unknown as z.ZodType<GetVoteOptionVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getVoteOptionVoters200Schema = z.lazy(
+  () => modelsOptionVotersResponseSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getVoteOptionVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getVoteOptionVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getVoteOptionVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getVoteOptionVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getVoteOptionVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVoteOptionVoters500>;
+
+export const getVoteOptionVotersQueryResponseSchema = z.lazy(
+  () => getVoteOptionVoters200Schema,
+) as unknown as z.ZodType<GetVoteOptionVotersQueryResponse>;
+
 export const castVotePathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),
   pollId: z.string().describe("Poll ID"),
@@ -5937,6 +6101,57 @@ export const castVoteMutationRequestSchema = z.lazy(
 export const castVoteMutationResponseSchema = z.lazy(
   () => castVote200Schema,
 ) as unknown as z.ZodType<CastVoteMutationResponse>;
+
+export const getVotePollVotersPathParamsSchema = z.object({
+  tripID: z.string().describe("Trip ID"),
+  pollId: z.string().describe("Poll ID"),
+}) as unknown as z.ZodType<GetVotePollVotersPathParams>;
+
+/**
+ * @description OK
+ */
+export const getVotePollVoters200Schema = z.lazy(
+  () => modelsPollVotersResponseSchema,
+) as unknown as z.ZodType<GetVotePollVoters200>;
+
+/**
+ * @description Bad Request
+ */
+export const getVotePollVoters400Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters400>;
+
+/**
+ * @description Unauthorized
+ */
+export const getVotePollVoters401Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters401>;
+
+/**
+ * @description Forbidden
+ */
+export const getVotePollVoters403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters403>;
+
+/**
+ * @description Not Found
+ */
+export const getVotePollVoters404Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const getVotePollVoters500Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<GetVotePollVoters500>;
+
+export const getVotePollVotersQueryResponseSchema = z.lazy(
+  () => getVotePollVoters200Schema,
+) as unknown as z.ZodType<GetVotePollVotersQueryResponse>;
 
 export const getPaginatedCommentsPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID"),

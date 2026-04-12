@@ -26,7 +26,7 @@ type RadioDotProps = {
   disabled?: boolean;
 };
 
-const RadioDot = React.memo(({ selected, disabled }: RadioDotProps) => (
+export const RadioDot = React.memo(({ selected, disabled }: RadioDotProps) => (
   <Box
     style={[
       styles.outer,
@@ -85,8 +85,8 @@ export default function RadioGroup<T extends string = string>({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const OUTER_SIZE = 22;
-const INNER_SIZE = 12;
+const OUTER_SIZE = 26;
+const INNER_SIZE = 17;
 
 const styles = StyleSheet.create({
   container: {
@@ -108,21 +108,21 @@ const styles = StyleSheet.create({
     width: OUTER_SIZE,
     height: OUTER_SIZE,
     borderRadius: OUTER_SIZE / 2,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: ColorPalette.gray300,
     alignItems: "center",
     justifyContent: "center",
   },
   outerSelected: {
-    borderColor: ColorPalette.gray900,
+    borderColor: ColorPalette.blue500,
   },
   outerDisabled: {
-    borderColor: ColorPalette.gray100,
+    borderColor: ColorPalette.gray200,
   },
   inner: {
     width: INNER_SIZE,
     height: INNER_SIZE,
     borderRadius: INNER_SIZE / 2,
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.blue500,
   },
 });

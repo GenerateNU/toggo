@@ -52,6 +52,9 @@ interface BottomSheetModalProps {
   onClose?: () => void;
   onChange?: (index: number) => void;
   disableClose?: boolean;
+  hideHandle?: boolean;
+  enableDynamicSizing?: boolean;
+  keyboardBehavior?: "interactive" | "extend" | "fillParent";
 }
 
 type Ref = BottomSheetMethods;
@@ -67,6 +70,9 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       initialIndex = -1,
       onClose,
       disableClose = false,
+      hideHandle = false,
+      enableDynamicSizing = false,
+      keyboardBehavior = "interactive",
     },
     ref,
   ) => {
@@ -152,14 +158,23 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           onChange={handleChange}
           backdropComponent={renderBackdrop}
           footerComponent={footer ? renderFooter : undefined}
-          enableDynamicSizing={false}
+          enableDynamicSizing={enableDynamicSizing}
+          keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={!disableClose}
+          handleComponent={hideHandle ? () => null : undefined}
           onClose={handleClose}
-          style={{ flex: 1, zIndex: 9999 }}
+          style={{
+            flex: 1,
+            zIndex: 9999,
+            overflow: "hidden",
+            borderTopLeftRadius: CornerRadius.xl,
+            borderTopRightRadius: CornerRadius.xl,
+          }}
           backgroundStyle={{
             borderTopLeftRadius: CornerRadius.xl,
             borderTopRightRadius: CornerRadius.xl,
+            overflow: "hidden",
           }}
         >
           <BottomSheetScrollView

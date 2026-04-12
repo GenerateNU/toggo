@@ -356,6 +356,7 @@ func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPicture
 		EstimatedPrice:     activity.EstimatedPrice,
 		CreatedAt:          activity.CreatedAt,
 		UpdatedAt:          activity.UpdatedAt,
+		ProposerName:       activity.ProposerName,
 		ProposerUsername:   activity.ProposerUsername,
 		ProposerPictureURL: proposerPictureURL,
 		CategoryNames:      activity.CategoryNames,
@@ -428,7 +429,7 @@ func resolveGoingUsers(users models.GoingUserList, picURLMap map[string]string) 
 	}
 	responses := make([]models.ActivityGoingUserResponse, 0, len(users))
 	for _, u := range users {
-		resp := models.ActivityGoingUserResponse{UserID: u.UserID, Username: u.Username}
+		resp := models.ActivityGoingUserResponse{UserID: u.UserID, Name: u.Name, Username: u.Username}
 		if u.ProfilePictureKey != nil && *u.ProfilePictureKey != "" {
 			if url, ok := picURLMap[*u.ProfilePictureKey]; ok {
 				resp.ProfilePictureURL = &url
@@ -572,6 +573,7 @@ func toRSVPAPIResponse(
 
 	return models.ActivityRSVPAPIResponse{
 		UserID:            rsvp.UserID,
+		Name:              rsvp.Name,
 		Username:          rsvp.Username,
 		ActivityID:        rsvp.ActivityID,
 		ProfilePictureURL: profilePictureURL,

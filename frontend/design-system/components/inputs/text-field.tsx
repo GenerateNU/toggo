@@ -24,6 +24,8 @@ export type TextFieldProps = {
   multiline?: boolean;
   returnKeyType?: TextInputProps["returnKeyType"];
   onSubmitEditing?: TextInputProps["onSubmitEditing"];
+  activeBorderColor?: string;
+  highlightWhenFilled?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -43,13 +45,17 @@ export default function TextField({
   multiline,
   returnKeyType,
   onSubmitEditing,
+  activeBorderColor,
+  highlightWhenFilled = false,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
+  const hasValue = value.trim().length > 0;
+  const isActive = focused || (highlightWhenFilled && hasValue);
 
   const borderColor = error
     ? ColorPalette.statusError
-    : focused
-      ? ColorPalette.gray900
+    : isActive
+      ? (activeBorderColor ?? ColorPalette.gray900)
       : ColorPalette.gray300;
 
   return (
@@ -63,7 +69,7 @@ export default function TextField({
         style={[
           styles.inputRow,
           { borderColor },
-          focused && styles.inputRowFocused,
+          isActive && styles.inputRowFocused,
           disabled && styles.inputRowDisabled,
         ]}
       >

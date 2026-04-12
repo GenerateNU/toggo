@@ -1,15 +1,10 @@
-import { Box, Text } from "@/design-system";
+import { Avatar, Box, Text } from "@/design-system";
 import AvatarStack from "@/design-system/components/avatars/avatar-stack";
 import { Elevation } from "@/design-system/tokens/elevation";
-import { useTheme } from "@/design-system/tokens/theme";
 import type { ModelsPitchAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
-import { Play } from "lucide-react-native";
-import { useState } from "react";
 import { Pressable } from "react-native";
-import { AudioPlayerSheet } from "../[id]/components/audio-player-sheet";
-import { getPitchBarHeights } from "../utils/waveform";
-import { PitchedBy } from "./pitched-by";
+import { InlineAudioPlayer } from "./inline-audio-player";
 
 interface PitchCardProps {
   pitch: ModelsPitchAPIResponse;
@@ -17,150 +12,151 @@ interface PitchCardProps {
   onCommentPress?: () => void;
 }
 
-const BAR_COUNT = 50;
+function formatCommentTimeLabel(rawDate?: string): string {
+  if (!rawDate) return "";
+
+  const date = new Date(rawDate);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const now = new Date();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const startOfTarget = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+
+  const dayDiff = Math.round(
+    (startOfToday.getTime() - startOfTarget.getTime()) / (24 * 60 * 60 * 1000),
+  );
+
+  const timePart = date
+    .toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(" AM", "am")
+    .replace(" PM", "pm");
+
+  if (dayDiff === 0) return `Today at ${timePart}`;
+  if (dayDiff === 1) return `Yesterday at ${timePart}`;
+
+  const datePart = date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  return `${datePart} at ${timePart}`;
+}
 
 export function PitchCard({ pitch, onPress, onCommentPress }: PitchCardProps) {
-  const theme = useTheme();
   const coverImage = pitch.images?.[0]?.medium_url;
-  const barHeights = getPitchBarHeights(pitch.id ?? "", BAR_COUNT);
-  const [audioSheetVisible, setAudioSheetVisible] = useState(false);
   const commentCount = pitch.comment_count ?? 0;
+  const firstCommentTime = formatCommentTimeLabel(
+    (pitch.comment_previews?.[0] as { created_at?: string } | undefined)
+      ?.created_at ?? pitch.created_at,
+  );
 
   return (
-    <>
-      <Pressable onPress={onPress}>
+    <Pressable onPress={onPress}>
+      <Box
+        marginBottom="sm"
+        style={{ ...Elevation.md, shadowOffset: { width: 0, height: 0 } }}
+      >
         <Box
-          marginHorizontal="sm"
-          marginBottom="sm"
-          style={{ ...Elevation.md, shadowOffset: { width: 0, height: 0 } }}
+          borderRadius="lg"
+          overflow="hidden"
+          backgroundColor="white"
+          padding="xs"
         >
-          <Box borderRadius="lg" overflow="hidden" backgroundColor="white">
-            <Box paddingHorizontal="xs" paddingTop="xs">
-              <Box borderRadius="md" overflow="hidden">
-                {coverImage ? (
-                  <Image
-                    source={{ uri: coverImage }}
-                    style={{ width: "100%", height: 200 }}
-                    contentFit="cover"
+          <Box borderRadius="md" overflow="hidden">
+            {coverImage ? (
+              <Image
+                source={{ uri: coverImage }}
+                style={{ width: "100%", height: 200 }}
+                contentFit="cover"
+              />
+            ) : (
+              <Box width="100%" height={200} backgroundColor="gray100" />
+            )}
+          </Box>
+
+          <Box paddingTop="xs" gap="xs">
+            <Box flexDirection="row" alignItems="center" gap="xs">
+              <Avatar
+                profilePhoto={pitch.profile_picture_url}
+                seed={pitch.user_id}
+                variant="sm"
+              />
+              <Text
+                variant="headingMd"
+                color="gray900"
+                numberOfLines={1}
+                style={{ flex: 1 }}
+              >
+                {pitch.title}
+              </Text>
+            </Box>
+
+            {pitch.audio_url ? (
+              <InlineAudioPlayer
+                audioUrl={pitch.audio_url}
+                pitchId={pitch.id ?? ""}
+              />
+            ) : null}
+
+            <Pressable onPress={onCommentPress}>
+              <Box
+                flexDirection="row"
+                alignItems="center"
+                backgroundColor="gray50"
+                borderRadius="md"
+                paddingHorizontal="xs"
+                paddingVertical="xs"
+                gap="xs"
+              >
+                {(pitch.comment_previews?.length ?? 0) > 0 ? (
+                  <AvatarStack
+                    members={(pitch.comment_previews ?? []).map((p) => ({
+                      userId: p.user_id ?? "",
+                      profilePhotoUrl: p.profile_picture_url,
+                      name: p.name,
+                    }))}
+                    maxVisible={3}
+                    showName={false}
                   />
-                ) : (
-                  <Box width="100%" height={200} backgroundColor="gray100" />
-                )}
-              </Box>
-            </Box>
+                ) : null}
 
-            <Box
-              paddingHorizontal="xs"
-              paddingTop="sm"
-              paddingBottom="xs"
-              gap="xs"
-            >
-              <Box flexDirection="row" alignItems="center">
-                <Box flex={1}>
-                  <Text
-                    variant="bodySmMedium"
-                    color="gray900"
-                    numberOfLines={1}
-                  >
-                    {pitch.title}
-                  </Text>
-                </Box>
-                <PitchedBy
-                  userId={pitch.user_id}
-                  profilePhotoUrl={pitch.profile_picture_url}
-                />
-              </Box>
-
-              {pitch.audio_url ? (
-                <Pressable onPress={() => setAudioSheetVisible(true)}>
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    gap="xs"
-                    backgroundColor="gray100"
-                    borderRadius="md"
-                    paddingHorizontal="xs"
-                    paddingVertical="xs"
-                  >
-                    <Box
-                      width={36}
-                      height={36}
-                      borderRadius="full"
-                      backgroundColor="gray900"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Play
-                        size={14}
-                        color={theme.colors.white}
-                        fill={theme.colors.white}
-                      />
-                    </Box>
-                    <Box
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      flex={1}
-                      height={40}
-                    >
-                      {barHeights.map((h: number, i: number) => (
-                        <Box
-                          key={i}
-                          width={2}
-                          height={h}
-                          borderRadius="xs"
-                          backgroundColor="gray400"
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                </Pressable>
-              ) : null}
-
-              <Pressable onPress={onCommentPress}>
-                <Box
-                  flexDirection="row"
-                  alignItems="center"
-                  gap="xs"
-                  backgroundColor="gray50"
-                  borderRadius="md"
-                  paddingHorizontal="xs"
-                  paddingVertical="xs"
+                <Text
+                  variant="bodySmMedium"
+                  color="gray900"
+                  numberOfLines={1}
+                  style={{ flex: 1 }}
                 >
-                  {(pitch.comment_previews?.length ?? 0) > 0 ? (
-                    <AvatarStack
-                      members={(pitch.comment_previews ?? []).map((p) => ({
-                        userId: p.user_id ?? "",
-                        profilePhotoUrl: p.profile_picture_url,
-                        username: p.username,
-                      }))}
-                      maxVisible={3}
-                      showName={false}
-                    />
-                  ) : null}
-                  <Text variant="bodySmMedium" color="gray600" paddingLeft="xs">
-                    {commentCount === 0
-                      ? "No comments yet"
-                      : `${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
+                  {commentCount === 0
+                    ? "No comments yet"
+                    : `${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
+                </Text>
+
+                {commentCount > 0 && firstCommentTime ? (
+                  <Text
+                    variant="bodySmDefault"
+                    color="gray500"
+                    numberOfLines={1}
+                    style={{ maxWidth: "55%" }}
+                  >
+                    {firstCommentTime}
                   </Text>
-                </Box>
-              </Pressable>
-            </Box>
+                ) : null}
+              </Box>
+            </Pressable>
           </Box>
         </Box>
-      </Pressable>
-
-      {pitch.audio_url ? (
-        <AudioPlayerSheet
-          visible={audioSheetVisible}
-          onClose={() => setAudioSheetVisible(false)}
-          audioUrl={pitch.audio_url}
-          pitchId={pitch.id ?? ""}
-          username={pitch.username}
-          profilePictureUrl={pitch.profile_picture_url}
-          userId={pitch.user_id}
-        />
-      ) : null}
-    </>
+      </Box>
+    </Pressable>
   );
 }

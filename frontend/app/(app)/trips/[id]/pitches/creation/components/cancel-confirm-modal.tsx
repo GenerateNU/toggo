@@ -32,8 +32,9 @@ export function CancelConfirmModal({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["42%"]}
+      snapPoints={["25%"]}
       initialIndex={-1}
+      hideHandle={true}
       onClose={onKeep}
     >
       <Box

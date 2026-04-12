@@ -97,6 +97,7 @@ func (s *CommentReactionService) GetReactionUsers(ctx context.Context, commentID
 
 		users = append(users, models.CommentReactionUser{
 			UserID:            row.UserID,
+			Name:              row.Name,
 			Username:          row.Username,
 			ProfilePictureURL: profilePictureURL,
 		})

@@ -19,12 +19,19 @@ export default function RootLayout() {
 
   const [fontsLoaded] = useFonts({
     "Figtree-Light": require("../assets/fonts/Figtree-Light.ttf"),
+    "Figtree-LightItalic": require("../assets/fonts/Figtree-LightItalic.ttf"),
     "Figtree-Regular": require("../assets/fonts/Figtree-Regular.ttf"),
+    "Figtree-Italic": require("../assets/fonts/Figtree-Italic.ttf"),
     "Figtree-Medium": require("../assets/fonts/Figtree-Medium.ttf"),
+    "Figtree-MediumItalic": require("../assets/fonts/Figtree-MediumItalic.ttf"),
     "Figtree-SemiBold": require("../assets/fonts/Figtree-SemiBold.ttf"),
+    "Figtree-SemiBoldItalic": require("../assets/fonts/Figtree-SemiBoldItalic.ttf"),
     "Figtree-Bold": require("../assets/fonts/Figtree-Bold.ttf"),
+    "Figtree-BoldItalic": require("../assets/fonts/Figtree-BoldItalic.ttf"),
     "Figtree-ExtraBold": require("../assets/fonts/Figtree-ExtraBold.ttf"),
+    "Figtree-ExtraBoldItalic": require("../assets/fonts/Figtree-ExtraBoldItalic.ttf"),
     "Figtree-Black": require("../assets/fonts/Figtree-Black.ttf"),
+    "Figtree-BlackItalic": require("../assets/fonts/Figtree-BlackItalic.ttf"),
     "Zain-ExtraBold": require("../assets/fonts/Zain-ExtraBold.ttf"),
   });
 

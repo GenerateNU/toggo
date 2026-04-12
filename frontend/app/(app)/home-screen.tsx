@@ -370,7 +370,7 @@ export default function HomeScreen() {
                     />
                   ) : null}
                   <Text
-                    variant="headingXl"
+                    variant="headingMd"
                     color="gray900"
                     paddingBottom="sm"
                     paddingTop="sm"
@@ -422,21 +422,14 @@ export default function HomeScreen() {
                   paddingBottom="lg"
                   gap="sm"
                 >
-                  {tripsQueryEnabled && tripsQuery.isPending ? (
-                    <SkeletonRect
-                      width="full"
-                      borderRadius="lg"
-                      style={{ height: 260 }}
-                    />
-                  ) : null}
                   {tripsQueryEnabled && tripsQuery.isError ? (
                     <ErrorState
-                      title="Couldn’t load trips"
+                      title="Couldn't load trips"
                       description="Pull to refresh or try again in a moment."
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Box gap="sm" paddingTop="xl">
+                  <Box gap="sm">
                     <Text variant="headingMd" color="gray900">
                       Welcome back, {profile.greetingName}
                     </Text>
@@ -452,7 +445,7 @@ export default function HomeScreen() {
 
           <Box gap="sm">
             <Box paddingHorizontal="sm" paddingVertical="xxs">
-              <Text variant="headingXl">Past Trips</Text>
+              <Text variant="headingMd">Past Trips</Text>
             </Box>
             <Box paddingHorizontal="sm" gap="sm">
               {past.length === 0 ? (
@@ -483,7 +476,7 @@ export default function HomeScreen() {
 
           <Box gap="xxs">
             <Box paddingHorizontal="sm" paddingTop="xs">
-              <Text variant="headingXl">Recommended Trips</Text>
+              <Text variant="headingMd">Recommended Trips</Text>
             </Box>
             <Box>
               <RecommendedTripsRow />
@@ -498,21 +491,29 @@ export default function HomeScreen() {
               onPress={() => router.push("/trips")}
             />
             {__DEV__ ? (
-              <Button
-                layout="textOnly"
-                label="Map view (dev)"
-                variant="Tertiary"
-                onPress={() =>
-                  router.push({
-                    pathname: "/map-view",
-                    params: {
-                      activities: encodeMapViewActivitiesParam(
-                        DEV_MAP_SAMPLE_ACTIVITIES,
-                      ),
-                    },
-                  })
-                }
-              />
+              <>
+                <Button
+                  layout="textOnly"
+                  label="Map view (dev)"
+                  variant="Tertiary"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/map-view",
+                      params: {
+                        activities: encodeMapViewActivitiesParam(
+                          DEV_MAP_SAMPLE_ACTIVITIES,
+                        ),
+                      },
+                    })
+                  }
+                />
+                <Button
+                  layout="textOnly"
+                  label="Join trip with code (dev)"
+                  variant="Tertiary"
+                  onPress={() => router.push("/join-trip-code")}
+                />
+              </>
             ) : null}
           </Box>
         </Box>

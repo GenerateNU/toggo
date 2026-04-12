@@ -4262,6 +4262,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/rank-polls/{pollId}/options/{optionId}/ranks/{rankPosition}/voters": {
+            "get": {
+                "description": "Returns who ranked an option at a specific rank position",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "polls"
+                ],
+                "summary": "Get voters for a ranked choice",
+                "operationId": "getRankChoiceVoters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rank position (1-3)",
+                        "name": "rankPosition",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.RankChoiceVotersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/rank-polls/{pollId}/rank": {
             "post": {
                 "description": "Submits or replaces the user's full ranking for a poll",
@@ -5072,6 +5153,80 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId}/voters": {
+            "get": {
+                "description": "Returns all users who voted for a specific option in a vote poll",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "polls"
+                ],
+                "summary": "Get option voters",
+                "operationId": "getVoteOptionVoters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OptionVotersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/vote-polls/{pollId}/vote": {
             "post": {
                 "description": "Casts or replaces the user's vote(s) on a poll",
@@ -5144,6 +5299,73 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/trips/{tripID}/vote-polls/{pollId}/voters": {
+            "get": {
+                "description": "Returns who has voted vs who hasn't for a vote poll",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "polls"
+                ],
+                "summary": "Get vote poll voters",
+                "operationId": "getVotePollVoters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Poll ID",
+                        "name": "pollId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PollVotersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }
@@ -5863,6 +6085,9 @@ const docTemplate = `{
                 "proposed_by": {
                     "type": "string"
                 },
+                "proposer_name": {
+                    "type": "string"
+                },
                 "proposer_picture_url": {
                     "type": "string"
                 },
@@ -5920,6 +6145,9 @@ const docTemplate = `{
         "models.ActivityGoingUserResponse": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -5949,6 +6177,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "profile_picture_url": {
@@ -6161,6 +6392,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "description": "pointer since some users don't have their avatar set",
                     "type": "string"
@@ -6216,6 +6450,9 @@ const docTemplate = `{
         "models.CommentReactionUser": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6261,6 +6498,9 @@ const docTemplate = `{
         "models.CommenterPreview": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                },
                 "profile_picture_url": {
                     "type": "string"
                 },
@@ -6662,6 +6902,9 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 1
                 },
+                "pitch_deadline": {
+                    "type": "string"
+                },
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
@@ -6880,6 +7123,9 @@ const docTemplate = `{
                 "is_admin": {
                     "type": "boolean"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "notify_new_comments": {
                     "type": "boolean"
                 },
@@ -7016,6 +7262,29 @@ const docTemplate = `{
                 "OptionTypeEntity",
                 "OptionTypeCustom"
             ]
+        },
+        "models.OptionVotersResponse": {
+            "type": "object",
+            "properties": {
+                "option_id": {
+                    "type": "string"
+                },
+                "option_name": {
+                    "type": "string"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "total_voters": {
+                    "type": "integer"
+                },
+                "voters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VoterInfo"
+                    }
+                }
+            }
         },
         "models.OptionWithScore": {
             "type": "object",
@@ -7158,6 +7427,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.PitchLink"
                     }
+                },
+                "name": {
+                    "type": "string"
                 },
                 "profile_picture_url": {
                     "type": "string"
@@ -7559,6 +7831,29 @@ const docTemplate = `{
                 "RSVPStatusNotGoing"
             ]
         },
+        "models.RankChoiceVotersResponse": {
+            "type": "object",
+            "properties": {
+                "option_id": {
+                    "type": "string"
+                },
+                "poll_id": {
+                    "type": "string"
+                },
+                "rank_position": {
+                    "type": "integer"
+                },
+                "total_voters": {
+                    "type": "integer"
+                },
+                "voters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.VoterInfo"
+                    }
+                }
+            }
+        },
         "models.RankPollAPIResponse": {
             "type": "object",
             "properties": {
@@ -7860,7 +8155,13 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
+                "end_date": {
+                    "type": "string"
+                },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -7870,6 +8171,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rank_poll_id": {
+                    "type": "string"
+                },
+                "start_date": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -7900,6 +8204,9 @@ const docTemplate = `{
                     "format": "date-time"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8144,9 +8451,6 @@ const docTemplate = `{
                 "cover_image_id": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
                 "currency": {
                     "type": "string"
                 },
@@ -8154,7 +8458,7 @@ const docTemplate = `{
                     "type": "string",
                     "format": "date-time"
                 },
-                "id": {
+                "location": {
                     "type": "string"
                 },
                 "name": {
@@ -8166,9 +8470,6 @@ const docTemplate = `{
                 "start_date": {
                     "type": "string",
                     "format": "date-time"
-                },
-                "updated_at": {
-                    "type": "string"
                 }
             }
         },
@@ -8321,10 +8622,16 @@ const docTemplate = `{
                 "has_voted": {
                     "type": "boolean"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "user_id": {
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                },
+                "voted_at": {
                     "type": "string"
                 }
             }
