@@ -2,10 +2,11 @@ import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { MapPin } from "lucide-react-native";
+import { GripVertical, MapPin } from "lucide-react-native";
 import { Image, StyleSheet } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
+import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { THUMBNAIL_SIZE } from "../constants";
 import { useActivityCardGestures } from "../hooks/useActivityCardGestures";
 import type { ItineraryActivityCardProps } from "../types";
@@ -22,7 +23,7 @@ export function ItineraryActivityCard({
   dragScrollCompensationY,
 }: ItineraryActivityCardProps) {
   const priceLabel = formatPrice(activity.estimated_price);
-  const thumbnailUrl = activity.thumbnail_url ?? activity.media_url;
+  const thumbnailUrl = getActivityThumbnailUrl(activity);
 
   const { composedGesture, animatedStyle } = useActivityCardGestures({
     activityId: activity.id ?? "",
@@ -100,6 +101,8 @@ export function ItineraryActivityCard({
             </Text>
           )}
         </Box>
+
+        <GripVertical size={16} color={ColorPalette.gray300} />
       </Animated.View>
     </GestureDetector>
   );
@@ -112,7 +115,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Layout.spacing.sm,
-    padding: Layout.spacing.sm,
+    padding: Layout.spacing.xs,
     backgroundColor: ColorPalette.white,
     borderRadius: CornerRadius.xl,
     borderWidth: 1,
