@@ -46,7 +46,11 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
       <View
         ref={ref}
         collapsable={false}
-        style={hasDraggingCard ? styles.elevated : undefined}
+        style={[
+          styles.dropContainer,
+          hasDraggingCard && styles.elevated,
+          isDropHovered ? styles.dropHighlight : styles.dropDefault,
+        ]}
       >
         <Box paddingBottom="xxs">
           <Text variant="bodyMedium" color="gray500">
@@ -56,15 +60,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
 
         <Box
           gap="sm"
-          padding="xs"
-          borderRadius="md"
           overflow="visible"
-          borderWidth={2}
-          style={
-            isDropHovered
-              ? styles.dropHighlight
-              : styles.dropDefault
-          }
         >
           {activities.length > 0 && (
             activities.map((activity) => (
@@ -123,6 +119,11 @@ const styles = StyleSheet.create({
   },
   elevated: {
     zIndex: 100,
+  },
+  dropContainer: {
+    borderWidth: 2,
+    borderRadius: CornerRadius.md,
+    padding: Layout.spacing.xs,
   },
   dropDefault: {
     borderColor: "transparent",

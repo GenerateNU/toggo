@@ -56,7 +56,7 @@ export function ItineraryTabContent({
   }
 
   return (
-    <Box gap="sm">
+    <Box gap="xs">
       <ItineraryDateSelector
         ref={dateSelectorRef}
         startDate={startDateKey}
