@@ -1,7 +1,6 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
-import { parseLocalDate } from "@/utils/date-helpers";
 import React, {
   forwardRef,
   useCallback,
@@ -11,81 +10,9 @@ import React, {
   useRef,
 } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-export const CHIP_SIZE = 56;
-export const CHIP_TOTAL_WIDTH = CHIP_SIZE + Layout.spacing.xs;
-
-const DAY_ABBREVIATIONS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const MONTH_ABBREVIATIONS = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC",
-];
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type DateItem = {
-  dateString: string;
-  dayAbbrev: string;
-  dayNumber: number;
-  monthAbbrev: string;
-};
-
-type ItineraryDateSelectorProps = {
-  startDate: string;
-  endDate: string;
-  selectedDate: string;
-  onSelectDate: (date: string) => void;
-  hoveredDate?: string | null;
-};
-
-export type DateSelectorHandle = {
-  measureScrollView: () => Promise<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }>;
-  getScrollOffset: () => number;
-  scrollBy: (dx: number) => void;
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function generateDateRange(startISO: string, endISO: string): DateItem[] {
-  const start = parseLocalDate(startISO);
-  const end = parseLocalDate(endISO);
-  const dates: DateItem[] = [];
-
-  const current = new Date(start);
-  while (current <= end) {
-    const year = current.getFullYear();
-    const month = String(current.getMonth() + 1).padStart(2, "0");
-    const day = String(current.getDate()).padStart(2, "0");
-
-    dates.push({
-      dateString: `${year}-${month}-${day}`,
-      dayAbbrev: DAY_ABBREVIATIONS[current.getDay()]!,
-      dayNumber: current.getDate(),
-      monthAbbrev: MONTH_ABBREVIATIONS[current.getMonth()]!,
-    });
-
-    current.setDate(current.getDate() + 1);
-  }
-
-  return dates;
-}
+import { CHIP_SIZE, CHIP_TOTAL_WIDTH } from "../constants";
+import type { DateSelectorHandle, ItineraryDateSelectorProps } from "../types";
+import { generateDateRange } from "../utils";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

@@ -3,136 +3,39 @@ import {
   useGetActivitiesByTripID,
 } from "@/api/activities/useGetActivitiesByTripID";
 import { useUpdateActivity } from "@/api/activities";
-import { Box, ErrorState, SkeletonRect, Text, useToast } from "@/design-system";
+import { Box, ErrorState, Text, useToast } from "@/design-system";
 import { Layout } from "@/design-system/tokens/layout";
-import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { parseLocalDate } from "@/utils/date-helpers";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type ScrollView, View } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
-import ItineraryDateSelector, {
+import {
+  AUTO_SCROLL_EDGE,
+  AUTO_SCROLL_SPEED,
   CHIP_SIZE,
   CHIP_TOTAL_WIDTH,
-  type DateSelectorHandle,
-} from "./itinerary-date-selector";
+  TIME_SECTIONS,
+  TIME_SECTION_LABELS,
+  VERTICAL_AUTO_SCROLL_SPEED,
+} from "../constants";
+import type {
+  DateSelectorHandle,
+  DropTarget,
+  GroupedActivities,
+  ItineraryTabContentProps,
+} from "../types";
+import {
+  dropTargetsEqual,
+  formatDateLabel,
+  groupByTimeOfDay,
+  toDateKey,
+} from "../utils";
+import ActivityCardSkeleton from "./activity-card-skeleton";
+import ItineraryDateSelector from "./itinerary-date-selector";
 import ItineraryEmptyState from "./itinerary-empty-state";
 import ItineraryTimeSection from "./itinerary-time-section";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const TIME_SECTIONS = [
-  { key: "unscheduled", title: "Unscheduled" },
-  { key: "morning", title: "Morning" },
-  { key: "afternoon", title: "Afternoon" },
-  { key: "evening", title: "Evening" },
-] as const;
-
-const AUTO_SCROLL_EDGE = 50;
-const AUTO_SCROLL_SPEED = 5;
-const VERTICAL_AUTO_SCROLL_SPEED = 8;
-
-const TIME_SECTION_LABELS: Record<string, string> = {
-  unscheduled: "Unscheduled",
-  morning: "Morning",
-  afternoon: "Afternoon",
-  evening: "Evening",
-};
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ItineraryTabContentProps = {
-  tripID: string;
-  startDate?: string;
-  endDate?: string;
-  parentScrollViewRef?: React.RefObject<ScrollView | null>;
-  parentScrollOffset?: React.RefObject<number>;
-  parentContainerRef?: React.RefObject<View | null>;
-};
-
-type GroupedActivities = {
-  unscheduled: ModelsActivityAPIResponse[];
-  morning: ModelsActivityAPIResponse[];
-  afternoon: ModelsActivityAPIResponse[];
-  evening: ModelsActivityAPIResponse[];
-};
-
-type DropTarget =
-  | { type: "time"; key: string }
-  | { type: "date"; date: string };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function toDateKey(iso: string): string {
-  return iso.split("T")[0]!;
-}
-
-function formatDateLabel(dateStr: string): string {
-  const d = parseLocalDate(dateStr);
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function groupByTimeOfDay(
-  activities: ModelsActivityAPIResponse[],
-): GroupedActivities {
-  const groups: GroupedActivities = {
-    unscheduled: [],
-    morning: [],
-    afternoon: [],
-    evening: [],
-  };
-
-  for (const activity of activities) {
-    const bucket = activity.time_of_day ?? "unscheduled";
-    if (bucket in groups) {
-      groups[bucket as keyof GroupedActivities].push(activity);
-    } else {
-      groups.unscheduled.push(activity);
-    }
-  }
-
-  return groups;
-}
-
-function dropTargetsEqual(
-  a: DropTarget | null,
-  b: DropTarget | null,
-): boolean {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  if (a.type !== b.type) return false;
-  if (a.type === "time" && b.type === "time") return a.key === b.key;
-  if (a.type === "date" && b.type === "date") return a.date === b.date;
-  return false;
-}
-
-// ─── Skeleton ────────────────────────────────────────────────────────────────
-
-function ActivityCardSkeleton() {
-  return (
-    <Box
-      flexDirection="row"
-      alignItems="center"
-      gap="sm"
-      padding="sm"
-      backgroundColor="white"
-      borderRadius="xl"
-      borderWidth={1}
-      borderColor="gray100"
-    >
-      <SkeletonRect size="xxl" borderRadius="md" />
-      <Box flex={1} gap="xxs">
-        <SkeletonRect width="threeQuarter" height="xs" />
-        <SkeletonRect width="half" height="xs" />
-      </Box>
-    </Box>
-  );
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

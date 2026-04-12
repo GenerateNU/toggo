@@ -4,7 +4,7 @@ import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
-import ItineraryTabContent from "@/app/(app)/trips/[id]/components/itinerary-tab-content";
+import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
 import TripTabBar, {

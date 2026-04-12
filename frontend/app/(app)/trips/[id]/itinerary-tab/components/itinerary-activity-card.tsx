@@ -2,42 +2,19 @@ import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { MapPin } from "lucide-react-native";
 import React, { useCallback } from "react";
 import { Image, StyleSheet } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
-  type SharedValue,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const THUMBNAIL_SIZE = 56;
-const LONG_PRESS_DURATION_MS = 250;
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ItineraryActivityCardProps = {
-  activity: ModelsActivityAPIResponse;
-  onPress: () => void;
-  onDragStart?: (activityId: string) => void;
-  onDragMove?: (absoluteX: number, absoluteY: number) => void;
-  onDragEnd?: () => void;
-  dragScrollCompensationY?: SharedValue<number>;
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatPrice(price?: number): string | null {
-  if (price == null) return null;
-  if (price === 0) return "Free";
-  return `$${price} per person`;
-}
+import { LONG_PRESS_DURATION_MS, THUMBNAIL_SIZE } from "../constants";
+import type { ItineraryActivityCardProps } from "../types";
+import { formatPrice } from "../utils";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

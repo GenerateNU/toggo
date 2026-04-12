@@ -2,27 +2,11 @@ import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { Plus } from "lucide-react-native";
 import React, { forwardRef, useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
-import type { SharedValue } from "react-native-reanimated";
+import type { ItineraryTimeSectionProps } from "../types";
 import ItineraryActivityCard from "./itinerary-activity-card";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ItineraryTimeSectionProps = {
-  title: string;
-  activities: ModelsActivityAPIResponse[];
-  onActivityPress: (activityID: string) => void;
-  onAddActivity: () => void;
-  hideAddButton?: boolean;
-  isDropHovered?: boolean;
-  onDragStart?: (activityId: string) => void;
-  onDragMove?: (absoluteX: number, absoluteY: number) => void;
-  onDragEnd?: () => void;
-  dragScrollCompensationY?: SharedValue<number>;
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
