@@ -325,7 +325,14 @@ export function useItineraryDragDrop({
     } catch {
       toast.show({ message: "Failed to move activity. Please try again." });
     }
-  }, [tripID, selectedDate, updateActivityMutation, queryClient, stopAutoScroll, toast]);
+  }, [
+    tripID,
+    selectedDate,
+    updateActivityMutation,
+    queryClient,
+    stopAutoScroll,
+    toast,
+  ]);
 
   const sectionRefCallbacks = useMemo(() => {
     const callbacks: Record<string, (ref: View | null) => void> = {};
