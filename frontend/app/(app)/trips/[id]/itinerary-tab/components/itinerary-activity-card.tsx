@@ -4,7 +4,7 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
 import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
-import { GripVertical, MapPin } from "lucide-react-native";
+import { GripVertical, ImageIcon, MapPin } from "lucide-react-native";
 import { Image } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
@@ -92,7 +92,11 @@ export function ItineraryActivityCard({
               style={thumbnailStyle}
               resizeMode="cover"
             />
-          ) : null}
+          ) : (
+            <Box flex={1} alignItems="center" justifyContent="center">
+              <ImageIcon size={24} color={ColorPalette.gray300} />
+            </Box>
+          )}
         </Box>
 
         <Box flex={1} gap="xxs">
