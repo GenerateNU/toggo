@@ -18,6 +18,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
       onActivityPress,
       onAddActivity,
       hideAddButton = false,
+      draggable = true,
       isDropHovered = false,
       onDragStart,
       onDragMove,
@@ -47,7 +48,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
         collapsable={false}
         style={hasDraggingCard ? styles.elevated : undefined}
       >
-        <Box paddingVertical="xs">
+        <Box paddingBottom="xxs">
           <Text variant="bodyMedium" color="gray500">
             {title}
           </Text>
@@ -71,6 +72,7 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
                 key={activity.id}
                 activity={activity}
                 onPress={() => onActivityPress(activity.id ?? "")}
+                draggable={draggable}
                 onDragStart={handleCardDragStart}
                 onDragMove={onDragMove}
                 onDragEnd={handleCardDragEnd}
@@ -91,6 +93,12 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
             >
               <Plus size={16} color={ColorPalette.gray400} />
             </Pressable>
+          )}
+
+          {hideAddButton && activities.length === 0 && (
+            <Text variant="bodySmDefault" color="gray400">
+              No activities scheduled
+            </Text>
           )}
         </Box>
       </View>

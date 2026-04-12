@@ -79,10 +79,18 @@ export function ItineraryTabContent({
       )}
 
       {!isLoading && !isError && (
-        <Box gap="xs">
+        <Box gap="xxs">
           {TIME_SECTIONS.map((section) => {
             const sectionActivities =
               grouped[section.key as keyof GroupedActivities];
+
+            if (
+              section.key === "unscheduled" &&
+              sectionActivities.length === 0
+            ) {
+              return null;
+            }
+
             return (
               <ItineraryTimeSection
                 key={section.key}
@@ -91,7 +99,8 @@ export function ItineraryTabContent({
                 activities={sectionActivities}
                 onActivityPress={handleActivityPress}
                 onAddActivity={handleAddActivity}
-                hideAddButton={isSelectedDatePast}
+                hideAddButton={isSelectedDatePast || section.key === "unscheduled"}
+                draggable={!isSelectedDatePast}
                 isDropHovered={
                   hoveredTarget?.type === "time" &&
                   hoveredTarget.key === section.key

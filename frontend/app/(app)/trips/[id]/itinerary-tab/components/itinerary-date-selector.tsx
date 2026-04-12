@@ -78,7 +78,14 @@ export const ItineraryDateSelector = forwardRef<
       >
         {dates.map((item) => {
           const isSelected = item.dateString === selectedDate;
-          const isHovered = item.dateString === hoveredDate;
+          const isHovered =
+            !isSelected && item.dateString === hoveredDate;
+          const chipState = isHovered
+            ? CHIP_STATES.hovered
+            : isSelected
+              ? CHIP_STATES.selected
+              : CHIP_STATES.unselected;
+
           return (
             <Pressable
               key={item.dateString}
@@ -90,21 +97,19 @@ export const ItineraryDateSelector = forwardRef<
               <Box
                 width={CHIP_SIZE}
                 height={CHIP_SIZE}
-                borderRadius="md"
+                borderRadius="sm"
                 alignItems="center"
                 justifyContent="center"
                 borderWidth={2}
-                style={[
-                  isSelected ? styles.chipSelected : styles.chipUnselected,
-                  isHovered && !isSelected && styles.chipHovered,
-                ]}
+                style={{
+                  backgroundColor: chipState.backgroundColor,
+                  borderColor: chipState.borderColor,
+                }}
               >
                 <Text
                   variant="bodyXxsMedium"
                   style={{
-                    color: isSelected
-                      ? ColorPalette.white
-                      : ColorPalette.gray500,
+                    color: chipState.dayAbbrevColor,
                     fontSize: 10,
                     lineHeight: 12,
                   }}
@@ -114,9 +119,7 @@ export const ItineraryDateSelector = forwardRef<
                 <Text
                   variant="bodySmMedium"
                   style={{
-                    color: isSelected
-                      ? ColorPalette.white
-                      : ColorPalette.gray900,
+                    color: chipState.dayNumberColor,
                     lineHeight: 18,
                   }}
                 >
@@ -125,9 +128,7 @@ export const ItineraryDateSelector = forwardRef<
                 <Text
                   variant="bodyXxsMedium"
                   style={{
-                    color: isSelected
-                      ? ColorPalette.white
-                      : ColorPalette.gray400,
+                    color: chipState.monthColor,
                     fontSize: 8,
                     lineHeight: 10,
                   }}
@@ -145,26 +146,38 @@ export const ItineraryDateSelector = forwardRef<
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
+const CHIP_STATES = {
+  selected: {
+    backgroundColor: ColorPalette.brand500,
+    borderColor: "transparent",
+    dayAbbrevColor: ColorPalette.white,
+    dayNumberColor: ColorPalette.white,
+    monthColor: ColorPalette.white,
+  },
+  unselected: {
+    backgroundColor: ColorPalette.white,
+    borderColor: "transparent",
+    dayAbbrevColor: ColorPalette.gray500,
+    dayNumberColor: ColorPalette.gray900,
+    monthColor: ColorPalette.gray400,
+  },
+  hovered: {
+    backgroundColor: ColorPalette.blue50,
+    borderColor: ColorPalette.blue500,
+    dayAbbrevColor: ColorPalette.gray500,
+    dayNumberColor: ColorPalette.gray900,
+    monthColor: ColorPalette.gray400,
+  },
+} as const;
+
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: -Layout.spacing.sm,
   },
   content: {
     flexDirection: "row",
-    gap: Layout.spacing.xs,
+    gap: Layout.spacing.sm,
     paddingHorizontal: Layout.spacing.sm,
-  },
-  chipSelected: {
-    backgroundColor: ColorPalette.brand500,
-    borderColor: "transparent",
-  },
-  chipUnselected: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
-  },
-  chipHovered: {
-    borderColor: ColorPalette.blue500,
-    backgroundColor: ColorPalette.blue50,
   },
 });
 

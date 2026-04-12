@@ -53,6 +53,7 @@ export type ItineraryTimeSectionProps = {
   onActivityPress: (activityID: string) => void;
   onAddActivity: () => void;
   hideAddButton?: boolean;
+  draggable?: boolean;
   isDropHovered?: boolean;
   onDragStart?: (activityId: string) => void;
   onDragMove?: (absoluteX: number, absoluteY: number) => void;
@@ -65,6 +66,7 @@ export type ItineraryTimeSectionProps = {
 export type ItineraryActivityCardProps = {
   activity: ModelsActivityAPIResponse;
   onPress: () => void;
+  draggable?: boolean;
   onDragStart?: (activityId: string) => void;
   onDragMove?: (absoluteX: number, absoluteY: number) => void;
   onDragEnd?: () => void;

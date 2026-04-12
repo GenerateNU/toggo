@@ -53,6 +53,7 @@ function Tag({
 export function ItineraryActivityCard({
   activity,
   onPress,
+  draggable = true,
   onDragStart,
   onDragMove,
   onDragEnd,
@@ -63,6 +64,7 @@ export function ItineraryActivityCard({
 
   const { composedGesture, animatedStyle } = useActivityCardGestures({
     activityId: activity.id ?? "",
+    draggable,
     onPress,
     onDragStart,
     onDragMove,
@@ -117,7 +119,9 @@ export function ItineraryActivityCard({
           )}
         </Box>
 
-        <GripVertical size={16} color={ColorPalette.gray300} />
+        {draggable && (
+          <GripVertical size={16} color={ColorPalette.gray300} />
+        )}
       </Animated.View>
     </GestureDetector>
   );

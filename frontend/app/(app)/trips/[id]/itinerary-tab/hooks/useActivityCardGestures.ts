@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { Gesture } from "react-native-gesture-handler";
+import { Elevation } from "@/design-system/tokens/elevation";
 import {
   type SharedValue,
   runOnJS,
@@ -11,6 +12,7 @@ import { LONG_PRESS_DURATION_MS } from "../constants";
 
 type UseActivityCardGesturesParams = {
   activityId: string;
+  draggable?: boolean;
   onPress: () => void;
   onDragStart?: (activityId: string) => void;
   onDragMove?: (absoluteX: number, absoluteY: number) => void;
@@ -20,6 +22,7 @@ type UseActivityCardGesturesParams = {
 
 export function useActivityCardGestures({
   activityId,
+  draggable = true,
   onPress,
   onDragStart,
   onDragMove,
@@ -50,6 +53,7 @@ export function useActivityCardGestures({
   }, [onPress]);
 
   const panGesture = Gesture.Pan()
+    .enabled(draggable)
     .activateAfterLongPress(LONG_PRESS_DURATION_MS)
     .onBegin(() => {
       isDragging.value = true;
@@ -90,10 +94,13 @@ export function useActivityCardGestures({
         }),
       },
     ],
-    shadowOpacity: isDragging.value ? 0.2 : 0,
-    shadowRadius: isDragging.value ? 12 : 0,
-    shadowOffset: { width: 0, height: isDragging.value ? 6 : 0 },
-    elevation: isDragging.value ? 8 : 0,
+    shadowOpacity: isDragging.value ? 0.2 : Elevation.sm.shadowOpacity,
+    shadowRadius: isDragging.value ? 12 : Elevation.sm.shadowRadius,
+    shadowOffset: {
+      width: 0,
+      height: isDragging.value ? 6 : Elevation.sm.shadowOffset.height,
+    },
+    elevation: isDragging.value ? 8 : Elevation.sm.elevation,
     zIndex: isDragging.value ? 100 : 0,
     opacity: isDragging.value ? 0.7 : 1,
   }));

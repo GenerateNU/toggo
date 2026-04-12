@@ -174,24 +174,26 @@ export default function Trip() {
             }}
             scrollEventThrottle={16}
           >
-            <TripMetadata
-              tripName={trip?.name}
-              tripDate={tripDate}
-              tripLocation={(trip as any)?.location}
-              isLoading={isLoading}
-              onInviteFriends={shareInvite}
-              onSettingsPress={() =>
-                router.push(`/trips/${tripID}/settings` as any)
-              }
-              onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
-              onLocationPress={handleLocationPress}
-            />
+            <Box backgroundColor="white">
+              <TripMetadata
+                tripName={trip?.name}
+                tripDate={tripDate}
+                tripLocation={(trip as any)?.location}
+                isLoading={isLoading}
+                onInviteFriends={shareInvite}
+                onSettingsPress={() =>
+                  router.push(`/trips/${tripID}/settings` as any)
+                }
+                onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
+                onLocationPress={handleLocationPress}
+              />
 
-            <Box paddingTop="sm">
-              <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+              <Box paddingVertical="sm">
+                <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+              </Box>
             </Box>
 
-            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl" backgroundColor="gray50" marginTop="sm">
+            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl" backgroundColor="gray50" style={styles.tabContent}>
               {activeTab === "new" &&
                 trip?.pitch_deadline &&
                 new Date(trip.pitch_deadline) > new Date() && (
@@ -219,7 +221,9 @@ export default function Trip() {
         </View>
       </SafeAreaView>
 
-      <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+      {activeTab !== "itinerary" && (
+        <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+      )}
 
       <CreatePollSheet
         ref={createPollSheetRef}
@@ -272,13 +276,17 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.gray50,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
     marginTop: CARD_TOP_OFFSET,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingBottom: Layout.spacing.xl,
+  },
+  tabContent: {
+    flexGrow: 1,
   },
 });
