@@ -3,7 +3,7 @@ import { Box, Screen, Text } from "@/design-system";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { useLocalSearchParams } from "expo-router";
-import { Image, ScrollView } from "react-native";
+import { Image, ScrollView, StyleSheet } from "react-native";
 
 const DUMMY_ID = "dummy-entity-001";
 
@@ -38,10 +38,21 @@ export default function ActivityDetail() {
   });
 
   const activity = isDummy ? DUMMY_ACTIVITY : fetchedActivity;
+  const thumbnailUrl = activity?.thumbnail_url ?? activity?.media_url;
 
   return (
     <Screen>
       <Box flex={1} backgroundColor="gray50">
+        {thumbnailUrl ? (
+          <Box backgroundColor="gray100">
+            <Image
+              source={{ uri: thumbnailUrl }}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+          </Box>
+        ) : null}
+
         <Box padding="lg" paddingTop="xl" backgroundColor="white" gap="xs">
           <Text variant="bodySmMedium" color="gray500">
             ACTIVITY
@@ -180,3 +191,14 @@ export default function ActivityDetail() {
     </Screen>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const HERO_IMAGE_HEIGHT = 220;
+
+const styles = StyleSheet.create({
+  heroImage: {
+    width: "100%",
+    height: HERO_IMAGE_HEIGHT,
+  },
+});

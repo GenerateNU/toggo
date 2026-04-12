@@ -163,7 +163,7 @@ export const ItineraryDateSelector = forwardRef<
               <Box
                 width={CHIP_SIZE}
                 height={CHIP_SIZE}
-                borderRadius="full"
+                borderRadius="md"
                 alignItems="center"
                 justifyContent="center"
                 borderWidth={2}
@@ -222,8 +222,6 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: "row",
     gap: Layout.spacing.xs,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xs,
   },
   chipSelected: {
     backgroundColor: ColorPalette.brand500,

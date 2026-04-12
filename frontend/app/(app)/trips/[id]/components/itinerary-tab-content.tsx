@@ -3,15 +3,14 @@ import {
   useGetActivitiesByTripID,
 } from "@/api/activities/useGetActivitiesByTripID";
 import { useUpdateActivity } from "@/api/activities";
-import { Box, ErrorState, useToast } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
+import { Box, ErrorState, SkeletonRect, Text, useToast } from "@/design-system";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { parseLocalDate } from "@/utils/date-helpers";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, type ScrollView, View } from "react-native";
+import { type ScrollView, View } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
 import ItineraryDateSelector, {
   CHIP_SIZE,
@@ -112,6 +111,29 @@ function dropTargetsEqual(
   return false;
 }
 
+// ─── Skeleton ────────────────────────────────────────────────────────────────
+
+function ActivityCardSkeleton() {
+  return (
+    <Box
+      flexDirection="row"
+      alignItems="center"
+      gap="sm"
+      padding="sm"
+      backgroundColor="white"
+      borderRadius="xl"
+      borderWidth={1}
+      borderColor="gray100"
+    >
+      <SkeletonRect size="xxl" borderRadius="md" />
+      <Box flex={1} gap="xxs">
+        <SkeletonRect width="threeQuarter" height="xs" />
+        <SkeletonRect width="half" height="xs" />
+      </Box>
+    </Box>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ItineraryTabContent({
@@ -129,11 +151,9 @@ export function ItineraryTabContent({
     startDateKey ?? "",
   );
 
-  useEffect(() => {
-    if (startDateKey && !selectedDate) {
-      setSelectedDate(startDateKey);
-    }
-  }, [startDateKey, selectedDate]);
+  if (startDateKey && !selectedDate) {
+    setSelectedDate(startDateKey);
+  }
 
   const {
     data: activitiesPage,
@@ -146,12 +166,18 @@ export function ItineraryTabContent({
     { query: { enabled: !!selectedDate } },
   );
 
-  const activities = activitiesPage?.items ?? [];
+  const activities = useMemo(
+    () => activitiesPage?.items ?? [],
+    [activitiesPage],
+  );
   const grouped = useMemo(() => groupByTimeOfDay(activities), [activities]);
 
   const handleActivityPress = useCallback(
     (activityID: string) => {
-      router.push(`/trips/${tripID}/activities/${activityID}` as any);
+      router.push({
+        pathname: `/trips/${tripID}/activities/${activityID}` as any,
+        params: { tripID },
+      });
     },
     [tripID],
   );
@@ -318,7 +344,7 @@ export function ItineraryTabContent({
     [],
   );
 
-  const startAutoScroll = useCallback(() => {
+  const startAutoScroll = () => {
     if (autoScrollIntervalRef.current) return;
 
     autoScrollIntervalRef.current = setInterval(() => {
@@ -393,13 +419,7 @@ export function ItineraryTabContent({
         updateHoveredTarget(target);
       }
     }, 16);
-  }, [
-    findDropTarget,
-    updateHoveredTarget,
-    parentScrollViewRef,
-    parentScrollOffset,
-    dragScrollCompensationY,
-  ]);
+  };
 
   const stopAutoScroll = useCallback(() => {
     if (autoScrollIntervalRef.current) {
@@ -408,24 +428,14 @@ export function ItineraryTabContent({
     }
   }, []);
 
-  const handleDragStart = useCallback(
-    async (activityId: string) => {
-      draggedActivityIdRef.current = activityId;
-      const activity = activities.find((a) => a.id === activityId);
-      draggedActivityNameRef.current = activity?.name ?? "Activity";
-      dragStartScrollOffsetRef.current = parentScrollOffset?.current ?? 0;
-      dragScrollCompensationY.value = 0;
-      await measureDropZones();
-      startAutoScroll();
-    },
-    [
-      activities,
-      measureDropZones,
-      startAutoScroll,
-      dragScrollCompensationY,
-      parentScrollOffset,
-    ],
-  );
+  const handleDragStart = async (activityId: string) => {
+    draggedActivityIdRef.current = activityId;
+    const activity = activities.find((a) => a.id === activityId);
+    draggedActivityNameRef.current = activity?.name ?? "Activity";
+    dragStartScrollOffsetRef.current = parentScrollOffset?.current ?? 0;
+    await measureDropZones();
+    startAutoScroll();
+  };
 
   const getAdjustedAbsY = useCallback(
     (absY: number) => {
@@ -530,8 +540,26 @@ export function ItineraryTabContent({
       />
 
       {isLoading && (
-        <Box alignItems="center" paddingVertical="xl">
-          <ActivityIndicator color={ColorPalette.brand500} />
+        <Box gap="xs">
+          {TIME_SECTIONS.map((section) => (
+            <Box key={section.key}>
+              <Box paddingVertical="xs">
+                <Text variant="bodySmMedium" color="gray950">
+                  {section.title}
+                </Text>
+              </Box>
+              <Box gap="xs" padding="xs">
+                {section.key === "unscheduled" || section.key === "morning" ? (
+                  <>
+                    <ActivityCardSkeleton />
+                    <ActivityCardSkeleton />
+                  </>
+                ) : (
+                  <ActivityCardSkeleton />
+                )}
+              </Box>
+            </Box>
+          ))}
         </Box>
       )}
 
