@@ -24,10 +24,10 @@ export const VERTICAL_AUTO_SCROLL_SPEED = 8;
 
 // ─── Date Selector ───────────────────────────────────────────────────────────
 
-export const CHIP_SIZE = 56;
+export const CHIP_SIZE = 68;
 export const CHIP_TOTAL_WIDTH = CHIP_SIZE + Layout.spacing.xs;
 
 // ─── Activity Card ───────────────────────────────────────────────────────────
 
-export const THUMBNAIL_SIZE = 56;
+export const THUMBNAIL_SIZE = 68;
 export const LONG_PRESS_DURATION_MS = 250;
