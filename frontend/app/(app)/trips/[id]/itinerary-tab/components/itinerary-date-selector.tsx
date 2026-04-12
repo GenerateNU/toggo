@@ -1,7 +1,7 @@
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
-import React, {
+import {
   forwardRef,
   useCallback,
   useEffect,

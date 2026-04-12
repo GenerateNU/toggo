@@ -3,7 +3,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { Plus } from "lucide-react-native";
-import React, { forwardRef, useCallback, useState } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import type { ItineraryTimeSectionProps } from "../types";
 import ItineraryActivityCard from "./itinerary-activity-card";

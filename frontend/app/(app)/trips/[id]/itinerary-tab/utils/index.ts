@@ -1,10 +1,11 @@
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { parseLocalDate } from "@/utils/date-helpers";
-import {
-  DAY_ABBREVIATIONS,
-  MONTH_ABBREVIATIONS,
-} from "../constants";
 import type { DateItem, DropTarget, GroupedActivities } from "../types";
+
+// ─── Intl Formatters ─────────────────────────────────────────────────────────
+
+const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
 
 // ─── Date Helpers ────────────────────────────────────────────────────────────
 
@@ -37,9 +38,9 @@ export function generateDateRange(
 
     dates.push({
       dateString: `${year}-${month}-${day}`,
-      dayAbbrev: DAY_ABBREVIATIONS[current.getDay()]!,
+      dayAbbrev: dayFormatter.format(current).toUpperCase(),
       dayNumber: current.getDate(),
-      monthAbbrev: MONTH_ABBREVIATIONS[current.getMonth()]!,
+      monthAbbrev: monthFormatter.format(current).toUpperCase(),
     });
 
     current.setDate(current.getDate() + 1);
