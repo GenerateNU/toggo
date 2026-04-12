@@ -15,7 +15,10 @@ import {
 } from "react-native";
 
 export default function CreateActivity() {
-  const { id: tripID } = useLocalSearchParams<{ id: string }>();
+  const { id: tripID, date } = useLocalSearchParams<{
+    id: string;
+    date?: string;
+  }>();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -80,6 +83,7 @@ export default function CreateActivity() {
           name: name.trim(),
           description: description.trim() || undefined,
           image_ids: uploadedImageIds,
+          ...(date ? { dates: [{ start: date, end: date }] } : {}),
         },
       });
 

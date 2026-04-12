@@ -4,7 +4,7 @@ import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
-import ItineraryEmptyState from "@/app/(app)/trips/[id]/components/itinerary-empty-state";
+import ItineraryTabContent from "@/app/(app)/trips/[id]/components/itinerary-tab-content";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
 import TripTabBar, {
@@ -183,7 +183,13 @@ export default function Trip() {
             </Box>
 
             <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
-              {activeTab === "itinerary" && <ItineraryEmptyState />}
+              {activeTab === "itinerary" && (
+                <ItineraryTabContent
+                  tripID={tripID}
+                  startDate={trip?.start_date}
+                  endDate={trip?.end_date}
+                />
+              )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             </Box>
           </ScrollView>
