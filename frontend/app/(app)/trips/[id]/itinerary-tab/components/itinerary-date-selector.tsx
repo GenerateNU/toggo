@@ -110,17 +110,15 @@ export const ItineraryDateSelector = forwardRef<
                   variant="bodyXxsMedium"
                   style={{
                     color: chipState.dayAbbrevColor,
-                    fontSize: 10,
                     lineHeight: 12,
                   }}
                 >
                   {item.dayAbbrev}
                 </Text>
                 <Text
-                  variant="bodySmMedium"
+                  variant="headingMd"
                   style={{
                     color: chipState.dayNumberColor,
-                    lineHeight: 18,
                   }}
                 >
                   {item.dayNumber}
@@ -129,8 +127,6 @@ export const ItineraryDateSelector = forwardRef<
                   variant="bodyXxsMedium"
                   style={{
                     color: chipState.monthColor,
-                    fontSize: 8,
-                    lineHeight: 10,
                   }}
                 >
                   {item.monthAbbrev}
