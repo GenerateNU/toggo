@@ -5,28 +5,37 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
-  StatusBar,
   StyleSheet,
 } from "react-native";
+import InlineTimePicker from "./inline-time-picker";
+import type { TimeRange } from "./inline-time-picker";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
 import { Layout } from "../tokens/layout";
+
+export type { TimeRange } from "./inline-time-picker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type DateRange = { start: Date | null; end: Date | null };
 
+const DEFAULT_TIME_RANGE: TimeRange = { start: null, end: null };
+
 export type DateRangePickerProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (range: DateRange) => void;
+  onSave: (range: DateRange, timeRange: TimeRange) => void;
   initialRange?: DateRange;
   monthsToShow?: number;
   minDate?: Date;
   singleDate?: boolean;
+  /** When true, renders an inline time picker above the calendar. */
+  allowSelectTime?: boolean;
+  /** When true, the time picker only allows a single time (no range). */
+  singleTimeSelection?: boolean;
+  initialTimeRange?: TimeRange;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -126,7 +135,7 @@ const DayCell = React.memo(
           ]}
         >
           <Text
-            variant="bodySmMedium"
+            variant="bodyMedium"
             style={{
               color: isEndpoint
                 ? ColorPalette.gray50
@@ -181,7 +190,7 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text variant="bodySmStrong" color="white" style={styles.monthLabel}>
+        <Text variant="bodyLargeStrong">
           {formatMonth(year, month)}
         </Text>
 
@@ -227,10 +236,16 @@ export default function DateRangePicker({
   monthsToShow = 12,
   minDate,
   singleDate = false,
+  allowSelectTime = false,
+  singleTimeSelection = false,
+  initialTimeRange,
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
+  const [timeRange, setTimeRange] = useState<TimeRange>(
+    initialTimeRange ?? DEFAULT_TIME_RANGE,
+  );
 
-  // Initialize range when modal opens
+  // Initialize range and time when modal opens
   useEffect(() => {
     if (visible) {
       // Only clear if no initialRange provided, otherwise use initialRange
@@ -241,8 +256,10 @@ export default function DateRangePicker({
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setRange(initialRange);
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTimeRange(initialTimeRange ?? DEFAULT_TIME_RANGE);
     }
-  }, [visible, initialRange]);
+  }, [visible, initialRange, initialTimeRange]);
 
   // Normalize minDate to midnight for accurate date comparisons
   const normalizedMinDate = useMemo(() => {
@@ -251,9 +268,6 @@ export default function DateRangePicker({
     normalized.setHours(0, 0, 0, 0);
     return normalized;
   }, [minDate]);
-
-  const topInset =
-    Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
 
   const months = useMemo(() => {
     const now = new Date();
@@ -320,10 +334,13 @@ export default function DateRangePicker({
     [singleDate],
   );
 
-  const handleClear = () => setRange({ start: null, end: null });
+  const handleClear = () => {
+    setRange({ start: null, end: null });
+    setTimeRange(DEFAULT_TIME_RANGE);
+  };
 
   const handleSave = () => {
-    onSave(range);
+    onSave(range, timeRange);
     onClose();
   };
 
@@ -336,7 +353,7 @@ export default function DateRangePicker({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <Box style={[styles.sheet, { paddingTop: topInset }]}>
+      <Box style={styles.sheet}>
         {/* ─── Header ───────────────────────────────────────────────── */}
         <Box style={styles.header}>
           <Box
@@ -350,9 +367,9 @@ export default function DateRangePicker({
               hitSlop={16}
               style={styles.closeButton}
             >
-              <X size={20} color={ColorPalette.gray500} />
+              <X size={24} />
             </Pressable>
-            <Text variant="headingSm" color="white">
+            <Text variant="headingSm">
               Select dates
             </Text>
           </Box>
@@ -407,30 +424,45 @@ export default function DateRangePicker({
         <Box flexDirection="row" style={styles.weekdayRow}>
           {DAYS.map((d, i) => (
             <Box key={i} style={styles.weekdayCell}>
-              <Text variant="bodyXsMedium" color="gray500">
+              <Text variant="bodyMedium" color="gray500">
                 {d}
               </Text>
             </Box>
           ))}
         </Box>
 
-        {/* ─── Calendar scroll ──────────────────────────────────────── */}
-        <ScrollView
-          style={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {months.map(({ year, month }) => (
-            <MonthGrid
-              key={`${year}-${month}`}
-              year={year}
-              month={month}
-              range={range}
-              minDate={normalizedMinDate}
-              onDayPress={handleDayPress}
-            />
-          ))}
-        </ScrollView>
+        {/* ─── Calendar + optional time picker ─────────────────────── */}
+        <Box style={styles.calendarArea}>
+          <ScrollView
+            style={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.scrollContent,
+              allowSelectTime && styles.scrollContentWithTimePicker,
+            ]}
+          >
+            {months.map(({ year, month }) => (
+              <MonthGrid
+                key={`${year}-${month}`}
+                year={year}
+                month={month}
+                range={range}
+                minDate={normalizedMinDate}
+                onDayPress={handleDayPress}
+              />
+            ))}
+          </ScrollView>
+
+          {allowSelectTime && (
+            <Box style={styles.timePickerOverlay}>
+              <InlineTimePicker
+                singleTime={singleTimeSelection}
+                value={timeRange}
+                onChange={setTimeRange}
+              />
+            </Box>
+          )}
+        </Box>
 
         {/* ─── Footer ───────────────────────────────────────────────── */}
         <Box style={[styles.footer, { paddingBottom: Layout.spacing.md }]}>
@@ -492,26 +524,24 @@ const styles = StyleSheet.create({
   /* Header */
   header: {
     paddingHorizontal: GRID_PADDING,
-    paddingTop: Layout.spacing.md,
+    paddingTop: Layout.spacing.sm,
     paddingBottom: Layout.spacing.xs,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.gray300,
   },
   closeButton: {
     position: "absolute",
-    left: 0,
+    right: 0,
   },
 
   /* Selection summary */
   summaryRow: {
-    marginTop: 12,
+    marginVertical: Layout.spacing.xs,
     gap: Layout.spacing.xs,
   },
   summaryPill: {
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.gray50,
   },
   summaryPillActive: {
     backgroundColor: ColorPalette.gray50,
@@ -524,13 +554,18 @@ const styles = StyleSheet.create({
   /* Weekday labels */
   weekdayRow: {
     paddingHorizontal: GRID_PADDING,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.gray100,
+    paddingVertical: Layout.spacing.xs,
+    marginBottom: Layout.spacing.xs,
+    backgroundColor: ColorPalette.gray50,
   },
   weekdayCell: {
     width: CELL_SIZE,
     alignItems: "center",
+  },
+
+  /* Calendar area (scroll + optional time picker overlay) */
+  calendarArea: {
+    flex: 1,
   },
 
   /* Scroll */
@@ -539,16 +574,24 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: Layout.spacing.xs,
-    paddingBottom: 120, // Large safe area for scrolling
+    paddingBottom: 120,
+  },
+  scrollContentWithTimePicker: {
+    paddingBottom: 340,
+  },
+
+  /* Time picker overlay */
+  timePickerOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 
   /* Month */
   monthBlock: {
     paddingHorizontal: GRID_PADDING,
     marginBottom: Layout.spacing.md,
-  },
-  monthLabel: {
-    marginBottom: Layout.spacing.xs,
   },
 
   /* Day outer wrapper */
