@@ -143,7 +143,8 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           <BottomSheetScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
-              padding: Layout.spacing.sm,
+              paddingHorizontal: Layout.spacing.xs,
+              paddingVertical: Layout.spacing.sm,
               paddingBottom: footer ? 100 : Layout.spacing.sm,
             }}
           >
