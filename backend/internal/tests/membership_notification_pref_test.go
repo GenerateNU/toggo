@@ -1,5 +1,4 @@
 package tests
-package tests
 
 import (
 	"context"
