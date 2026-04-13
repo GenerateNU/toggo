@@ -24,7 +24,6 @@ type ToastAction = {
 type ToastConfig = {
   message: string;
   subtitle?: string;
-  variant?: "pollSent" | "default";
   action?: ToastAction;
   showClose?: boolean;
   duration?: number;
@@ -177,7 +176,6 @@ const ToastItem = ({
       <Toast
         message={entry.message}
         subtitle={entry.subtitle}
-        variant={entry.variant}
         action={entry.action}
         showClose={showClose}
         onClose={hide}
