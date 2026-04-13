@@ -1,9 +1,12 @@
+import { useCreateActivity } from "@/api/activities";
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
-import { Box, EmptyState, SkeletonRect, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
+import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useUser } from "@/contexts/user";
-import { modelsEntityType } from "@/types/types.gen";
+import { Box, Screen, Text } from "@/design-system";
+import CommentSection from "@/design-system/components/comments/comment-section";
+import { ColorPalette } from "@/design-system/tokens/color";
 import type { ModelsActivity } from "@/types/types.gen";
+import { modelsEntityType } from "@/types/types.gen";
 import {
   activityHasMapLocation,
   encodeMapViewActivitiesParam,
@@ -17,59 +20,14 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import { ActivityCard } from "./components/activity-card";
-import {
-  AddActivityEntrySheet,
-  type AddActivityEntrySheetHandle,
-} from "./components/add-activity-entry-sheet";
-import {
-  AddActivityManualSheet,
-  type AddActivityManualSheetHandle,
-} from "./components/add-activity-manual-sheet";
 
-function ActivitiesSkeleton() {
-  return (
-    <Box gap="xs" paddingHorizontal="sm" paddingTop="sm">
-      {[1, 2, 3].map((i) => (
-        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
-      ))}
-    </Box>
-  );
-}
+// ─── Component ───────────────────────────────────────────────────────────────
 
-export default function ActivitiesScreen() {
-  const router = useRouter();
-  const {
-    id: tripID,
-    locationName,
-    locationLat,
-    locationLng,
-  } = useLocalSearchParams<{
-    id: string;
-    locationName?: string;
-    locationLat?: string;
-    locationLng?: string;
-  }>();
+export default function Activities() {
+  const { id: tripID } = useLocalSearchParams<{ id: string }>();
+  const { currentUser } = useUser();
 
-  const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
-  const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
-
-  // Consume location params returned from search-location modal
-  useEffect(() => {
-    if (locationName && locationLat && locationLng) {
-      manualSheetRef.current?.setLocation({
-        name: locationName,
-        lat: parseFloat(locationLat),
-        lng: parseFloat(locationLng),
-      });
-      router.setParams({
-        locationName: undefined,
-        locationLat: undefined,
-        locationLng: undefined,
-      });
-      manualSheetRef.current?.open();
-    }
-  }, [locationName, locationLat, locationLng, router]);
+  const [activeActivityId, setActiveActivityId] = useState<string | null>(null);
 
   const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
     useActivitiesList(tripID);
@@ -85,80 +43,126 @@ export default function ActivitiesScreen() {
         if (data) prependActivity(data);
       },
     },
-    [prependActivity],
-  );
+  });
 
-  const renderItem = useCallback(
-    ({ item }: { item: ModelsActivityAPIResponse }) => (
-      <ActivityCard activity={item} />
-    ),
-    [],
-  );
+  const handleCreateActivity = () => {
+    if (!tripID) return;
+    const count = activities.length + 1;
+    createActivity({
+      tripID,
+      data: {
+        name: `Test Activity ${count}`,
+        description: "Created for comment testing",
+      },
+    });
+  };
+
+  const {
+    comments,
+    isLoading: isLoadingComments,
+    isLoadingMore: isLoadingMoreComments,
+    fetchNextPage,
+    onSubmitComment,
+    onReact,
+  } = useEntityComments({
+    tripID: tripID ?? "",
+    entityType: modelsEntityType.ActivityEntity,
+    entityID: activeActivityId ?? "",
+    enabled: !!activeActivityId && !!tripID,
+  });
 
   const renderFooter = useCallback(
     () =>
       isLoadingMore ? (
         <Box paddingVertical="sm" alignItems="center">
-          <ActivityIndicator size="small" />
+          <ActivityIndicator size="small" color={ColorPalette.gray500} />
         </Box>
       ) : null,
     [isLoadingMore],
   );
 
-  return (
-    <Box flex={1} backgroundColor="gray50">
-      {isLoading ? (
-        <ActivitiesSkeleton />
-      ) : activities.length === 0 ? (
-        <Box flex={1} alignItems="center" justifyContent="center">
-          <EmptyState
-            title="No activities yet"
-            description="Add the first one!"
-          />
-        </Box>
-      ) : (
-        <>
-          <Box paddingHorizontal="sm" paddingTop="xs" paddingBottom="xxs">
-            <Text variant="bodyXsDefault" color="gray500">
-              {activities.length}{" "}
-              {activities.length === 1 ? "activity" : "activities"} added
-            </Text>
-          </Box>
-          <FlatList
-            data={activities}
-            keyExtractor={(item) => item.id ?? ""}
-            renderItem={renderItem}
-            onEndReached={fetchMore}
-            onEndReachedThreshold={0.3}
-            ListFooterComponent={renderFooter}
-            contentContainerStyle={styles.list}
-          />
-        </>
-      )}
-
-      {/* Add an activity button */}
-      <Pressable
-        onPress={() => entrySheetRef.current?.open()}
-        style={({ pressed }) => [
-          styles.addButton,
-          pressed && { opacity: 0.8 },
-        ]}
+  const renderItem = useCallback(
+    ({ item }: { item: ModelsActivity }) => (
+      <Box
+        backgroundColor="white"
+        borderRadius="md"
+        padding="md"
+        gap="sm"
+        marginHorizontal="sm"
       >
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="center"
-          gap="xs"
-          paddingVertical="sm"
-          borderRadius="sm"
-          style={styles.addButtonInner}
-        >
-          <Plus size={16} color={ColorPalette.gray500} />
-          <Text variant="bodySmMedium" color="gray500">
-            Add an activity
+        <Text variant="headingSm" color="gray900" numberOfLines={1}>
+          {item.name ?? "Unnamed Activity"}
+        </Text>
+        {item.description ? (
+          <Text variant="bodySmDefault" color="gray500" numberOfLines={2}>
+            {item.description}
           </Text>
-        </Box>
-      </Pressable>
+        ) : null}
+
+        <Box height={1} backgroundColor="gray100" />
+
+        <Pressable
+          onPress={() => setActiveActivityId(item.id ?? null)}
+          style={({ pressed }) => [
+            styles.commentButton,
+            pressed && styles.commentButtonPressed,
+          ]}
+          accessibilityLabel="Open comments"
+        >
+          <MessageCircle size={16} color={ColorPalette.gray500} />
+          <Text variant="bodyXsMedium" color="gray500">
+            Comments
+          </Text>
+        </Pressable>
+      </Box>
+    ),
+    [],
+  );
+
+  return (
+    <Screen>
+      <Box flex={1} backgroundColor="gray50">
+        <FlatList
+          data={activities}
+          keyExtractor={(item) => item.id ?? ""}
+          renderItem={renderItem}
+          onEndReached={fetchMore}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <Box gap="sm">
+              <Box
+                padding="lg"
+                paddingTop="xl"
+                backgroundColor="white"
+                gap="xs"
+              >
+                <Text variant="headingMd" color="gray900">
+                  Activities
+                </Text>
+              </Box>
+
+              <Pressable
+                onPress={handleCreateActivity}
+                disabled={isCreating || !tripID}
+                style={({ pressed }) => [
+                  styles.createButton,
+                  (pressed || isCreating) && styles.createButtonPressed,
+                ]}
+              >
+                {isCreating ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={ColorPalette.gray900}
+                  />
+                ) : (
+                  <Plus size={18} color={ColorPalette.gray900} />
+                )}
+                <Text variant="bodySmMedium" color="gray900">
+                  Create Activity
+                </Text>
+              </Pressable>
 
               <Pressable
                 onPress={() =>
@@ -221,15 +225,22 @@ export default function ActivitiesScreen() {
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  list: {
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xs,
-    gap: Layout.spacing.xs,
+  listContent: {
+    gap: 8,
+    paddingBottom: 24,
   },
-  addButton: {
-    marginHorizontal: Layout.spacing.sm,
-    marginBottom: Layout.spacing.md,
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: ColorPalette.brand500,
   },
   createButtonPressed: {
     opacity: 0.75,
@@ -259,5 +270,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: ColorPalette.gray50,
+  },
+  commentButtonPressed: {
+    opacity: 0.7,
   },
 });
