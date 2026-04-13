@@ -42,9 +42,14 @@ interface EditableLinkDraft {
 }
 
 export default function PitchDetail() {
-  const { id: pitchID, tripID } = useLocalSearchParams<{
+  const {
+    id: pitchID,
+    tripID,
+    openComments,
+  } = useLocalSearchParams<{
     id: string;
     tripID: string;
+    openComments?: string;
   }>();
   const { data: pitch, isLoading } = useGetPitch(tripID!, pitchID!);
   const { currentUser } = useUser();
@@ -55,7 +60,9 @@ export default function PitchDetail() {
   const updatePitch = useUpdatePitch();
   const deletePitch = useDeletePitch();
   const uploadImageMutation = useUploadImage();
-  const [commentSectionVisible, setCommentSectionVisible] = useState(false);
+  const [commentSectionVisible, setCommentSectionVisible] = useState(
+    openComments === "true",
+  );
   const [audioSheetVisible, setAudioSheetVisible] = useState(false);
   const [editSheetVisible, setEditSheetVisible] = useState(false);
   const [addLinkSheetVisible, setAddLinkSheetVisible] = useState(false);
