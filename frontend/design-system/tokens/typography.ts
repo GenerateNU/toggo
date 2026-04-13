@@ -70,6 +70,7 @@ export const Typography = {
   bodyStrong: createTypography({ size: "md", family: "semiBold" }),
 
   bodyLarge: createTypography({ size: "lg", family: "regular" }),
+  bodyLargeStrong: createTypography({ size: "lg", family: "semiBold" }),
 
   bodySmDefault: createTypography({ size: "sm", family: "regular" }),
   bodySmMedium: createTypography({ size: "sm", family: "medium" }),
