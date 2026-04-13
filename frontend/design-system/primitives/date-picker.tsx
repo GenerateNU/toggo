@@ -190,9 +190,7 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text variant="bodyLargeStrong">
-          {formatMonth(year, month)}
-        </Text>
+        <Text variant="bodyLargeStrong">{formatMonth(year, month)}</Text>
 
         {weeks.map((week, wi) => (
           <Box key={wi} flexDirection="row">
@@ -369,9 +367,7 @@ export default function DateRangePicker({
             >
               <X size={24} />
             </Pressable>
-            <Text variant="headingSm">
-              Select dates
-            </Text>
+            <Text variant="headingSm">Select dates</Text>
           </Box>
 
           {/* Selection summary pill */}
@@ -465,7 +461,15 @@ export default function DateRangePicker({
         </Box>
 
         {/* ─── Footer ───────────────────────────────────────────────── */}
-        <Box style={[styles.footer, { paddingBottom: Layout.spacing.md }]}>
+        <Box
+          style={[
+            {
+              marginBottom: Layout.spacing.md,
+              paddingVertical: Layout.spacing.xs,
+              paddingHorizontal: GRID_PADDING,
+            },
+          ]}
+        >
           <Box flexDirection="row" style={styles.footerButtons}>
             {/* Clear button */}
             <Pressable
@@ -639,13 +643,6 @@ const styles = StyleSheet.create({
   },
 
   /* Footer */
-  footer: {
-    paddingHorizontal: GRID_PADDING,
-    paddingTop: Layout.spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.gray300,
-    backgroundColor: ColorPalette.white,
-  },
   footerButtons: {
     gap: 10,
     flexDirection: "row",
