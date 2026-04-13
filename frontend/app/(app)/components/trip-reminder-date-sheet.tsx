@@ -81,7 +81,7 @@ export function TripReminderDateSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={20} color={ColorPalette.gray950} />
+                <X size={24} color={ColorPalette.gray950} />
               </TouchableOpacity>
             </Box>
             <Text variant="bodyDefault" color="gray500">

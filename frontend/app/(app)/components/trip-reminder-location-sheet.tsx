@@ -46,7 +46,7 @@ export function TripReminderLocationSheet({
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <X size={20} color={ColorPalette.gray950} />
+              <X size={24} color={ColorPalette.gray950} />
             </TouchableOpacity>
           </Box>
 
