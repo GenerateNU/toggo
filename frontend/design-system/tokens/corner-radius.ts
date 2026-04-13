@@ -6,6 +6,7 @@ export const CornerRadius = {
   lg: 16, // sheets, dialogs, large containers
   xl: 20, // large nested components
   xxl: 24,
+  xxxl: 30,
   full: 9999, // fully rounded (chips, avatars)
 } as const;
 

@@ -1,10 +1,11 @@
+import { Logo } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Image } from "expo-image";
 import { StyleSheet, View } from "react-native";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TRIP_HEADER_IMAGE_HEIGHT = 260;
+const TRIP_HEADER_IMAGE_HEIGHT = 300;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,9 @@ export function TripHeader({ coverImageUrl }: TripHeaderProps) {
       contentFit="cover"
     />
   ) : (
-    <View style={[styles.coverImage, styles.coverImageFallback]} />
+    <View style={[styles.coverImage, styles.coverImageFallback]}>
+      <Logo color="white" size="xxxl" />
+    </View>
   );
 }
 
@@ -37,7 +40,9 @@ const styles = StyleSheet.create({
     height: TRIP_HEADER_IMAGE_HEIGHT,
   },
   coverImageFallback: {
-    backgroundColor: ColorPalette.gray100,
+    backgroundColor: ColorPalette.brand400,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

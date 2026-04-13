@@ -324,7 +324,7 @@ seed_trip_santorini() {
     ok "Categories created"
 
     # Activities
-    local a1 a2 a3 a4
+    local a1 a2 a3 a4 a5 a6
     resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
         "name": "Sunset at Oia",
         "description": "Watch the famous Santorini sunset from the cliffs of Oia village.",
@@ -332,7 +332,9 @@ seed_trip_santorini() {
         "location_name": "Oia, Santorini",
         "location_lat": 36.4618,
         "location_lng": 25.3753,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-sunset/400/400",
+        "dates": [{"start":"2026-01-16","end":"2026-01-16"},{"start":"2026-01-20","end":"2026-01-20"}]
     }')
     check_resp "$resp" "Activity: Sunset at Oia"
     a1=$(echo "$resp" | jq -r '.id')
@@ -342,7 +344,11 @@ seed_trip_santorini() {
         "description": "Half-day sailing around the caldera with snorkelling stops and BBQ on board.",
         "time_of_day": "afternoon",
         "location_name": "Ammoudi Bay, Santorini",
-        "estimated_price": 85
+        "location_lat": 36.4612,
+        "location_lng": 25.3743,
+        "estimated_price": 85,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-sailing/400/400",
+        "dates": [{"start":"2026-01-17","end":"2026-01-17"},{"start":"2026-01-19","end":"2026-01-19"}]
     }')
     check_resp "$resp" "Activity: Catamaran"
     a2=$(echo "$resp" | jq -r '.id')
@@ -352,7 +358,11 @@ seed_trip_santorini() {
         "description": "Explore the ancient Minoan settlement buried by the volcanic eruption.",
         "time_of_day": "morning",
         "location_name": "Akrotiri Archaeological Site",
-        "estimated_price": 12
+        "location_lat": 36.3517,
+        "location_lng": 25.4033,
+        "estimated_price": 12,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-akrotiri/400/400",
+        "dates": [{"start":"2026-01-18","end":"2026-01-18"}]
     }')
     check_resp "$resp" "Activity: Akrotiri"
     a3=$(echo "$resp" | jq -r '.id')
@@ -362,26 +372,61 @@ seed_trip_santorini() {
         "description": "Sample local Assyrtiko wines with a spectacular caldera view.",
         "time_of_day": "afternoon",
         "location_name": "Santo Wines Winery, Pyrgos",
-        "estimated_price": 35
+        "location_lat": 36.3739,
+        "location_lng": 25.4367,
+        "estimated_price": 35,
+        "media_url": "https://picsum.photos/seed/santorini-wine/400/400",
+        "dates": [{"start":"2026-01-19","end":"2026-01-19"},{"start":"2026-01-21","end":"2026-01-21"}]
     }')
     check_resp "$resp" "Activity: Wine Tasting"
     a4=$(echo "$resp" | jq -r '.id')
-    ok "4 activities created"
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Fira to Oia Cliffside Hike",
+        "description": "Scenic 10km trail along the caldera rim with panoramic views of the volcanic islands.",
+        "location_name": "Fira to Oia Trail, Santorini",
+        "location_lat": 36.4166,
+        "location_lng": 25.4322,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-hike/400/400",
+        "dates": [{"start":"2026-01-17","end":"2026-01-17"}]
+    }')
+    check_resp "$resp" "Activity: Fira-Oia Hike"
+    a5=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Red Beach Snorkelling",
+        "description": "Snorkel among volcanic rock formations at the dramatic Red Beach near Akrotiri.",
+        "time_of_day": "morning",
+        "location_name": "Red Beach, Akrotiri, Santorini",
+        "location_lat": 36.3475,
+        "location_lng": 25.3947,
+        "estimated_price": 25,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-redbeach/400/400",
+        "dates": [{"start":"2026-01-18","end":"2026-01-18"}]
+    }')
+    check_resp "$resp" "Activity: Red Beach"
+    a6=$(echo "$resp" | jq -r '.id')
+    ok "6 activities created"
 
     # Assign categories to activities
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a1/categories/nightlife" '{}' >/dev/null
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a2/categories/beaches"  '{}' >/dev/null
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a4/categories/food"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a6/categories/beaches"  '{}' >/dev/null
 
     # RSVPs
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Polls
@@ -511,7 +556,7 @@ seed_trip_tokyo() {
         '{"name":"day_trips","label":"Day Trips","icon":"🗻"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5
+    local a1 a2 a3 a4 a5 a6 a7
     resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
         "name": "Shibuya Crossing & Scramble",
         "description": "Experience the world-famous pedestrian scramble and explore Shibuya Centre-gai.",
@@ -519,7 +564,9 @@ seed_trip_tokyo() {
         "location_name": "Shibuya, Tokyo",
         "location_lat": 35.6595,
         "location_lng": 139.7004,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-shibuya/400/400",
+        "dates": [{"start":"2026-07-11","end":"2026-07-11"}]
     }')
     check_resp "$resp" "Activity: Shibuya"
     a1=$(echo "$resp" | jq -r '.id')
@@ -529,7 +576,11 @@ seed_trip_tokyo() {
         "description": "Immersive digital art museum – book tickets well in advance!",
         "time_of_day": "afternoon",
         "location_name": "Azabudai Hills, Minato, Tokyo",
-        "estimated_price": 32
+        "location_lat": 35.6615,
+        "location_lng": 139.7365,
+        "estimated_price": 32,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-teamlab/400/400",
+        "dates": [{"start":"2026-07-12","end":"2026-07-12"}]
     }')
     check_resp "$resp" "Activity: teamLab"
     a2=$(echo "$resp" | jq -r '.id')
@@ -539,7 +590,11 @@ seed_trip_tokyo() {
         "description": "Fresh sushi breakfast, tamagoyaki, and street food at the famous outer market.",
         "time_of_day": "morning",
         "location_name": "Tsukiji, Chuo, Tokyo",
-        "estimated_price": 20
+        "location_lat": 35.6654,
+        "location_lng": 139.7707,
+        "estimated_price": 20,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-tsukiji/400/400",
+        "dates": [{"start":"2026-07-13","end":"2026-07-13"}]
     }')
     check_resp "$resp" "Activity: Tsukiji"
     a3=$(echo "$resp" | jq -r '.id')
@@ -549,7 +604,11 @@ seed_trip_tokyo() {
         "description": "Explore the electric town – retro games, anime merchandise, and multi-floor arcades.",
         "time_of_day": "afternoon",
         "location_name": "Akihabara, Chiyoda, Tokyo",
-        "estimated_price": 50
+        "location_lat": 35.7023,
+        "location_lng": 139.7745,
+        "estimated_price": 50,
+        "media_url": "https://picsum.photos/seed/tokyo-akihabara/400/400",
+        "dates": [{"start":"2026-07-14","end":"2026-07-14"}]
     }')
     check_resp "$resp" "Activity: Akihabara"
     a4=$(echo "$resp" | jq -r '.id')
@@ -559,11 +618,42 @@ seed_trip_tokyo() {
         "description": "Bullet train to Kawaguchiko, climb to the 5th station, and soak in hot springs.",
         "time_of_day": "morning",
         "location_name": "Mount Fuji, Yamanashi Prefecture",
-        "estimated_price": 120
+        "location_lat": 35.3606,
+        "location_lng": 138.7274,
+        "estimated_price": 120,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-fuji/400/400",
+        "dates": [{"start":"2026-07-15","end":"2026-07-15"},{"start":"2026-07-17","end":"2026-07-17"}]
     }')
     check_resp "$resp" "Activity: Mt. Fuji"
     a5=$(echo "$resp" | jq -r '.id')
-    ok "5 activities created"
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Golden Gai Bar Hopping",
+        "description": "Wander the tiny alleyways of Shinjuku Golden Gai – over 200 micro-bars in six narrow lanes.",
+        "location_name": "Golden Gai, Shinjuku, Tokyo",
+        "location_lat": 35.6938,
+        "location_lng": 139.7036,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-goldengai/400/400",
+        "dates": [{"start":"2026-07-16","end":"2026-07-16"}]
+    }')
+    check_resp "$resp" "Activity: Golden Gai"
+    a6=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Sumida Fireworks Festival",
+        "description": "Japans oldest and largest fireworks festival with over 20,000 fireworks along the Sumida River.",
+        "time_of_day": "evening",
+        "location_name": "Sumida River, Asakusa, Tokyo",
+        "location_lat": 35.7148,
+        "location_lng": 139.8015,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-fireworks/400/400",
+        "dates": [{"start":"2026-07-18","end":"2026-07-18"}]
+    }')
+    check_resp "$resp" "Activity: Sumida Fireworks"
+    a7=$(echo "$resp" | jq -r '.id')
+    ok "7 activities created"
 
     # Category assignments
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/categories/activities" '{}' >/dev/null
@@ -578,11 +668,15 @@ seed_trip_tokyo() {
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"no"}'    >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Rank poll – neighbourhood
@@ -723,7 +817,7 @@ seed_trip_nyc() {
         '{"name":"sightseeing","label":"Sightseeing","icon":"🗽"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5
+    local a1 a2 a3 a4 a5 a6 a7 a8
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Central Park Morning Walk",
         "description": "Start the day with a walk through the park – Bethesda Fountain, the Mall, and the Lake.",
@@ -731,7 +825,9 @@ seed_trip_nyc() {
         "location_name": "Central Park, Manhattan",
         "location_lat": 40.7851,
         "location_lng": -73.9683,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-centralpark/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: Central Park"
     a1=$(echo "$resp" | jq -r '.id')
@@ -741,7 +837,11 @@ seed_trip_nyc() {
         "description": "Spend 2–3 hours at MoMA. Van Gogh Starry Night, Warhol prints, and rotating exhibitions.",
         "time_of_day": "morning",
         "location_name": "MoMA, Midtown Manhattan",
-        "estimated_price": 25
+        "location_lat": 40.7614,
+        "location_lng": -73.9776,
+        "estimated_price": 25,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-moma/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: MoMA"
     a2=$(echo "$resp" | jq -r '.id')
@@ -751,7 +851,11 @@ seed_trip_nyc() {
         "description": "Walk across the iconic bridge for amazing skyline views. Great for photos at golden hour.",
         "time_of_day": "afternoon",
         "location_name": "Brooklyn Bridge, New York",
-        "estimated_price": 0
+        "location_lat": 40.7061,
+        "location_lng": -73.9969,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-brooklynbridge/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
     }')
     check_resp "$resp" "Activity: Brooklyn Bridge"
     a3=$(echo "$resp" | jq -r '.id')
@@ -761,7 +865,11 @@ seed_trip_nyc() {
         "description": "Elevated park on a historic freight rail line. Great public art and city views.",
         "time_of_day": "afternoon",
         "location_name": "High Line, Chelsea, Manhattan",
-        "estimated_price": 0
+        "location_lat": 40.7480,
+        "location_lng": -74.0048,
+        "estimated_price": 0,
+        "media_url": "https://picsum.photos/seed/nyc-highline/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: High Line"
     a4=$(echo "$resp" | jq -r '.id')
@@ -771,11 +879,56 @@ seed_trip_nyc() {
         "description": "Self-guided tour through Chelsea Market – tacos, lobster rolls, artisan cheese, and more.",
         "time_of_day": "afternoon",
         "location_name": "Chelsea Market, Manhattan",
-        "estimated_price": 30
+        "location_lat": 40.7424,
+        "location_lng": -74.0061,
+        "estimated_price": 30,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-chelseamarket/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: Chelsea Market"
     a5=$(echo "$resp" | jq -r '.id')
-    ok "5 activities created"
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Top of the Rock Observation Deck",
+        "description": "Panoramic views of Manhattan from 70 floors up. Unobstructed view of Central Park and the Empire State Building.",
+        "location_name": "30 Rockefeller Plaza, Midtown",
+        "location_lat": 40.7593,
+        "location_lng": -73.9794,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-topoftherock/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
+    }')
+    check_resp "$resp" "Activity: Top of the Rock"
+    a6=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$JAMES_JWT" "/trips/$trip_id/activities" '{
+        "name": "Broadway Show – Hadestown",
+        "description": "Tony Award-winning musical retelling the myth of Orpheus and Eurydice. Evening performance at the Walter Kerr Theatre.",
+        "time_of_day": "evening",
+        "location_name": "Walter Kerr Theatre, W 48th St",
+        "location_lat": 40.7601,
+        "location_lng": -73.9876,
+        "estimated_price": 95,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-broadway/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
+    }')
+    check_resp "$resp" "Activity: Broadway"
+    a7=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "Bagels & Coffee at Russ & Daughters",
+        "description": "Classic NYC lox bagel and coffee at the legendary Lower East Side appetizing shop, open since 1914.",
+        "time_of_day": "morning",
+        "location_name": "Russ & Daughters, 179 E Houston St",
+        "location_lat": 40.7223,
+        "location_lng": -73.9886,
+        "estimated_price": 18,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-russdaughters/400/400",
+        "dates": [{"start":"2026-03-02","end":"2026-03-02"}]
+    }')
+    check_resp "$resp" "Activity: Russ & Daughters"
+    a8=$(echo "$resp" | jq -r '.id')
+    ok "8 activities created"
 
     # Category assignments
     api_put "$my_jwt" "/trips/$trip_id/activities/$a1/categories/sightseeing" '{}' >/dev/null
@@ -783,6 +936,9 @@ seed_trip_nyc() {
     api_put "$my_jwt" "/trips/$trip_id/activities/$a3/categories/sightseeing" '{}' >/dev/null
     api_put "$my_jwt" "/trips/$trip_id/activities/$a4/categories/art"         '{}' >/dev/null
     api_put "$my_jwt" "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a6/categories/sightseeing" '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a7/categories/art"         '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a8/categories/food"        '{}' >/dev/null
 
     # RSVPs
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
@@ -790,14 +946,23 @@ seed_trip_nyc() {
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Polls
@@ -936,7 +1101,7 @@ seed_trip_bali() {
         '{"name":"food","label":"Food & Cooking","icon":"🍛"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5 a6
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Tanah Lot Temple at Sunset",
         "description": "Watch the sunset from the iconic sea temple perched on a rocky outcrop. Arrive 1 hr before sunset for best views.",
@@ -944,7 +1109,9 @@ seed_trip_bali() {
         "location_name": "Tanah Lot, Tabanan Regency",
         "location_lat": -8.6211,
         "location_lng": 115.0866,
-        "estimated_price": 5
+        "estimated_price": 5,
+        "thumbnail_url": "https://picsum.photos/seed/bali-tanahlot/400/400",
+        "dates": [{"start":"2026-12-06","end":"2026-12-06"}]
     }')
     check_resp "$resp" "Activity: Tanah Lot"
     a1=$(echo "$resp" | jq -r '.id')
@@ -956,7 +1123,9 @@ seed_trip_bali() {
         "location_name": "Tegallalang, Ubud",
         "location_lat": -8.4296,
         "location_lng": 115.2789,
-        "estimated_price": 15
+        "estimated_price": 15,
+        "thumbnail_url": "https://picsum.photos/seed/bali-riceterrace/400/400",
+        "dates": [{"start":"2026-12-07","end":"2026-12-07"}]
     }')
     check_resp "$resp" "Activity: Rice Terrace"
     a2=$(echo "$resp" | jq -r '.id')
@@ -966,7 +1135,11 @@ seed_trip_bali() {
         "description": "World-class Ayurvedic spa treatments, hot springs, and yoga in a jungle retreat setting.",
         "time_of_day": "morning",
         "location_name": "COMO Shambhala, Ubud",
-        "estimated_price": 180
+        "location_lat": -8.3364,
+        "location_lng": 115.3252,
+        "estimated_price": 180,
+        "thumbnail_url": "https://picsum.photos/seed/bali-spa/400/400",
+        "dates": [{"start":"2026-12-08","end":"2026-12-08"}]
     }')
     check_resp "$resp" "Activity: Spa"
     a3=$(echo "$resp" | jq -r '.id')
@@ -976,7 +1149,11 @@ seed_trip_bali() {
         "description": "2-hour beginner surf lesson with certified instructor. Equipment included.",
         "time_of_day": "morning",
         "location_name": "Kuta Beach, Badung",
-        "estimated_price": 35
+        "location_lat": -8.7184,
+        "location_lng": 115.1686,
+        "estimated_price": 35,
+        "media_url": "https://picsum.photos/seed/bali-surfing/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-05"},{"start":"2026-12-10","end":"2026-12-10"}]
     }')
     check_resp "$resp" "Activity: Surfing"
     a4=$(echo "$resp" | jq -r '.id')
@@ -986,7 +1163,11 @@ seed_trip_bali() {
         "description": "Learn to cook 5 traditional Balinese dishes. Starts with a market visit to pick fresh ingredients.",
         "time_of_day": "morning",
         "location_name": "Casa Luna Cooking School, Ubud",
-        "estimated_price": 40
+        "location_lat": -8.5069,
+        "location_lng": 115.2625,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/bali-cooking/400/400",
+        "dates": [{"start":"2026-12-11","end":"2026-12-11"}]
     }')
     check_resp "$resp" "Activity: Cooking Class"
     a5=$(echo "$resp" | jq -r '.id')
@@ -996,11 +1177,70 @@ seed_trip_bali() {
         "description": "Visit the dramatic clifftop temple then watch the fire Kecak dance at sunset. Stunning ocean views.",
         "time_of_day": "evening",
         "location_name": "Uluwatu Temple, Pecatu",
-        "estimated_price": 10
+        "location_lat": -8.8291,
+        "location_lng": 115.0849,
+        "estimated_price": 10,
+        "thumbnail_url": "https://picsum.photos/seed/bali-uluwatu/400/400",
+        "dates": [{"start":"2026-12-13","end":"2026-12-13"}]
     }')
     check_resp "$resp" "Activity: Uluwatu"
     a6=$(echo "$resp" | jq -r '.id')
-    ok "6 activities created"
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Ubud Monkey Forest Walk",
+        "description": "Stroll through the Sacred Monkey Forest Sanctuary – ancient temples, banyan trees, and hundreds of long-tailed macaques.",
+        "location_name": "Sacred Monkey Forest, Ubud",
+        "location_lat": -8.5185,
+        "location_lng": 115.2587,
+        "estimated_price": 5,
+        "thumbnail_url": "https://picsum.photos/seed/bali-monkeyforest/400/400",
+        "dates": [{"start":"2026-12-08","end":"2026-12-08"}]
+    }')
+    check_resp "$resp" "Activity: Monkey Forest"
+    a7=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Sekumpul Waterfall Hike",
+        "description": "Trek through jungle to Balis most stunning waterfall. Steep descent and river crossing – bring water shoes.",
+        "time_of_day": "afternoon",
+        "location_name": "Sekumpul Waterfall, Singaraja",
+        "location_lat": -8.1754,
+        "location_lng": 115.4203,
+        "estimated_price": 15,
+        "thumbnail_url": "https://picsum.photos/seed/bali-sekumpul/400/400",
+        "dates": [{"start":"2026-12-07","end":"2026-12-07"}]
+    }')
+    check_resp "$resp" "Activity: Sekumpul Waterfall"
+    a8=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Ubud Night Market Food Tour",
+        "description": "Sample local street food – babi guling, sate lilit, lawar, and fresh coconut. Guided walking tour through Gianyar night market.",
+        "time_of_day": "evening",
+        "location_name": "Gianyar Night Market, Ubud",
+        "location_lat": -8.5414,
+        "location_lng": 115.3235,
+        "estimated_price": 20,
+        "thumbnail_url": "https://picsum.photos/seed/bali-nightmarket/400/400",
+        "dates": [{"start":"2026-12-09","end":"2026-12-09"}]
+    }')
+    check_resp "$resp" "Activity: Night Market"
+    a9=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$JAMES_JWT" "/trips/$trip_id/activities" '{
+        "name": "Nusa Penida Day Trip",
+        "description": "Fast boat to Nusa Penida for Kelingking Beach, Angel Billabong, and Broken Beach. Full day adventure with snorkelling stop.",
+        "time_of_day": "morning",
+        "location_name": "Nusa Penida Island",
+        "location_lat": -8.7275,
+        "location_lng": 115.5444,
+        "estimated_price": 55,
+        "thumbnail_url": "https://picsum.photos/seed/bali-nusapenida/400/400",
+        "dates": [{"start":"2026-12-12","end":"2026-12-12"}]
+    }')
+    check_resp "$resp" "Activity: Nusa Penida"
+    a10=$(echo "$resp" | jq -r '.id')
+    ok "10 activities created"
 
     # Category assignments
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/categories/culture"     '{}' >/dev/null
@@ -1009,23 +1249,43 @@ seed_trip_bali() {
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/categories/adventure"   '{}' >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/categories/culture"     '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/categories/culture"     '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/categories/adventure"   '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a9/categories/food"        '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a10/categories/adventure"  '{}' >/dev/null
 
-    # RSVPs – all members respond to all activities
+    # RSVPs – all members respond to core activities
     for actor_jwt in "$my_jwt" "$MAYA_JWT" "$CARLOS_JWT" "$PRIYA_JWT" "$JAMES_JWT"; do
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     done
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'  >/dev/null
-    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'  >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"no"}'    >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a4/rsvps" '{"status":"no"}'    >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"maybe"}' >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a10/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a10/rsvps" '{"status":"no"}'    >/dev/null
     ok "RSVPs recorded"
 
     # Vote poll – area to stay

@@ -198,7 +198,11 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 	}
 
 	if req.TimeOfDay != nil {
-		updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		if *req.TimeOfDay == "" {
+			updateQuery = updateQuery.Set("time_of_day = NULL")
+		} else {
+			updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		}
 	}
 
 	if req.ThumbnailURL != nil {
@@ -259,7 +263,11 @@ func (r *activityRepository) UpdateTx(ctx context.Context, tx bun.Tx, activityID
 		updateQuery = updateQuery.Set("name = ?", *req.Name)
 	}
 	if req.TimeOfDay != nil {
-		updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		if *req.TimeOfDay == "" {
+			updateQuery = updateQuery.Set("time_of_day = NULL")
+		} else {
+			updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		}
 	}
 	if req.ThumbnailURL != nil {
 		updateQuery = updateQuery.Set("thumbnail_url = ?", *req.ThumbnailURL)

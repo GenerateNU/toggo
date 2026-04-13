@@ -1,6 +1,7 @@
 import { useCreateActivity } from "@/api/activities";
 import { useDeleteImage, useUploadImage } from "@/api/files/custom";
 import { Box, Button, Screen, Text } from "@/design-system";
+import type { ModelsActivityTimeOfDay } from "@/types/types.gen";
 import { ColorPalette } from "@/design-system/tokens/color";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,7 +16,15 @@ import {
 } from "react-native";
 
 export default function CreateActivity() {
-  const { id: tripID } = useLocalSearchParams<{ id: string }>();
+  const {
+    id: tripID,
+    date,
+    timeOfDay,
+  } = useLocalSearchParams<{
+    id: string;
+    date?: string;
+    timeOfDay?: string;
+  }>();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -80,6 +89,10 @@ export default function CreateActivity() {
           name: name.trim(),
           description: description.trim() || undefined,
           image_ids: uploadedImageIds,
+          ...(date ? { dates: [{ start: date, end: date }] } : {}),
+          ...(timeOfDay
+            ? { time_of_day: timeOfDay as ModelsActivityTimeOfDay }
+            : {}),
         },
       });
 

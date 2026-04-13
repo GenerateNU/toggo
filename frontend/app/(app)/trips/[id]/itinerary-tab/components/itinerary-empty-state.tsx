@@ -1,8 +1,6 @@
 import { Box, Text } from "@/design-system";
 import { StyleSheet } from "react-native";
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export function ItineraryEmptyState() {
   return (
     <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
