@@ -259,12 +259,14 @@ export function CreateTripSheet({
           // ─── Form state ─────────────────────────────────────────────────
           <Box
             paddingHorizontal="sm"
-            paddingTop="sm"
             paddingBottom="lg"
-            gap="md"
+            gap="xxs"
           >
             {/* Close button */}
-            <Box flexDirection="row" justifyContent="flex-end">
+            <Box flexDirection="row" justifyContent="space-between">
+              <Text variant="headingMd" color="gray950">
+                Know where you're going?
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   bottomSheetRef.current?.close();
@@ -274,18 +276,13 @@ export function CreateTripSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={24} color={ColorPalette.gray950} />
+                <X size={24} color={ColorPalette.gray950} />xs
               </TouchableOpacity>
             </Box>
 
-            <Box gap="xxs">
-              <Text variant="headingMd" color="gray950">
-                Plan a new trip
-              </Text>
-              <Text variant="bodyDefault" color="gray500">
-                Where are you headed?
-              </Text>
-            </Box>
+            <Text variant="bodyDefault" color="gray500" marginBottom="xs">
+              Plan a new trip
+            </Text>
 
             <Box gap="sm">
               {/* Location field */}
