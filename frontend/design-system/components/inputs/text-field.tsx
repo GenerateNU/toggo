@@ -4,6 +4,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { FontFamily } from "@/design-system/tokens/typography";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
@@ -140,6 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 12,
+    fontFamily: FontFamily.regular,
   },
   inputDisabled: {
     opacity: 0.6,
