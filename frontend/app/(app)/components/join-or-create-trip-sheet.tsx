@@ -137,7 +137,6 @@ export function JoinOrCreateTripSheet({
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      snapPoints={["65%"]}
       onClose={handleSheetClose}
     >
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
@@ -148,7 +147,7 @@ export function JoinOrCreateTripSheet({
             accessibilityRole="button"
             accessibilityLabel="Close"
           >
-            <X size={20} color={ColorPalette.gray950} />
+            <X size={24} color={ColorPalette.gray950} />
           </TouchableOpacity>
         </Box>
 

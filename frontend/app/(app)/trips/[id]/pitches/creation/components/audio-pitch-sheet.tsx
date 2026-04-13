@@ -310,7 +310,6 @@ export function AudioPitchSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["52%"]}
       initialIndex={-1}
       onClose={handleClose}
       footer={
@@ -347,7 +346,7 @@ export function AudioPitchSheet({
           Add an audio pitch
         </Text>
         <Pressable onPress={handleClose} hitSlop={8}>
-          <X size={20} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       </Box>
 

@@ -173,7 +173,6 @@ export function CreateTripSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={["55%", "95%"]}
         onChange={handleSheetChange}
         onClose={handleDismiss}
       >
@@ -224,7 +223,7 @@ export function CreateTripSheet({
                     }}
                     hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                   >
-                    <X size={14} color={ColorPalette.gray400} />
+                    <X size={24} color={ColorPalette.gray400} />
                   </TouchableOpacity>
                 )}
               </Box>
@@ -275,7 +274,7 @@ export function CreateTripSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={20} color={ColorPalette.gray950} />
+                <X size={24} color={ColorPalette.gray950} />
               </TouchableOpacity>
             </Box>
 

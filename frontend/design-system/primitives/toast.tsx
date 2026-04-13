@@ -98,7 +98,7 @@ function DefaultToast({
 
       {showClose && !action && (
         <Pressable onPress={onClose} hitSlop={8} style={styles.closeButton}>
-          <X size={18} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       )}
     </Box>

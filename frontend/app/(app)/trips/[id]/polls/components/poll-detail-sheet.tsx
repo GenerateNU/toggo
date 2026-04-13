@@ -902,7 +902,6 @@ function VoteOptionVotersSheet({
     <BottomSheetComponent
       ref={subSheetRef}
       initialIndex={-1}
-      snapPoints={["50%"]}
       onClose={onClose}
     >
       <Box paddingHorizontal="md" gap="md">
@@ -918,7 +917,7 @@ function VoteOptionVotersSheet({
               : ""}
           </Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <X size={20} color={ColorPalette.gray500} />
+            <X size={24} color={ColorPalette.gray500} />
           </Pressable>
         </Box>
 
@@ -995,7 +994,6 @@ export default function PollDetailSheet({
       <BottomSheetComponent
         ref={sheetRef}
         initialIndex={-1}
-        snapPoints={["80%", "95%"]}
         onClose={handleClose}
       >
         {poll && (
@@ -1009,7 +1007,7 @@ export default function PollDetailSheet({
             >
               <TabBar active={activeTab} onChange={setActiveTab} />
               <Pressable onPress={handleClose} hitSlop={8}>
-                <X size={20} color={ColorPalette.gray500} />
+                <X size={24} color={ColorPalette.gray500} />
               </Pressable>
             </Box>
 

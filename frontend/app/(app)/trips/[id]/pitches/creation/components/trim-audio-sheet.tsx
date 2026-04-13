@@ -172,7 +172,6 @@ export function TrimAudioSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["55%"]}
       initialIndex={0}
       onClose={onClose}
       footer={
@@ -202,7 +201,7 @@ export function TrimAudioSheet({
           Trim audio
         </Text>
         <Pressable onPress={onClose} hitSlop={8}>
-          <X size={20} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       </Box>
 
