@@ -3,7 +3,7 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
-import ActivityFeedTabContent from "@/app/(app)/trips/[id]/components/activity-feed-tab-content";
+import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";

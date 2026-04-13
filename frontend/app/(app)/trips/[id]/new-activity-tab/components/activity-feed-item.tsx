@@ -8,27 +8,20 @@ import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   interpolateColor,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
+import { runOnJS } from "react-native-worklets";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type ActivityFeedItemProps = {
-  isUnread: boolean;
-  onMarkRead?: () => void;
-  children: React.ReactNode;
-};
-
-// ─── Config ──────────────────────────────────────────────────────────────────
-
-const SWIPE_ICON_SIZE = 15;
-const DISMISS_THRESHOLD = -160;
-const SNAP_BACK_CONFIG = { duration: 250 };
+import type { ActivityFeedItemProps } from "../types";
+import {
+  SWIPE_ICON_SIZE,
+  DISMISS_THRESHOLD,
+  SNAP_BACK_CONFIG,
+} from "../constants";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 

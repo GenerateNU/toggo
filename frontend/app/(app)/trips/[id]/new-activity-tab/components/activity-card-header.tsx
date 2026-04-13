@@ -2,51 +2,12 @@ import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import {
-  ChartColumnBig,
-  Binoculars,
-  MapPin,
-  MessageCircle,
-  Ellipsis,
-} from "lucide-react-native";
-import type { LucideIcon } from "lucide-react-native";
+import { Ellipsis } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, useWindowDimensions } from "react-native";
+import { ACTIVITY_CONFIG, CHIP_ICON_SIZE, MENU_ICON_SIZE } from "../constants";
+import type { ActivityCardHeaderProps } from "../types";
 import ActivityContextMenu from "./activity-context-menu";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export type ActivityType =
-  | "poll"
-  | "activity"
-  | "pitch"
-  | "comment"
-  | "unknown";
-
-type ActivityCardHeaderProps = {
-  activityType: ActivityType;
-  timestamp: string;
-  isUnread?: boolean;
-  onMarkRead?: () => void;
-  goToLabel?: string;
-  onGoTo?: () => void;
-};
-
-// ─── Config ──────────────────────────────────────────────────────────────────
-
-const CHIP_ICON_SIZE = 14;
-const MENU_ICON_SIZE = 16;
-
-const ACTIVITY_CONFIG: Record<
-  ActivityType,
-  { label: string; icon: LucideIcon }
-> = {
-  poll: { label: "New Poll", icon: ChartColumnBig },
-  activity: { label: "New Activity", icon: Binoculars },
-  pitch: { label: "New Pitch", icon: MapPin },
-  comment: { label: "New Comment", icon: MessageCircle },
-  unknown: { label: "Update", icon: ChartColumnBig },
-};
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -126,6 +87,8 @@ export default function ActivityCardHeader({
             ref={menuButtonRef}
             onPress={handleMenuPress}
             hitSlop={Layout.spacing.xs}
+            accessibilityRole="button"
+            accessibilityLabel="Activity options"
           >
             <Ellipsis size={MENU_ICON_SIZE} color={ColorPalette.gray400} />
           </Pressable>

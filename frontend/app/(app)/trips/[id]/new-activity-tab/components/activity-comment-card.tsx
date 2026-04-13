@@ -5,33 +5,14 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { BellDot, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
+import {
+  CONTEXT_ICON_SIZE,
+  CTA_ICON_SIZE,
+  AVATAR_TEXT_GAP,
+  TEXT_COLUMN_GAP,
+} from "../constants";
+import type { ActivityCommentCardProps } from "../types";
 import ActivityCardHeader from "./activity-card-header";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type CommentData = {
-  id?: string;
-  body?: string;
-  user_id?: string;
-  user_name?: string;
-  entity_type?: string;
-  entity_name?: string;
-};
-
-type ActivityCommentCardProps = {
-  comment: CommentData;
-  timestamp: string;
-  isUnread: boolean;
-  onMarkRead?: () => void;
-  onViewComment?: () => void;
-};
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const CONTEXT_ICON_SIZE = 14;
-const CTA_ICON_SIZE = 16;
-const AVATAR_TEXT_GAP = 6;
-const TEXT_COLUMN_GAP = 2;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 

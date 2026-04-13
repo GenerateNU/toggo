@@ -4,68 +4,69 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { BellDot } from "lucide-react-native";
-import { Pressable, StyleSheet } from "react-native";
+import { Image, Pressable, StyleSheet } from "react-native";
+import { CTA_ICON_SIZE, THUMBNAIL_HEIGHT } from "../constants";
+import type { ActivityPitchCardProps } from "../types";
 import ActivityCardHeader from "./activity-card-header";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type ActivityCardProps = {
-  name: string;
-  actorId?: string;
-  timestamp: string;
-  isUnread: boolean;
-  onMarkRead?: () => void;
-  onView?: () => void;
-};
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const CTA_ICON_SIZE = 16;
-
-// ─── Component ───────────────────────────────────────────────────────────────
-
-export default function ActivityCard({
-  name,
-  actorId,
+export default function ActivityPitchCard({
+  pitch,
   timestamp,
   isUnread,
   onMarkRead,
-  onView,
-}: ActivityCardProps) {
+  onViewPitch,
+}: ActivityPitchCardProps) {
+  const thumbnailUrl =
+    pitch.images?.[0]?.medium_url ?? pitch.links?.[0]?.thumbnail_url ?? null;
+
   return (
-    <Pressable onPress={onView} disabled={!onView}>
+    <Pressable onPress={onViewPitch} disabled={!onViewPitch}>
       <Box
         backgroundColor="white"
-        borderRadius="md"
+        borderRadius="xl"
         overflow="hidden"
         style={[styles.cardShadow, !isUnread && styles.cardRead]}
       >
         <Box style={styles.cardInner}>
           <ActivityCardHeader
-            activityType="activity"
+            activityType="pitch"
             timestamp={timestamp}
             isUnread={isUnread}
             onMarkRead={onMarkRead}
-            goToLabel="Go to activity"
-            onGoTo={onView}
+            goToLabel="Go to pitch"
+            onGoTo={onViewPitch}
           />
 
-          <Box flexDirection="row" alignItems="center" gap="xs">
-            {actorId && <UserAvatar variant="sm" userId={actorId} />}
-            <Text
-              variant="bodyMedium"
-              color="gray950"
-              numberOfLines={2}
-              style={{ flex: 1 }}
-            >
-              {name.trim()}
-            </Text>
+          <Box gap="sm">
+            {thumbnailUrl && (
+              <Box style={styles.thumbnailContainer}>
+                <Image
+                  source={{ uri: thumbnailUrl }}
+                  style={styles.thumbnail}
+                  resizeMode="cover"
+                />
+              </Box>
+            )}
+
+            <Box flexDirection="row" alignItems="center" gap="xs">
+              {pitch.user_id && (
+                <UserAvatar variant="sm" userId={pitch.user_id} />
+              )}
+              <Text
+                variant="headingSm"
+                color="gray950"
+                numberOfLines={1}
+                style={{ flex: 1 }}
+              >
+                {pitch.title ?? "Untitled Pitch"}
+              </Text>
+            </Box>
           </Box>
 
-          <Pressable onPress={onView} style={styles.ctaButton}>
+          <Pressable onPress={onViewPitch} style={styles.ctaButton}>
             <BellDot size={CTA_ICON_SIZE} color={ColorPalette.blue500} />
             <Text variant="bodyStrong" style={styles.ctaLabel}>
-              View activity
+              View pitch
             </Text>
           </Pressable>
         </Box>
@@ -89,8 +90,20 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.gray100,
   },
   cardInner: {
-    padding: Layout.spacing.sm - Layout.spacing.xxs,
+    paddingTop: Layout.spacing.sm - Layout.spacing.xxs,
+    paddingBottom: Layout.spacing.sm,
+    paddingHorizontal: Layout.spacing.sm - Layout.spacing.xxs,
     gap: Layout.spacing.sm - Layout.spacing.xxs,
+  },
+  thumbnailContainer: {
+    height: THUMBNAIL_HEIGHT,
+    borderRadius: CornerRadius.sm,
+    overflow: "hidden",
+    backgroundColor: ColorPalette.gray100,
+  },
+  thumbnail: {
+    width: "100%",
+    height: "100%",
   },
   ctaButton: {
     flexDirection: "row",
