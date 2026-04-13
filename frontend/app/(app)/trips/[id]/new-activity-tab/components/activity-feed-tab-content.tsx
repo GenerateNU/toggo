@@ -16,10 +16,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import ActivityCardItem from "./activity-card-item";
 import ActivityCommentItem from "./activity-comment-item";
 import { FEEDWORTHY_TOPICS, RECENT_CUTOFF_MS } from "../constants";
-import type {
-  ActivityFeedTabContentProps,
-  ActivityType,
-} from "../types";
+import type { ActivityFeedTabContentProps, ActivityType } from "../types";
 import ActivityPitchItem from "./activity-pitch-item";
 import ActivityPollItem from "./activity-poll-item";
 

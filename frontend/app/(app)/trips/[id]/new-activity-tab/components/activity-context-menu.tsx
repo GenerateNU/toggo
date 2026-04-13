@@ -57,7 +57,10 @@ export default function ActivityContextMenu({
                     pressed && styles.rowPressed,
                   ]}
                 >
-                  <CheckCircle size={CONTEXT_MENU_ICON_SIZE} color={ColorPalette.gray900} />
+                  <CheckCircle
+                    size={CONTEXT_MENU_ICON_SIZE}
+                    color={ColorPalette.gray900}
+                  />
                   <Text variant="bodySmMedium" color="gray900">
                     Mark as read
                   </Text>
@@ -77,7 +80,10 @@ export default function ActivityContextMenu({
                   pressed && styles.rowPressed,
                 ]}
               >
-                <ExternalLink size={CONTEXT_MENU_ICON_SIZE} color={ColorPalette.gray900} />
+                <ExternalLink
+                  size={CONTEXT_MENU_ICON_SIZE}
+                  color={ColorPalette.gray900}
+                />
                 <Text variant="bodySmMedium" color="gray900">
                   {goToLabel}
                 </Text>
