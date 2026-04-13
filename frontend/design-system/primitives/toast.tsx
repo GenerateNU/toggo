@@ -9,9 +9,12 @@ import { Layout } from "../tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type ToastVariant = "success" | "neutral";
+
 export type ToastProps = {
   message: string;
   subtitle?: string;
+  variant?: ToastVariant;
   action?: {
     label: string;
     onPress: () => void;
@@ -25,30 +28,33 @@ export type ToastProps = {
 export default function Toast({
   message,
   subtitle,
+  variant = "neutral",
   action,
   showClose = true,
   onClose,
 }: ToastProps) {
-  const hasSubtitle = subtitle !== undefined;
-  const iconColor = hasSubtitle ? ColorPalette.brand500 : ColorPalette.gray950;
+  const iconColor =
+    variant === "success" ? ColorPalette.brand500 : ColorPalette.gray950;
 
   return (
     <Box style={styles.container}>
       <Box style={styles.content}>
         <Check size={CoreSize.iconSm} color={iconColor} strokeWidth={2.5} />
 
-        {hasSubtitle ? (
+        {variant === "success" ? (
           <Box style={styles.textStack}>
             <Text variant="headingSm" color="gray950" numberOfLines={1}>
               {message}
             </Text>
-            <Text
-              variant="bodySmDefault"
-              style={styles.subtitle}
-              numberOfLines={2}
-            >
-              {subtitle}
-            </Text>
+            {subtitle ? (
+              <Text
+                variant="bodySmDefault"
+                style={styles.subtitle}
+                numberOfLines={2}
+              >
+                {subtitle}
+              </Text>
+            ) : null}
           </Box>
         ) : (
           <Text
@@ -78,7 +84,12 @@ export default function Toast({
           </Text>
         </Pressable>
       ) : showClose ? (
-        <Pressable onPress={onClose} hitSlop={8}>
+        <Pressable
+          onPress={onClose}
+          hitSlop={8}
+          accessibilityLabel="Dismiss"
+          accessibilityRole="button"
+        >
           <X size={CoreSize.iconSm} color={ColorPalette.gray950} />
         </Pressable>
       ) : null}
@@ -94,7 +105,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: ColorPalette.white,
     borderRadius: CornerRadius.xl,
-    paddingVertical: Layout.spacing.sm + 4,
+    paddingVertical: Layout.spacing.sm + Layout.spacing.xxs,
     paddingHorizontal: Layout.spacing.sm,
     gap: Layout.spacing.sm,
     shadowColor: ColorPalette.black,
