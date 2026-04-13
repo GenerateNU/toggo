@@ -20,7 +20,7 @@ export function DeleteAccountSheet({
   };
 
   return (
-    <BottomSheet ref={bottomSheetRef} snapPoints={["45%"]} onClose={onDismiss}>
+    <BottomSheet ref={bottomSheetRef} onClose={onDismiss}>
       <Box paddingHorizontal="sm" paddingBottom="lg" gap="lg">
         <Box flexDirection="row" justifyContent="flex-end">
           <TouchableOpacity

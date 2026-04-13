@@ -27,7 +27,7 @@ export function TripReminderLocationSheet({
   const [destination, setDestination] = useState("");
 
   return (
-    <BottomSheet ref={bottomSheetRef} size="xs" onClose={onDismiss}>
+    <BottomSheet ref={bottomSheetRef} onClose={onDismiss}>
       <Box
         flex={1}
         paddingHorizontal="sm"
