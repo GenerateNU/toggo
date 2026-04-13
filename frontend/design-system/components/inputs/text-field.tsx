@@ -53,12 +53,6 @@ export default function TextField({
   const hasValue = value.trim().length > 0;
   const isActive = focused || (highlightWhenFilled && hasValue);
 
-  const borderColor = error
-    ? ColorPalette.statusError
-    : isActive
-      ? (activeBorderColor ?? ColorPalette.gray900)
-      : ColorPalette.gray300;
-
   return (
     <Box style={styles.container}>
       {label && (
@@ -69,24 +63,19 @@ export default function TextField({
       <Box
         style={[
           styles.inputRow,
-          { borderColor },
           isActive && styles.inputRowFocused,
+          isActive && activeBorderColor && { borderColor: activeBorderColor },
+          !!error && styles.inputRowError,
           disabled && styles.inputRowDisabled,
         ]}
       >
         {leftIcon && <Box style={styles.iconWrapper}>{leftIcon}</Box>}
         <TextInput
-          style={[
-            styles.input,
-            disabled && styles.inputDisabled,
-            {
-              color: disabled ? ColorPalette.gray400 : ColorPalette.gray900,
-            },
-          ]}
+          style={[styles.input, disabled && styles.inputDisabled]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={ColorPalette.gray500}
+          placeholderTextColor={ColorPalette.gray300}
           editable={!disabled}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -122,13 +111,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: ColorPalette.gray300,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     minHeight: CoreSize.xl,
   },
   inputRowFocused: {
     borderWidth: 2,
+    borderColor: ColorPalette.blue500,
+  },
+  inputRowError: {
+    borderWidth: 2,
+    borderColor: ColorPalette.statusError,
   },
   inputRowDisabled: {
     backgroundColor: ColorPalette.gray50,
@@ -142,9 +136,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 12,
     fontFamily: FontFamily.regular,
+    color: ColorPalette.gray900,
   },
   inputDisabled: {
     opacity: 0.6,
+    color: ColorPalette.gray400,
   },
   error: {
     color: ColorPalette.statusError,
