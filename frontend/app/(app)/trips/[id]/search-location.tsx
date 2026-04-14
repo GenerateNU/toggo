@@ -211,7 +211,7 @@ function SearchHeader({
             hitSlop={styles.hitSlop}
             style={styles.dismissButton}
           >
-            <X size={24}/>
+            <X size={24} />
           </TouchableOpacity>
         )}
       </Box>
