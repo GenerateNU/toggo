@@ -14,11 +14,8 @@ export function PitchCtaBar({ insetBottom, onPress }: PitchCtaBarProps) {
       right={0}
       paddingHorizontal="sm"
       paddingTop="sm"
-      backgroundColor="white"
       style={{
         paddingBottom: Math.max(insetBottom, 16),
-        borderTopWidth: 1,
-        borderTopColor: "#F0F0F0",
       }}
     >
       <Button

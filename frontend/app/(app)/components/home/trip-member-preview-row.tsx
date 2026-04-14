@@ -12,16 +12,14 @@ type TripMemberPreviewRowProps = {
 
 type MemberPreview = {
   id: string;
-  username: string;
+  name: string;
   profilePhotoUrl?: string;
 };
 
 function getSummaryText(members: MemberPreview[]) {
   if (members.length === 0) return "";
-  const first =
-    getFirstName(members[0]?.username) ?? members[0]?.username ?? "";
-  const second =
-    getFirstName(members[1]?.username) ?? members[1]?.username ?? "";
+  const first = getFirstName(members[0]?.name) ?? members[0]?.name ?? "";
+  const second = getFirstName(members[1]?.name) ?? members[1]?.name ?? "";
   const others = members.length - 1;
 
   if (others <= 0) return first;
@@ -48,7 +46,7 @@ export function TripMemberPreviewRow({
       ?.filter((item): item is NonNullable<typeof item> => Boolean(item))
       .map((member) => ({
         id: member.user_id ?? "",
-        username: member.username?.trim() || "Traveler",
+        name: member.name?.trim() || "Traveler",
         profilePhotoUrl: member.profile_picture_url ?? undefined,
       }))
       .filter((member) => member.id) ?? [];

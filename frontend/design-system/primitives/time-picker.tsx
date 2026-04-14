@@ -77,6 +77,7 @@ export default function TimePicker({
       initialIndex={-1}
       onClose={onClose}
       disableClose
+      hideHandle
       footer={
         <Box
           style={[
@@ -122,7 +123,7 @@ export default function TimePicker({
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: Layout.spacing.sm,
-    paddingTop: 16,
+    paddingTop: Layout.spacing.sm,
     paddingBottom: 8,
     alignItems: "center",
   },

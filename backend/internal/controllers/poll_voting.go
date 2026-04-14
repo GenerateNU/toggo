@@ -349,6 +349,80 @@ func (pc *VotePollController) CastVote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(poll)
 }
 
+// @Summary      Get vote poll voters
+// @Description  Returns who has voted vs who hasn't for a vote poll
+// @Tags         polls
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Success      200 {object} models.PollVotersResponse
+// @Failure      400,401,403,404,500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/voters [get]
+// @ID           getVotePollVoters
+func (pc *VotePollController) GetPollVoters(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	voters, err := pc.pollService.GetVotePollVoters(c.Context(), tripID, pollID, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(voters)
+}
+
+// @Summary      Get option voters
+// @Description  Returns all users who voted for a specific option in a vote poll
+// @Tags         polls
+// @Produce      json
+// @Param        tripID path string true "Trip ID"
+// @Param        pollId path string true "Poll ID"
+// @Param        optionId path string true "Option ID"
+// @Success      200 {object} models.OptionVotersResponse
+// @Failure      400,401,403,404,500 {object} errs.APIError
+// @Router       /api/v1/trips/{tripID}/vote-polls/{pollId}/options/{optionId}/voters [get]
+// @ID           getVoteOptionVoters
+func (pc *VotePollController) GetOptionVoters(c *fiber.Ctx) error {
+	tripID, err := validators.ValidateID(c.Params("tripID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	pollID, err := validators.ValidateID(c.Params("pollId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	optionID, err := validators.ValidateID(c.Params("optionId"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	userID, err := getUserID(c)
+	if err != nil {
+		return err
+	}
+
+	voters, err := pc.pollService.GetVoteOptionVoters(c.Context(), tripID, pollID, optionID, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(voters)
+}
+
 // getUserID extracts and validates the authenticated user ID from the request context.
 func getUserID(c *fiber.Ctx) (uuid.UUID, error) {
 	val := c.Locals("userID")

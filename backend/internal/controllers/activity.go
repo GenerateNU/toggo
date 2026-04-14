@@ -216,8 +216,20 @@ func (ctrl *ActivityController) UpdateActivity(c *fiber.Ctx) error {
 		return errs.InvalidJSON()
 	}
 
+	// Empty string signals "clear time_of_day". Temporarily nil it so struct
+	// validation passes, then restore the sentinel for the repository layer.
+	clearTimeOfDay := req.TimeOfDay != nil && *req.TimeOfDay == ""
+	if clearTimeOfDay {
+		req.TimeOfDay = nil
+	}
+
 	if err := validators.Validate(ctrl.validator, req); err != nil {
 		return err
+	}
+
+	if clearTimeOfDay {
+		empty := models.ActivityTimeOfDay("")
+		req.TimeOfDay = &empty
 	}
 
 	userID, err := validators.ExtractUserID(c)

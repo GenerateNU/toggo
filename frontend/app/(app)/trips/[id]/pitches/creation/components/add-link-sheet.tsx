@@ -39,14 +39,18 @@ export function AddLinkSheet({ onClose, onAdd }: AddLinkSheetProps) {
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["45%"]}
       initialIndex={0}
       onClose={handleClose}
       footer={
         <Box
+          backgroundColor="white"
           paddingHorizontal="sm"
           paddingTop="xs"
-          style={{ paddingBottom: Math.max(bottom, 16) }}
+          style={{
+            paddingBottom: Math.max(bottom, 16),
+            borderTopWidth: 1,
+            borderTopColor: ColorPalette.gray100,
+          }}
         >
           <Button
             layout="textOnly"
@@ -70,7 +74,7 @@ export function AddLinkSheet({ onClose, onAdd }: AddLinkSheetProps) {
           Add a link
         </Text>
         <Pressable onPress={handleClose} hitSlop={8}>
-          <X size={20} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       </Box>
 

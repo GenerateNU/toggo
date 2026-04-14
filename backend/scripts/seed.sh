@@ -324,7 +324,7 @@ seed_trip_santorini() {
     ok "Categories created"
 
     # Activities
-    local a1 a2 a3 a4
+    local a1 a2 a3 a4 a5 a6
     resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
         "name": "Sunset at Oia",
         "description": "Watch the famous Santorini sunset from the cliffs of Oia village.",
@@ -332,7 +332,9 @@ seed_trip_santorini() {
         "location_name": "Oia, Santorini",
         "location_lat": 36.4618,
         "location_lng": 25.3753,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-sunset/400/400",
+        "dates": [{"start":"2026-01-16","end":"2026-01-16"},{"start":"2026-01-20","end":"2026-01-20"}]
     }')
     check_resp "$resp" "Activity: Sunset at Oia"
     a1=$(echo "$resp" | jq -r '.id')
@@ -342,7 +344,11 @@ seed_trip_santorini() {
         "description": "Half-day sailing around the caldera with snorkelling stops and BBQ on board.",
         "time_of_day": "afternoon",
         "location_name": "Ammoudi Bay, Santorini",
-        "estimated_price": 85
+        "location_lat": 36.4612,
+        "location_lng": 25.3743,
+        "estimated_price": 85,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-sailing/400/400",
+        "dates": [{"start":"2026-01-17","end":"2026-01-17"},{"start":"2026-01-19","end":"2026-01-19"}]
     }')
     check_resp "$resp" "Activity: Catamaran"
     a2=$(echo "$resp" | jq -r '.id')
@@ -352,7 +358,11 @@ seed_trip_santorini() {
         "description": "Explore the ancient Minoan settlement buried by the volcanic eruption.",
         "time_of_day": "morning",
         "location_name": "Akrotiri Archaeological Site",
-        "estimated_price": 12
+        "location_lat": 36.3517,
+        "location_lng": 25.4033,
+        "estimated_price": 12,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-akrotiri/400/400",
+        "dates": [{"start":"2026-01-18","end":"2026-01-18"}]
     }')
     check_resp "$resp" "Activity: Akrotiri"
     a3=$(echo "$resp" | jq -r '.id')
@@ -362,26 +372,61 @@ seed_trip_santorini() {
         "description": "Sample local Assyrtiko wines with a spectacular caldera view.",
         "time_of_day": "afternoon",
         "location_name": "Santo Wines Winery, Pyrgos",
-        "estimated_price": 35
+        "location_lat": 36.3739,
+        "location_lng": 25.4367,
+        "estimated_price": 35,
+        "media_url": "https://picsum.photos/seed/santorini-wine/400/400",
+        "dates": [{"start":"2026-01-19","end":"2026-01-19"},{"start":"2026-01-21","end":"2026-01-21"}]
     }')
     check_resp "$resp" "Activity: Wine Tasting"
     a4=$(echo "$resp" | jq -r '.id')
-    ok "4 activities created"
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Fira to Oia Cliffside Hike",
+        "description": "Scenic 10km trail along the caldera rim with panoramic views of the volcanic islands.",
+        "location_name": "Fira to Oia Trail, Santorini",
+        "location_lat": 36.4166,
+        "location_lng": 25.4322,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-hike/400/400",
+        "dates": [{"start":"2026-01-17","end":"2026-01-17"}]
+    }')
+    check_resp "$resp" "Activity: Fira-Oia Hike"
+    a5=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Red Beach Snorkelling",
+        "description": "Snorkel among volcanic rock formations at the dramatic Red Beach near Akrotiri.",
+        "time_of_day": "morning",
+        "location_name": "Red Beach, Akrotiri, Santorini",
+        "location_lat": 36.3475,
+        "location_lng": 25.3947,
+        "estimated_price": 25,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-redbeach/400/400",
+        "dates": [{"start":"2026-01-18","end":"2026-01-18"}]
+    }')
+    check_resp "$resp" "Activity: Red Beach"
+    a6=$(echo "$resp" | jq -r '.id')
+    ok "6 activities created"
 
     # Assign categories to activities
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a1/categories/nightlife" '{}' >/dev/null
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a2/categories/beaches"  '{}' >/dev/null
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a4/categories/food"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a6/categories/beaches"  '{}' >/dev/null
 
     # RSVPs
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Polls
@@ -437,16 +482,16 @@ seed_trip_santorini() {
     # Pitches (inserted directly via SQL – no real audio file needed for demo)
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$MAYA_ID" \
-        "Why Santorini is perfect for us" \
-        "I have been dreaming about this trip for years. The caldera views, the white-washed villages, and the incredible food make it an unforgettable experience. Budget is very reasonable if we book early." 95)
+        "Santorini, Greece" \
+        "Caldera views, white-washed villages, incredible sunsets, and amazing food. Budget is very reasonable if we book early – plus January is off-season so flights and hotels are way cheaper." 95)
     p2=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Alternative: Mykonos instead?" \
-        "Hear me out – Mykonos has better nightlife and beaches. We could split the week between both islands." 60)
+        "Mykonos, Greece" \
+        "Better nightlife and beaches than Santorini. We could do beach clubs during the day and party at night. Also closer to Athens if anyone wants a day trip." 60)
     ok "Pitches seeded"
 
     # Pitch links
     api_post "$MAYA_JWT" "/trips/$trip_id/pitches/$p1/links" \
-        '{"url":"https://www.booking.com","title":"Best Santorini Hotels 2025","description":"Curated list of top-rated caldera hotels","domain":"booking.com"}' >/dev/null
+        '{"url":"https://www.thecommonwanderer.com/blog/santorini-travel-guide-tips","title":"23 Things to Know Before Visiting Santorini","description":"Jaw-dropping scenery, epic hotels, and practical tips for first-timers","domain":"thecommonwanderer.com"}' >/dev/null
 
     # Comments on activities
     local c1
@@ -511,7 +556,7 @@ seed_trip_tokyo() {
         '{"name":"day_trips","label":"Day Trips","icon":"🗻"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5
+    local a1 a2 a3 a4 a5 a6 a7
     resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
         "name": "Shibuya Crossing & Scramble",
         "description": "Experience the world-famous pedestrian scramble and explore Shibuya Centre-gai.",
@@ -519,7 +564,9 @@ seed_trip_tokyo() {
         "location_name": "Shibuya, Tokyo",
         "location_lat": 35.6595,
         "location_lng": 139.7004,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-shibuya/400/400",
+        "dates": [{"start":"2026-07-11","end":"2026-07-11"}]
     }')
     check_resp "$resp" "Activity: Shibuya"
     a1=$(echo "$resp" | jq -r '.id')
@@ -529,7 +576,11 @@ seed_trip_tokyo() {
         "description": "Immersive digital art museum – book tickets well in advance!",
         "time_of_day": "afternoon",
         "location_name": "Azabudai Hills, Minato, Tokyo",
-        "estimated_price": 32
+        "location_lat": 35.6615,
+        "location_lng": 139.7365,
+        "estimated_price": 32,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-teamlab/400/400",
+        "dates": [{"start":"2026-07-12","end":"2026-07-12"}]
     }')
     check_resp "$resp" "Activity: teamLab"
     a2=$(echo "$resp" | jq -r '.id')
@@ -539,7 +590,11 @@ seed_trip_tokyo() {
         "description": "Fresh sushi breakfast, tamagoyaki, and street food at the famous outer market.",
         "time_of_day": "morning",
         "location_name": "Tsukiji, Chuo, Tokyo",
-        "estimated_price": 20
+        "location_lat": 35.6654,
+        "location_lng": 139.7707,
+        "estimated_price": 20,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-tsukiji/400/400",
+        "dates": [{"start":"2026-07-13","end":"2026-07-13"}]
     }')
     check_resp "$resp" "Activity: Tsukiji"
     a3=$(echo "$resp" | jq -r '.id')
@@ -549,7 +604,11 @@ seed_trip_tokyo() {
         "description": "Explore the electric town – retro games, anime merchandise, and multi-floor arcades.",
         "time_of_day": "afternoon",
         "location_name": "Akihabara, Chiyoda, Tokyo",
-        "estimated_price": 50
+        "location_lat": 35.7023,
+        "location_lng": 139.7745,
+        "estimated_price": 50,
+        "media_url": "https://picsum.photos/seed/tokyo-akihabara/400/400",
+        "dates": [{"start":"2026-07-14","end":"2026-07-14"}]
     }')
     check_resp "$resp" "Activity: Akihabara"
     a4=$(echo "$resp" | jq -r '.id')
@@ -559,11 +618,42 @@ seed_trip_tokyo() {
         "description": "Bullet train to Kawaguchiko, climb to the 5th station, and soak in hot springs.",
         "time_of_day": "morning",
         "location_name": "Mount Fuji, Yamanashi Prefecture",
-        "estimated_price": 120
+        "location_lat": 35.3606,
+        "location_lng": 138.7274,
+        "estimated_price": 120,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-fuji/400/400",
+        "dates": [{"start":"2026-07-15","end":"2026-07-15"},{"start":"2026-07-17","end":"2026-07-17"}]
     }')
     check_resp "$resp" "Activity: Mt. Fuji"
     a5=$(echo "$resp" | jq -r '.id')
-    ok "5 activities created"
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Golden Gai Bar Hopping",
+        "description": "Wander the tiny alleyways of Shinjuku Golden Gai – over 200 micro-bars in six narrow lanes.",
+        "location_name": "Golden Gai, Shinjuku, Tokyo",
+        "location_lat": 35.6938,
+        "location_lng": 139.7036,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-goldengai/400/400",
+        "dates": [{"start":"2026-07-16","end":"2026-07-16"}]
+    }')
+    check_resp "$resp" "Activity: Golden Gai"
+    a6=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Sumida Fireworks Festival",
+        "description": "Japans oldest and largest fireworks festival with over 20,000 fireworks along the Sumida River.",
+        "time_of_day": "evening",
+        "location_name": "Sumida River, Asakusa, Tokyo",
+        "location_lat": 35.7148,
+        "location_lng": 139.8015,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-fireworks/400/400",
+        "dates": [{"start":"2026-07-18","end":"2026-07-18"}]
+    }')
+    check_resp "$resp" "Activity: Sumida Fireworks"
+    a7=$(echo "$resp" | jq -r '.id')
+    ok "7 activities created"
 
     # Category assignments
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/categories/activities" '{}' >/dev/null
@@ -578,11 +668,15 @@ seed_trip_tokyo() {
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"no"}'    >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Rank poll – neighbourhood
@@ -648,16 +742,16 @@ seed_trip_tokyo() {
     # Pitches
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Carlos pitches Tokyo" \
-        "I lived in Tokyo for a year. I know all the hidden gems – izakayas in Golden Gai, the best ramen in Shibuya, day trips beyond the usual tourist spots. Trust me on this one." 110)
+        "Tokyo, Japan" \
+        "I lived in Tokyo for a year. Shibuya, Shinjuku, Akihabara, Harajuku – every neighborhood is its own world. The food alone is worth the trip. July means summer festivals and rooftop beer gardens." 110)
     p2=$(insert_pitch_sql "$trip_id" "$JAMES_ID" \
-        "July is perfect for summer festivals" \
-        "Tokyo in July means Sumida fireworks festival, Tanabata decorations everywhere, and rooftop beer gardens. The timing is ideal." 75)
+        "Kyoto, Japan" \
+        "If we want something more cultural and relaxed, Kyoto is incredible. Thousands of temples, bamboo forests, geisha district, and amazing kaiseki dining. We could do a few days here and a few in Osaka." 75)
     ok "Pitches seeded"
 
     # Pitch link
     api_post "$CARLOS_JWT" "/trips/$trip_id/pitches/$p1/links" \
-        '{"url":"https://teamlab.art","title":"teamLab Borderless Tokyo","description":"Official ticket booking page","domain":"teamlab.art"}' >/dev/null
+        '{"url":"https://www.theblondeabroad.com/ultimate-tokyo-travel-guide/","title":"The Ultimate Tokyo Travel Guide","description":"Accommodation, dining, activities and tips for every travel style","domain":"theblondeabroad.com"}' >/dev/null
 
     # Comments
     local c1
@@ -675,7 +769,7 @@ seed_trip_tokyo() {
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"Should we book a guided tour or do it ourselves?\"}" >/dev/null
 
     api_post "$CARLOS_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"The Sumida fireworks is a great call – dates are locked in already.\"}" >/dev/null
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Kyoto in July sounds amazing – the bamboo forest would be so green.\"}" >/dev/null
 
     api_post "$PRIYA_JWT" "/comments/$c1/reactions" '{"emoji":"⏰"}'  >/dev/null
     api_post "$JAMES_JWT" "/comments/$c1/reactions" '{"emoji":"😱"}' >/dev/null
@@ -723,7 +817,7 @@ seed_trip_nyc() {
         '{"name":"sightseeing","label":"Sightseeing","icon":"🗽"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5
+    local a1 a2 a3 a4 a5 a6 a7 a8
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Central Park Morning Walk",
         "description": "Start the day with a walk through the park – Bethesda Fountain, the Mall, and the Lake.",
@@ -731,7 +825,9 @@ seed_trip_nyc() {
         "location_name": "Central Park, Manhattan",
         "location_lat": 40.7851,
         "location_lng": -73.9683,
-        "estimated_price": 0
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-centralpark/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: Central Park"
     a1=$(echo "$resp" | jq -r '.id')
@@ -741,7 +837,11 @@ seed_trip_nyc() {
         "description": "Spend 2–3 hours at MoMA. Van Gogh Starry Night, Warhol prints, and rotating exhibitions.",
         "time_of_day": "morning",
         "location_name": "MoMA, Midtown Manhattan",
-        "estimated_price": 25
+        "location_lat": 40.7614,
+        "location_lng": -73.9776,
+        "estimated_price": 25,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-moma/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: MoMA"
     a2=$(echo "$resp" | jq -r '.id')
@@ -751,7 +851,11 @@ seed_trip_nyc() {
         "description": "Walk across the iconic bridge for amazing skyline views. Great for photos at golden hour.",
         "time_of_day": "afternoon",
         "location_name": "Brooklyn Bridge, New York",
-        "estimated_price": 0
+        "location_lat": 40.7061,
+        "location_lng": -73.9969,
+        "estimated_price": 0,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-brooklynbridge/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
     }')
     check_resp "$resp" "Activity: Brooklyn Bridge"
     a3=$(echo "$resp" | jq -r '.id')
@@ -761,7 +865,11 @@ seed_trip_nyc() {
         "description": "Elevated park on a historic freight rail line. Great public art and city views.",
         "time_of_day": "afternoon",
         "location_name": "High Line, Chelsea, Manhattan",
-        "estimated_price": 0
+        "location_lat": 40.7480,
+        "location_lng": -74.0048,
+        "estimated_price": 0,
+        "media_url": "https://picsum.photos/seed/nyc-highline/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: High Line"
     a4=$(echo "$resp" | jq -r '.id')
@@ -771,11 +879,56 @@ seed_trip_nyc() {
         "description": "Self-guided tour through Chelsea Market – tacos, lobster rolls, artisan cheese, and more.",
         "time_of_day": "afternoon",
         "location_name": "Chelsea Market, Manhattan",
-        "estimated_price": 30
+        "location_lat": 40.7424,
+        "location_lng": -74.0061,
+        "estimated_price": 30,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-chelseamarket/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"}]
     }')
     check_resp "$resp" "Activity: Chelsea Market"
     a5=$(echo "$resp" | jq -r '.id')
-    ok "5 activities created"
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Top of the Rock Observation Deck",
+        "description": "Panoramic views of Manhattan from 70 floors up. Unobstructed view of Central Park and the Empire State Building.",
+        "location_name": "30 Rockefeller Plaza, Midtown",
+        "location_lat": 40.7593,
+        "location_lng": -73.9794,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-topoftherock/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
+    }')
+    check_resp "$resp" "Activity: Top of the Rock"
+    a6=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$JAMES_JWT" "/trips/$trip_id/activities" '{
+        "name": "Broadway Show – Hadestown",
+        "description": "Tony Award-winning musical retelling the myth of Orpheus and Eurydice. Evening performance at the Walter Kerr Theatre.",
+        "time_of_day": "evening",
+        "location_name": "Walter Kerr Theatre, W 48th St",
+        "location_lat": 40.7601,
+        "location_lng": -73.9876,
+        "estimated_price": 95,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-broadway/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
+    }')
+    check_resp "$resp" "Activity: Broadway"
+    a7=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "Bagels & Coffee at Russ & Daughters",
+        "description": "Classic NYC lox bagel and coffee at the legendary Lower East Side appetizing shop, open since 1914.",
+        "time_of_day": "morning",
+        "location_name": "Russ & Daughters, 179 E Houston St",
+        "location_lat": 40.7223,
+        "location_lng": -73.9886,
+        "estimated_price": 18,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-russdaughters/400/400",
+        "dates": [{"start":"2026-03-02","end":"2026-03-02"}]
+    }')
+    check_resp "$resp" "Activity: Russ & Daughters"
+    a8=$(echo "$resp" | jq -r '.id')
+    ok "8 activities created"
 
     # Category assignments
     api_put "$my_jwt" "/trips/$trip_id/activities/$a1/categories/sightseeing" '{}' >/dev/null
@@ -783,6 +936,9 @@ seed_trip_nyc() {
     api_put "$my_jwt" "/trips/$trip_id/activities/$a3/categories/sightseeing" '{}' >/dev/null
     api_put "$my_jwt" "/trips/$trip_id/activities/$a4/categories/art"         '{}' >/dev/null
     api_put "$my_jwt" "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a6/categories/sightseeing" '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a7/categories/art"         '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a8/categories/food"        '{}' >/dev/null
 
     # RSVPs
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
@@ -790,14 +946,23 @@ seed_trip_nyc() {
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
     ok "RSVPs recorded"
 
     # Polls
@@ -859,15 +1024,15 @@ seed_trip_nyc() {
     # Pitches
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$my_id" \
-        "Why June is perfect for NYC" \
-        "Weather is great, outdoor events everywhere, no holiday crowds. I've mapped out a full itinerary that keeps us under budget including one nice dinner out." 80)
+        "Manhattan, New York" \
+        "Classic NYC weekend – Central Park, MoMA, Brooklyn Bridge, Chelsea Market. Weather in late Feb is cold but manageable. I have mapped out a full itinerary that keeps us under budget." 80)
     p2=$(insert_pitch_sql "$trip_id" "$PRIYA_ID" \
-        "Priya suggests adding a Broadway show" \
-        "We should grab tickets to a show on Saturday night. I found some discount options through TodayTix that are still great seats." 55)
+        "Brooklyn, New York" \
+        "Skip the tourist traps in Midtown. Brooklyn has the best food scene, Williamsburg for vintage shopping, DUMBO for views, and Prospect Park. Way more authentic NYC experience." 55)
     ok "Pitches seeded"
 
     api_post "$PRIYA_JWT" "/trips/$trip_id/pitches/$p2/links" \
-        '{"url":"https://www.todaytix.com","title":"Broadway Tickets – TodayTix","description":"Last-minute Broadway deals","domain":"todaytix.com"}' >/dev/null
+        '{"url":"https://www.earthtrekkers.com/one-day-in-brooklyn-new-york-itinerary/","title":"One Perfect Day in Brooklyn, New York","description":"Walk the Brooklyn Bridge, explore DUMBO, and visit Williamsburg in one day","domain":"earthtrekkers.com"}' >/dev/null
 
     # Comments
     local c1 c2
@@ -883,7 +1048,7 @@ seed_trip_nyc() {
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"The lobster roll from The Lobster Place here is incredible.\"}" >/dev/null
 
     api_post "$JAMES_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Yes! I've been wanting to see Hadestown. Priya send the link!\"}" >/dev/null
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Brooklyn is so underrated. The food scene there is next level.\"}" >/dev/null
 
     api_post "$JAMES_JWT"  "/comments/$c1/reactions" '{"emoji":"👍"}' >/dev/null
     api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"❤️"}' >/dev/null
@@ -936,7 +1101,7 @@ seed_trip_bali() {
         '{"name":"food","label":"Food & Cooking","icon":"🍛"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5 a6
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Tanah Lot Temple at Sunset",
         "description": "Watch the sunset from the iconic sea temple perched on a rocky outcrop. Arrive 1 hr before sunset for best views.",
@@ -944,7 +1109,9 @@ seed_trip_bali() {
         "location_name": "Tanah Lot, Tabanan Regency",
         "location_lat": -8.6211,
         "location_lng": 115.0866,
-        "estimated_price": 5
+        "estimated_price": 5,
+        "thumbnail_url": "https://picsum.photos/seed/bali-tanahlot/400/400",
+        "dates": [{"start":"2026-12-06","end":"2026-12-06"}]
     }')
     check_resp "$resp" "Activity: Tanah Lot"
     a1=$(echo "$resp" | jq -r '.id')
@@ -956,7 +1123,9 @@ seed_trip_bali() {
         "location_name": "Tegallalang, Ubud",
         "location_lat": -8.4296,
         "location_lng": 115.2789,
-        "estimated_price": 15
+        "estimated_price": 15,
+        "thumbnail_url": "https://picsum.photos/seed/bali-riceterrace/400/400",
+        "dates": [{"start":"2026-12-07","end":"2026-12-07"}]
     }')
     check_resp "$resp" "Activity: Rice Terrace"
     a2=$(echo "$resp" | jq -r '.id')
@@ -966,7 +1135,11 @@ seed_trip_bali() {
         "description": "World-class Ayurvedic spa treatments, hot springs, and yoga in a jungle retreat setting.",
         "time_of_day": "morning",
         "location_name": "COMO Shambhala, Ubud",
-        "estimated_price": 180
+        "location_lat": -8.3364,
+        "location_lng": 115.3252,
+        "estimated_price": 180,
+        "thumbnail_url": "https://picsum.photos/seed/bali-spa/400/400",
+        "dates": [{"start":"2026-12-08","end":"2026-12-08"}]
     }')
     check_resp "$resp" "Activity: Spa"
     a3=$(echo "$resp" | jq -r '.id')
@@ -976,7 +1149,11 @@ seed_trip_bali() {
         "description": "2-hour beginner surf lesson with certified instructor. Equipment included.",
         "time_of_day": "morning",
         "location_name": "Kuta Beach, Badung",
-        "estimated_price": 35
+        "location_lat": -8.7184,
+        "location_lng": 115.1686,
+        "estimated_price": 35,
+        "media_url": "https://picsum.photos/seed/bali-surfing/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-05"},{"start":"2026-12-10","end":"2026-12-10"}]
     }')
     check_resp "$resp" "Activity: Surfing"
     a4=$(echo "$resp" | jq -r '.id')
@@ -986,7 +1163,11 @@ seed_trip_bali() {
         "description": "Learn to cook 5 traditional Balinese dishes. Starts with a market visit to pick fresh ingredients.",
         "time_of_day": "morning",
         "location_name": "Casa Luna Cooking School, Ubud",
-        "estimated_price": 40
+        "location_lat": -8.5069,
+        "location_lng": 115.2625,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/bali-cooking/400/400",
+        "dates": [{"start":"2026-12-11","end":"2026-12-11"}]
     }')
     check_resp "$resp" "Activity: Cooking Class"
     a5=$(echo "$resp" | jq -r '.id')
@@ -996,11 +1177,70 @@ seed_trip_bali() {
         "description": "Visit the dramatic clifftop temple then watch the fire Kecak dance at sunset. Stunning ocean views.",
         "time_of_day": "evening",
         "location_name": "Uluwatu Temple, Pecatu",
-        "estimated_price": 10
+        "location_lat": -8.8291,
+        "location_lng": 115.0849,
+        "estimated_price": 10,
+        "thumbnail_url": "https://picsum.photos/seed/bali-uluwatu/400/400",
+        "dates": [{"start":"2026-12-13","end":"2026-12-13"}]
     }')
     check_resp "$resp" "Activity: Uluwatu"
     a6=$(echo "$resp" | jq -r '.id')
-    ok "6 activities created"
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Ubud Monkey Forest Walk",
+        "description": "Stroll through the Sacred Monkey Forest Sanctuary – ancient temples, banyan trees, and hundreds of long-tailed macaques.",
+        "location_name": "Sacred Monkey Forest, Ubud",
+        "location_lat": -8.5185,
+        "location_lng": 115.2587,
+        "estimated_price": 5,
+        "thumbnail_url": "https://picsum.photos/seed/bali-monkeyforest/400/400",
+        "dates": [{"start":"2026-12-08","end":"2026-12-08"}]
+    }')
+    check_resp "$resp" "Activity: Monkey Forest"
+    a7=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Sekumpul Waterfall Hike",
+        "description": "Trek through jungle to Balis most stunning waterfall. Steep descent and river crossing – bring water shoes.",
+        "time_of_day": "afternoon",
+        "location_name": "Sekumpul Waterfall, Singaraja",
+        "location_lat": -8.1754,
+        "location_lng": 115.4203,
+        "estimated_price": 15,
+        "thumbnail_url": "https://picsum.photos/seed/bali-sekumpul/400/400",
+        "dates": [{"start":"2026-12-07","end":"2026-12-07"}]
+    }')
+    check_resp "$resp" "Activity: Sekumpul Waterfall"
+    a8=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Ubud Night Market Food Tour",
+        "description": "Sample local street food – babi guling, sate lilit, lawar, and fresh coconut. Guided walking tour through Gianyar night market.",
+        "time_of_day": "evening",
+        "location_name": "Gianyar Night Market, Ubud",
+        "location_lat": -8.5414,
+        "location_lng": 115.3235,
+        "estimated_price": 20,
+        "thumbnail_url": "https://picsum.photos/seed/bali-nightmarket/400/400",
+        "dates": [{"start":"2026-12-09","end":"2026-12-09"}]
+    }')
+    check_resp "$resp" "Activity: Night Market"
+    a9=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$JAMES_JWT" "/trips/$trip_id/activities" '{
+        "name": "Nusa Penida Day Trip",
+        "description": "Fast boat to Nusa Penida for Kelingking Beach, Angel Billabong, and Broken Beach. Full day adventure with snorkelling stop.",
+        "time_of_day": "morning",
+        "location_name": "Nusa Penida Island",
+        "location_lat": -8.7275,
+        "location_lng": 115.5444,
+        "estimated_price": 55,
+        "thumbnail_url": "https://picsum.photos/seed/bali-nusapenida/400/400",
+        "dates": [{"start":"2026-12-12","end":"2026-12-12"}]
+    }')
+    check_resp "$resp" "Activity: Nusa Penida"
+    a10=$(echo "$resp" | jq -r '.id')
+    ok "10 activities created"
 
     # Category assignments
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/categories/culture"     '{}' >/dev/null
@@ -1009,23 +1249,43 @@ seed_trip_bali() {
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/categories/adventure"   '{}' >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/categories/culture"     '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/categories/culture"     '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/categories/adventure"   '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a9/categories/food"        '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a10/categories/adventure"  '{}' >/dev/null
 
-    # RSVPs – all members respond to all activities
+    # RSVPs – all members respond to core activities
     for actor_jwt in "$my_jwt" "$MAYA_JWT" "$CARLOS_JWT" "$PRIYA_JWT" "$JAMES_JWT"; do
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
         api_put "$actor_jwt" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     done
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'  >/dev/null
-    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'  >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"no"}'    >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$MAYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a4/rsvps" '{"status":"no"}'    >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"maybe"}' >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"maybe"}' >/dev/null
+    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$my_jwt"     "/trips/$trip_id/activities/$a10/rsvps" '{"status":"yes"}'   >/dev/null
+    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a10/rsvps" '{"status":"maybe"}' >/dev/null
+    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a10/rsvps" '{"status":"no"}'    >/dev/null
     ok "RSVPs recorded"
 
     # Vote poll – area to stay
@@ -1127,63 +1387,93 @@ seed_trip_bali() {
             {\"option_id\":\"${ropt_arr[3]}\",\"rank\":2},
             {\"option_id\":\"${ropt_arr[1]}\",\"rank\":3}
         ]}" >/dev/null
+    # Vote poll by Maya – user has NOT voted on this one
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/vote-polls" '{
+        "question": "What day should we do the temple tour?",
+        "poll_type": "single",
+        "options": [
+            {"option_type":"custom","name":"Day 2 – right after we settle in"},
+            {"option_type":"custom","name":"Day 4 – midway through the trip"},
+            {"option_type":"custom","name":"Last day – end on a cultural note"}
+        ],
+        "is_anonymous": false,
+        "should_notify_members": false
+    }')
+    check_resp "$resp" "Vote poll: temple tour (Maya, user has not voted)"
+    local vpoll3_id; vpoll3_id=$(echo "$resp" | jq -r '.id')
+    local vopt3_ids; vopt3_ids=$(echo "$resp" | jq -r '.options[].id')
+    local vopt3_arr=(); while IFS= read -r line; do vopt3_arr+=("$line"); done <<< "$vopt3_ids"
+
+    api_post "$CARLOS_JWT" "/trips/$trip_id/vote-polls/$vpoll3_id/vote" \
+        "{\"option_ids\":[\"${vopt3_arr[1]}\"]}" >/dev/null
+    api_post "$PRIYA_JWT" "/trips/$trip_id/vote-polls/$vpoll3_id/vote" \
+        "{\"option_ids\":[\"${vopt3_arr[0]}\"]}" >/dev/null
+
     ok "Polls + votes/rankings created"
 
     # Pitches – one from each user
     local p1 p2 p3
     p1=$(insert_pitch_sql "$trip_id" "$my_id" \
-        "The case for Bali in December" \
-        "Dry season runs until October but December is actually still great. Rainy season means lush green landscapes, fewer tourists, and significantly cheaper flights and accommodation. I did the math and we save roughly 40% vs. peak season." 105)
+        "Ubud, Bali" \
+        "The cultural heart of Bali. Rice terraces, temples, yoga retreats, and incredible Balinese cooking. December is rainy season but that means lush green landscapes, fewer tourists, and 40 percent cheaper than peak." 105)
     p2=$(insert_pitch_sql "$trip_id" "$MAYA_ID" \
-        "I found the perfect villa" \
-        "There is a 5-bedroom compound in Ubud with private pool and staff. Split 5 ways it is less than a mid-range hotel. I will drop the Airbnb link in chat." 70)
+        "Seminyak, Bali" \
+        "Beach clubs, rooftop bars, great restaurants, and easy access to Tanah Lot temple. More upscale vibe than Ubud. I found a 5-bedroom villa with private pool that splits to less than a hotel per person." 70)
     p3=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Pre-trip surf camp in Canggu" \
-        "Two days before the main trip starts. I can get a group rate at a surf school. Anyone who wants to arrive early can join – total cost around $150 for lessons, board, and accommodation." 85)
+        "Canggu, Bali" \
+        "Best surf in Bali, laid-back digital nomad vibe, amazing cafes and nightlife. We could do a few days here then move to Ubud for the cultural side. Way more affordable than Seminyak." 85)
     ok "Pitches seeded"
 
+    # Pitch links (real URLs)
+    api_post "$my_jwt" "/trips/$trip_id/pitches/$p1/links" \
+        '{"url":"https://www.wanderlustchloe.com/ubud-bali-travel-guide-things-to-do/","title":"The Ultimate Ubud Travel Guide For 2026","description":"Waterfalls, rice terraces, volcano hikes, yoga, spas and more","domain":"wanderlustchloe.com"}' >/dev/null
     api_post "$MAYA_JWT" "/trips/$trip_id/pitches/$p2/links" \
-        '{"url":"https://www.airbnb.com","title":"Airbnb – Luxury Ubud Villa","description":"5-bedroom private villa with pool","domain":"airbnb.com"}' >/dev/null
+        '{"url":"https://www.baliholidaysecrets.com/seminyak-bali-guide/","title":"Seminyak Bali Travel Guide for 2026","description":"What to know before you visit – beaches, dining, nightlife and wellness","domain":"baliholidaysecrets.com"}' >/dev/null
+    ok "Pitch links seeded"
 
-    # Comments – multiple threads
+    # Comments – mix of activity and pitch comments, some pitches have zero
+    # p1 (Ubud) – 2 comments
+    # p2 (Seminyak) – 3 comments
+    # p3 (Canggu) – 0 comments
     local c1 c2 c3 c4
+    resp=$(api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"Ubud rice terraces in December would be so lush and green.\"}")
+    c1=$(echo "$resp" | jq -r '.id')
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"The cooking classes in Ubud are supposed to be life-changing.\"}" >/dev/null
+
+    resp=$(api_post "$JAMES_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Seminyak looks amazing. Maya share the villa link!\"}")
+    c2=$(echo "$resp" | jq -r '.id')
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"The beach clubs there look incredible. Potato Head is on my list.\"}" >/dev/null
+
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"If we do Seminyak we should also hit up the night market in Kuta. 15 min away.\"}" >/dev/null
+
+    # Activity comments
     resp=$(api_post "$MAYA_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a1\",\"content\":\"This is my top pick for the whole trip. The photos are unreal.\"}")
-    c1=$(echo "$resp" | jq -r '.id')
+    c3=$(echo "$resp" | jq -r '.id')
 
     resp=$(api_post "$CARLOS_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a4\",\"content\":\"Just booked us 5 slots at a school in Kuta. Paid the deposit. Let me know if you're in!\"}")
-    c2=$(echo "$resp" | jq -r '.id')
-
-    resp=$(api_post "$PRIYA_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a3\",\"content\":\"I have been to this spa – it completely changed my life. Non-negotiable addition.\"}")
-    c3=$(echo "$resp" | jq -r '.id')
-
-    resp=$(api_post "$JAMES_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Maya YES please share the link. This looks incredible.\"}")
     c4=$(echo "$resp" | jq -r '.id')
 
-    api_post "$my_jwt"     "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a1\",\"content\":\"Agreed. Should we hire a private driver for the evening so we don't have to rush back?\"}" >/dev/null
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a3\",\"content\":\"I have been to this spa – it completely changed my life. Non-negotiable addition.\"}" >/dev/null
 
-    api_post "$PRIYA_JWT"  "/comments" \
+    api_post "$PRIYA_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a2\",\"content\":\"Start at 7 am before it gets too hot and too many Instagram influencers show up.\"}" >/dev/null
 
-    api_post "$my_jwt"     "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"The market visit at the start is the best part. Bring cash for spices to take home.\"}" >/dev/null
-
-    api_post "$CARLOS_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"The budget breakdown you sent in the group chat sealed the deal for me.\"}" >/dev/null
-
     # Reactions
-    api_post "$CARLOS_JWT" "/comments/$c1/reactions" '{"emoji":"🔥"}' >/dev/null
-    api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"🔥"}' >/dev/null
-    api_post "$JAMES_JWT"  "/comments/$c1/reactions" '{"emoji":"❤️"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c1/reactions" '{"emoji":"😍"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c2/reactions" '{"emoji":"👍"}' >/dev/null
-    api_post "$JAMES_JWT"  "/comments/$c2/reactions" '{"emoji":"👍"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c3/reactions" '{"emoji":"🧘"}' >/dev/null
-    api_post "$MAYA_JWT"   "/comments/$c4/reactions" '{"emoji":"🏡"}' >/dev/null
+    api_post "$CARLOS_JWT" "/comments/$c1/reactions" '{"emoji":"🌿"}' >/dev/null
+    api_post "$MAYA_JWT"   "/comments/$c2/reactions" '{"emoji":"🏡"}' >/dev/null
+    api_post "$PRIYA_JWT"  "/comments/$c3/reactions" '{"emoji":"🔥"}' >/dev/null
+    api_post "$JAMES_JWT"  "/comments/$c3/reactions" '{"emoji":"❤️"}' >/dev/null
+    api_post "$JAMES_JWT"  "/comments/$c4/reactions" '{"emoji":"👍"}' >/dev/null
     ok "Comments + reactions seeded"
 
     create_invite_sql "$trip_id" "$my_id" "BALI25" >/dev/null
@@ -1191,6 +1481,177 @@ seed_trip_bali() {
 
     echo "  Trip ID: $trip_id"
     BALI_TRIP_ID="$trip_id"
+}
+
+# ─── activity feed backfill ──────────────────────────────────────────────────
+
+rcli() {
+    docker exec redis redis-cli --pass dev_redis_password "$@" >/dev/null 2>&1
+}
+
+# backfill_activity_feed writes activity feed events directly to Redis for the
+# current user. This ensures the feed is populated regardless of pub/sub timing
+# during seeding. It queries the database for activities, polls and comments
+# created by OTHER users in trips the current user belongs to.
+backfill_activity_feed() {
+    local my_id="$1"
+    log "Backfilling activity feed for $my_id..."
+
+    local event_ttl=2592000  # 30 days in seconds
+
+    # Get future trips the user is a member of (no activity feed for past trips)
+    local trip_ids
+    trip_ids=$(db "
+        SELECT m.trip_id FROM memberships m
+        JOIN trips t ON t.id = m.trip_id
+        WHERE m.user_id = '$my_id'
+          AND t.end_date > NOW();
+    ")
+
+    for trip_id in $trip_ids; do
+        # Clear any stale entries from the pub/sub subscriber so only
+        # backfilled events (with correct DB timestamps) remain.
+        rcli DEL "activity:$my_id:$trip_id"
+
+        # ── Activities by other users ──
+        local rows
+        rows=$(db "
+            SELECT a.id, a.name, a.proposed_by,
+                   u.username,
+                   EXTRACT(EPOCH FROM a.created_at)::bigint * 1000
+            FROM activities a
+            JOIN users u ON u.id = a.proposed_by
+            WHERE a.trip_id = '$trip_id'
+              AND a.proposed_by != '$my_id'
+            ORDER BY a.created_at;
+        ")
+        while IFS='|' read -r eid ename actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "activity.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_name "$ename" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{name:$d_name},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Polls by other users (exclude polls the user already voted on) ──
+        rows=$(db "
+            SELECT p.id, p.question, p.created_by,
+                   u.username,
+                   EXTRACT(EPOCH FROM p.created_at)::bigint * 1000
+            FROM polls p
+            JOIN users u ON u.id = p.created_by
+            WHERE p.trip_id = '$trip_id'
+              AND p.created_by != '$my_id'
+              AND NOT EXISTS (
+                  SELECT 1 FROM poll_votes pv
+                  WHERE pv.poll_id = p.id AND pv.user_id = '$my_id'
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM poll_rankings pr
+                  WHERE pr.poll_id = p.id AND pr.user_id = '$my_id'
+              )
+            ORDER BY p.created_at;
+        ")
+        while IFS='|' read -r eid equestion actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "poll.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_question "$equestion" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{question:$d_question},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Comments by other users ──
+        rows=$(db "
+            SELECT c.id, c.content, c.user_id,
+                   u.username,
+                   c.entity_type, c.entity_id::text,
+                   COALESCE(a.name, tp.title, '') AS entity_name,
+                   EXTRACT(EPOCH FROM c.created_at)::bigint * 1000
+            FROM comments c
+            JOIN users u ON u.id = c.user_id
+            LEFT JOIN activities a ON c.entity_type = 'activity' AND a.id = c.entity_id
+            LEFT JOIN trip_pitches tp ON c.entity_type = 'pitch' AND tp.id = c.entity_id
+            WHERE c.trip_id = '$trip_id'
+              AND c.user_id != '$my_id'
+            ORDER BY c.created_at;
+        ")
+        while IFS='|' read -r cid econtent actor_id actor_name etype eid ename ts_ms; do
+            [ -z "$cid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "comment.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_content "$econtent" \
+                --arg d_etype "$etype" \
+                --arg d_eid "$eid" \
+                --arg d_ename "$ename" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{content:$d_content,entity_type:$d_etype,entity_id:$d_eid,entity_name:$d_ename},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Pitches by other users ──
+        rows=$(db "
+            SELECT tp.id, tp.title, tp.user_id,
+                   u.username,
+                   EXTRACT(EPOCH FROM tp.created_at)::bigint * 1000
+            FROM trip_pitches tp
+            JOIN users u ON u.id = tp.user_id
+            WHERE tp.trip_id = '$trip_id'
+              AND tp.user_id != '$my_id'
+            ORDER BY tp.created_at;
+        ")
+        while IFS='|' read -r eid etitle actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "pitch.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_title "$etitle" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{title:$d_title},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # Set TTL on the sorted set
+        rcli EXPIRE "activity:$my_id:$trip_id" "$event_ttl"
+    done
+
+    local total
+    total=$(docker exec redis redis-cli --pass dev_redis_password KEYS "activity:$my_id:*" 2>/dev/null | wc -l)
+    ok "Activity feed backfilled ($total trip feeds)"
 }
 
 # ─── main seed ────────────────────────────────────────────────────────────────
@@ -1226,6 +1687,10 @@ run_seed() {
     seed_trip_tokyo
     seed_trip_nyc       "$my_id" "$my_jwt"
     seed_trip_bali      "$my_id" "$my_jwt"
+
+    # Allow subscriber a moment to process, then backfill anything it missed
+    sleep 2
+    backfill_activity_feed "$my_id"
 
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"

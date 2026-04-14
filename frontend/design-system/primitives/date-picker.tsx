@@ -1,16 +1,17 @@
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
+import BottomSheetModal from "../components/bottom-sheet/bottom-sheet";
 import { X } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Dimensions,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-} from "react-native";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Dimensions, Pressable, StyleSheet } from "react-native";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
 import { Layout } from "../tokens/layout";
@@ -31,7 +32,7 @@ export type DateRangePickerProps = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
+const DAYS = ["S", "M", "T", "W", "T", "F", "S"] as const;
 
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
@@ -68,6 +69,7 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const GRID_PADDING = Layout.spacing.sm;
 const CELL_SIZE = Math.floor((SCREEN_WIDTH - GRID_PADDING * 2) / 7);
 const CIRCLE_SIZE = CELL_SIZE - 8;
+const SNAP_POINTS = ["90%"];
 
 // ─── Day Cell ────────────────────────────────────────────────────────────────
 
@@ -126,7 +128,7 @@ const DayCell = React.memo(
           ]}
         >
           <Text
-            variant="bodySmMedium"
+            variant="bodyMedium"
             style={{
               color: isEndpoint
                 ? ColorPalette.gray50
@@ -181,9 +183,7 @@ const MonthGrid = React.memo(
 
     return (
       <Box style={styles.monthBlock}>
-        <Text variant="bodySmStrong" color="white" style={styles.monthLabel}>
-          {formatMonth(year, month)}
-        </Text>
+        <Text variant="bodyLargeStrong">{formatMonth(year, month)}</Text>
 
         {weeks.map((week, wi) => (
           <Box key={wi} flexDirection="row">
@@ -228,12 +228,21 @@ export default function DateRangePicker({
   minDate,
   singleDate = false,
 }: DateRangePickerProps) {
+  const sheetRef = useRef<BottomSheetMethods>(null);
   const [range, setRange] = useState<DateRange>(initialRange);
 
-  // Initialize range when modal opens
+  // Open/close bottom sheet based on visible prop
   useEffect(() => {
     if (visible) {
-      // Only clear if no initialRange provided, otherwise use initialRange
+      sheetRef.current?.snapToIndex(0);
+    } else {
+      sheetRef.current?.close();
+    }
+  }, [visible]);
+
+  // Initialize range when opened
+  useEffect(() => {
+    if (visible) {
       if (!initialRange.start && !initialRange.end) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setRange({ start: null, end: null });
@@ -252,9 +261,6 @@ export default function DateRangePicker({
     return normalized;
   }, [minDate]);
 
-  const topInset =
-    Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0;
-
   const months = useMemo(() => {
     const now = new Date();
     return Array.from({ length: monthsToShow }, (_, i) => {
@@ -264,18 +270,6 @@ export default function DateRangePicker({
   }, [monthsToShow]);
 
   // ─── selection logic ─────────────────────────────────────────
-  //
-  // End date is NEVER null after a selection (only via Clear button).
-  // 1. Nothing selected → single-day range
-  // 2. Single-day range (start === end):
-  //    - tap same day     → no-op
-  //    - tap before       → single-day range on new date
-  //    - tap after        → extend end
-  // 3. Distinct range:
-  //    - tap on start/end → collapse to single-day range
-  //    - tap before start → single-day range on new date
-  //    - tap after end    → move end
-  //    - tap between      → collapse to single-day range on new date
   const handleDayPress = useCallback(
     (date: Date) => {
       if (singleDate) {
@@ -286,41 +280,30 @@ export default function DateRangePicker({
       setRange((prev) => {
         const { start, end } = prev;
 
-        // Case 1: nothing selected
         if (!start) {
           return { start: date, end: date };
         }
 
-        // Case 2: single-day range (start === end)
         if (end && isSameDay(start, end)) {
-          if (isSameDay(date, start)) {
-            // Re-tapping the same day — do nothing
-            return prev;
-          }
-          if (date < start) {
-            return { start: date, end: date };
-          }
+          if (isSameDay(date, start)) return prev;
+          if (date < start) return { start: date, end: date };
           return { start, end: date };
         }
 
-        // Case 3: both start and end are selected (distinct range)
         if (isSameDay(date, start) || (end && isSameDay(date, end))) {
           return { start: date, end: date };
         }
-        if (date < start) {
-          return { start: date, end: date };
-        }
-        if (end && date > end) {
-          return { start, end: date };
-        }
-        // date is between start and end → collapse to single-day range
+        if (date < start) return { start: date, end: date };
+        if (end && date > end) return { start, end: date };
         return { start: date, end: date };
       });
     },
     [singleDate],
   );
 
-  const handleClear = () => setRange({ start: null, end: null });
+  const handleClear = () => {
+    setRange({ start: null, end: null });
+  };
 
   const handleSave = () => {
     onSave(range);
@@ -329,189 +312,172 @@ export default function DateRangePicker({
 
   const hasRange = !!range.start;
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <Box style={[styles.sheet, { paddingTop: topInset }]}>
-        {/* ─── Header ───────────────────────────────────────────────── */}
-        <Box style={styles.header}>
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="center"
-            padding="xs"
-          >
-            <Pressable
-              onPress={onClose}
-              hitSlop={16}
-              style={styles.closeButton}
-            >
-              <X size={20} color={ColorPalette.gray500} />
-            </Pressable>
-            <Text variant="headingSm" color="white">
-              Select dates
-            </Text>
-          </Box>
-
-          {/* Selection summary pill */}
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="center"
-            style={styles.summaryRow}
-          >
-            <Box
-              style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
-            >
-              <Text
-                variant="bodySmMedium"
-                style={{
-                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
-                }}
-              >
-                {formatShortDate(range.start)}
-              </Text>
-            </Box>
-            <Text
-              variant="bodyXsMedium"
-              color="gray500"
-              style={styles.summaryArrow}
-            >
-              →
-            </Text>
-            <Box
-              style={[
-                styles.summaryPill,
-                !!range.end && styles.summaryPillActive,
-              ]}
-            >
-              <Text
-                variant="bodySmMedium"
-                style={{
-                  color: range.end
-                    ? ColorPalette.gray900
-                    : ColorPalette.gray500,
-                }}
-              >
-                {formatShortDate(range.end)}
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* ─── Weekday labels ───────────────────────────────────────── */}
-        <Box flexDirection="row" style={styles.weekdayRow}>
-          {DAYS.map((d, i) => (
-            <Box key={i} style={styles.weekdayCell}>
-              <Text variant="bodyXsMedium" color="gray500">
-                {d}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-
-        {/* ─── Calendar scroll ──────────────────────────────────────── */}
-        <ScrollView
-          style={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+  const footer = (
+    <Box style={styles.footerContainer}>
+      <Box flexDirection="row" style={styles.footerButtons}>
+        {/* Clear button */}
+        <Pressable
+          onPress={handleClear}
+          style={({ pressed }) => [
+            styles.footerButtonBase,
+            styles.clearButton,
+            pressed && styles.clearButtonPressed,
+            !hasRange && styles.clearButtonDisabled,
+          ]}
+          disabled={!hasRange}
         >
-          {months.map(({ year, month }) => (
-            <MonthGrid
-              key={`${year}-${month}`}
-              year={year}
-              month={month}
-              range={range}
-              minDate={normalizedMinDate}
-              onDayPress={handleDayPress}
-            />
-          ))}
-        </ScrollView>
+          <Text
+            variant="bodyMedium"
+            style={{
+              color: hasRange ? ColorPalette.gray900 : ColorPalette.gray400,
+            }}
+          >
+            Clear
+          </Text>
+        </Pressable>
 
-        {/* ─── Footer ───────────────────────────────────────────────── */}
-        <Box style={[styles.footer, { paddingBottom: Layout.spacing.md }]}>
-          <Box flexDirection="row" style={styles.footerButtons}>
-            {/* Clear button */}
-            <Pressable
-              onPress={handleClear}
-              style={({ pressed }) => [
-                styles.footerButtonBase,
-                styles.clearButton,
-                pressed && styles.clearButtonPressed,
-                !hasRange && styles.clearButtonDisabled,
-              ]}
-              disabled={!hasRange}
-            >
-              <Text
-                variant="bodyMedium"
-                style={{
-                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray400,
-                }}
-              >
-                Clear
-              </Text>
-            </Pressable>
+        {/* Save button */}
+        <Pressable
+          onPress={handleSave}
+          style={({ pressed }) => [
+            styles.footerButtonBase,
+            styles.saveButton,
+            pressed && styles.saveButtonPressed,
+            !hasRange && styles.saveButtonDisabled,
+          ]}
+          disabled={!hasRange}
+        >
+          <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
+            Save Dates
+          </Text>
+        </Pressable>
+      </Box>
+    </Box>
+  );
 
-            {/* Save button */}
-            <Pressable
-              onPress={handleSave}
-              style={({ pressed }) => [
-                styles.footerButtonBase,
-                styles.saveButton,
-                pressed && styles.saveButtonPressed,
-                !hasRange && styles.saveButtonDisabled,
-              ]}
-              disabled={!hasRange}
+  return (
+    <BottomSheetModal
+      ref={sheetRef}
+      snapPoints={SNAP_POINTS}
+      onClose={onClose}
+      disableScrollView
+      footer={footer}
+    >
+      {/* ─── Header ───────────────────────────────────────────────── */}
+      <Box style={styles.header}>
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="center"
+          padding="xs"
+        >
+          <Pressable onPress={onClose} hitSlop={16} style={styles.closeButton}>
+            <X size={24} />
+          </Pressable>
+          <Text variant="headingSm">Select dates</Text>
+        </Box>
+
+        {/* Selection summary pill */}
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          justifyContent="center"
+          style={styles.summaryRow}
+        >
+          <Box
+            style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
+          >
+            <Text
+              variant="bodySmMedium"
+              style={{
+                color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
+              }}
             >
-              <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
-                Save Dates
-              </Text>
-            </Pressable>
+              {formatShortDate(range.start)}
+            </Text>
+          </Box>
+          <Text
+            variant="bodyXsMedium"
+            color="gray500"
+            style={styles.summaryArrow}
+          >
+            →
+          </Text>
+          <Box
+            style={[
+              styles.summaryPill,
+              !!range.end && styles.summaryPillActive,
+            ]}
+          >
+            <Text
+              variant="bodySmMedium"
+              style={{
+                color: range.end ? ColorPalette.gray900 : ColorPalette.gray500,
+              }}
+            >
+              {formatShortDate(range.end)}
+            </Text>
           </Box>
         </Box>
       </Box>
-    </Modal>
+
+      {/* ─── Weekday labels ───────────────────────────────────────── */}
+      <Box flexDirection="row" style={styles.weekdayRow}>
+        {DAYS.map((d, i) => (
+          <Box key={i} style={styles.weekdayCell}>
+            <Text variant="bodyMedium" color="gray500">
+              {d}
+            </Text>
+          </Box>
+        ))}
+      </Box>
+
+      {/* ─── Calendar ────────────────────────────────────────────── */}
+      <BottomSheetScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {months.map(({ year, month }) => (
+          <MonthGrid
+            key={`${year}-${month}`}
+            year={year}
+            month={month}
+            range={range}
+            minDate={normalizedMinDate}
+            onDayPress={handleDayPress}
+          />
+        ))}
+      </BottomSheetScrollView>
+    </BottomSheetModal>
   );
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const RANGE_TINT = ColorPalette.gray50;
+const RANGE_TINT = ColorPalette.blue25;
 
 const styles = StyleSheet.create({
-  /* Sheet */
-  sheet: {
-    flex: 1,
-    backgroundColor: ColorPalette.white,
-  },
-
   /* Header */
   header: {
     paddingHorizontal: GRID_PADDING,
-    paddingTop: Layout.spacing.md,
+    paddingTop: Layout.spacing.sm,
     paddingBottom: Layout.spacing.xs,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.gray300,
   },
   closeButton: {
     position: "absolute",
-    left: 0,
+    right: 0,
   },
 
   /* Selection summary */
   summaryRow: {
-    marginTop: 12,
+    marginVertical: Layout.spacing.xs,
     gap: Layout.spacing.xs,
   },
   summaryPill: {
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.sm,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: ColorPalette.gray50,
   },
   summaryPillActive: {
     backgroundColor: ColorPalette.gray50,
@@ -524,9 +490,9 @@ const styles = StyleSheet.create({
   /* Weekday labels */
   weekdayRow: {
     paddingHorizontal: GRID_PADDING,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: ColorPalette.gray100,
+    paddingVertical: Layout.spacing.xs,
+    marginBottom: Layout.spacing.xs,
+    backgroundColor: ColorPalette.gray50,
   },
   weekdayCell: {
     width: CELL_SIZE,
@@ -534,21 +500,15 @@ const styles = StyleSheet.create({
   },
 
   /* Scroll */
-  scroll: {
-    flex: 1,
-  },
   scrollContent: {
     paddingTop: Layout.spacing.xs,
-    paddingBottom: 120, // Large safe area for scrolling
+    paddingBottom: 120,
   },
 
   /* Month */
   monthBlock: {
     paddingHorizontal: GRID_PADDING,
     marginBottom: Layout.spacing.md,
-  },
-  monthLabel: {
-    marginBottom: Layout.spacing.xs,
   },
 
   /* Day outer wrapper */
@@ -586,7 +546,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dayCircleSelected: {
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.blue500,
     borderRadius: CIRCLE_SIZE / 2,
   },
   dayCircleToday: {
@@ -596,11 +556,10 @@ const styles = StyleSheet.create({
   },
 
   /* Footer */
-  footer: {
+  footerContainer: {
+    paddingVertical: Layout.spacing.xs,
     paddingHorizontal: GRID_PADDING,
-    paddingTop: Layout.spacing.xs,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.gray300,
+    paddingBottom: Layout.spacing.md,
     backgroundColor: ColorPalette.white,
   },
   footerButtons: {
@@ -625,7 +584,7 @@ const styles = StyleSheet.create({
     borderColor: ColorPalette.gray100,
   },
   saveButton: {
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.brand500,
   },
   saveButtonPressed: {
     opacity: 0.85,

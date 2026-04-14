@@ -1,8 +1,8 @@
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
-import { Box, ErrorState } from "@/design-system";
+import { Box, ErrorState, Spinner } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import RankPollCard from "./rank-poll-card";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -11,11 +11,17 @@ type RankPollRowProps = {
   poll: ModelsPollAPIResponse;
   tripId: string;
   onRanked: () => void;
+  onPress?: () => void;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function RankPollRow({ poll, tripId, onRanked }: RankPollRowProps) {
+export function RankPollRow({
+  poll,
+  tripId,
+  onRanked,
+  onPress,
+}: RankPollRowProps) {
   const { data, isLoading, isError, refetch } = useGetRankPollResults(
     tripId,
     poll.id ?? "",
@@ -31,7 +37,7 @@ export function RankPollRow({ poll, tripId, onRanked }: RankPollRowProps) {
         padding="lg"
         style={styles.loadingCard}
       >
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }
@@ -46,7 +52,14 @@ export function RankPollRow({ poll, tripId, onRanked }: RankPollRowProps) {
 
   if (!data) return null;
 
-  return <RankPollCard poll={data} tripId={tripId} onRanked={onRanked} />;
+  return (
+    <RankPollCard
+      poll={data}
+      tripId={tripId}
+      onRanked={onRanked}
+      onPress={onPress}
+    />
+  );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────

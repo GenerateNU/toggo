@@ -42,5 +42,11 @@ func VotePollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	// /api/v1/trips/:tripID/vote-polls/:pollId/vote
 	pollIDGroup.Post("/vote", votePollController.CastVote)
 
+	// /api/v1/trips/:tripID/vote-polls/:pollId/voters
+	pollIDGroup.Get("/voters", votePollController.GetPollVoters)
+
+	// /api/v1/trips/:tripID/vote-polls/:pollId/options/:optionId/voters
+	pollIDGroup.Get("/options/:optionId/voters", votePollController.GetOptionVoters)
+
 	return votePollGroup
 }

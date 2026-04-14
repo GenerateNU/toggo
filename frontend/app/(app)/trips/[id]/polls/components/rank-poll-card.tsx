@@ -7,7 +7,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import { ModelsRankPollResultsResponse } from "@/types/types.gen";
 import { GripVertical } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -28,13 +28,14 @@ type RankPollCardProps = {
   poll: ModelsRankPollResultsResponse;
   tripId: string;
   onRanked?: () => void;
+  onPress?: () => void;
+  previewMode?: boolean;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ITEM_HEIGHT = 52;
 const RANK_BADGE_SIZE = 28;
-const SUBMIT_BUTTON_WIDTH = 147;
 const SWAP_THRESHOLD = ITEM_HEIGHT * 0.5;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ const DraggableRow = React.memo(function DraggableRow({
   return (
     <Animated.View style={[styles.row, style]}>
       <Box
-        backgroundColor="gray900"
+        backgroundColor="blue500"
         alignItems="center"
         justifyContent="center"
         style={styles.badge}
@@ -109,7 +110,7 @@ const DraggableRow = React.memo(function DraggableRow({
       {!closed && (
         <GestureDetector gesture={gesture}>
           <Animated.View style={styles.handle} hitSlop={12}>
-            <GripVertical size={20} color={ColorPalette.gray400} />
+            <GripVertical size={20} color={ColorPalette.gray900} />
           </Animated.View>
         </GestureDetector>
       )}
@@ -123,6 +124,8 @@ export default function RankPollCard({
   poll,
   tripId,
   onRanked,
+  onPress,
+  previewMode = false,
 }: RankPollCardProps) {
   const closed = isPollClosed(poll.deadline);
   const [options, setOptions] = useState<RankedOption[]>([]);
@@ -218,6 +221,7 @@ export default function RankPollCard({
   // ─── Submit ───────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
+    if (previewMode) return;
     const pollId = poll.poll_id;
     if (!pollId || closed) return;
     try {
@@ -232,9 +236,7 @@ export default function RankPollCard({
         },
       });
       toast.show({
-        variant: "pollSent",
-        message: hasVoted ? "Ranking updated!" : "Poll Sent!",
-        subtitle: "Your trip will get a notification to vote.",
+        message: hasVoted ? "Ranking updated!" : "Ranking submitted!",
       });
       onRanked?.();
     } catch {
@@ -254,53 +256,58 @@ export default function RankPollCard({
     return options.every((opt, i) => savedSet.has(`${i}:${opt.id}`));
   }, [options, poll.user_ranking, hasVoted]);
 
-  const submitDisabled =
-    options.length === 0 || submitRanking.isPending || closed || isUnchanged;
-  const submitLabel = submitRanking.isPending
-    ? "Submitting…"
-    : closed
-      ? "Poll closed"
-      : hasVoted
-        ? "Update ranking"
-        : "Submit ranking";
+  const submitDisabled = previewMode
+    ? options.length === 0 || closed
+    : options.length === 0 || submitRanking.isPending || closed || isUnchanged;
+  const submitLabel = previewMode
+    ? "Submit ranking"
+    : submitRanking.isPending
+      ? "Submitting…"
+      : closed
+        ? "Poll closed"
+        : hasVoted
+          ? "Update ranking"
+          : "Submit ranking";
 
   return (
     <Box backgroundColor="white" borderRadius="md" style={styles.card}>
       <Box style={styles.inner}>
         {/* Header */}
-        <Box gap="xxs">
-          <Box flexDirection="row" alignItems="flex-start" gap="xs">
-            <Text
-              variant="bodyDefault"
-              color="gray950"
-              numberOfLines={3}
-              style={{ flex: 1 }}
-            >
-              {poll.question}
-            </Text>
-            <UserAvatar variant="sm" userId={poll.created_by ?? ""} />
-          </Box>
-          <Box flexDirection="row" gap="xs">
-            {(poll.total_voters ?? 0) > 0 && (
-              <Text variant="bodyXxsDefault" color="gray500">
-                {poll.total_voters} voter{poll.total_voters !== 1 ? "s" : ""}
-              </Text>
-            )}
-            {poll.deadline && (
+        <Pressable onPress={onPress} disabled={!onPress || previewMode}>
+          <Box gap="xxs">
+            <Box flexDirection="row" alignItems="flex-start" gap="xs">
               <Text
-                variant="bodyXxsDefault"
-                style={{
-                  color: closed
-                    ? ColorPalette.statusError
-                    : ColorPalette.gray500,
-                }}
+                variant="bodyDefault"
+                color="gray950"
+                numberOfLines={3}
+                style={{ flex: 1 }}
               >
-                {(poll.total_voters ?? 0) > 0 ? "· " : ""}
-                {formatDeadline(poll.deadline)}
+                {poll.question}
               </Text>
-            )}
+              <UserAvatar variant="sm" userId={poll.created_by ?? ""} />
+            </Box>
+            <Box flexDirection="row" gap="xs">
+              {(poll.total_voters ?? 0) > 0 && (
+                <Text variant="bodyXxsDefault" color="gray500">
+                  {poll.total_voters} voter{poll.total_voters !== 1 ? "s" : ""}
+                </Text>
+              )}
+              {poll.deadline && (
+                <Text
+                  variant="bodyXxsDefault"
+                  style={{
+                    color: closed
+                      ? ColorPalette.statusError
+                      : ColorPalette.gray500,
+                  }}
+                >
+                  {(poll.total_voters ?? 0) > 0 ? "· " : ""}
+                  {formatDeadline(poll.deadline)}
+                </Text>
+              )}
+            </Box>
           </Box>
-        </Box>
+        </Pressable>
 
         {/* Rows */}
         <Box style={styles.list}>
@@ -351,7 +358,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   inner: {
-    padding: 12,
+    padding: 16,
     gap: 14,
   },
   list: {
@@ -360,8 +367,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: ColorPalette.gray100,
-    borderRadius: 20,
+    backgroundColor: ColorPalette.blue25,
+    borderWidth: 1.5,
+    borderColor: ColorPalette.blue500,
+    borderRadius: 12,
     paddingVertical: 12,
     paddingLeft: Layout.spacing.sm,
     paddingRight: 10,
@@ -378,7 +387,7 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
-    color: ColorPalette.gray700,
+    color: ColorPalette.gray900,
   },
   handle: {
     paddingHorizontal: Layout.spacing.xxs,
@@ -387,12 +396,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submit: {
-    width: SUBMIT_BUTTON_WIDTH,
     backgroundColor: ColorPalette.brand500,
     borderRadius: CornerRadius.md,
-    paddingVertical: 12,
-    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: 14,
+    paddingHorizontal: Layout.spacing.lg,
     alignItems: "center",
+    alignSelf: "flex-end",
   },
   submitDisabled: {
     backgroundColor: ColorPalette.gray300,

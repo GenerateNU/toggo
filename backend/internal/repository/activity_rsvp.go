@@ -41,6 +41,7 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 			ar.status,
 			ar.created_at,
 			ar.updated_at,
+			u.name,
 			u.username,
 			i.file_key AS profile_picture_key
 		`).

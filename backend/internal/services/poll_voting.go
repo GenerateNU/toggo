@@ -24,6 +24,8 @@ type PollVotingServiceInterface interface {
 	AddVoteOption(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CreatePollOptionRequest) (*models.PollOption, error)
 	DeleteVoteOption(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.PollOption, error)
 	CastVote(ctx context.Context, tripID, pollID, userID uuid.UUID, req models.CastVoteRequest) (*models.PollAPIResponse, error)
+	GetVotePollVoters(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollVotersResponse, error)
+	GetVoteOptionVoters(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.OptionVotersResponse, error)
 }
 
 var _ PollVotingServiceInterface = (*PollVotingService)(nil)
@@ -349,6 +351,71 @@ func (s *PollVotingService) CastVote(ctx context.Context, tripID, pollID, userID
 	s.pollService.PublishEventWithActor(ctx, topic, tripID.String(), pollID.String(), userID.String(), resp)
 
 	return resp, nil
+}
+
+// GetVotePollVoters returns who has voted vs who hasn't for a vote poll.
+func (s *PollVotingService) GetVotePollVoters(ctx context.Context, tripID, pollID, userID uuid.UUID) (*models.PollVotersResponse, error) {
+	poll, err := s.repository.Poll.FindPollMetaByID(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+	if poll.TripID != tripID {
+		return nil, errs.ErrNotFound
+	}
+
+	voters, err := s.repository.PollVoting.GetVoterStatus(ctx, pollID, tripID)
+	if err != nil {
+		return nil, err
+	}
+
+	totalVoters := 0
+	for _, v := range voters {
+		if v.HasVoted {
+			totalVoters++
+		}
+	}
+
+	return &models.PollVotersResponse{
+		PollID:       pollID,
+		TotalMembers: len(voters),
+		TotalVoters:  totalVoters,
+		Voters:       voters,
+	}, nil
+}
+
+// GetVoteOptionVoters returns all users who voted for a specific option on a vote poll.
+func (s *PollVotingService) GetVoteOptionVoters(ctx context.Context, tripID, pollID, optionID, userID uuid.UUID) (*models.OptionVotersResponse, error) {
+	poll, err := s.repository.Poll.FindPollByID(ctx, pollID)
+	if err != nil {
+		return nil, err
+	}
+	if poll.TripID != tripID {
+		return nil, errs.ErrNotFound
+	}
+
+	var optionName string
+	for _, opt := range poll.Options {
+		if opt.ID == optionID {
+			optionName = opt.Name
+			break
+		}
+	}
+	if optionName == "" {
+		return nil, errs.ErrNotFound
+	}
+
+	voters, err := s.repository.PollVoting.GetOptionVoters(ctx, pollID, optionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.OptionVotersResponse{
+		PollID:      pollID,
+		OptionID:    optionID,
+		OptionName:  optionName,
+		TotalVoters: len(voters),
+		Voters:      voters,
+	}, nil
 }
 
 // ---------------------------------------------------------------------------

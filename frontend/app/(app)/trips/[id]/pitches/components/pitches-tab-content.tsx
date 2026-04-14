@@ -1,6 +1,6 @@
-import { Box, ErrorState } from "@/design-system";
+import { Box, ErrorState, Spinner } from "@/design-system";
 import type { ModelsPitchAPIResponse } from "@/types/types.gen";
-import { ActivityIndicator, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { EmptyPitchState } from "./empty-pitch-state";
 import { PitchCard } from "./pitch-card";
 import { PitchCardSkeleton } from "./pitch-card-skeleton";
@@ -16,13 +16,12 @@ interface PitchesTabContentProps {
   onFetchMore: () => void;
   onOpenPitch: (pitchID: string) => void;
   onOpenComments: (pitchID: string) => void;
-  onCreatePitch: () => void;
   onRetry: () => void;
 }
 
 function PitchesSkeletonList() {
   return (
-    <Box paddingTop="xs">
+    <Box paddingTop="xs" paddingHorizontal="sm">
       {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
         <PitchCardSkeleton key={i} />
       ))}
@@ -39,7 +38,6 @@ export function PitchesTabContent({
   onFetchMore,
   onOpenPitch,
   onOpenComments,
-  onCreatePitch,
 }: PitchesTabContentProps) {
   if (isLoading) {
     return <PitchesSkeletonList />;
@@ -62,27 +60,31 @@ export function PitchesTabContent({
         paddingVertical="xxl"
         marginVertical="xxl"
       >
-        <EmptyPitchState onPress={onCreatePitch} hasDeadline={hasDeadline} />
+        <EmptyPitchState hasDeadline={hasDeadline} />
       </Box>
     );
   }
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingTop: 4, paddingBottom: 100 }}
+      contentContainerStyle={{
+        paddingTop: 4,
+        paddingBottom: 100,
+      }}
       onScrollEndDrag={onFetchMore}
     >
       {pitches.map((pitch) => (
-        <PitchCard
-          key={pitch.id}
-          pitch={pitch}
-          onPress={() => pitch.id && onOpenPitch(pitch.id)}
-          onCommentPress={() => pitch.id && onOpenComments(pitch.id)}
-        />
+        <Box key={pitch.id} paddingHorizontal="sm">
+          <PitchCard
+            pitch={pitch}
+            onPress={() => pitch.id && onOpenPitch(pitch.id)}
+            onCommentPress={() => pitch.id && onOpenComments(pitch.id)}
+          />
+        </Box>
       ))}
       {isLoadingMore && (
         <Box padding="md" alignItems="center">
-          <ActivityIndicator />
+          <Spinner />
         </Box>
       )}
     </ScrollView>

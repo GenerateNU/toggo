@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@/design-system";
+import { Box, Button, Spinner, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
@@ -7,7 +7,6 @@ import { Mic, Square, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActionSheetIOS,
-  ActivityIndicator,
   Alert,
   Platform,
   Pressable,
@@ -310,15 +309,19 @@ export function AudioPitchSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["52%"]}
       initialIndex={-1}
       onClose={handleClose}
       footer={
         state === "done" ? (
           <Box
+            backgroundColor="white"
             paddingHorizontal="sm"
             paddingTop="xs"
-            style={{ paddingBottom: Math.max(bottom, 16) }}
+            style={{
+              paddingBottom: Math.max(bottom, 16),
+              borderTopWidth: 1,
+              borderTopColor: ColorPalette.gray100,
+            }}
           >
             <Button
               layout="textOnly"
@@ -342,7 +345,7 @@ export function AudioPitchSheet({
           Add an audio pitch
         </Text>
         <Pressable onPress={handleClose} hitSlop={8}>
-          <X size={20} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       </Box>
 
@@ -352,14 +355,15 @@ export function AudioPitchSheet({
         </Text>
 
         {state === "idle" || state === "processing" ? (
-          <Box alignItems="center" gap="md" paddingTop="lg">
+          <Box alignItems="center" gap="md" paddingTop="lg" paddingBottom="md">
             {state === "processing" ? (
               <Box
+                backgroundColor="brand500"
                 style={styles.micBtn}
                 alignItems="center"
                 justifyContent="center"
               >
-                <ActivityIndicator color={ColorPalette.white} />
+                <Spinner />
               </Box>
             ) : (
               <Pressable onPress={startRecording} style={styles.micBtn}>
@@ -428,15 +432,15 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: ColorPalette.gray900,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: ColorPalette.brand500,
   },
   stopBtn: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.brand500,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -30,6 +30,7 @@ export { Resource as ResourceView } from "./components/high-order/resource-view"
 // ─── Status ───────────────────────────────────────────────────────────────────
 export { default as EmptyState } from "./components/status/empty";
 export { default as ErrorState } from "./components/status/error";
+export { default as Spinner } from "./components/status/spinner";
 
 // ─── Theme ──────────────────────────────────────────────────────────────────────
 export { theme } from "./tokens/theme";
@@ -83,6 +84,9 @@ export { default as Divider } from "./primitives/divider";
 
 // ─── Toast ──────────────────────────────────────────────────────────────────────
 export { ToastProvider, useToast } from "./primitives/toast-manager";
+
+// ─── Glass ──────────────────────────────────────────────────────────────────────
+export { default as GlassContainer } from "./components/glass-container";
 
 // ─── Dialog ──────────────────────────────────────────────────────────────────────
 export { Dialog } from "./components/dialog/dialog";

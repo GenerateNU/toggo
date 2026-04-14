@@ -32,6 +32,7 @@ var _ ActivityRepository = (*activityRepository)(nil)
 const goingUsersSubquery = `COALESCE((
 	SELECT json_agg(json_build_object(
 		'user_id', ar.user_id,
+		'name', ru.name,
 		'username', ru.username,
 		'profile_picture_key', ri.file_key
 	))
@@ -77,7 +78,7 @@ func (r *activityRepository) Find(ctx context.Context, activityID uuid.UUID) (*m
 	err := r.db.NewSelect().
 		TableExpr("activities AS a").
 		ColumnExpr("a.*").
-		ColumnExpr("u.username AS proposer_username").
+		ColumnExpr("u.name AS proposer_name, u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
 		ColumnExpr("COALESCE((SELECT json_agg(ai.image_id) FROM activity_images ai WHERE ai.activity_id = a.id), '[]') AS image_keys").
@@ -128,7 +129,7 @@ func (r *activityRepository) FindByActivityQueryParams(
 	query := r.db.NewSelect().
 		TableExpr("activities AS a").
 		ColumnExpr("a.*").
-		ColumnExpr("u.username AS proposer_username").
+		ColumnExpr("u.name AS proposer_name, u.username AS proposer_username").
 		ColumnExpr("u.profile_picture AS proposer_picture_id").
 		ColumnExpr("img.file_key AS proposer_picture_key").
 		ColumnExpr("COALESCE(json_agg(ai.image_id) FILTER (WHERE ai.image_id IS NOT NULL), '[]') AS image_keys").
@@ -158,7 +159,7 @@ func (r *activityRepository) FindByActivityQueryParams(
 	}
 
 	query = query.
-		GroupExpr("a.id, u.username, u.profile_picture, img.file_key").
+		GroupExpr("a.id, u.name, u.username, u.profile_picture, img.file_key").
 		OrderExpr("a.created_at DESC, a.id DESC")
 
 	return r.executePaginatedQuery(ctx, query, cursor, limit)
@@ -197,7 +198,11 @@ func (r *activityRepository) Update(ctx context.Context, activityID uuid.UUID, r
 	}
 
 	if req.TimeOfDay != nil {
-		updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		if *req.TimeOfDay == "" {
+			updateQuery = updateQuery.Set("time_of_day = NULL")
+		} else {
+			updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		}
 	}
 
 	if req.ThumbnailURL != nil {
@@ -258,7 +263,11 @@ func (r *activityRepository) UpdateTx(ctx context.Context, tx bun.Tx, activityID
 		updateQuery = updateQuery.Set("name = ?", *req.Name)
 	}
 	if req.TimeOfDay != nil {
-		updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		if *req.TimeOfDay == "" {
+			updateQuery = updateQuery.Set("time_of_day = NULL")
+		} else {
+			updateQuery = updateQuery.Set("time_of_day = ?", *req.TimeOfDay)
+		}
 	}
 	if req.ThumbnailURL != nil {
 		updateQuery = updateQuery.Set("thumbnail_url = ?", *req.ThumbnailURL)

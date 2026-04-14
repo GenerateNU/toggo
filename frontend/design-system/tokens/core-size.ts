@@ -1,4 +1,6 @@
 export const CoreSize = {
+  iconSm: 20,
+  xxs: 12,
   xs: 16,
   sm: 24,
   md: 32,

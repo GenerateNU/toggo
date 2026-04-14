@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   DateRangePicker,
+  Spinner,
   Text,
 } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -16,12 +17,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { ArrowLeft, Calendar, MapPin, Search, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,15 +103,16 @@ export function CreateTripSheet({
 
   const enterSearchMode = () => {
     setIsSearchMode(true);
-    bottomSheetRef.current?.snapToIndex(1);
-    setTimeout(() => searchInputRef.current?.focus(), 300);
+    setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+      searchInputRef.current?.focus();
+    }, 100);
   };
 
   const exitSearchMode = () => {
     setIsSearchMode(false);
     setSearchQuery("");
     setPredictions([]);
-    bottomSheetRef.current?.snapToIndex(0);
   };
 
   const handleSelectPrediction = async (prediction: Prediction) => {
@@ -133,14 +130,6 @@ export function CreateTripSheet({
       });
     } finally {
       exitSearchMode();
-    }
-  };
-
-  const handleSheetChange = (index: number) => {
-    if (index === 0 && isSearchMode) {
-      setIsSearchMode(false);
-      setSearchQuery("");
-      setPredictions([]);
     }
   };
 
@@ -173,9 +162,8 @@ export function CreateTripSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={["55%", "95%"]}
-        onChange={handleSheetChange}
         onClose={handleDismiss}
+        {...(isSearchMode && { snapPoints: ["90%"] })}
       >
         {isSearchMode ? (
           // ─── Search state ───────────────────────────────────────────────
@@ -198,10 +186,7 @@ export function CreateTripSheet({
                 style={styles.searchBar}
               >
                 {isLoadingPredictions ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={ColorPalette.gray400}
-                  />
+                  <Spinner />
                 ) : (
                   <Search size={16} color={ColorPalette.gray400} />
                 )}
@@ -224,7 +209,7 @@ export function CreateTripSheet({
                     }}
                     hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                   >
-                    <X size={14} color={ColorPalette.gray400} />
+                    <X size={24} color={ColorPalette.gray400} />
                   </TouchableOpacity>
                 )}
               </Box>
@@ -258,14 +243,12 @@ export function CreateTripSheet({
           </Box>
         ) : (
           // ─── Form state ─────────────────────────────────────────────────
-          <Box
-            paddingHorizontal="sm"
-            paddingTop="sm"
-            paddingBottom="lg"
-            gap="md"
-          >
+          <Box paddingHorizontal="sm" paddingBottom="lg" gap="xxs">
             {/* Close button */}
-            <Box flexDirection="row" justifyContent="flex-end">
+            <Box flexDirection="row" justifyContent="space-between">
+              <Text variant="headingMd" color="gray950">
+                {"Know where you're going?"}
+              </Text>
               <TouchableOpacity
                 onPress={() => {
                   bottomSheetRef.current?.close();
@@ -275,18 +258,13 @@ export function CreateTripSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={20} color={ColorPalette.gray950} />
+                <X size={24} color={ColorPalette.gray950} />
               </TouchableOpacity>
             </Box>
 
-            <Box gap="xxs">
-              <Text variant="headingMd" color="gray950">
-                Plan a new trip
-              </Text>
-              <Text variant="bodyDefault" color="gray500">
-                Where are you headed?
-              </Text>
-            </Box>
+            <Text variant="bodyDefault" color="gray500" marginBottom="xs">
+              Plan a new trip
+            </Text>
 
             <Box gap="sm">
               {/* Location field */}

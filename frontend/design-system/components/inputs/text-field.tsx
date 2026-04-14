@@ -4,6 +4,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { FontFamily } from "@/design-system/tokens/typography";
 import React, { useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
 
@@ -24,6 +25,8 @@ export type TextFieldProps = {
   multiline?: boolean;
   returnKeyType?: TextInputProps["returnKeyType"];
   onSubmitEditing?: TextInputProps["onSubmitEditing"];
+  activeBorderColor?: string;
+  highlightWhenFilled?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -43,14 +46,12 @@ export default function TextField({
   multiline,
   returnKeyType,
   onSubmitEditing,
+  activeBorderColor,
+  highlightWhenFilled = false,
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
-
-  const borderColor = error
-    ? ColorPalette.statusError
-    : focused
-      ? ColorPalette.gray900
-      : ColorPalette.gray300;
+  const hasValue = value.trim().length > 0;
+  const isActive = focused || (highlightWhenFilled && hasValue);
 
   return (
     <Box style={styles.container}>
@@ -62,24 +63,19 @@ export default function TextField({
       <Box
         style={[
           styles.inputRow,
-          { borderColor },
-          focused && styles.inputRowFocused,
+          isActive && styles.inputRowFocused,
+          isActive && activeBorderColor && { borderColor: activeBorderColor },
+          !!error && styles.inputRowError,
           disabled && styles.inputRowDisabled,
         ]}
       >
         {leftIcon && <Box style={styles.iconWrapper}>{leftIcon}</Box>}
         <TextInput
-          style={[
-            styles.input,
-            disabled && styles.inputDisabled,
-            {
-              color: disabled ? ColorPalette.gray400 : ColorPalette.gray900,
-            },
-          ]}
+          style={[styles.input, disabled && styles.inputDisabled]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={ColorPalette.gray500}
+          placeholderTextColor={ColorPalette.gray300}
           editable={!disabled}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -115,13 +111,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: ColorPalette.gray300,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CornerRadius.md,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     minHeight: CoreSize.xl,
   },
   inputRowFocused: {
     borderWidth: 2,
+    borderColor: ColorPalette.blue500,
+  },
+  inputRowError: {
+    borderWidth: 2,
+    borderColor: ColorPalette.statusError,
   },
   inputRowDisabled: {
     backgroundColor: ColorPalette.gray50,
@@ -134,9 +135,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 12,
+    fontFamily: FontFamily.regular,
+    color: ColorPalette.gray900,
   },
   inputDisabled: {
     opacity: 0.6,
+    color: ColorPalette.gray400,
   },
   error: {
     color: ColorPalette.statusError,

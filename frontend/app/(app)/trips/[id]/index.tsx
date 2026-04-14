@@ -3,8 +3,10 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
+import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
-import ItineraryEmptyState from "@/app/(app)/trips/[id]/components/itinerary-empty-state";
+import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
+import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
 import TripTabBar, {
@@ -31,18 +33,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_TAB: TabKey = "itinerary";
+const INITIAL_TAB: TabKey = "new";
 const CARD_TOP_OFFSET = 120;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
-  const { id: tripID } = useLocalSearchParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
+  const { id: tripID, tab } = useLocalSearchParams<{
+    id: string;
+    tab?: string;
+  }>();
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    (tab as TabKey) || INITIAL_TAB,
+  );
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
+  const parentScrollViewRef = useRef<ScrollView>(null);
+  const parentScrollOffsetRef = useRef(0);
+  const cardContainerRef = useRef<View>(null);
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
@@ -143,7 +153,7 @@ export default function Trip() {
           paddingHorizontal="sm"
           paddingVertical="xs"
         >
-          <BackButton />
+          <BackButton hasBackground />
 
           <Pressable
             onPress={() =>
@@ -160,37 +170,76 @@ export default function Trip() {
           </Pressable>
         </Box>
 
-        <Box style={styles.card}>
+        <View ref={cardContainerRef} style={styles.card}>
           <ScrollView
+            ref={parentScrollViewRef}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
+            onScroll={(e) => {
+              parentScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
           >
-            <TripMetadata
-              tripName={trip?.name}
-              tripDate={tripDate}
-              tripLocation={(trip as any)?.location}
-              isLoading={isLoading}
-              onInviteFriends={shareInvite}
-              onSettingsPress={() =>
-                router.push(`/trips/${tripID}/settings` as any)
-              }
-              onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
-              onLocationPress={handleLocationPress}
-            />
+            <Box backgroundColor="white">
+              <TripMetadata
+                tripName={trip?.name}
+                tripDate={tripDate}
+                tripLocation={(trip as any)?.location}
+                isLoading={isLoading}
+                onInviteFriends={shareInvite}
+                onSettingsPress={() =>
+                  router.push(`/trips/${tripID}/settings` as any)
+                }
+                onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
+                onLocationPress={handleLocationPress}
+              />
 
-            <Box paddingTop="sm">
-              <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+              <Box paddingVertical="sm">
+                <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+              </Box>
             </Box>
 
-            <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl">
-              {activeTab === "itinerary" && <ItineraryEmptyState />}
+            <Box
+              paddingHorizontal="sm"
+              paddingTop="sm"
+              paddingBottom="xl"
+              backgroundColor="gray25"
+              style={styles.tabContent}
+            >
+              {activeTab === "new" && (
+                <Box gap="sm">
+                  {trip?.pitch_deadline &&
+                    new Date(trip.pitch_deadline) > new Date() && (
+                      <PitchingActiveCard
+                        tripID={tripID}
+                        deadline={new Date(trip.pitch_deadline)}
+                        onViewPitches={() =>
+                          router.push(`/trips/${tripID}/pitches` as any)
+                        }
+                      />
+                    )}
+                  <ActivityFeedTabContent tripId={tripID} />
+                </Box>
+              )}
+              {activeTab === "itinerary" && (
+                <ItineraryTabContent
+                  tripID={tripID}
+                  startDate={trip?.start_date}
+                  endDate={trip?.end_date}
+                  parentScrollViewRef={parentScrollViewRef}
+                  parentScrollOffset={parentScrollOffsetRef}
+                  parentContainerRef={cardContainerRef}
+                />
+              )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             </Box>
           </ScrollView>
-        </Box>
+        </View>
       </SafeAreaView>
 
-      <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+      {activeTab !== "itinerary" && (
+        <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+      )}
 
       <CreatePollSheet
         ref={createPollSheetRef}
@@ -243,13 +292,17 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: CornerRadius.xl,
-    borderTopRightRadius: CornerRadius.xl,
+    backgroundColor: ColorPalette.gray25,
+    borderTopLeftRadius: CornerRadius.xxxl,
+    borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
     marginTop: CARD_TOP_OFFSET,
   },
   scrollContent: {
+    flexGrow: 1,
     paddingBottom: Layout.spacing.xl,
+  },
+  tabContent: {
+    flexGrow: 1,
   },
 });
