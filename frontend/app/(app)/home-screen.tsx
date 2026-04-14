@@ -598,7 +598,7 @@ export default function HomeScreen() {
               }).start(() => setShowToast(false));
             }}
           >
-            <Icon icon={X} size="xs" color="gray500" />
+            <X size={24} />
           </Pressable>
         </AnimatedBox>
       )}

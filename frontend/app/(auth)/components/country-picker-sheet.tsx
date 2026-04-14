@@ -1,4 +1,4 @@
-import { Divider, ErrorState, Icon, TextField } from "@/design-system";
+import { Divider, ErrorState, TextField } from "@/design-system";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -63,7 +63,7 @@ function SheetHeader({ onClose }: { onClose: () => void }) {
       <Text variant="headingSm">Country</Text>
       <Box position="absolute" right={Layout.spacing.md}>
         <Pressable onPress={onClose}>
-          <Icon icon={X} size="xs" color="gray900" />
+          <X size={24} />
         </Pressable>
       </Box>
     </Box>

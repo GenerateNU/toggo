@@ -213,7 +213,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               ) : null}
             </Box>
             <TouchableOpacity onPress={closeSheet} hitSlop={12}>
-              <Icon icon={X} size="sm" color="gray500" />
+              <X size={24} />
             </TouchableOpacity>
           </Box>
 

@@ -1,4 +1,4 @@
-import { Avatar, Box, Icon, Spinner, Text } from "@/design-system";
+import { Avatar, Box, Spinner, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import type { ModelsVoterInfo } from "@/types/types.gen";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
@@ -59,7 +59,7 @@ export function RankingVotersSheet({
             hitSlop={8}
             style={{ position: "absolute", right: 0 }}
           >
-            <Icon icon={X} size="sm" color="gray500" />
+            <X size={24} />
           </Pressable>
         </Box>
 
