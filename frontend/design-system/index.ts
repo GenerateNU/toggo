@@ -85,6 +85,9 @@ export { default as Divider } from "./primitives/divider";
 // ─── Toast ──────────────────────────────────────────────────────────────────────
 export { ToastProvider, useToast } from "./primitives/toast-manager";
 
+// ─── Glass ──────────────────────────────────────────────────────────────────────
+export { default as GlassContainer } from "./components/glass-container";
+
 // ─── Dialog ──────────────────────────────────────────────────────────────────────
 export { Dialog } from "./components/dialog/dialog";
 export type {
