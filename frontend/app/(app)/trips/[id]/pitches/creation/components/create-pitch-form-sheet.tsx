@@ -117,9 +117,7 @@ export function CreatePitchFormSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["92%"]}
       initialIndex={-1}
-      hideHandle={true}
       onClose={handleClose}
       footer={
         <Box
@@ -176,7 +174,7 @@ export function CreatePitchFormSheet({
                     style={styles.photoRemoveBtn}
                     hitSlop={8}
                   >
-                    <X size={14} color={ColorPalette.white} />
+                    <X size={24} color={ColorPalette.white} />
                   </Pressable>
                 ) : null}
               </>

@@ -1,8 +1,8 @@
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
-import { Box, ErrorState } from "@/design-system";
+import { Box, ErrorState, Spinner } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import RankPollCard from "./rank-poll-card";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ export function RankPollRow({
         padding="lg"
         style={styles.loadingCard}
       >
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }

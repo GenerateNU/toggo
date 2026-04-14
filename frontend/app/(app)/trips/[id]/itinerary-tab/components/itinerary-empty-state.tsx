@@ -1,16 +1,31 @@
 import { Box, Text } from "@/design-system";
-import { StyleSheet } from "react-native";
+import { Image, StyleSheet } from "react-native";
 
 export function ItineraryEmptyState() {
   return (
-    <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
-      <Box alignItems="center" paddingVertical="lg">
+    <Box
+      borderRadius="xxxl"
+      padding="xs"
+      shadowColor="black"
+      shadowOffset={{ width: 0, height: 2 }}
+      shadowOpacity={0.1}
+      shadowRadius={5}
+      backgroundColor="white"
+    >
+      <Box alignItems="center" gap="sm">
+        <Image
+          source={require("@/assets/images/empty-itinerary.png")}
+          style={styles.image}
+          resizeMode="contain"
+        />
+
         <Text
-          variant="bodySmDefault"
+          variant="bodyMedium"
           color="gray950"
-          style={styles.emptyStateText}
+          textAlign="center"
+          marginBottom="sm"
         >
-          No activities planned. Get planning!
+          Set the trip date and get planning!
         </Text>
       </Box>
     </Box>
@@ -20,8 +35,9 @@ export function ItineraryEmptyState() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  emptyStateText: {
-    fontStyle: "italic",
+  image: {
+    width: 200,
+    height: 150,
   },
 });
 

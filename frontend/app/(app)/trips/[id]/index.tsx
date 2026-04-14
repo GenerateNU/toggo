@@ -33,7 +33,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_TAB: TabKey = "itinerary";
+const INITIAL_TAB: TabKey = "new";
 const CARD_TOP_OFFSET = 120;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ export default function Trip() {
               paddingHorizontal="sm"
               paddingTop="sm"
               paddingBottom="xl"
-              backgroundColor="gray50"
+              backgroundColor="gray25"
               style={styles.tabContent}
             >
               {activeTab === "new" && (
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: ColorPalette.gray50,
+    backgroundColor: ColorPalette.gray25,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",

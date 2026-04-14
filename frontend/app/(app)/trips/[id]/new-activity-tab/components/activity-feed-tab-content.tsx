@@ -5,14 +5,14 @@ import {
 import { getUnreadActivityCountQueryKey } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { useMarkActivityEventRead } from "@/api/activity-feed/useMarkActivityEventRead";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
-import { Box, Text, useToast } from "@/design-system";
+import { Box, Spinner, Text, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useTripRealtime } from "@/hooks/useTripRealtime";
 import { RealtimeEvent } from "@/types/types.gen";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import ActivityCardItem from "./activity-card-item";
 import ActivityCommentItem from "./activity-comment-item";
 import { FEEDWORTHY_TOPICS, RECENT_CUTOFF_MS } from "../constants";
@@ -164,7 +164,7 @@ export default function ActivityFeedTabContent({
   if (isLoading) {
     return (
       <Box padding="lg" alignItems="center">
-        <ActivityIndicator size="small" color={ColorPalette.gray400} />
+        <Spinner />
       </Box>
     );
   }

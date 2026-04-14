@@ -2,6 +2,7 @@ import { usePressScale } from "@/design-system/hooks/usePressScale";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { LucideIcon } from "lucide-react-native";
 import { Animated, Pressable } from "react-native";
 
@@ -37,15 +38,15 @@ const VARIANT_STYLES = {
   },
   filled: {
     unselected: {
-      backgroundColor: ColorPalette.gray50,
+      backgroundColor: ColorPalette.gray25,
       borderColor: "transparent",
-      textVariant: "bodySmMedium",
+      textVariant: "bodyMedium",
       cornerRadius: CornerRadius.sm,
     },
     selected: {
       backgroundColor: ColorPalette.brand500,
       borderColor: "transparent",
-      textVariant: "bodySmMedium",
+      textVariant: "bodyMedium",
       cornerRadius: CornerRadius.sm,
     },
   },
@@ -84,7 +85,7 @@ export default function Chip({
           alignItems: "center",
           gap: 4,
           paddingHorizontal: 12,
-          paddingVertical: 6,
+          paddingVertical: Layout.spacing.xs,
           borderWidth: 1,
           borderRadius: variantStyle.cornerRadius,
           borderColor: variantStyle.borderColor,
