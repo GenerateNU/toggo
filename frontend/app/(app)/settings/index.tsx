@@ -5,7 +5,16 @@ import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { DeleteAccountSheet } from "@/app/(app)/components/delete-account-sheet";
 import { LogoutSheet } from "@/app/(app)/components/logout-sheet";
 import { useUser } from "@/contexts/user";
-import { Box, Icon, ImagePicker, Text } from "@/design-system";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Icon,
+  ImagePicker,
+  SkeletonRect,
+  Text,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -92,8 +101,13 @@ const AVATAR_SIZE = 120;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const { currentUser, logout, refreshCurrentUser } = useUser();
-  const { data: profileImageData } = useGetImage(
+  const { currentUser, logout, refreshCurrentUser, isPending } = useUser();
+  const toast = useToast();
+  const {
+    data: profileImageData,
+    isLoading: isProfileImageLoading,
+    errors: profileImageErrors,
+  } = useGetImage(
     [currentUser?.profile_picture],
     "small",
   );
@@ -117,21 +131,65 @@ export default function Settings() {
       });
       await refreshCurrentUser();
     } catch {
-      // non-blocking
+      toast.show({
+        message: "Couldn't update profile photo. Please try again.",
+      });
     }
   };
 
   const handleLogoutConfirm = async () => {
     logoutSheetRef.current?.close();
-    await logout();
+    try {
+      await logout();
+    } catch {
+      toast.show({ message: "Couldn't log out. Please try again." });
+    }
   };
 
   const handleDeleteConfirm = () => {
     deleteSheetRef.current?.close();
     if (currentUser?.id) {
-      deleteUser({ userID: currentUser.id });
+      deleteUser(
+        { userID: currentUser.id },
+        {
+          onError: () => {
+            toast.show({
+              message: "Couldn't delete account. Please try again.",
+            });
+          },
+        },
+      );
     }
   };
+
+  if (isPending) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={[]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <SkeletonRect
+            size="xxl"
+            borderRadius="full"
+            style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+          />
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={[]}>
+        <Box flex={1} justifyContent="center">
+          <EmptyState
+            title="No profile found"
+            description="Sign in again to view your settings."
+          />
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  const hasProfileImageError = profileImageErrors.length > 0;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={[]}>
@@ -141,28 +199,43 @@ export default function Settings() {
       >
         <Box alignItems="center" gap="sm">
           <View style={styles.avatarContainer}>
-            <ImagePicker
-              variant="circular"
-              size={AVATAR_SIZE}
-              value={profilePhotoUrl ?? undefined}
-              onChange={handlePhotoChange}
-              disabled={isUploading}
-              title="Edit profile picture"
-              subtitle="Customize your profile picture with images"
-            />
+            {isProfileImageLoading ? (
+              <SkeletonRect
+                size="xxl"
+                borderRadius="full"
+                style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}
+              />
+            ) : (
+              <ImagePicker
+                variant="circular"
+                size={AVATAR_SIZE}
+                value={profilePhotoUrl ?? undefined}
+                onChange={handlePhotoChange}
+                disabled={isUploading}
+                title="Edit profile picture"
+                subtitle="Customize your profile picture with images"
+              />
+            )}
             <View style={styles.editBadge} pointerEvents="none">
               <PenLine size={12} color={ColorPalette.gray950} />
             </View>
           </View>
 
+          {hasProfileImageError ? (
+            <ErrorState
+              title="Couldn't load profile photo"
+              description="You can still continue using your settings."
+            />
+          ) : null}
+
           <Box alignItems="center" gap="xxs">
             <Text variant="bodyMedium" color="gray950">
-              {currentUser?.name ?? ""}
+              {currentUser.name ?? ""}
             </Text>
             <Text variant="bodyDefault" color="gray500">
-              @{currentUser?.username ?? ""}
+              @{currentUser.username ?? ""}
             </Text>
-            {currentUser?.phone_number ? (
+            {currentUser.phone_number ? (
               <Text variant="bodySmDefault" color="gray500">
                 {currentUser.phone_number}
               </Text>

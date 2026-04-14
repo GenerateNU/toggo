@@ -1,6 +1,6 @@
 import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
-import { useGetAllTrips } from "@/api/trips/useGetAllTrips";
+import { getAllTripsQueryKey, useGetAllTrips } from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
@@ -40,7 +40,7 @@ import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
 import type { ModelsActivity } from "@/types/types.gen";
 import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check, PlusIcon, X } from "lucide-react-native";
@@ -100,6 +100,7 @@ const DEV_MAP_SAMPLE_ACTIVITIES: ModelsActivity[] = [
 export default function HomeScreen() {
   const { currentUser, userId } = useUser();
   const { width: viewportWidth } = useWindowDimensions();
+  const queryClient = useQueryClient();
   const profile = useProfileAvatar();
   const createTripMutation = useCreateTrip();
   const updateTripMutation = useUpdateTrip();
@@ -288,9 +289,13 @@ export default function HomeScreen() {
         });
       }
 
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey(),
+      });
+
       router.push(`/trips/${result.id}`);
     } catch {
-      // mutation error state covers feedback
+      triggerToast("Couldn't create trip. Please try again.", "error");
     }
   };
 
@@ -448,7 +453,12 @@ export default function HomeScreen() {
               <Text variant="headingMd">Past Trips</Text>
             </Box>
             <Box paddingHorizontal="sm" gap="sm">
-              {past.length === 0 ? (
+              {tripsQueryEnabled && tripsQuery.isPending ? (
+                <Box gap="sm">
+                  <SkeletonRect width="full" style={{ height: 96 }} />
+                  <SkeletonRect width="full" style={{ height: 96 }} />
+                </Box>
+              ) : past.length === 0 ? (
                 <Text variant="bodySmDefault" color="gray500">
                   No past trips yet.
                 </Text>

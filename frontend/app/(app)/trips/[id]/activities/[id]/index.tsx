@@ -1,45 +1,88 @@
 import { useGetActivity } from "@/api/activities";
-import { Box, Screen, Text } from "@/design-system";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Screen,
+  SkeletonRect,
+  Spinner,
+  Text,
+} from "@/design-system";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { useLocalSearchParams } from "expo-router";
 import { Image, ScrollView, StyleSheet } from "react-native";
 
-const DUMMY_ID = "dummy-entity-001";
-
-const DUMMY_ACTIVITY: ModelsActivityAPIResponse = {
-  id: DUMMY_ID,
-  name: "Visit the Eiffel Tower",
-  description:
-    "Take a guided tour of the Eiffel Tower and enjoy panoramic views of Paris from the top.",
-  proposed_by: "demo-user",
-  proposer_username: "Demo User",
-  category_names: ["Sightseeing", "Landmarks"],
-  location_name: "Champ de Mars, Paris, France",
-  location_lat: 48.8584,
-  location_lng: 2.2945,
-  estimated_price: 25,
-};
-
 export default function ActivityDetail() {
   const { id: activityID, tripID } = useLocalSearchParams<{
-    id: string;
-    tripID: string;
+    id?: string;
+    tripID?: string;
   }>();
-
-  const isDummy = activityID === DUMMY_ID;
+  const hasRequiredParams = Boolean(tripID && activityID);
 
   const {
-    data: fetchedActivity,
+    data: activity,
     isLoading,
     isError,
-  } = useGetActivity(tripID ?? "", activityID, {
-    query: { enabled: !isDummy && !!(tripID && activityID) },
+    refetch,
+  } = useGetActivity(tripID ?? "", activityID ?? "", {
+    query: { enabled: hasRequiredParams },
   });
-
-  const activity = isDummy ? DUMMY_ACTIVITY : fetchedActivity;
   const thumbnailUrl = getActivityThumbnailUrl(activity);
+
+  if (!hasRequiredParams) {
+    return (
+      <Screen>
+        <Box flex={1} backgroundColor="gray50" justifyContent="center">
+          <ErrorState
+            title="Couldn't load activity"
+            description="Missing activity details. Please go back and try again."
+          />
+        </Box>
+      </Screen>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <Box flex={1} backgroundColor="gray50">
+          <Box gap="sm" padding="sm" paddingTop="xl">
+            <Box alignItems="center" paddingVertical="sm">
+              <Spinner />
+            </Box>
+            <SkeletonRect width="full" style={{ height: HERO_IMAGE_HEIGHT }} />
+            <SkeletonRect width="threeQuarter" height="md" />
+            <SkeletonRect width="full" style={{ height: 140 }} />
+            <SkeletonRect width="full" style={{ height: 140 }} />
+          </Box>
+        </Box>
+      </Screen>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Screen>
+        <Box flex={1} backgroundColor="gray50" justifyContent="center">
+          <ErrorState title="Couldn't load activity" refresh={() => refetch()} />
+        </Box>
+      </Screen>
+    );
+  }
+
+  if (!activity) {
+    return (
+      <Screen>
+        <Box flex={1} backgroundColor="gray50" justifyContent="center">
+          <EmptyState
+            title="Activity not found"
+            description="This activity may have been removed or is no longer available."
+          />
+        </Box>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -62,22 +105,6 @@ export default function ActivityDetail() {
             {activity?.name ?? "Activity Detail"}
           </Text>
         </Box>
-
-        {isLoading && (
-          <Box padding="lg">
-            <Text variant="bodyDefault" color="gray500">
-              Loading...
-            </Text>
-          </Box>
-        )}
-
-        {isError && (
-          <Box padding="lg">
-            <Text variant="bodyDefault" color="gray500">
-              Failed to load activity.
-            </Text>
-          </Box>
-        )}
 
         {activity && (
           <ScrollView>

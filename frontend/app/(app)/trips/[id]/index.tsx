@@ -1,23 +1,31 @@
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
-import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
-import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
 import TripTabBar, {
   type TabKey,
 } from "@/app/(app)/trips/[id]/components/trip-tab-bar";
+import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
+import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  SkeletonRect,
+  Text,
+  useToast,
+} from "@/design-system";
 import { BackButton } from "@/design-system/components/navigation/arrow";
-import { Box, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -47,6 +55,7 @@ export default function Trip() {
     (tab as TabKey) || INITIAL_TAB,
   );
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
+  const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const queryClient = useQueryClient();
@@ -57,7 +66,7 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
-  const { data: trip, isLoading } = useGetTrip(tripID ?? "", {
+  const { data: trip, isLoading, isError } = useGetTrip(tripID ?? "", {
     query: { enabled: !!tripID },
   });
 
@@ -93,9 +102,13 @@ export default function Trip() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
       });
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey(),
+      });
       dateSheetRef.current?.close();
     } catch {
       setDateSheetError("Could not update trip dates. Please try again.");
+      toast.show({ message: "Couldn't update trip dates. Please try again." });
     }
   };
 
@@ -122,9 +135,12 @@ export default function Trip() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
       });
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey(),
+      });
     } catch (error) {
       console.error("Failed to update trip location:", error);
-      // TODO: Show error toast to user
+      toast.show({ message: "Couldn't update trip location. Please try again." });
     } finally {
       locationSheetRef.current?.close();
     }
@@ -206,7 +222,29 @@ export default function Trip() {
               backgroundColor="gray25"
               style={styles.tabContent}
             >
-              {activeTab === "new" && (
+              {isLoading ? (
+                <Box gap="sm">
+                  <SkeletonRect width="full" style={{ height: 120 }} />
+                  <SkeletonRect width="full" style={{ height: 120 }} />
+                  <SkeletonRect width="threeQuarter" style={{ height: 90 }} />
+                </Box>
+              ) : null}
+
+              {!isLoading && isError ? (
+                <ErrorState
+                  title="Couldn't load trip"
+                  description="Pull to refresh or try again in a moment."
+                />
+              ) : null}
+
+              {!isLoading && !isError && !trip ? (
+                <EmptyState
+                  title="Trip not found"
+                  description="This trip may have been removed or you may not have access to it."
+                />
+              ) : null}
+
+              {!isLoading && !isError && trip && activeTab === "new" && (
                 <Box gap="sm">
                   {trip?.pitch_deadline &&
                     new Date(trip.pitch_deadline) > new Date() && (
@@ -221,7 +259,7 @@ export default function Trip() {
                   <ActivityFeedTabContent tripId={tripID} />
                 </Box>
               )}
-              {activeTab === "itinerary" && (
+              {!isLoading && !isError && trip && activeTab === "itinerary" && (
                 <ItineraryTabContent
                   tripID={tripID}
                   startDate={trip?.start_date}
@@ -231,7 +269,9 @@ export default function Trip() {
                   parentContainerRef={cardContainerRef}
                 />
               )}
-              {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+              {!isLoading && !isError && trip && activeTab === "polls" && (
+                <PollsTabContent tripId={tripID} />
+              )}
             </Box>
           </ScrollView>
         </View>

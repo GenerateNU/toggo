@@ -11,8 +11,15 @@ export function useActivitiesList(tripID: string | undefined) {
   const queryClient = useQueryClient();
   const isFetchingNextRef = useRef(false);
 
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useInfiniteQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+  } = useInfiniteQuery({
       queryKey: activitiesQueryKey(tripID ?? ""),
       queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
         getActivitiesByTripID(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
@@ -70,8 +77,10 @@ export function useActivitiesList(tripID: string | undefined) {
   return {
     activities,
     isLoading,
+    isError,
     isLoadingMore: isFetchingNextPage,
     fetchMore,
+    refetch,
     prependActivity,
   };
 }
