@@ -52,11 +52,11 @@ export function ItineraryTabContent({
   });
 
   if (!startDateKey || !endDateKey) {
-    return <ItineraryEmptyState />;
+    return <ItineraryEmptyState hasDates={false} />;
   }
 
   return (
-    <Box gap="xs">
+    <Box>
       <ItineraryDateSelector
         ref={dateSelectorRef}
         startDate={startDateKey}
@@ -77,7 +77,7 @@ export function ItineraryTabContent({
       )}
 
       {!isLoading && !isError && (
-        <Box gap="xxs">
+        <Box>
           {TIME_SECTIONS.map((section) => {
             const sectionActivities =
               grouped[section.key as keyof GroupedActivities];

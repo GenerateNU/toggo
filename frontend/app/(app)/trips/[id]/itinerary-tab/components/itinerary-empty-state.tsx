@@ -1,7 +1,15 @@
 import { Box, Text } from "@/design-system";
 import { StyleSheet } from "react-native";
 
-export function ItineraryEmptyState() {
+type ItineraryEmptyStateProps = {
+  hasDates?: boolean;
+};
+
+export function ItineraryEmptyState({ hasDates = true }: ItineraryEmptyStateProps) {
+  const message = hasDates
+    ? "No activities planned. Get planning!"
+    : "Select your trip dates to start planning your itinerary.";
+
   return (
     <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
       <Box alignItems="center" paddingVertical="lg">
@@ -10,7 +18,7 @@ export function ItineraryEmptyState() {
           color="gray950"
           style={styles.emptyStateText}
         >
-          No activities planned. Get planning!
+          {message}
         </Text>
       </Box>
     </Box>
