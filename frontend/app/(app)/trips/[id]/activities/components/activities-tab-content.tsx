@@ -3,33 +3,33 @@ import { Box, Button, EmptyState, SkeletonRect, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import type {
-    ModelsActivityAPIResponse,
-    ModelsParsedActivityData,
+  ModelsActivityAPIResponse,
+  ModelsParsedActivityData,
 } from "@/types/types.gen";
 import { router } from "expo-router";
 import {
-    forwardRef,
-    useCallback,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-    useState,
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
 } from "react-native";
 import { ActivityCard } from "./activity-card";
 import {
-    AddActivityEntrySheet,
-    type AddActivityEntrySheetHandle,
+  AddActivityEntrySheet,
+  type AddActivityEntrySheetHandle,
 } from "./add-activity-entry-sheet";
 import {
-    AddActivityManualSheet,
-    type AddActivityManualSheetHandle,
+  AddActivityManualSheet,
+  type AddActivityManualSheetHandle,
 } from "./add-activity-manual-sheet";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -77,8 +77,6 @@ export const ActivitiesTabContent = forwardRef<
     return [...activities].reverse();
   }, [activities, sortOrder]);
 
-  // ─── Expose open method for CreateFAB ────────────────────────────────────
-
   useImperativeHandle(ref, () => ({
     openAddActivity: () => entrySheetRef.current?.open(),
   }));
@@ -113,8 +111,6 @@ export const ActivitiesTabContent = forwardRef<
         activity={item}
         onPress={() =>
           router.push({
-            // TODO: update pathname to match your file structure once the detail
-            // screen is finalized — currently wired to the temp ActivityDetail page
             pathname: `/trips/${tripID}/activities/${item.id}` as any,
             params: { tripID },
           })

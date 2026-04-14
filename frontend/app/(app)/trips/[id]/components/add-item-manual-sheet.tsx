@@ -1,11 +1,5 @@
 import { useUploadImage } from "@/api/files/custom";
-import {
-    Box,
-    Button,
-    Dialog,
-    Text,
-    useToast,
-} from "@/design-system";
+import { Box, Button, Dialog, Text, useToast } from "@/design-system";
 import BottomSheet from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -14,18 +8,18 @@ import { getImageURL } from "@/services/imageService";
 import * as ExpoImagePicker from "expo-image-picker";
 import { ImagePlus, X } from "lucide-react-native";
 import {
-    forwardRef,
-    ReactNode,
-    useImperativeHandle,
-    useRef,
-    useState,
+  forwardRef,
+  ReactNode,
+  useImperativeHandle,
+  useRef,
+  useState,
 } from "react";
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
+  Image,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -113,7 +107,8 @@ function AddItemManualSheetInner<T>(
   };
 
   const handlePickImage = async () => {
-    const { status } = await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } =
+      await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
     const result = await ExpoImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -153,7 +148,10 @@ function AddItemManualSheetInner<T>(
         thumbnailURL,
       });
 
-      toast.show({ message: successMessage, action: { label: "View", onPress: () => {} } });
+      toast.show({
+        message: successMessage,
+        action: { label: "View", onPress: () => {} },
+      });
       savedRef.current = true;
       resetForm();
       onSaved(result);
@@ -214,7 +212,11 @@ function AddItemManualSheetInner<T>(
           <Text variant="bodyMedium" color="gray950" style={styles.headerTitle}>
             {title}
           </Text>
-          <Pressable style={styles.closeButton} onPress={handleCancel} hitSlop={12}>
+          <Pressable
+            style={styles.closeButton}
+            onPress={handleCancel}
+            hitSlop={12}
+          >
             <X size={20} color={ColorPalette.gray900} />
           </Pressable>
         </Box>
@@ -286,7 +288,9 @@ function AddItemManualSheetInner<T>(
 }
 
 export const AddItemManualSheet = forwardRef(AddItemManualSheetInner) as <T>(
-  props: AddItemManualSheetProps<T> & { ref?: React.ForwardedRef<AddItemManualSheetHandle> },
+  props: AddItemManualSheetProps<T> & {
+    ref?: React.ForwardedRef<AddItemManualSheetHandle>;
+  },
 ) => React.ReactElement;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────

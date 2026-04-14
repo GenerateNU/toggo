@@ -26,7 +26,7 @@ export function ActivityCard({ activity, onPress }: ActivityCardProps) {
       style={({ pressed }) => ({ opacity: pressed ? 0.97 : 1 })}
     >
       <Box style={styles.card}>
-        {/* Thumbnail — sits inside card padding, has own border radius */}
+        {/* Thumbnail */}
         {hasThumbnail && (
           <Image
             source={{ uri: activity.thumbnail_url! }}
@@ -57,11 +57,7 @@ export function ActivityCard({ activity, onPress }: ActivityCardProps) {
               />
             )}
             <Box style={styles.namePrice}>
-              <Text
-                variant="bodyStrong"
-                color="gray950"
-                numberOfLines={1}
-              >
+              <Text variant="bodyStrong" color="gray950" numberOfLines={1}>
                 {activity.name}
               </Text>
               {activity.estimated_price != null && (
@@ -77,7 +73,7 @@ export function ActivityCard({ activity, onPress }: ActivityCardProps) {
             </Box>
           </Box>
 
-          {/* Right: RSVP button — static for now, RSVP interaction is a separate ticket */}
+          {/* Right: RSVP button — static for now */}
           <Box style={styles.rsvpButton}>
             <UserPlus size={12} color={ColorPalette.white} />
             <Text variant="bodySmStrong" style={styles.rsvpText}>
@@ -123,12 +119,10 @@ const styles = StyleSheet.create({
     height: 230,
     borderRadius: CornerRadius.md,
   },
-  // Left side of content row: shrinks to give RSVP button room
   infoLeft: {
     flex: 1,
     minWidth: 0,
   },
-  // Name + price stacked, sit to the right of the avatar
   namePrice: {
     flex: 1,
     gap: 2,

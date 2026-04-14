@@ -6,7 +6,6 @@ import {
   type AddItemEntrySheetHandle,
 } from "../../components//add-item-entry-sheet";
 
-// Re-export the handle type so callers don't need to know about the generic
 export type { AddItemEntrySheetHandle as AddActivityEntrySheetHandle };
 
 type AddActivityEntrySheetProps = {

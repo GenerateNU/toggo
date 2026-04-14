@@ -63,7 +63,10 @@ export const AddActivityManualSheet = forwardRef<
 
   // Activity-specific form state
   const [price, setPrice] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
   const [locationName, setLocationName] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
@@ -75,7 +78,6 @@ export const AddActivityManualSheet = forwardRef<
 
   useImperativeHandle(ref, () => ({
     open: (prefill) => {
-      // Reset activity-specific state every time so previous session doesn't bleed in
       setPrice(null);
       setDateRange({ start: null, end: null });
       setLocationName(null);
@@ -102,8 +104,12 @@ export const AddActivityManualSheet = forwardRef<
   const handleLocationPress = useCallback(() => {
     locationSelectStore.set(async (prediction) => {
       try {
-        const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
-        setLocationName(res.data.formatted_address || prediction.description || res.data.name);
+        const res = await getPlaceDetailsCustom({
+          place_id: prediction.place_id,
+        });
+        setLocationName(
+          res.data.formatted_address || prediction.description || res.data.name,
+        );
         setLocationLat(res.data.geometry.location.lat);
         setLocationLng(res.data.geometry.location.lng);
       } catch {
@@ -116,7 +122,15 @@ export const AddActivityManualSheet = forwardRef<
   // ─── Save ──────────────────────────────────────────────────────────────────
 
   const handleSave = useCallback(
-    async ({ name, description, thumbnailURL }: { name: string; description: string; thumbnailURL?: string }) => {
+    async ({
+      name,
+      description,
+      thumbnailURL,
+    }: {
+      name: string;
+      description: string;
+      thumbnailURL?: string;
+    }) => {
       const dates =
         dateRange.start && dateRange.end
           ? [
@@ -142,11 +156,21 @@ export const AddActivityManualSheet = forwardRef<
         },
       });
     },
-    [createActivity, tripID, price, dateRange, locationName, locationLat, locationLng, link],
+    [
+      createActivity,
+      tripID,
+      price,
+      dateRange,
+      locationName,
+      locationLat,
+      locationLng,
+      link,
+    ],
   );
 
   const formattedDate = formatDateRange(dateRange);
-  const priceLabel = price != null ? `$${price.toLocaleString()} per person` : null;
+  const priceLabel =
+    price != null ? `$${price.toLocaleString()} per person` : null;
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
@@ -164,22 +188,42 @@ export const AddActivityManualSheet = forwardRef<
         formRows={
           <Box style={styles.formRows}>
             {/* Price */}
-            <Pressable style={styles.formRow} onPress={() => setIsPricePickerVisible(true)}>
-              <DollarSign size={16} color={priceLabel ? ColorPalette.gray700 : ColorPalette.blue500} />
+            <Pressable
+              style={styles.formRow}
+              onPress={() => setIsPricePickerVisible(true)}
+            >
+              <DollarSign
+                size={16}
+                color={priceLabel ? ColorPalette.gray700 : ColorPalette.blue500}
+              />
               <Text
                 variant="bodyStrong"
-                style={priceLabel ? styles.formRowValue : styles.formRowPlaceholder}
+                style={
+                  priceLabel ? styles.formRowValue : styles.formRowPlaceholder
+                }
               >
                 {priceLabel ?? "Add price"}
               </Text>
             </Pressable>
 
             {/* Date */}
-            <Pressable style={styles.formRow} onPress={() => setIsDatePickerVisible(true)}>
-              <Calendar size={16} color={formattedDate ? ColorPalette.gray700 : ColorPalette.blue500} />
+            <Pressable
+              style={styles.formRow}
+              onPress={() => setIsDatePickerVisible(true)}
+            >
+              <Calendar
+                size={16}
+                color={
+                  formattedDate ? ColorPalette.gray700 : ColorPalette.blue500
+                }
+              />
               <Text
                 variant="bodyStrong"
-                style={formattedDate ? styles.formRowValue : styles.formRowPlaceholder}
+                style={
+                  formattedDate
+                    ? styles.formRowValue
+                    : styles.formRowPlaceholder
+                }
               >
                 {formattedDate ?? "Add date"}
               </Text>
@@ -187,10 +231,17 @@ export const AddActivityManualSheet = forwardRef<
 
             {/* Location */}
             <Pressable style={styles.formRow} onPress={handleLocationPress}>
-              <MapPin size={16} color={locationName ? ColorPalette.gray700 : ColorPalette.blue500} />
+              <MapPin
+                size={16}
+                color={
+                  locationName ? ColorPalette.gray700 : ColorPalette.blue500
+                }
+              />
               <Text
                 variant="bodyStrong"
-                style={locationName ? styles.formRowValue : styles.formRowPlaceholder}
+                style={
+                  locationName ? styles.formRowValue : styles.formRowPlaceholder
+                }
                 numberOfLines={1}
               >
                 {locationName ?? "Add location"}
@@ -199,7 +250,10 @@ export const AddActivityManualSheet = forwardRef<
 
             {/* Link */}
             <View style={styles.formRow}>
-              <Link size={16} color={link ? ColorPalette.gray700 : ColorPalette.blue500} />
+              <Link
+                size={16}
+                color={link ? ColorPalette.gray700 : ColorPalette.blue500}
+              />
               <TextInput
                 value={link}
                 onChangeText={setLink}
@@ -207,7 +261,10 @@ export const AddActivityManualSheet = forwardRef<
                 placeholderTextColor={ColorPalette.blue500}
                 autoCapitalize="none"
                 keyboardType="url"
-                style={[styles.formRowInput, link ? styles.formRowInputFilled : styles.formRowInputEmpty]}
+                style={[
+                  styles.formRowInput,
+                  link ? styles.formRowInputFilled : styles.formRowInputEmpty,
+                ]}
               />
             </View>
           </Box>

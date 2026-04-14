@@ -3,16 +3,16 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { X } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-    Animated,
-    KeyboardAvoidingView,
-    Modal,
-    PanResponder,
-    Platform,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    TouchableWithoutFeedback,
-    View,
+  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  PanResponder,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -72,7 +72,12 @@ function Ruler({ translateX }: { translateX: Animated.Value }) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function PricePicker({ visible, value, onConfirm, onClose }: PricePickerProps) {
+export function PricePicker({
+  visible,
+  value,
+  onConfirm,
+  onClose,
+}: PricePickerProps) {
   const [rawText, setRawText] = useState(
     value != null && value > 0 ? String(value) : "",
   );
@@ -100,9 +105,7 @@ export function PricePicker({ visible, value, onConfirm, onClose }: PricePickerP
   // ─── Text → ruler ──────────────────────────────────────────────────────
 
   const handleTextChange = (text: string) => {
-    const filtered = text
-      .replace(/[^0-9.]/g, "")
-      .replace(/(\..*)\./g, "$1");
+    const filtered = text.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
     setRawText(filtered);
     const parsed = parseFloat(filtered);
     if (!isNaN(parsed)) {
@@ -137,7 +140,8 @@ export function PricePicker({ visible, value, onConfirm, onClose }: PricePickerP
         },
         onPanResponderRelease: () => {
           const snapped =
-            Math.round(offsetToPrice(currentOffset.current) / SNAP_TO) * SNAP_TO;
+            Math.round(offsetToPrice(currentOffset.current) / SNAP_TO) *
+            SNAP_TO;
           const snappedOffset = priceToOffset(snapped);
           Animated.spring(translateX, {
             toValue: snappedOffset,
@@ -191,7 +195,11 @@ export function PricePicker({ visible, value, onConfirm, onClose }: PricePickerP
               <Text variant="bodyMedium" color="gray950">
                 Price
               </Text>
-              <Pressable style={styles.closeButton} onPress={onClose} hitSlop={12}>
+              <Pressable
+                style={styles.closeButton}
+                onPress={onClose}
+                hitSlop={12}
+              >
                 <X size={20} color={ColorPalette.gray900} />
               </Pressable>
             </Box>
@@ -240,7 +248,6 @@ export function PricePicker({ visible, value, onConfirm, onClose }: PricePickerP
 const RULER_VISIBLE_HEIGHT = TICK_HEIGHT_MAJOR + 8;
 
 const styles = StyleSheet.create({
-  // Full-screen container with semi-transparent overlay
   container: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

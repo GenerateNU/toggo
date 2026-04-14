@@ -29,7 +29,11 @@ const ABSOLUTE_FILL = {
   bottom: 0,
 };
 
-export default function CreateFAB({ tripID, onCreatePoll, onCreateActivity }: CreateFABProps) {
+export default function CreateFAB({
+  tripID,
+  onCreatePoll,
+  onCreateActivity,
+}: CreateFABProps) {
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
 
@@ -75,7 +79,7 @@ export default function CreateFAB({ tripID, onCreatePoll, onCreateActivity }: Cr
     {
       label: "Activity",
       icon: MapPin,
-      onPress: onCreateActivity
+      onPress: onCreateActivity,
     },
     {
       label: "Pitch",

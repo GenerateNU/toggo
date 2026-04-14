@@ -3,17 +3,23 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, X } from "lucide-react-native";
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import {
-    Animated,
-    Image,
-    ImageSourcePropType,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    Text as RNText,
-    StyleSheet,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Animated,
+  Image,
+  ImageSourcePropType,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  Text as RNText,
+  StyleSheet,
 } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -97,7 +103,12 @@ function AutofillButton({
           />
         </Animated.View>
       )}
-      <RNText style={[styles.autofillButtonText, disabled && styles.autofillButtonTextDisabled]}>
+      <RNText
+        style={[
+          styles.autofillButtonText,
+          disabled && styles.autofillButtonTextDisabled,
+        ]}
+      >
         {label}
       </RNText>
     </Pressable>
@@ -113,142 +124,148 @@ function AddItemEntrySheetInner<T>(
     loadingTitle,
     subtitle,
     loadingSubtitle,
-      urlPlaceholder,
-      onParseLink,
-      onAutofilled,
-      onManual,
-      onClose,
-    }: AddItemEntrySheetProps<T>,
-    ref: React.ForwardedRef<AddItemEntrySheetHandle>,
-  ) {
-    const toast = useToast();
-    const [visible, setVisible] = useState(false);
-    const [url, setUrl] = useState("");
-    const [isAutofilling, setIsAutofilling] = useState(false);
+    urlPlaceholder,
+    onParseLink,
+    onAutofilled,
+    onManual,
+    onClose,
+  }: AddItemEntrySheetProps<T>,
+  ref: React.ForwardedRef<AddItemEntrySheetHandle>,
+) {
+  const toast = useToast();
+  const [visible, setVisible] = useState(false);
+  const [url, setUrl] = useState("");
+  const [isAutofilling, setIsAutofilling] = useState(false);
 
-    useImperativeHandle(ref, () => ({
-      open: () => setVisible(true),
-      close: () => {
-        setVisible(false);
-        setUrl("");
-      },
-    }));
-
-    const handleClose = () => {
-      if (isAutofilling) return;
+  useImperativeHandle(ref, () => ({
+    open: () => setVisible(true),
+    close: () => {
       setVisible(false);
       setUrl("");
-      onClose();
-    };
+    },
+  }));
 
-    const handleManual = () => {
+  const handleClose = () => {
+    if (isAutofilling) return;
+    setVisible(false);
+    setUrl("");
+    onClose();
+  };
+
+  const handleManual = () => {
+    setVisible(false);
+    setUrl("");
+    onManual();
+  };
+
+  const handleAutofill = async () => {
+    if (!url.trim()) return;
+    setIsAutofilling(true);
+    try {
+      const data = await onParseLink(url.trim());
+      setIsAutofilling(false);
       setVisible(false);
       setUrl("");
-      onManual();
-    };
+      onAutofilled(data);
+    } catch {
+      setIsAutofilling(false);
+      toast.show({ message: "Couldn't fetch that link. Try adding manually." });
+    }
+  };
 
-    const handleAutofill = async () => {
-      if (!url.trim()) return;
-      setIsAutofilling(true);
-      try {
-        const data = await onParseLink(url.trim());
-        setIsAutofilling(false);
-        setVisible(false);
-        setUrl("");
-        onAutofilled(data);
-      } catch {
-        setIsAutofilling(false);
-        toast.show({ message: "Couldn't fetch that link. Try adding manually." });
-      }
-    };
-
-    return (
-      <Modal
-        visible={visible}
-        transparent
-        animationType="slide"
-        onRequestClose={handleClose}
-      >
-        <Pressable style={styles.backdrop} onPress={handleClose}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            style={styles.sheetWrapper}
-          >
-            <Pressable style={styles.sheet} onPress={() => {}}>
-              {/* X button */}
-              <Pressable style={styles.closeButton} onPress={handleClose} hitSlop={12}>
-                <X size={20} color={ColorPalette.gray900} />
-              </Pressable>
-
-              {/* Illustration */}
-              <Box alignItems="center" style={styles.illustrationContainer}>
-                <Image
-                  source={illustration}
-                  style={[
-                    styles.illustration,
-                    isAutofilling && styles.illustrationLoading,
-                  ]}
-                  resizeMode="contain"
-                />
-              </Box>
-
-              {/* Title + subtitle — left aligned, 6px gap */}
-              <Box style={styles.headerGroup}>
-                <Text variant="headingMd" color="gray900">
-                  {isAutofilling ? loadingTitle : title}
-                </Text>
-                <Text variant="bodyDefault" color="gray500">
-                  {isAutofilling ? loadingSubtitle : subtitle}
-                </Text>
-              </Box>
-
-              {/* URL field */}
-              <Box style={styles.fullWidth}>
-                <TextField
-                  value={url}
-                  onChangeText={setUrl}
-                  placeholder={urlPlaceholder}
-                  leftIcon={<Link size={16} color={ColorPalette.gray400} />}
-                  autoCapitalize="none"
-                  keyboardType="url"
-                  disabled={isAutofilling}
-                />
-              </Box>
-
-              {/* Autofill button with shimmer */}
-              <Box style={styles.fullWidth}>
-                <AutofillButton
-                  label={isAutofilling ? "Autofilling..." : "Autofill from link"}
-                  disabled={!url.trim() || isAutofilling}
-                  loading={isAutofilling}
-                  onPress={handleAutofill}
-                />
-              </Box>
-
-              <Divider style={styles.divider} />
-
-              {/* Manual fallback */}
-              <Box style={styles.fullWidth}>
-                <Pressable
-                  onPress={handleManual}
-                  disabled={isAutofilling}
-                  style={[
-                    styles.manualButton,
-                    isAutofilling && styles.manualButtonDisabled,
-                  ]}
-                >
-                  <RNText style={styles.manualButtonText}>Add manually</RNText>
-                </Pressable>
-              </Box>
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={handleClose}
+    >
+      <Pressable style={styles.backdrop} onPress={handleClose}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.sheetWrapper}
+        >
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            {/* X button */}
+            <Pressable
+              style={styles.closeButton}
+              onPress={handleClose}
+              hitSlop={12}
+            >
+              <X size={20} color={ColorPalette.gray900} />
             </Pressable>
-          </KeyboardAvoidingView>
-        </Pressable>
-      </Modal>
-    );
-  }
+
+            {/* Illustration */}
+            <Box alignItems="center" style={styles.illustrationContainer}>
+              <Image
+                source={illustration}
+                style={[
+                  styles.illustration,
+                  isAutofilling && styles.illustrationLoading,
+                ]}
+                resizeMode="contain"
+              />
+            </Box>
+
+            {/* Title + subtitle */}
+            <Box style={styles.headerGroup}>
+              <Text variant="headingMd" color="gray900">
+                {isAutofilling ? loadingTitle : title}
+              </Text>
+              <Text variant="bodyDefault" color="gray500">
+                {isAutofilling ? loadingSubtitle : subtitle}
+              </Text>
+            </Box>
+
+            {/* URL field */}
+            <Box style={styles.fullWidth}>
+              <TextField
+                value={url}
+                onChangeText={setUrl}
+                placeholder={urlPlaceholder}
+                leftIcon={<Link size={16} color={ColorPalette.gray400} />}
+                autoCapitalize="none"
+                keyboardType="url"
+                disabled={isAutofilling}
+              />
+            </Box>
+
+            {/* Autofill button with shimmer */}
+            <Box style={styles.fullWidth}>
+              <AutofillButton
+                label={isAutofilling ? "Autofilling..." : "Autofill from link"}
+                disabled={!url.trim() || isAutofilling}
+                loading={isAutofilling}
+                onPress={handleAutofill}
+              />
+            </Box>
+
+            <Divider style={styles.divider} />
+
+            {/* Manual fallback */}
+            <Box style={styles.fullWidth}>
+              <Pressable
+                onPress={handleManual}
+                disabled={isAutofilling}
+                style={[
+                  styles.manualButton,
+                  isAutofilling && styles.manualButtonDisabled,
+                ]}
+              >
+                <RNText style={styles.manualButtonText}>Add manually</RNText>
+              </Pressable>
+            </Box>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Pressable>
+    </Modal>
+  );
+}
 
 export const AddItemEntrySheet = forwardRef(AddItemEntrySheetInner) as <T>(
-  props: AddItemEntrySheetProps<T> & { ref?: React.ForwardedRef<AddItemEntrySheetHandle> },
+  props: AddItemEntrySheetProps<T> & {
+    ref?: React.ForwardedRef<AddItemEntrySheetHandle>;
+  },
 ) => React.ReactElement;
 
 // ─── Styles ──────────────────────────────────────────────────────────────────

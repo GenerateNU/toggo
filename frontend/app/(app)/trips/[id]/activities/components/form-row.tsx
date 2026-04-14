@@ -1,4 +1,3 @@
-
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { LucideProps } from "lucide-react-native";
@@ -12,11 +11,21 @@ type FormRowProps = {
   onPress?: () => void;
 };
 
-export function FormRow({ icon: Icon, value, placeholder, onPress }: FormRowProps) {
+export function FormRow({
+  icon: Icon,
+  value,
+  placeholder,
+  onPress,
+}: FormRowProps) {
   const hasValue = !!value;
   return (
     <Pressable onPress={onPress}>
-      <Box flexDirection="row" alignItems="center" gap="sm" paddingVertical="xs">
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        gap="sm"
+        paddingVertical="xs"
+      >
         <Icon
           size={16}
           color={hasValue ? ColorPalette.gray700 : ColorPalette.gray400}

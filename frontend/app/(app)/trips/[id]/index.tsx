@@ -243,10 +243,7 @@ export default function Trip() {
               )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
               {activeTab === "activities" && (
-                <ActivitiesTabContent
-                  ref={activitiesTabRef}
-                  tripID={tripID}
-                />
+                <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
               )}
             </Box>
           </ScrollView>
@@ -254,7 +251,11 @@ export default function Trip() {
       </SafeAreaView>
 
       {activeTab !== "itinerary" && (
-        <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} onCreateActivity={handleOpenCreateActivity}/>
+        <CreateFAB
+          tripID={tripID}
+          onCreatePoll={handleOpenCreatePoll}
+          onCreateActivity={handleOpenCreateActivity}
+        />
       )}
 
       <CreatePollSheet
