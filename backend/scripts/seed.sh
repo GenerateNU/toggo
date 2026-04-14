@@ -482,16 +482,16 @@ seed_trip_santorini() {
     # Pitches (inserted directly via SQL – no real audio file needed for demo)
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$MAYA_ID" \
-        "Why Santorini is perfect for us" \
-        "I have been dreaming about this trip for years. The caldera views, the white-washed villages, and the incredible food make it an unforgettable experience. Budget is very reasonable if we book early." 95)
+        "Santorini, Greece" \
+        "Caldera views, white-washed villages, incredible sunsets, and amazing food. Budget is very reasonable if we book early – plus January is off-season so flights and hotels are way cheaper." 95)
     p2=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Alternative: Mykonos instead?" \
-        "Hear me out – Mykonos has better nightlife and beaches. We could split the week between both islands." 60)
+        "Mykonos, Greece" \
+        "Better nightlife and beaches than Santorini. We could do beach clubs during the day and party at night. Also closer to Athens if anyone wants a day trip." 60)
     ok "Pitches seeded"
 
     # Pitch links
     api_post "$MAYA_JWT" "/trips/$trip_id/pitches/$p1/links" \
-        '{"url":"https://www.booking.com","title":"Best Santorini Hotels 2025","description":"Curated list of top-rated caldera hotels","domain":"booking.com"}' >/dev/null
+        '{"url":"https://www.thecommonwanderer.com/blog/santorini-travel-guide-tips","title":"23 Things to Know Before Visiting Santorini","description":"Jaw-dropping scenery, epic hotels, and practical tips for first-timers","domain":"thecommonwanderer.com"}' >/dev/null
 
     # Comments on activities
     local c1
@@ -742,16 +742,16 @@ seed_trip_tokyo() {
     # Pitches
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Carlos pitches Tokyo" \
-        "I lived in Tokyo for a year. I know all the hidden gems – izakayas in Golden Gai, the best ramen in Shibuya, day trips beyond the usual tourist spots. Trust me on this one." 110)
+        "Tokyo, Japan" \
+        "I lived in Tokyo for a year. Shibuya, Shinjuku, Akihabara, Harajuku – every neighborhood is its own world. The food alone is worth the trip. July means summer festivals and rooftop beer gardens." 110)
     p2=$(insert_pitch_sql "$trip_id" "$JAMES_ID" \
-        "July is perfect for summer festivals" \
-        "Tokyo in July means Sumida fireworks festival, Tanabata decorations everywhere, and rooftop beer gardens. The timing is ideal." 75)
+        "Kyoto, Japan" \
+        "If we want something more cultural and relaxed, Kyoto is incredible. Thousands of temples, bamboo forests, geisha district, and amazing kaiseki dining. We could do a few days here and a few in Osaka." 75)
     ok "Pitches seeded"
 
     # Pitch link
     api_post "$CARLOS_JWT" "/trips/$trip_id/pitches/$p1/links" \
-        '{"url":"https://teamlab.art","title":"teamLab Borderless Tokyo","description":"Official ticket booking page","domain":"teamlab.art"}' >/dev/null
+        '{"url":"https://www.theblondeabroad.com/ultimate-tokyo-travel-guide/","title":"The Ultimate Tokyo Travel Guide","description":"Accommodation, dining, activities and tips for every travel style","domain":"theblondeabroad.com"}' >/dev/null
 
     # Comments
     local c1
@@ -769,7 +769,7 @@ seed_trip_tokyo() {
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"Should we book a guided tour or do it ourselves?\"}" >/dev/null
 
     api_post "$CARLOS_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"The Sumida fireworks is a great call – dates are locked in already.\"}" >/dev/null
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Kyoto in July sounds amazing – the bamboo forest would be so green.\"}" >/dev/null
 
     api_post "$PRIYA_JWT" "/comments/$c1/reactions" '{"emoji":"⏰"}'  >/dev/null
     api_post "$JAMES_JWT" "/comments/$c1/reactions" '{"emoji":"😱"}' >/dev/null
@@ -1024,15 +1024,15 @@ seed_trip_nyc() {
     # Pitches
     local p1 p2
     p1=$(insert_pitch_sql "$trip_id" "$my_id" \
-        "Why June is perfect for NYC" \
-        "Weather is great, outdoor events everywhere, no holiday crowds. I've mapped out a full itinerary that keeps us under budget including one nice dinner out." 80)
+        "Manhattan, New York" \
+        "Classic NYC weekend – Central Park, MoMA, Brooklyn Bridge, Chelsea Market. Weather in late Feb is cold but manageable. I have mapped out a full itinerary that keeps us under budget." 80)
     p2=$(insert_pitch_sql "$trip_id" "$PRIYA_ID" \
-        "Priya suggests adding a Broadway show" \
-        "We should grab tickets to a show on Saturday night. I found some discount options through TodayTix that are still great seats." 55)
+        "Brooklyn, New York" \
+        "Skip the tourist traps in Midtown. Brooklyn has the best food scene, Williamsburg for vintage shopping, DUMBO for views, and Prospect Park. Way more authentic NYC experience." 55)
     ok "Pitches seeded"
 
     api_post "$PRIYA_JWT" "/trips/$trip_id/pitches/$p2/links" \
-        '{"url":"https://www.todaytix.com","title":"Broadway Tickets – TodayTix","description":"Last-minute Broadway deals","domain":"todaytix.com"}' >/dev/null
+        '{"url":"https://www.earthtrekkers.com/one-day-in-brooklyn-new-york-itinerary/","title":"One Perfect Day in Brooklyn, New York","description":"Walk the Brooklyn Bridge, explore DUMBO, and visit Williamsburg in one day","domain":"earthtrekkers.com"}' >/dev/null
 
     # Comments
     local c1 c2
@@ -1048,7 +1048,7 @@ seed_trip_nyc() {
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"The lobster roll from The Lobster Place here is incredible.\"}" >/dev/null
 
     api_post "$JAMES_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Yes! I've been wanting to see Hadestown. Priya send the link!\"}" >/dev/null
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Brooklyn is so underrated. The food scene there is next level.\"}" >/dev/null
 
     api_post "$JAMES_JWT"  "/comments/$c1/reactions" '{"emoji":"👍"}' >/dev/null
     api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"❤️"}' >/dev/null
@@ -1387,63 +1387,93 @@ seed_trip_bali() {
             {\"option_id\":\"${ropt_arr[3]}\",\"rank\":2},
             {\"option_id\":\"${ropt_arr[1]}\",\"rank\":3}
         ]}" >/dev/null
+    # Vote poll by Maya – user has NOT voted on this one
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/vote-polls" '{
+        "question": "What day should we do the temple tour?",
+        "poll_type": "single",
+        "options": [
+            {"option_type":"custom","name":"Day 2 – right after we settle in"},
+            {"option_type":"custom","name":"Day 4 – midway through the trip"},
+            {"option_type":"custom","name":"Last day – end on a cultural note"}
+        ],
+        "is_anonymous": false,
+        "should_notify_members": false
+    }')
+    check_resp "$resp" "Vote poll: temple tour (Maya, user has not voted)"
+    local vpoll3_id; vpoll3_id=$(echo "$resp" | jq -r '.id')
+    local vopt3_ids; vopt3_ids=$(echo "$resp" | jq -r '.options[].id')
+    local vopt3_arr=(); while IFS= read -r line; do vopt3_arr+=("$line"); done <<< "$vopt3_ids"
+
+    api_post "$CARLOS_JWT" "/trips/$trip_id/vote-polls/$vpoll3_id/vote" \
+        "{\"option_ids\":[\"${vopt3_arr[1]}\"]}" >/dev/null
+    api_post "$PRIYA_JWT" "/trips/$trip_id/vote-polls/$vpoll3_id/vote" \
+        "{\"option_ids\":[\"${vopt3_arr[0]}\"]}" >/dev/null
+
     ok "Polls + votes/rankings created"
 
     # Pitches – one from each user
     local p1 p2 p3
     p1=$(insert_pitch_sql "$trip_id" "$my_id" \
-        "The case for Bali in December" \
-        "Dry season runs until October but December is actually still great. Rainy season means lush green landscapes, fewer tourists, and significantly cheaper flights and accommodation. I did the math and we save roughly 40% vs. peak season." 105)
+        "Ubud, Bali" \
+        "The cultural heart of Bali. Rice terraces, temples, yoga retreats, and incredible Balinese cooking. December is rainy season but that means lush green landscapes, fewer tourists, and 40 percent cheaper than peak." 105)
     p2=$(insert_pitch_sql "$trip_id" "$MAYA_ID" \
-        "I found the perfect villa" \
-        "There is a 5-bedroom compound in Ubud with private pool and staff. Split 5 ways it is less than a mid-range hotel. I will drop the Airbnb link in chat." 70)
+        "Seminyak, Bali" \
+        "Beach clubs, rooftop bars, great restaurants, and easy access to Tanah Lot temple. More upscale vibe than Ubud. I found a 5-bedroom villa with private pool that splits to less than a hotel per person." 70)
     p3=$(insert_pitch_sql "$trip_id" "$CARLOS_ID" \
-        "Pre-trip surf camp in Canggu" \
-        "Two days before the main trip starts. I can get a group rate at a surf school. Anyone who wants to arrive early can join – total cost around $150 for lessons, board, and accommodation." 85)
+        "Canggu, Bali" \
+        "Best surf in Bali, laid-back digital nomad vibe, amazing cafes and nightlife. We could do a few days here then move to Ubud for the cultural side. Way more affordable than Seminyak." 85)
     ok "Pitches seeded"
 
+    # Pitch links (real URLs)
+    api_post "$my_jwt" "/trips/$trip_id/pitches/$p1/links" \
+        '{"url":"https://www.wanderlustchloe.com/ubud-bali-travel-guide-things-to-do/","title":"The Ultimate Ubud Travel Guide For 2026","description":"Waterfalls, rice terraces, volcano hikes, yoga, spas and more","domain":"wanderlustchloe.com"}' >/dev/null
     api_post "$MAYA_JWT" "/trips/$trip_id/pitches/$p2/links" \
-        '{"url":"https://www.airbnb.com","title":"Airbnb – Luxury Ubud Villa","description":"5-bedroom private villa with pool","domain":"airbnb.com"}' >/dev/null
+        '{"url":"https://www.baliholidaysecrets.com/seminyak-bali-guide/","title":"Seminyak Bali Travel Guide for 2026","description":"What to know before you visit – beaches, dining, nightlife and wellness","domain":"baliholidaysecrets.com"}' >/dev/null
+    ok "Pitch links seeded"
 
-    # Comments – multiple threads
+    # Comments – mix of activity and pitch comments, some pitches have zero
+    # p1 (Ubud) – 2 comments
+    # p2 (Seminyak) – 3 comments
+    # p3 (Canggu) – 0 comments
     local c1 c2 c3 c4
+    resp=$(api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"Ubud rice terraces in December would be so lush and green.\"}")
+    c1=$(echo "$resp" | jq -r '.id')
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"The cooking classes in Ubud are supposed to be life-changing.\"}" >/dev/null
+
+    resp=$(api_post "$JAMES_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Seminyak looks amazing. Maya share the villa link!\"}")
+    c2=$(echo "$resp" | jq -r '.id')
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"The beach clubs there look incredible. Potato Head is on my list.\"}" >/dev/null
+
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"If we do Seminyak we should also hit up the night market in Kuta. 15 min away.\"}" >/dev/null
+
+    # Activity comments
     resp=$(api_post "$MAYA_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a1\",\"content\":\"This is my top pick for the whole trip. The photos are unreal.\"}")
-    c1=$(echo "$resp" | jq -r '.id')
+    c3=$(echo "$resp" | jq -r '.id')
 
     resp=$(api_post "$CARLOS_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a4\",\"content\":\"Just booked us 5 slots at a school in Kuta. Paid the deposit. Let me know if you're in!\"}")
-    c2=$(echo "$resp" | jq -r '.id')
-
-    resp=$(api_post "$PRIYA_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a3\",\"content\":\"I have been to this spa – it completely changed my life. Non-negotiable addition.\"}")
-    c3=$(echo "$resp" | jq -r '.id')
-
-    resp=$(api_post "$JAMES_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Maya YES please share the link. This looks incredible.\"}")
     c4=$(echo "$resp" | jq -r '.id')
 
-    api_post "$my_jwt"     "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a1\",\"content\":\"Agreed. Should we hire a private driver for the evening so we don't have to rush back?\"}" >/dev/null
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a3\",\"content\":\"I have been to this spa – it completely changed my life. Non-negotiable addition.\"}" >/dev/null
 
-    api_post "$PRIYA_JWT"  "/comments" \
+    api_post "$PRIYA_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a2\",\"content\":\"Start at 7 am before it gets too hot and too many Instagram influencers show up.\"}" >/dev/null
 
-    api_post "$my_jwt"     "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a5\",\"content\":\"The market visit at the start is the best part. Bring cash for spices to take home.\"}" >/dev/null
-
-    api_post "$CARLOS_JWT" "/comments" \
-        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p1\",\"content\":\"The budget breakdown you sent in the group chat sealed the deal for me.\"}" >/dev/null
-
     # Reactions
-    api_post "$CARLOS_JWT" "/comments/$c1/reactions" '{"emoji":"🔥"}' >/dev/null
-    api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"🔥"}' >/dev/null
-    api_post "$JAMES_JWT"  "/comments/$c1/reactions" '{"emoji":"❤️"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c1/reactions" '{"emoji":"😍"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c2/reactions" '{"emoji":"👍"}' >/dev/null
-    api_post "$JAMES_JWT"  "/comments/$c2/reactions" '{"emoji":"👍"}' >/dev/null
-    api_post "$my_jwt"     "/comments/$c3/reactions" '{"emoji":"🧘"}' >/dev/null
-    api_post "$MAYA_JWT"   "/comments/$c4/reactions" '{"emoji":"🏡"}' >/dev/null
+    api_post "$CARLOS_JWT" "/comments/$c1/reactions" '{"emoji":"🌿"}' >/dev/null
+    api_post "$MAYA_JWT"   "/comments/$c2/reactions" '{"emoji":"🏡"}' >/dev/null
+    api_post "$PRIYA_JWT"  "/comments/$c3/reactions" '{"emoji":"🔥"}' >/dev/null
+    api_post "$JAMES_JWT"  "/comments/$c3/reactions" '{"emoji":"❤️"}' >/dev/null
+    api_post "$JAMES_JWT"  "/comments/$c4/reactions" '{"emoji":"👍"}' >/dev/null
     ok "Comments + reactions seeded"
 
     create_invite_sql "$trip_id" "$my_id" "BALI25" >/dev/null
@@ -1451,6 +1481,177 @@ seed_trip_bali() {
 
     echo "  Trip ID: $trip_id"
     BALI_TRIP_ID="$trip_id"
+}
+
+# ─── activity feed backfill ──────────────────────────────────────────────────
+
+rcli() {
+    docker exec redis redis-cli --pass dev_redis_password "$@" >/dev/null 2>&1
+}
+
+# backfill_activity_feed writes activity feed events directly to Redis for the
+# current user. This ensures the feed is populated regardless of pub/sub timing
+# during seeding. It queries the database for activities, polls and comments
+# created by OTHER users in trips the current user belongs to.
+backfill_activity_feed() {
+    local my_id="$1"
+    log "Backfilling activity feed for $my_id..."
+
+    local event_ttl=2592000  # 30 days in seconds
+
+    # Get future trips the user is a member of (no activity feed for past trips)
+    local trip_ids
+    trip_ids=$(db "
+        SELECT m.trip_id FROM memberships m
+        JOIN trips t ON t.id = m.trip_id
+        WHERE m.user_id = '$my_id'
+          AND t.end_date > NOW();
+    ")
+
+    for trip_id in $trip_ids; do
+        # Clear any stale entries from the pub/sub subscriber so only
+        # backfilled events (with correct DB timestamps) remain.
+        rcli DEL "activity:$my_id:$trip_id"
+
+        # ── Activities by other users ──
+        local rows
+        rows=$(db "
+            SELECT a.id, a.name, a.proposed_by,
+                   u.username,
+                   EXTRACT(EPOCH FROM a.created_at)::bigint * 1000
+            FROM activities a
+            JOIN users u ON u.id = a.proposed_by
+            WHERE a.trip_id = '$trip_id'
+              AND a.proposed_by != '$my_id'
+            ORDER BY a.created_at;
+        ")
+        while IFS='|' read -r eid ename actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "activity.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_name "$ename" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{name:$d_name},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Polls by other users (exclude polls the user already voted on) ──
+        rows=$(db "
+            SELECT p.id, p.question, p.created_by,
+                   u.username,
+                   EXTRACT(EPOCH FROM p.created_at)::bigint * 1000
+            FROM polls p
+            JOIN users u ON u.id = p.created_by
+            WHERE p.trip_id = '$trip_id'
+              AND p.created_by != '$my_id'
+              AND NOT EXISTS (
+                  SELECT 1 FROM poll_votes pv
+                  WHERE pv.poll_id = p.id AND pv.user_id = '$my_id'
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM poll_rankings pr
+                  WHERE pr.poll_id = p.id AND pr.user_id = '$my_id'
+              )
+            ORDER BY p.created_at;
+        ")
+        while IFS='|' read -r eid equestion actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "poll.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_question "$equestion" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{question:$d_question},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Comments by other users ──
+        rows=$(db "
+            SELECT c.id, c.content, c.user_id,
+                   u.username,
+                   c.entity_type, c.entity_id::text,
+                   COALESCE(a.name, tp.title, '') AS entity_name,
+                   EXTRACT(EPOCH FROM c.created_at)::bigint * 1000
+            FROM comments c
+            JOIN users u ON u.id = c.user_id
+            LEFT JOIN activities a ON c.entity_type = 'activity' AND a.id = c.entity_id
+            LEFT JOIN trip_pitches tp ON c.entity_type = 'pitch' AND tp.id = c.entity_id
+            WHERE c.trip_id = '$trip_id'
+              AND c.user_id != '$my_id'
+            ORDER BY c.created_at;
+        ")
+        while IFS='|' read -r cid econtent actor_id actor_name etype eid ename ts_ms; do
+            [ -z "$cid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "comment.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_content "$econtent" \
+                --arg d_etype "$etype" \
+                --arg d_eid "$eid" \
+                --arg d_ename "$ename" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{content:$d_content,entity_type:$d_etype,entity_id:$d_eid,entity_name:$d_ename},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # ── Pitches by other users ──
+        rows=$(db "
+            SELECT tp.id, tp.title, tp.user_id,
+                   u.username,
+                   EXTRACT(EPOCH FROM tp.created_at)::bigint * 1000
+            FROM trip_pitches tp
+            JOIN users u ON u.id = tp.user_id
+            WHERE tp.trip_id = '$trip_id'
+              AND tp.user_id != '$my_id'
+            ORDER BY tp.created_at;
+        ")
+        while IFS='|' read -r eid etitle actor_id actor_name ts_ms; do
+            [ -z "$eid" ] && continue
+            local event_id; event_id=$(new_uuid)
+            local payload
+            payload=$(jq -cn \
+                --arg id "$event_id" \
+                --arg topic "pitch.created" \
+                --arg trip_id "$trip_id" \
+                --arg entity_id "$eid" \
+                --arg actor_id "$actor_id" \
+                --arg actor_name "$actor_name" \
+                --arg ts "$(date -u -r $((ts_ms / 1000)) '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -d "@$((ts_ms / 1000))" '+%Y-%m-%dT%H:%M:%SZ')" \
+                --arg d_title "$etitle" \
+                '{id:$id,topic:$topic,trip_id:$trip_id,entity_id:$entity_id,actor_id:$actor_id,actor_name:$actor_name,data:{title:$d_title},timestamp:$ts}')
+            rcli SET "activity:event:$event_id" "$payload" EX "$event_ttl"
+            rcli ZADD "activity:$my_id:$trip_id" "$ts_ms" "$event_id"
+        done <<< "$rows"
+
+        # Set TTL on the sorted set
+        rcli EXPIRE "activity:$my_id:$trip_id" "$event_ttl"
+    done
+
+    local total
+    total=$(docker exec redis redis-cli --pass dev_redis_password KEYS "activity:$my_id:*" 2>/dev/null | wc -l)
+    ok "Activity feed backfilled ($total trip feeds)"
 }
 
 # ─── main seed ────────────────────────────────────────────────────────────────
@@ -1486,6 +1687,10 @@ run_seed() {
     seed_trip_tokyo
     seed_trip_nyc       "$my_id" "$my_jwt"
     seed_trip_bali      "$my_id" "$my_jwt"
+
+    # Allow subscriber a moment to process, then backfill anything it missed
+    sleep 2
+    backfill_activity_feed "$my_id"
 
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
