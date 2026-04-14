@@ -10,6 +10,8 @@ export type ToggleProps = {
   value: boolean;
   onChange: (value: boolean) => void;
   disabled?: boolean;
+  onColor?: string;
+  compact?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -28,6 +30,8 @@ export default function Toggle({
   value,
   onChange,
   disabled = false,
+  onColor = TRACK_ON_COLOR,
+  compact = false,
 }: ToggleProps) {
   // Separate animated values so the thumb can use the native driver
 
@@ -63,7 +67,7 @@ export default function Toggle({
 
   const trackColor = colorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [TRACK_OFF_COLOR, TRACK_ON_COLOR],
+    outputRange: [TRACK_OFF_COLOR, onColor],
   });
 
   return (
@@ -71,13 +75,14 @@ export default function Toggle({
       onPress={() => !disabled && onChange(!value)}
       style={({ pressed }) => [
         styles.container,
+        compact && styles.containerCompact,
         pressed && !disabled && styles.pressed,
       ]}
       disabled={disabled}
     >
       {label && (
         <Text
-          variant="bodySmMedium"
+          variant="bodyMedium"
           color={disabled ? "gray400" : "gray900"}
           style={{ flex: 1 }}
         >
@@ -110,6 +115,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     paddingVertical: 10,
+  },
+  containerCompact: {
+    paddingVertical: 0,
   },
   pressed: {
     opacity: 0.7,

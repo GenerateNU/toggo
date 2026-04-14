@@ -15,9 +15,15 @@ const HEADER_OPTIONS = {
 export default function SettingsLayout() {
   return (
     <Stack screenOptions={HEADER_OPTIONS}>
-      <Stack.Screen name="index" options={{ title: "Trip Settings" }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          title: "Trip Settings",
+        }}
+      />
       <Stack.Screen name="members" options={{ title: "Members" }} />
       <Stack.Screen name="edit-name" options={{ title: "Trip Name" }} />
+      <Stack.Screen name="edit-dates" options={{ title: "Dates" }} />
     </Stack>
   );
 }

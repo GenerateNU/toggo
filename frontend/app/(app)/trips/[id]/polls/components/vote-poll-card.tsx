@@ -1,10 +1,12 @@
 import { useCastVote } from "@/api/polls/useCastVote";
 import { Box, Text, useToast } from "@/design-system";
 import { UserAvatar } from "@/design-system/components/avatars/user-avatar";
+import { RadioDot } from "@/design-system/components/buttons/radio";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
+import { Check, UserRound } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
@@ -14,6 +16,8 @@ type VotePollCardProps = {
   poll: ModelsPollAPIResponse;
   tripId: string;
   onVoted?: () => void;
+  onPress?: () => void;
+  previewMode?: boolean;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -42,33 +46,36 @@ function formatDeadline(deadline: string): string {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const RADIO_OUTER_SIZE = 20;
-const RADIO_INNER_SIZE = 12;
+const CHECKBOX_SIZE = 20;
 const SUBMIT_BUTTON_WIDTH = 147;
+const SUBMIT_BUTTON_PREVIEW_WIDTH = 228;
+const PREVIEW_AVATAR_SIZE = 32;
 
-// ─── Radio Indicator ─────────────────────────────────────────────────────────
+// ─── Checkbox Indicator ───────────────────────────────────────────────────────
 
-const RadioDot = React.memo(
+const CheckboxIndicator = React.memo(
   ({ selected, disabled }: { selected: boolean; disabled: boolean }) => (
     <Box
       style={[
-        styles.radioOuter,
+        styles.checkbox,
         selected
-          ? styles.radioOuterSelected
+          ? disabled
+            ? styles.checkboxDisabled
+            : styles.checkboxSelected
           : disabled
-            ? styles.radioOuterDisabled
-            : styles.radioOuterUnselected,
+            ? styles.checkboxDisabled
+            : styles.checkboxUnselected,
       ]}
+      alignItems="center"
+      justifyContent="center"
     >
       {selected && (
-        <Box
-          style={[styles.radioInner, disabled && styles.radioInnerDisabled]}
-        />
+        <Check size={12} color={ColorPalette.white} strokeWidth={3} />
       )}
     </Box>
   ),
 );
-RadioDot.displayName = "RadioDot";
+CheckboxIndicator.displayName = "CheckboxIndicator";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -76,6 +83,8 @@ export default function VotePollCard({
   poll,
   tripId,
   onVoted,
+  onPress,
+  previewMode = false,
 }: VotePollCardProps) {
   const isMulti = poll.poll_type === "multi";
   const closed = isPollClosed(poll.deadline);
@@ -119,6 +128,7 @@ export default function VotePollCard({
   };
 
   const handleSubmit = async () => {
+    if (previewMode) return;
     if (!poll.id || closed) return;
     try {
       await castVote.mutateAsync({
@@ -127,9 +137,7 @@ export default function VotePollCard({
         data: { option_ids: selectedIds },
       });
       toast.show({
-        variant: "pollSent",
-        message: hasVoted ? "Vote updated!" : "Poll Sent!",
-        subtitle: "Your trip will get a notification to vote.",
+        message: hasVoted ? "Vote updated!" : "Vote submitted!",
       });
       onVoted?.();
     } catch {
@@ -141,45 +149,61 @@ export default function VotePollCard({
     poll.options?.reduce((sum, o) => sum + (o.vote_count ?? 0), 0) ?? 0;
 
   const submitLabel = () => {
+    if (previewMode) return "Submit vote";
     if (castVote.isPending) return "Voting…";
     if (closed) return "Poll closed";
     if (hasVoted) return "Update vote";
     return "Submit vote";
   };
 
-  const submitDisabled =
-    selectedIds.length === 0 || castVote.isPending || closed || isUnchanged;
+  const submitDisabled = previewMode
+    ? selectedIds.length === 0 || closed
+    : selectedIds.length === 0 || castVote.isPending || closed || isUnchanged;
 
   return (
     <Box backgroundColor="white" borderRadius="md" style={styles.cardShadow}>
       <Box style={styles.cardInner}>
         {/* Question + avatar */}
-        <Box gap="xs">
-          <Box flexDirection="row" alignItems="flex-start" gap="xs">
-            <Text
-              variant="bodyDefault"
-              color="gray950"
-              numberOfLines={3}
-              style={{ flex: 1 }}
-            >
-              {poll.question}
-            </Text>
-            <UserAvatar variant="sm" userId={poll.created_by ?? ""} />
+        <Pressable onPress={onPress} disabled={!onPress || previewMode}>
+          <Box gap="xs">
+            <Box flexDirection="row" alignItems="flex-start" gap="xs">
+              <Text
+                variant="bodyDefault"
+                color="gray950"
+                numberOfLines={3}
+                style={{ flex: 1 }}
+              >
+                {poll.question}
+              </Text>
+              {previewMode ? (
+                <Box
+                  alignItems="center"
+                  justifyContent="center"
+                  style={styles.previewAvatar}
+                >
+                  <UserRound size={16} color={ColorPalette.statusError} />
+                </Box>
+              ) : (
+                <UserAvatar variant="sm" userId={poll.created_by ?? ""} />
+              )}
+            </Box>
+            {poll.deadline && (
+              <Text
+                variant="bodyXxsDefault"
+                style={{
+                  color: closed
+                    ? ColorPalette.statusError
+                    : ColorPalette.gray500,
+                }}
+              >
+                {formatDeadline(poll.deadline)}
+              </Text>
+            )}
           </Box>
-          {poll.deadline && (
-            <Text
-              variant="bodyXxsDefault"
-              style={{
-                color: closed ? ColorPalette.statusError : ColorPalette.gray500,
-              }}
-            >
-              {formatDeadline(poll.deadline)}
-            </Text>
-          )}
-        </Box>
+        </Pressable>
 
         {/* Options */}
-        <Box style={styles.optionsList}>
+        <Box style={[styles.optionsList, isMulti && styles.optionsListMulti]}>
           {poll.options?.map((option) => {
             const optionId = option.id ?? "";
             const isSelected = selectedIds.includes(optionId);
@@ -194,14 +218,20 @@ export default function VotePollCard({
                 disabled={closed || castVote.isPending}
                 style={[
                   styles.optionRow,
-                  isSelected
-                    ? closed
-                      ? styles.optionRowSelectedClosed
-                      : styles.optionRowSelected
-                    : styles.optionRowUnselected,
+                  isMulti && styles.optionRowMulti,
+                  !isMulti &&
+                    (isSelected
+                      ? closed
+                        ? styles.optionRowSelectedClosed
+                        : styles.optionRowSelected
+                      : styles.optionRowUnselected),
                 ]}
               >
-                <RadioDot selected={isSelected} disabled={closed} />
+                {isMulti ? (
+                  <CheckboxIndicator selected={isSelected} disabled={closed} />
+                ) : (
+                  <RadioDot selected={isSelected} disabled={closed} />
+                )}
                 <Text
                   variant="bodySmMedium"
                   style={[
@@ -210,7 +240,7 @@ export default function VotePollCard({
                       color: isSelected
                         ? closed
                           ? ColorPalette.gray400
-                          : ColorPalette.white
+                          : ColorPalette.gray900
                         : ColorPalette.gray700,
                     },
                   ]}
@@ -225,7 +255,7 @@ export default function VotePollCard({
                       color: isSelected
                         ? closed
                           ? ColorPalette.gray400
-                          : ColorPalette.gray300
+                          : ColorPalette.gray500
                         : ColorPalette.gray500,
                     }}
                   >
@@ -247,6 +277,7 @@ export default function VotePollCard({
             <Box
               style={[
                 styles.submitButton,
+                previewMode && styles.submitButtonPreview,
                 submitDisabled && styles.submitButtonDisabled,
               ]}
             >
@@ -266,68 +297,74 @@ export default function VotePollCard({
 const styles = StyleSheet.create({
   cardShadow: {
     borderWidth: 1,
-    borderColor: ColorPalette.blue100,
+    borderColor: ColorPalette.gray100,
     shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 3,
   },
   cardInner: {
-    padding: 12,
-    gap: Layout.spacing.sm,
+    padding: 22,
+    gap: 18,
   },
   optionsList: {
-    gap: 10,
+    gap: 14,
+  },
+  optionsListMulti: {
+    gap: 4,
+  },
+  optionRowMulti: {
+    paddingHorizontal: 0,
+    paddingVertical: 6,
   },
   optionRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: Layout.spacing.sm,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     gap: Layout.spacing.xs,
   },
   optionRowSelected: {
-    backgroundColor: ColorPalette.gray900,
+    backgroundColor: ColorPalette.blue50,
+    borderWidth: 1.5,
+    borderColor: ColorPalette.blue500,
   },
   optionRowSelectedClosed: {
-    backgroundColor: ColorPalette.gray500,
+    backgroundColor: ColorPalette.gray200,
   },
   optionRowUnselected: {
-    backgroundColor: ColorPalette.gray100,
+    backgroundColor: ColorPalette.gray25,
   },
-  radioOuter: {
-    width: RADIO_OUTER_SIZE,
-    height: RADIO_OUTER_SIZE,
-    borderRadius: RADIO_OUTER_SIZE / 2,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  checkbox: {
+    width: CHECKBOX_SIZE,
+    height: CHECKBOX_SIZE,
+    borderRadius: 4,
+    borderWidth: 1.5,
   },
-  radioOuterSelected: {
-    borderColor: ColorPalette.white,
+  checkboxSelected: {
+    backgroundColor: ColorPalette.blue500,
+    borderColor: ColorPalette.blue500,
   },
-  radioOuterSelectedClosed: {
+  checkboxUnselected: {
     borderColor: ColorPalette.gray400,
+    backgroundColor: ColorPalette.transparent,
   },
-  radioOuterUnselected: {
-    borderColor: ColorPalette.gray700,
-  },
-  radioOuterDisabled: {
-    borderColor: ColorPalette.gray400,
-  },
-  radioInner: {
-    width: RADIO_INNER_SIZE,
-    height: RADIO_INNER_SIZE,
-    borderRadius: RADIO_INNER_SIZE / 2,
-    backgroundColor: ColorPalette.white,
-  },
-  radioInnerDisabled: {
-    backgroundColor: ColorPalette.gray400,
+  checkboxDisabled: {
+    borderColor: ColorPalette.gray300,
+    backgroundColor: ColorPalette.gray200,
   },
   optionLabel: {
     flex: 1,
+  },
+  previewAvatar: {
+    width: PREVIEW_AVATAR_SIZE,
+    height: PREVIEW_AVATAR_SIZE,
+    borderRadius: PREVIEW_AVATAR_SIZE / 2,
+    backgroundColor: ColorPalette.statusError + "22",
+    alignItems: "center",
+    justifyContent: "center",
   },
   submitButton: {
     width: SUBMIT_BUTTON_WIDTH,
@@ -337,6 +374,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.sm,
     alignItems: "center",
     justifyContent: "center",
+  },
+  submitButtonPreview: {
+    width: SUBMIT_BUTTON_PREVIEW_WIDTH,
+    borderRadius: 28,
+    paddingVertical: 18,
   },
   submitButtonDisabled: {
     backgroundColor: ColorPalette.gray300,

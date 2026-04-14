@@ -2,7 +2,15 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
+import {
+  Box,
+  Button,
+  Icon,
+  Screen,
+  Spinner,
+  Text,
+  TextField,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -15,13 +23,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -146,7 +148,7 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <ActivityIndicator size="large" color={ColorPalette.brand500} />
+            <Spinner size={36} />
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
@@ -188,7 +190,7 @@ function SearchHeader({
   return (
     <Box
       backgroundColor="white"
-      paddingHorizontal="lg"
+      paddingHorizontal="sm"
       paddingTop="lg"
       paddingBottom="sm"
       gap="sm"
@@ -200,8 +202,8 @@ function SearchHeader({
         alignItems="center"
         style={styles.titleRow}
       >
-        <Text variant="headingSm" color="gray500">
-          Location
+        <Text variant="headingSm" color="gray900">
+          Destination
         </Text>
         {query.length > 0 && (
           <TouchableOpacity
@@ -209,7 +211,7 @@ function SearchHeader({
             hitSlop={styles.hitSlop}
             style={styles.dismissButton}
           >
-            <Icon icon={X} color="gray500" size="sm" />
+            <X size={24} />
           </TouchableOpacity>
         )}
       </Box>
@@ -220,7 +222,7 @@ function SearchHeader({
         placeholder="Enter a city, neighborhood, or address"
         leftIcon={
           isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray400} />
+            <Spinner />
           ) : (
             <Icon icon={Search} color="gray400" size="sm" />
           )

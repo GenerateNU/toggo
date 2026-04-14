@@ -52,7 +52,7 @@ async function attachReactions(
 
   return items.map((item) => ({
     id: item.id ?? "",
-    authorName: item.username ?? "Unknown",
+    authorName: item.name ?? "Unknown",
     authorAvatar: item.profile_picture_url ?? undefined,
     authorSeed: item.user_id,
     body: item.content ?? "",

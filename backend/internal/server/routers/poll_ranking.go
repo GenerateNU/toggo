@@ -38,5 +38,8 @@ func RankPollRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	// /api/v1/trips/:tripID/rank-polls/:pollId/voters
 	pollIDGroup.Get("/voters", rankPollController.GetPollVoters)
 
+	// /api/v1/trips/:tripID/rank-polls/:pollId/options/:optionId/ranks/:rankPosition/voters
+	pollIDGroup.Get("/options/:optionId/ranks/:rankPosition/voters", rankPollController.GetChoiceVoters)
+
 	return rankPollGroup
 }

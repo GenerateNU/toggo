@@ -1,9 +1,9 @@
-import { Box, Text } from "@/design-system";
+import { Box, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { Mic, Pause, Play, RotateCcw, Square } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 export interface RecordingResult {
   uri: string;
@@ -204,7 +204,7 @@ export function AudioRecorder({
               alignItems="center"
               justifyContent="center"
             >
-              <ActivityIndicator color={ColorPalette.white} />
+              <Spinner />
             </Box>
           )}
 

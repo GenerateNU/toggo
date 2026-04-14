@@ -1,8 +1,9 @@
 import { useGetPollsByTripID } from "@/api/polls/useGetPollsByTripID";
-import { Box, ErrorState, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { useCallback } from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { Box, ErrorState, Spinner, Text } from "@/design-system";
+import { ModelsPollAPIResponse } from "@/types/types.gen";
+import { useCallback, useState } from "react";
+import { StyleSheet } from "react-native";
+import PollDetailSheet from "./poll-detail-sheet";
 import RankPollRow from "./rank-poll-row";
 import VotePollCard from "./vote-poll-card";
 
@@ -22,6 +23,10 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
     refetch,
   } = useGetPollsByTripID(tripId, {}, { query: { enabled: !!tripId } });
 
+  const [detailPoll, setDetailPoll] = useState<ModelsPollAPIResponse | null>(
+    null,
+  );
+
   const polls = pollsData?.items ?? [];
   const votePolls = polls.filter((p) => p.poll_type !== "rank");
   const rankPolls = polls.filter((p) => p.poll_type === "rank");
@@ -32,7 +37,7 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
   if (isLoading) {
     return (
       <Box alignItems="center" paddingVertical="xl">
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }
@@ -58,24 +63,36 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
   }
 
   return (
-    <Box gap="sm">
-      {votePolls.map((poll, index) => (
-        <VotePollCard
-          key={poll.id ?? `vote-poll-${index}`}
-          poll={poll}
-          tripId={tripId}
-          onVoted={handleVoted}
-        />
-      ))}
-      {rankPolls.map((poll, index) => (
-        <RankPollRow
-          key={poll.id ?? `rank-poll-${index}`}
-          poll={poll}
-          tripId={tripId}
-          onRanked={handleRanked}
-        />
-      ))}
-    </Box>
+    <>
+      <Box gap="sm">
+        {votePolls.map((poll, index) => (
+          <VotePollCard
+            key={poll.id ?? `vote-poll-${index}`}
+            poll={poll}
+            tripId={tripId}
+            onVoted={handleVoted}
+            onPress={() => setDetailPoll(poll)}
+          />
+        ))}
+        {rankPolls.map((poll, index) => (
+          <RankPollRow
+            key={poll.id ?? `rank-poll-${index}`}
+            poll={poll}
+            tripId={tripId}
+            onRanked={handleRanked}
+            onPress={() => setDetailPoll(poll)}
+          />
+        ))}
+      </Box>
+
+      <PollDetailSheet
+        poll={detailPoll}
+        tripId={tripId}
+        visible={detailPoll !== null}
+        onClose={() => setDetailPoll(null)}
+        onRefresh={refetch}
+      />
+    </>
   );
 }
 

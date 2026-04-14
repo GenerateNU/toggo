@@ -35,9 +35,11 @@ export function SegmentedTabs({ value, onChange }: SegmentedTabsProps) {
   return (
     <Box
       flexDirection="row"
-      backgroundColor="gray100"
+      backgroundColor="gray50"
       borderRadius="md"
       padding="xxs"
+      borderWidth={1}
+      borderColor="gray100"
       overflow="hidden"
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       style={{
@@ -56,6 +58,11 @@ export function SegmentedTabs({ value, onChange }: SegmentedTabsProps) {
         borderRadius="sm"
         style={{
           transform: [{ translateX }],
+          shadowColor: "#000",
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 1,
         }}
       />
 
@@ -70,11 +77,18 @@ export function SegmentedTabs({ value, onChange }: SegmentedTabsProps) {
             alignItems="center"
             justifyContent="center"
             paddingVertical="xs"
-            paddingHorizontal="md"
+            paddingHorizontal="sm"
             gap="xs"
           >
-            <Icon icon={tab.icon} color="gray950" size="xs" />
-            <Text variant="bodySmMedium" color="gray950">
+            <Icon
+              icon={tab.icon}
+              color={value === tab.value ? "gray950" : "gray500"}
+              size="xs"
+            />
+            <Text
+              variant="bodySmMedium"
+              color={value === tab.value ? "gray950" : "gray500"}
+            >
               {tab.label}
             </Text>
           </Box>

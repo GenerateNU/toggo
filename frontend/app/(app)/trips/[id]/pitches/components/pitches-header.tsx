@@ -27,14 +27,15 @@ export function PitchesHeader({
   return (
     <Box marginTop="xl" paddingHorizontal="sm" gap="sm" backgroundColor="white">
       <SegmentedTabs value={tab} onChange={onTabChange} />
-      {!isLoading && deadline && !hasCurrentUserPitch && tab === "pitches" && (
-        <Countdown deadline={deadline} />
-      )}
+      {!isLoading &&
+        deadline &&
+        (!hasCurrentUserPitch || deadline > new Date()) &&
+        tab === "pitches" && <Countdown deadline={deadline} />}
       {!isLoading && !deadline && tab === "pitches" && (
         <AddDeadline onPress={onPressAddDeadline} />
       )}
       {!isLoading && hasPitches && tab === "pitches" && (
-        <Text variant="bodyXsDefault" color="gray500">
+        <Text variant="bodyXsDefault" color="gray500" marginLeft="xxs">
           {pitchCount} {pitchCount === 1 ? "pitch" : "pitches"} added
         </Text>
       )}

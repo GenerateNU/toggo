@@ -104,6 +104,7 @@ func (r *commentReactionRepository) GetSummary(ctx context.Context, commentID uu
 
 type CommentReactionUserDBRow struct {
 	UserID            uuid.UUID  `json:"user_id"`
+	Name              string     `json:"name"`
 	Username          string     `json:"username"`
 	ProfilePictureID  *uuid.UUID `json:"profile_picture_id"`
 	ProfilePictureKey *string    `bun:"profile_picture_key" json:"-"`
@@ -115,7 +116,7 @@ func (r *commentReactionRepository) ListUsersForEmoji(ctx context.Context, comme
 	err := r.db.NewSelect().
 		TableExpr("comment_reactions AS cr").
 		ColumnExpr("u.id AS user_id").
-		ColumnExpr("u.username AS username").
+		ColumnExpr("u.name, u.username AS username").
 		ColumnExpr("u.profile_picture AS profile_picture_id").
 		ColumnExpr("img.file_key AS profile_picture_key").
 		Join("JOIN users AS u ON u.id = cr.user_id").

@@ -1,45 +1,27 @@
 import { Box, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import {
-  CircleDot,
-  ListChecks,
-  ListOrdered,
-  ToggleLeft,
-} from "lucide-react-native";
-import React from "react";
-import { Pressable } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 
 export type PollType = "single" | "multi" | "rank" | "yesno";
 
 const POLL_TYPES: {
   type: PollType;
   label: string;
-  subtitle: string;
-  icon: React.ComponentType<{ size: number; color: string }>;
 }[] = [
   {
     type: "single",
     label: "Single Choice",
-    subtitle: "Pick one option",
-    icon: CircleDot,
   },
   {
     type: "multi",
     label: "Multiple Choice",
-    subtitle: "Pick several",
-    icon: ListChecks,
   },
   {
     type: "rank",
     label: "Ranked Choice",
-    subtitle: "Rank by preference",
-    icon: ListOrdered,
   },
   {
     type: "yesno",
-    label: "Yes / No",
-    subtitle: "Simple vote",
-    icon: ToggleLeft,
+    label: "Yes/No",
   },
 ];
 
@@ -48,72 +30,41 @@ interface StepPollTypeProps {
   onSelect: (type: PollType) => void;
 }
 
-const CARD_MIN_HEIGHT = 108;
-
 export default function StepPollType({
   selected,
   onSelect,
 }: StepPollTypeProps) {
-  const rows = [POLL_TYPES.slice(0, 2), POLL_TYPES.slice(2, 4)];
-
   return (
     <Box gap="sm">
-      <Text variant="bodyXsMedium" color="gray500">
-        Type
-      </Text>
-      <Box gap="sm">
-        {rows.map((row, rowIndex) => (
-          <Box key={rowIndex} flexDirection="row" gap="sm">
-            {row.map(({ type, label, subtitle, icon: Icon }) => {
-              const isSelected = selected === type;
-              return (
-                <Pressable
-                  key={type}
-                  onPress={() => onSelect(type)}
-                  style={{ flex: 1 }}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{ paddingLeft: 24, paddingRight: 24 }}
+      >
+        <Box flexDirection="row" gap="xs">
+          {POLL_TYPES.map((item) => {
+            const isSelected = selected === item.type;
+            return (
+              <Pressable key={item.type} onPress={() => onSelect(item.type)}>
+                <Box
+                  paddingHorizontal="sm"
+                  paddingVertical="xxs"
+                  borderRadius="sm"
+                  backgroundColor={isSelected ? "brand500" : "white"}
                 >
-                  <Box
-                    flex={1}
-                    padding="sm"
-                    borderRadius="md"
-                    backgroundColor="white"
-                    alignItems="center"
-                    gap="xs"
-                    style={{
-                      minHeight: CARD_MIN_HEIGHT,
-                      borderWidth: isSelected ? 2 : 1,
-                      borderColor: isSelected
-                        ? ColorPalette.gray900
-                        : ColorPalette.gray300,
-                    }}
+                  <Text
+                    variant="bodySmMedium"
+                    color={isSelected ? "white" : "gray900"}
                   >
-                    <Icon
-                      size={20}
-                      color={
-                        isSelected ? ColorPalette.gray900 : ColorPalette.gray500
-                      }
-                    />
-                    <Text
-                      variant="bodySmMedium"
-                      color="gray900"
-                      numberOfLines={1}
-                    >
-                      {label}
-                    </Text>
-                    <Text
-                      variant="bodyXsDefault"
-                      color="gray500"
-                      numberOfLines={1}
-                    >
-                      {subtitle}
-                    </Text>
-                  </Box>
-                </Pressable>
-              );
-            })}
-          </Box>
-        ))}
-      </Box>
+                    {item.label}
+                  </Text>
+                </Box>
+              </Pressable>
+            );
+          })}
+        </Box>
+      </ScrollView>
     </Box>
   );
 }

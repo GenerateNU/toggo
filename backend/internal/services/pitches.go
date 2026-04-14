@@ -434,6 +434,7 @@ func mergeUpdatedPitch(updated *models.TripPitch, src *models.PitchDatabaseRespo
 		Duration:          updated.Duration,
 		CreatedAt:         updated.CreatedAt,
 		UpdatedAt:         updated.UpdatedAt,
+		Name:              src.Name,
 		Username:          src.Username,
 		ProfilePictureKey: src.ProfilePictureKey,
 	}
@@ -527,6 +528,7 @@ func (s *PitchService) enrichedPitchToAPIResponse(ctx context.Context, p *models
 		for _, c := range stats.Previews {
 			preview := models.CommenterPreview{
 				UserID:   c.UserID,
+				Name:     c.Name,
 				Username: c.Username,
 			}
 			if c.ProfilePictureKey != nil {
@@ -543,6 +545,7 @@ func (s *PitchService) enrichedPitchToAPIResponse(ctx context.Context, p *models
 		ID:                p.ID,
 		TripID:            p.TripID,
 		UserID:            p.UserID,
+		Name:              p.Name,
 		Username:          p.Username,
 		ProfilePictureURL: profilePictureURL,
 		Title:             p.Title,

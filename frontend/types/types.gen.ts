@@ -102,6 +102,10 @@ export type ModelsActivityGoingUserResponse = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -188,6 +192,10 @@ export type ModelsActivityAPIResponse = {
   /**
    * @type string | undefined
    */
+  proposer_name?: string;
+  /**
+   * @type string | undefined
+   */
   proposer_picture_url?: string;
   /**
    * @type string | undefined
@@ -261,6 +269,10 @@ export type ModelsActivityRSVPAPIResponse = {
    * @type string | undefined
    */
   created_at?: string;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
   /**
    * @type string | undefined
    */
@@ -483,6 +495,10 @@ export type ModelsCommentAPIResponse = {
    */
   id?: string;
   /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
    * @description pointer since some users don\'t have their avatar set
    * @type string | undefined
    */
@@ -547,6 +563,10 @@ export type ModelsCommentReactionUser = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -585,6 +605,10 @@ export type ModelsCommentReactionsSummaryResponse = {
 };
 
 export type ModelsCommenterPreview = {
+  /**
+   * @type string | undefined
+   */
+  name?: string;
   /**
    * @type string | undefined
    */
@@ -914,6 +938,10 @@ export type ModelsPitchAPIResponse = {
   /**
    * @type string | undefined
    */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
   profile_picture_url?: string;
   /**
    * @type string | undefined
@@ -1052,6 +1080,10 @@ export type ModelsCreateTripRequest = {
    * @type string
    */
   name: string;
+  /**
+   * @type string | undefined
+   */
+  pitch_deadline?: string;
   /**
    * @type string | undefined, date-time
    */
@@ -1220,6 +1252,10 @@ export type ModelsMembershipAPIResponse = {
    */
   is_admin?: boolean;
   /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
    * @type boolean | undefined
    */
   notify_new_comments?: boolean;
@@ -1361,6 +1397,52 @@ export type ModelsOpeningHours = {
    * @type array | undefined
    */
   weekday_text?: string[];
+};
+
+export type ModelsVoterInfo = {
+  /**
+   * @type boolean | undefined
+   */
+  has_voted?: boolean;
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+  /**
+   * @type string | undefined
+   */
+  voted_at?: string;
+};
+
+export type ModelsOptionVotersResponse = {
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  option_name?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type array | undefined
+   */
+  voters?: ModelsVoterInfo[];
 };
 
 export type ModelsOptionWithScore = {
@@ -1742,21 +1824,6 @@ export type ModelsPollCursorPageResult = {
   next_cursor?: string;
 };
 
-export type ModelsVoterInfo = {
-  /**
-   * @type boolean | undefined
-   */
-  has_voted?: boolean;
-  /**
-   * @type string | undefined
-   */
-  user_id?: string;
-  /**
-   * @type string | undefined
-   */
-  username?: string;
-};
-
 export type ModelsPollVotersResponse = {
   /**
    * @type string | undefined
@@ -1766,6 +1833,29 @@ export type ModelsPollVotersResponse = {
    * @type integer | undefined
    */
   total_members?: number;
+  /**
+   * @type integer | undefined
+   */
+  total_voters?: number;
+  /**
+   * @type array | undefined
+   */
+  voters?: ModelsVoterInfo[];
+};
+
+export type ModelsRankChoiceVotersResponse = {
+  /**
+   * @type string | undefined
+   */
+  option_id?: string;
+  /**
+   * @type string | undefined
+   */
+  poll_id?: string;
+  /**
+   * @type integer | undefined
+   */
+  rank_position?: number;
   /**
    * @type integer | undefined
    */
@@ -1990,6 +2080,10 @@ export type ModelsTripAPIResponse = {
   /**
    * @type string | undefined
    */
+  location?: string;
+  /**
+   * @type string | undefined
+   */
   name?: string;
   /**
    * @type string | undefined
@@ -2127,7 +2221,15 @@ export type ModelsTrip = {
   /**
    * @type string | undefined
    */
+  end_date?: string;
+  /**
+   * @type string | undefined
+   */
   id?: string;
+  /**
+   * @type string | undefined
+   */
+  location?: string;
   /**
    * @type string | undefined
    */
@@ -2140,6 +2242,10 @@ export type ModelsTrip = {
    * @type string | undefined
    */
   rank_poll_id?: string;
+  /**
+   * @type string | undefined
+   */
+  start_date?: string;
   /**
    * @type string | undefined
    */
@@ -2354,10 +2460,6 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
-  created_at?: string;
-  /**
-   * @type string | undefined
-   */
   currency?: string;
   /**
    * @type string | undefined, date-time
@@ -2366,7 +2468,7 @@ export type ModelsUpdateTripRequest = {
   /**
    * @type string | undefined
    */
-  id?: string;
+  location?: string;
   /**
    * @type string | undefined
    */
@@ -2379,10 +2481,6 @@ export type ModelsUpdateTripRequest = {
    * @type string | undefined, date-time
    */
   start_date?: string;
-  /**
-   * @type string | undefined
-   */
-  updated_at?: string;
 };
 
 export type ModelsUpdateUserNotificationPreferencesRequest = {
@@ -6028,6 +6126,72 @@ export type DeleteRankPollOptionMutation = {
     | DeleteRankPollOption500;
 };
 
+export type GetRankChoiceVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+  /**
+   * @description Rank position (1-3)
+   * @type integer
+   */
+  rankPosition: number;
+};
+
+/**
+ * @description OK
+ */
+export type GetRankChoiceVoters200 = ModelsRankChoiceVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetRankChoiceVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetRankChoiceVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetRankChoiceVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetRankChoiceVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetRankChoiceVoters500 = ErrsAPIError;
+
+export type GetRankChoiceVotersQueryResponse = GetRankChoiceVoters200;
+
+export type GetRankChoiceVotersQuery = {
+  Response: GetRankChoiceVoters200;
+  PathParams: GetRankChoiceVotersPathParams;
+  Errors:
+    | GetRankChoiceVoters400
+    | GetRankChoiceVoters401
+    | GetRankChoiceVoters403
+    | GetRankChoiceVoters404
+    | GetRankChoiceVoters500;
+};
+
 export type SubmitRankingPathParams = {
   /**
    * @description Trip ID
@@ -6701,6 +6865,67 @@ export type DeletePollOptionMutation = {
     | DeletePollOption500;
 };
 
+export type GetVoteOptionVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+  /**
+   * @description Option ID
+   * @type string
+   */
+  optionId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetVoteOptionVoters200 = ModelsOptionVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetVoteOptionVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetVoteOptionVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetVoteOptionVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetVoteOptionVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetVoteOptionVoters500 = ErrsAPIError;
+
+export type GetVoteOptionVotersQueryResponse = GetVoteOptionVoters200;
+
+export type GetVoteOptionVotersQuery = {
+  Response: GetVoteOptionVoters200;
+  PathParams: GetVoteOptionVotersPathParams;
+  Errors:
+    | GetVoteOptionVoters400
+    | GetVoteOptionVoters401
+    | GetVoteOptionVoters403
+    | GetVoteOptionVoters404
+    | GetVoteOptionVoters500;
+};
+
 export type CastVotePathParams = {
   /**
    * @description Trip ID
@@ -6767,6 +6992,62 @@ export type CastVoteMutation = {
     | CastVote404
     | CastVote422
     | CastVote500;
+};
+
+export type GetVotePollVotersPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Poll ID
+   * @type string
+   */
+  pollId: string;
+};
+
+/**
+ * @description OK
+ */
+export type GetVotePollVoters200 = ModelsPollVotersResponse;
+
+/**
+ * @description Bad Request
+ */
+export type GetVotePollVoters400 = ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type GetVotePollVoters401 = ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type GetVotePollVoters403 = ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type GetVotePollVoters404 = ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type GetVotePollVoters500 = ErrsAPIError;
+
+export type GetVotePollVotersQueryResponse = GetVotePollVoters200;
+
+export type GetVotePollVotersQuery = {
+  Response: GetVotePollVoters200;
+  PathParams: GetVotePollVotersPathParams;
+  Errors:
+    | GetVotePollVoters400
+    | GetVotePollVoters401
+    | GetVotePollVoters403
+    | GetVotePollVoters404
+    | GetVotePollVoters500;
 };
 
 export type GetPaginatedCommentsPathParams = {
