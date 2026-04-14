@@ -140,6 +140,11 @@ const CreatePollSheet = forwardRef<
         });
       }
       close();
+      toast.show({
+        message: "Poll created!",
+        subtitle: "Your trip will get a notification to vote.",
+        action: { label: "Dismiss", onPress: () => {} },
+      });
       onCreated?.();
     } catch (e) {
       console.error("Failed to create poll:", e);
