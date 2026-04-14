@@ -15,7 +15,7 @@ type SpinnerProps = {
 };
 
 export default function Spinner({
-  size = 28,
+  size = 24,
   color = "brand500",
 }: SpinnerProps) {
   const rotation = useSharedValue(0);
