@@ -1,8 +1,8 @@
 import { Box, Text } from "@/design-system";
 import { Image } from "expo-image";
 import { ScrollView } from "react-native";
+import { Elevation } from "@/design-system/tokens/elevation";
 import {
-  HOME_CARD_FLOATING_SHADOW,
   HOME_RECOMMENDED_CARD_WIDTH,
   RECOMMENDED_DESTINATIONS,
 } from "./constants";
@@ -10,22 +10,17 @@ import {
 export function RecommendedTripsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <Box
-        flexDirection="row"
-        gap="sm"
-        paddingHorizontal="sm"
-        paddingVertical="sm"
-      >
+      <Box flexDirection="row" gap="sm" paddingHorizontal="sm">
         {RECOMMENDED_DESTINATIONS.map((destination, index) => (
           <Box
             key={destination.id}
             width={HOME_RECOMMENDED_CARD_WIDTH}
-            borderRadius="md"
+            borderRadius="lg"
             backgroundColor="white"
             padding="xs"
-            gap="sm"
+            gap="xs"
             style={[
-              HOME_CARD_FLOATING_SHADOW,
+              Elevation.sm,
               index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined,
             ]}
           >
@@ -37,7 +32,7 @@ export function RecommendedTripsRow() {
               />
             </Box>
             <Box gap="xxs">
-              <Text variant="bodySmStrong" color="gray900">
+              <Text variant="bodyStrong" color="gray950">
                 {destination.title}
               </Text>
               <Text variant="bodyXsDefault" color="gray500" numberOfLines={3}>
