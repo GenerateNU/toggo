@@ -89,11 +89,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Box flexDirection="row" alignItems="center" gap="xs">
             <Icon size={resolved.iconSize} color={iconColor} />
             <Text
-<<<<<<< HEAD
-              variant="bodyMedium"
-=======
               variant="bodyStrong"
->>>>>>> 692cd1ab186478de828cf676290b9d4ea640d0ff
               color={resolved.contentColor as ColorName}
               numberOfLines={1}
               style={{ flexShrink: 1 }}
