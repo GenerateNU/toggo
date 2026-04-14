@@ -2,21 +2,10 @@ import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { Avatar, Box, Text } from "@/design-system";
 import { Shadow } from "@/design-system/tokens/elevation";
 import { getFirstName } from "@/utils/user-display-name";
+import { MAX_VISIBLE_MEMBERS } from "./constants";
+import type { MemberPreview, TripMemberPreviewRowProps } from "./types";
 
-const MAX_VISIBLE_MEMBERS = 3;
 const AVATAR_OVERLAP = -6;
-
-type TripMemberPreviewRowProps = {
-  tripId: string;
-  currentUserId?: string | null;
-  textSize?: "default" | "small";
-};
-
-type MemberPreview = {
-  id: string;
-  name: string;
-  profilePhotoUrl?: string;
-};
 
 type MemberSummaryTextProps = {
   members: MemberPreview[];

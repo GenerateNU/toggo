@@ -14,6 +14,8 @@ export const HOME_LOGO_LINE_HEIGHT = 32;
 export const HOME_TRIP_TITLE_FONT_SIZE = 18;
 export const HOME_TRIP_TITLE_LINE_HEIGHT = 24;
 
+export const MAX_VISIBLE_MEMBERS = 3;
+
 export const HOME_CARD_FLOATING_SHADOW = {
   shadowColor: "#000000",
   shadowOffset: { width: 0, height: 2 },
