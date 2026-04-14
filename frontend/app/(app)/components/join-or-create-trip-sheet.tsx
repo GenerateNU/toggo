@@ -135,10 +135,7 @@ export function JoinOrCreateTripSheet({
   };
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      onClose={handleSheetClose}
-    >
+    <BottomSheet ref={bottomSheetRef} onClose={handleSheetClose}>
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="md">
         <Box flexDirection="row" justifyContent="flex-end">
           <TouchableOpacity
