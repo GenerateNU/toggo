@@ -32,6 +32,8 @@ interface BottomSheetModalProps {
   onChange?: (index: number) => void;
   disableClose?: boolean;
   keyboardBehavior?: "interactive" | "extend" | "fillParent";
+  /** When true, children are rendered directly without BottomSheetScrollView wrapper */
+  disableScrollView?: boolean;
 }
 
 type Ref = BottomSheetMethods;
@@ -47,6 +49,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       onClose,
       disableClose = false,
       keyboardBehavior = "interactive",
+      disableScrollView = false,
     },
     ref,
   ) => {
@@ -145,18 +148,24 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
             overflow: "hidden",
           }}
         >
-          <BottomSheetScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              paddingHorizontal: Layout.spacing.xs,
-              paddingVertical: Layout.spacing.sm,
-              paddingBottom: footer ? 100 : Layout.spacing.sm,
-            }}
-          >
+          {disableScrollView ? (
             <InsideBottomSheetContext.Provider value={true}>
               {children}
             </InsideBottomSheetContext.Provider>
-          </BottomSheetScrollView>
+          ) : (
+            <BottomSheetScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{
+                paddingHorizontal: Layout.spacing.xs,
+                paddingVertical: Layout.spacing.sm,
+                paddingBottom: footer ? 100 : Layout.spacing.sm,
+              }}
+            >
+              <InsideBottomSheetContext.Provider value={true}>
+                {children}
+              </InsideBottomSheetContext.Provider>
+            </BottomSheetScrollView>
+          )}
         </BottomSheet>
       </Portal>
     );
