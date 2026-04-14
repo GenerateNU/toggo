@@ -1,4 +1,4 @@
-# Toggo
+# toggo [![DeepWiki](https://img.shields.io/badge/DeepWiki-Docs-blue)](https://deepwiki.com/GenerateNU/toggo)
 
 ![frontend](https://github.com/GenerateNU/toggo/actions/workflows/frontend.yml/badge.svg)
 ![backend](https://github.com/GenerateNU/toggo/actions/workflows/backend.yml/badge.svg)
