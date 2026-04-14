@@ -200,7 +200,9 @@ export default function Trip() {
         },
       });
     } catch {
-      toast.show({ message: "Couldn't load map activities. Please try again." });
+      toast.show({
+        message: "Couldn't load map activities. Please try again.",
+      });
     } finally {
       setIsOpeningMap(false);
     }

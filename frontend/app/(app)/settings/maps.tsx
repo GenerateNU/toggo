@@ -1,6 +1,14 @@
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
-import { BackButton, Box, EmptyState, Spinner, Text, Toggle, useToast } from "@/design-system";
+import {
+  BackButton,
+  Box,
+  EmptyState,
+  Spinner,
+  Text,
+  Toggle,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { Stack } from "expo-router";
@@ -58,7 +66,9 @@ export default function MapsSettingsScreen() {
       });
       await refreshCurrentUser();
     } catch {
-      toast.show({ message: "Couldn't update map settings. Please try again." });
+      toast.show({
+        message: "Couldn't update map settings. Please try again.",
+      });
     }
   };
 

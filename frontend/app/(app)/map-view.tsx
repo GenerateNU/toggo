@@ -81,59 +81,59 @@ function ActivityDetailSheetBody({
   return (
     <Pressable onPress={onOpenDirections}>
       <Box padding="lg" gap="md">
-      <Box flexDirection="row" gap="md" alignItems="flex-start">
-        {imageUri ? (
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.activityImage}
-            contentFit="cover"
-            transition={200}
-          />
-        ) : (
-          <Box
-            width={ACTIVITY_IMAGE_SIZE}
-            height={ACTIVITY_IMAGE_SIZE}
-            borderRadius="md"
-            backgroundColor="gray100"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Icon icon={MapPin} size="md" color="gray400" />
-          </Box>
-        )}
-        <Box flex={1} gap="xs">
-          <Text variant="headingSm" color="gray900" numberOfLines={2}>
-            {activity.name}
-          </Text>
-          <Text variant="bodySmDefault" color="gray500" numberOfLines={3}>
-            {formatActivityLocationLine(activity)}
-          </Text>
-          {scheduleLine ? (
-            <Box flexDirection="row" alignItems="center" gap="xs">
-              <Icon icon={Calendar} size="xs" color="gray400" />
-              <Text
-                variant="bodyXsDefault"
-                color="gray500"
-                style={styles.scheduleText}
-              >
-                {scheduleLine}
-              </Text>
+        <Box flexDirection="row" gap="md" alignItems="flex-start">
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={styles.activityImage}
+              contentFit="cover"
+              transition={200}
+            />
+          ) : (
+            <Box
+              width={ACTIVITY_IMAGE_SIZE}
+              height={ACTIVITY_IMAGE_SIZE}
+              borderRadius="md"
+              backgroundColor="gray100"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Icon icon={MapPin} size="md" color="gray400" />
             </Box>
-          ) : null}
+          )}
+          <Box flex={1} gap="xs">
+            <Text variant="headingSm" color="gray900" numberOfLines={2}>
+              {activity.name}
+            </Text>
+            <Text variant="bodySmDefault" color="gray500" numberOfLines={3}>
+              {formatActivityLocationLine(activity)}
+            </Text>
+            {scheduleLine ? (
+              <Box flexDirection="row" alignItems="center" gap="xs">
+                <Icon icon={Calendar} size="xs" color="gray400" />
+                <Text
+                  variant="bodyXsDefault"
+                  color="gray500"
+                  style={styles.scheduleText}
+                >
+                  {scheduleLine}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
         </Box>
+        <Text variant="bodyDefault" color="gray600">
+          {activity.description?.trim()
+            ? activity.description.trim()
+            : "No description for this activity yet."}
+        </Text>
+        <Button
+          layout="textOnly"
+          variant="Primary"
+          label={`Open in ${providerLabel}`}
+          onPress={onOpenDirections}
+        />
       </Box>
-      <Text variant="bodyDefault" color="gray600">
-        {activity.description?.trim()
-          ? activity.description.trim()
-          : "No description for this activity yet."}
-      </Text>
-      <Button
-        layout="textOnly"
-        variant="Primary"
-        label={`Open in ${providerLabel}`}
-        onPress={onOpenDirections}
-      />
-    </Box>
     </Pressable>
   );
 }
@@ -286,11 +286,15 @@ export default function MapViewScreen() {
   const openDirections = async (activity: MapViewActivityForMap) => {
     const lat = activity.location_lat;
     const lng = activity.location_lng;
-    const label = encodeURIComponent(activity.location_name?.trim() || activity.name);
+    const label = encodeURIComponent(
+      activity.location_name?.trim() || activity.name,
+    );
 
     try {
       if (mapProvider === "apple") {
-        await Linking.openURL(`http://maps.apple.com/?ll=${lat},${lng}&q=${label}`);
+        await Linking.openURL(
+          `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
+        );
         return;
       }
 
