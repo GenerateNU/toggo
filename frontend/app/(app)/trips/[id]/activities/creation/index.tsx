@@ -6,13 +6,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  TextInput,
-} from "react-native";
+import { Alert, Image, Pressable, ScrollView, TextInput } from "react-native";
 
 export default function CreateActivity() {
   const {

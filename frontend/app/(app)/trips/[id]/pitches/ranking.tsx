@@ -3,7 +3,15 @@ import { useRankingData } from "@/api/pitches/custom/useRankingData";
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { useSubmitRanking } from "@/api/polls/useSubmitRanking";
 import { useGetTrip } from "@/api/trips/useGetTrip";
-import { Box, Button, Icon, Screen, Spinner, Text, useToast } from "@/design-system";
+import {
+  Box,
+  Button,
+  Icon,
+  Screen,
+  Spinner,
+  Text,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import type {
   ModelsOptionWithScore,

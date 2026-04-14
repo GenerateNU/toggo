@@ -18,12 +18,7 @@ import * as ExpoImagePicker from "expo-image-picker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { MessageCircle, MoreHorizontal } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,

@@ -17,11 +17,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { ArrowLeft, Calendar, MapPin, Search, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

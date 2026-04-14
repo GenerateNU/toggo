@@ -2,7 +2,15 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Button, Icon, Screen, Spinner, Text, TextField } from "@/design-system";
+import {
+  Box,
+  Button,
+  Icon,
+  Screen,
+  Spinner,
+  Text,
+  TextField,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -15,12 +23,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -145,7 +148,7 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <Spinner size={36}/>
+            <Spinner size={36} />
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />

@@ -14,11 +14,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { MapPinned, MessageCircle, Plus } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 

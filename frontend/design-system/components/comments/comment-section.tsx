@@ -10,12 +10,7 @@ import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout, ModalHandle } from "@/design-system/tokens/layout";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import BottomSheetModal from "../bottom-sheet/bottom-sheet";
 import Comment, { CommentData } from "./comment";
 import { Spinner } from "@/design-system";
