@@ -19,12 +19,10 @@ function Tag({
   icon,
   label,
   truncate = false,
-  darken = false,
 }: {
   icon?: React.ReactNode;
   label: string;
   truncate?: boolean;
-  darken?: boolean;
 }) {
   return (
     <Box
@@ -33,7 +31,7 @@ function Tag({
       flexShrink={truncate ? 1 : 0}
       minWidth={truncate ? 0 : undefined}
       gap="xxs"
-      backgroundColor={darken ? "gray50" : "gray25"}
+      backgroundColor="gray50"
       borderRadius="sm"
       paddingHorizontal="xs"
       paddingVertical="xxs"
@@ -107,14 +105,13 @@ export function ItineraryActivityCard({
           </Text>
 
           <Box flexDirection="row" alignItems="center" gap="xxs">
-            {priceLabel && <Tag label={priceLabel} />}
+            <Tag label={priceLabel ?? "Free"} />
 
             {activity.location_name && (
               <Tag
                 icon={<MapPin size={12} color={ColorPalette.gray500} />}
                 label={activity.location_name}
                 truncate
-                darken
               />
             )}
           </Box>
@@ -126,7 +123,7 @@ export function ItineraryActivityCard({
           )}
         </Box>
 
-        {draggable && <GripVertical size={16} color={ColorPalette.gray300} />}
+        {draggable && <GripVertical size={16} color={ColorPalette.gray500} />}
       </Animated.View>
     </GestureDetector>
   );
