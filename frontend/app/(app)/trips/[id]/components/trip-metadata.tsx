@@ -71,7 +71,7 @@ export function TripMetadata({
         </Box>
       </Box>
 
-      <Box gap="xs">
+      <Box flexDirection="row" alignItems="center" gap="md">
         <Pressable
           onPress={onDatePress}
           style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
@@ -79,8 +79,14 @@ export function TripMetadata({
           accessibilityLabel="Set trip dates"
         >
           <Box flexDirection="row" alignItems="center" gap="xs">
-            <Calendar size={16} color={ColorPalette.gray500} />
-            <Text variant="bodySmDefault" color="gray500">
+            <Calendar
+              size={16}
+              color={tripDate ? ColorPalette.gray500 : ColorPalette.blue500}
+            />
+            <Text
+              variant="bodySmDefault"
+              style={{ color: tripDate ? ColorPalette.gray500 : ColorPalette.blue500 }}
+            >
               {tripDate ?? "Add dates"}
             </Text>
           </Box>
@@ -92,8 +98,14 @@ export function TripMetadata({
           accessibilityLabel="Set trip location"
         >
           <Box flexDirection="row" alignItems="center" gap="xs">
-            <MapPin size={16} color={ColorPalette.gray500} />
-            <Text variant="bodySmDefault" color="gray500">
+            <MapPin
+              size={16}
+              color={tripLocation ? ColorPalette.gray500 : ColorPalette.blue500}
+            />
+            <Text
+              variant="bodySmDefault"
+              style={{ color: tripLocation ? ColorPalette.gray500 : ColorPalette.blue500 }}
+            >
               {tripLocation ?? "Add location"}
             </Text>
           </Box>
