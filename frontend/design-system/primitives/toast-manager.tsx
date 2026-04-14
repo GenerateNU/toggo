@@ -12,7 +12,7 @@ import { Animated, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
-import Toast from "./toast";
+import Toast, { ToastVariant } from "./toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ type ToastAction = {
 type ToastConfig = {
   message: string;
   subtitle?: string;
-  variant?: "pollSent" | "default";
+  variant?: ToastVariant;
   action?: ToastAction;
   showClose?: boolean;
   duration?: number;

@@ -9,10 +9,12 @@ import { Layout } from "../tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+export type ToastVariant = "success" | "neutral";
+
 export type ToastProps = {
   message: string;
   subtitle?: string;
-  variant?: "pollSent" | "default";
+  variant?: ToastVariant;
   action?: {
     label: string;
     onPress: () => void;
@@ -21,65 +23,52 @@ export type ToastProps = {
   onClose: () => void;
 };
 
-// ─── Poll-sent style (Figma 3859-27171) ──────────────────────────────────────
+// ─── Component ───────────────────────────────────────────────────────────────
 
-function PollSentToast({
+export default function Toast({
   message,
   subtitle,
-  onClose,
-}: Pick<ToastProps, "message" | "subtitle" | "onClose">) {
-  return (
-    <Pressable onPress={onClose}>
-      <Box style={styles.pollSentContainer}>
-        {/* Orange circle check icon */}
-        <Box style={styles.pollSentIcon}>
-          <Check size={22} color={ColorPalette.white} strokeWidth={2.5} />
-        </Box>
-
-        {/* Text */}
-        <Box style={styles.pollSentText}>
-          <Text variant="headingSm" color="gray950" numberOfLines={1}>
-            {message}
-          </Text>
-          {subtitle ? (
-            <Text
-              variant="bodySmDefault"
-              style={styles.pollSentSubtitle}
-              numberOfLines={2}
-            >
-              {subtitle}
-            </Text>
-          ) : null}
-        </Box>
-      </Box>
-    </Pressable>
-  );
-}
-
-// ─── Default style ────────────────────────────────────────────────────────────
-
-function DefaultToast({
-  message,
+  variant = "neutral",
   action,
   showClose = true,
   onClose,
 }: ToastProps) {
+  const iconColor =
+    variant === "success" ? ColorPalette.brand500 : ColorPalette.gray950;
+
   return (
-    <Box style={styles.toast}>
-      <Box style={styles.checkCircle}>
-        <Check size={16} color={ColorPalette.gray900} strokeWidth={2.5} />
+    <Box style={styles.container}>
+      <Box style={styles.content}>
+        <Check size={CoreSize.iconSm} color={iconColor} strokeWidth={2.5} />
+
+        {variant === "success" ? (
+          <Box style={styles.textStack}>
+            <Text variant="headingSm" color="gray950" numberOfLines={1}>
+              {message}
+            </Text>
+            {subtitle ? (
+              <Text
+                variant="bodySmDefault"
+                style={styles.subtitle}
+                numberOfLines={2}
+              >
+                {subtitle}
+              </Text>
+            ) : null}
+          </Box>
+        ) : (
+          <Text
+            variant="bodyMedium"
+            color="gray950"
+            style={styles.message}
+            numberOfLines={2}
+          >
+            {message}
+          </Text>
+        )}
       </Box>
 
-      <Text
-        variant="bodySmMedium"
-        color="gray900"
-        style={styles.message}
-        numberOfLines={2}
-      >
-        {message}
-      </Text>
-
-      {action && (
+      {action ? (
         <Pressable
           onPress={() => {
             try {
@@ -90,91 +79,57 @@ function DefaultToast({
           }}
           hitSlop={8}
         >
-          <Text variant="bodySmMedium" style={styles.actionLabel}>
+          <Text variant="bodyStrong" style={styles.actionLabel}>
             {action.label}
           </Text>
         </Pressable>
-      )}
-
-      {showClose && !action && (
-        <Pressable onPress={onClose} hitSlop={8} style={styles.closeButton}>
-          <X size={24} color={ColorPalette.gray500} />
+      ) : showClose ? (
+        <Pressable
+          onPress={onClose}
+          hitSlop={8}
+          accessibilityLabel="Dismiss"
+          accessibilityRole="button"
+        >
+          <X size={CoreSize.iconSm} color={ColorPalette.gray950} />
         </Pressable>
-      )}
+      ) : null}
     </Box>
   );
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
-
-export default function Toast(props: ToastProps) {
-  if (props.variant === "pollSent" || props.subtitle !== undefined) {
-    return <PollSentToast {...props} />;
-  }
-  return <DefaultToast {...props} />;
-}
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const ICON_SIZE = 48;
-
 const styles = StyleSheet.create({
-  // Default toast
-  toast: {
+  container: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.md,
-    paddingVertical: 14,
+    borderRadius: CornerRadius.xl,
+    paddingVertical: Layout.spacing.sm + Layout.spacing.xxs,
     paddingHorizontal: Layout.spacing.sm,
-    gap: 12,
-    shadowColor: ColorPalette.gray900,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
+    gap: Layout.spacing.sm,
+    shadowColor: ColorPalette.black,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  checkCircle: {
-    width: CoreSize.sm,
-    height: CoreSize.sm,
+  content: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: Layout.spacing.xs,
   },
   message: {
     flex: 1,
   },
-  actionLabel: {
-    color: ColorPalette.statusInfo,
-    fontWeight: "600",
-  },
-  closeButton: {
-    padding: 2,
-  },
-
-  // Poll-sent toast (matches Figma 3859-27171)
-  pollSentContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.md,
-    borderWidth: 1,
-    borderColor: ColorPalette.gray200,
-    padding: Layout.spacing.xs,
-    gap: Layout.spacing.sm,
-  },
-  pollSentIcon: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: ICON_SIZE / 2,
-    backgroundColor: ColorPalette.brand500,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pollSentText: {
+  textStack: {
     flex: 1,
-    gap: Layout.spacing.xxs,
   },
-  pollSentSubtitle: {
+  subtitle: {
     color: ColorPalette.gray500,
+  },
+  actionLabel: {
+    color: ColorPalette.blue500,
   },
 });
