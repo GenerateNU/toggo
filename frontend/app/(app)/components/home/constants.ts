@@ -5,6 +5,15 @@ export const HOME_UPCOMING_IMAGE_HEIGHT = 170;
 export const HOME_PAST_TRIP_IMAGE_SIZE = 72;
 export const HOME_RECOMMENDED_CARD_WIDTH = 250;
 
+export const HOME_SECTION_VERTICAL_PADDING = 20;
+
+export const HOME_HEADER_BUTTON_SIZE = 36;
+export const HOME_LOGO_FONT_SIZE = 26;
+export const HOME_LOGO_LINE_HEIGHT = 32;
+
+export const HOME_TRIP_TITLE_FONT_SIZE = 18;
+export const HOME_TRIP_TITLE_LINE_HEIGHT = 24;
+
 export const HOME_CARD_FLOATING_SHADOW = {
   shadowColor: "#000000",
   shadowOffset: { width: 0, height: 2 },

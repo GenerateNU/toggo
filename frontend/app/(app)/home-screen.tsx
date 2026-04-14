@@ -6,7 +6,11 @@ import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
 import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
+  HOME_HEADER_BUTTON_SIZE,
+  HOME_LOGO_FONT_SIZE,
+  HOME_LOGO_LINE_HEIGHT,
   HOME_NULL_DATE_DISPLAY,
+  HOME_SECTION_VERTICAL_PADDING,
   HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
 import { HomeUpcomingEmptyCard } from "@/app/(app)/components/home/home-upcoming-empty-card";
@@ -323,7 +327,7 @@ export default function HomeScreen() {
           <Text
             variant="logoXl"
             color="brand500"
-            style={{ fontSize: 26, lineHeight: 32 }}
+            style={{ fontSize: HOME_LOGO_FONT_SIZE, lineHeight: HOME_LOGO_LINE_HEIGHT }}
           >
             toggo
           </Text>
@@ -333,8 +337,8 @@ export default function HomeScreen() {
             accessibilityLabel="Create a trip"
           >
             <Box
-              width={36}
-              height={36}
+              width={HOME_HEADER_BUTTON_SIZE}
+              height={HOME_HEADER_BUTTON_SIZE}
               borderRadius="sm"
               backgroundColor="gray50"
               alignItems="center"
@@ -369,7 +373,7 @@ export default function HomeScreen() {
                 <Box
                 paddingHorizontal="sm"
                 gap="sm"
-                style={{ paddingTop: 20 }}
+                style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING }}
               >
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
@@ -399,7 +403,7 @@ export default function HomeScreen() {
                     paddingLeft: Layout.spacing.sm,
                     paddingRight: Layout.spacing.sm,
                   }}
-                  style={{ paddingBottom: 20 }}
+                  style={{ paddingBottom: HOME_SECTION_VERTICAL_PADDING }}
                 >
                   <Box flexDirection="row" gap="sm">
                     {upcoming.map((trip) => {
@@ -457,7 +461,7 @@ export default function HomeScreen() {
           <Box
             paddingHorizontal="sm"
             gap="sm"
-            style={{ paddingTop: 20, paddingBottom: 20 }}
+            style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING, paddingBottom: HOME_SECTION_VERTICAL_PADDING }}
           >
             <Text variant="headingMd" color="gray950">
               Past Trips
@@ -485,7 +489,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" style={{ paddingTop: 20, paddingBottom: 20 }}>
+          <Box gap="sm" style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING, paddingBottom: HOME_SECTION_VERTICAL_PADDING }}>
             <Box paddingHorizontal="sm">
               <Text variant="headingMd" color="gray950">
                 Recommended Trips

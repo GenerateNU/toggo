@@ -8,6 +8,8 @@ import { BellDot, CalendarDays, MapPin } from "lucide-react-native";
 import { Pressable } from "react-native";
 import {
   HOME_CARD_FLOATING_SHADOW,
+  HOME_TRIP_TITLE_FONT_SIZE,
+  HOME_TRIP_TITLE_LINE_HEIGHT,
   HOME_UPCOMING_IMAGE_HEIGHT,
 } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
@@ -87,9 +89,9 @@ export function UpcomingTripHeroCard({
           <Text
             color="gray950"
             style={{
-              fontSize: 18,
+              fontSize: HOME_TRIP_TITLE_FONT_SIZE,
               fontFamily: FontFamily.semiBold,
-              lineHeight: 24,
+              lineHeight: HOME_TRIP_TITLE_LINE_HEIGHT,
             }}
           >
             {trip.name?.trim() || "Untitled trip"}
