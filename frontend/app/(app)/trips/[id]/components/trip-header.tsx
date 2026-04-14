@@ -11,19 +11,26 @@ const TRIP_HEADER_IMAGE_HEIGHT = 300;
 
 type TripHeaderProps = {
   coverImageUrl?: string;
+  absolute?: boolean;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TripHeader({ coverImageUrl }: TripHeaderProps) {
+export function TripHeader({ coverImageUrl, absolute = true }: TripHeaderProps) {
   return coverImageUrl ? (
     <Image
       source={{ uri: coverImageUrl }}
-      style={styles.coverImage}
+      style={[styles.coverImage, absolute ? styles.absoluteCoverImage : undefined]}
       contentFit="cover"
     />
   ) : (
-    <View style={[styles.coverImage, styles.coverImageFallback]}>
+    <View
+      style={[
+        styles.coverImage,
+        styles.coverImageFallback,
+        absolute ? styles.absoluteCoverImage : undefined,
+      ]}
+    >
       <Logo color="white" size="xxxl" />
     </View>
   );
@@ -33,11 +40,13 @@ export function TripHeader({ coverImageUrl }: TripHeaderProps) {
 
 const styles = StyleSheet.create({
   coverImage: {
+    height: TRIP_HEADER_IMAGE_HEIGHT,
+  },
+  absoluteCoverImage: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: TRIP_HEADER_IMAGE_HEIGHT,
   },
   coverImageFallback: {
     backgroundColor: ColorPalette.brand400,

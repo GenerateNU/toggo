@@ -1,7 +1,10 @@
-import { Box, Chip, Text } from "@/design-system";
+import { Avatar, AvatarStack, Box, Text } from "@/design-system";
+import type { AvatarStackMember } from "@/design-system/components/avatars/avatar-stack";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
-import { Calendar, MapPin, Settings } from "lucide-react-native";
+import { Calendar, MapPin, Plus, Settings } from "lucide-react-native";
+import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -16,7 +19,9 @@ type TripMetadataProps = {
   tripName?: string;
   tripDate: string | null;
   tripLocation?: string;
+  members: AvatarStackMember[];
   isLoading: boolean;
+  isCollapsed: boolean;
   onInviteFriends: () => void;
   onSettingsPress: () => void;
   onDatePress: () => void;
@@ -29,19 +34,32 @@ export function TripMetadata({
   tripName,
   tripDate,
   tripLocation,
+  members,
   isLoading,
+  isCollapsed,
   onInviteFriends,
   onSettingsPress,
   onDatePress,
   onLocationPress,
 }: TripMetadataProps) {
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
+  const title = tripName?.trim() || "Trip";
+  const showLocationAction = !tripLocation;
+  const isSoloTrip = members.length <= 1;
+  const primaryMember = members[0];
+
   return (
-    <Box gap="sm" paddingHorizontal="sm" paddingTop="sm">
+    <Box
+      gap={isCollapsed ? "xs" : "xxs"}
+      paddingHorizontal="sm"
+      paddingTop="sm"
+      paddingBottom="xs"
+    >
       <Box
         flexDirection="row"
-        alignItems="flex-start"
-        justifyContent="space-between"
-        gap="md"
+        alignItems="center"
+        justifyContent={isCollapsed ? "center" : "space-between"}
+        gap="xxs"
       >
         {isLoading ? (
           <Box
@@ -51,54 +69,106 @@ export function TripMetadata({
             borderRadius="xs"
           />
         ) : (
-          <Box flex={1} style={{ maxWidth: TITLE_MAX_WIDTH }}>
-            <Text variant="headingXl" color="gray950">
-              {tripName ?? "Trip"}
+          <Pressable
+            onPress={() => setIsTitleExpanded((previous) => !previous)}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.7 : 1,
+              flex: isCollapsed ? 0 : 1,
+              maxWidth: isCollapsed ? "100%" : TITLE_MAX_WIDTH,
+            })}
+            accessibilityRole="button"
+            accessibilityLabel="Toggle full trip name"
+          >
+            <Text
+              variant={isCollapsed ? "bodySmMedium" : "headingXl"}
+              color="gray950"
+              numberOfLines={isCollapsed ? 1 : isTitleExpanded ? 0 : 1}
+              ellipsizeMode="tail"
+              style={isCollapsed ? styles.collapsedTitle : undefined}
+            >
+              {title}
             </Text>
-          </Box>
+          </Pressable>
         )}
 
-        <Box flexDirection="row" alignItems="center" gap="sm" flexShrink={0}>
-          <Chip label="+ Invite Friends" onPress={onInviteFriends} />
-          <Pressable
-            onPress={onSettingsPress}
-            hitSlop={styles.hitSlop}
-            accessibilityRole="button"
-            accessibilityLabel="Trip settings"
-          >
-            <Settings size={20} color={ColorPalette.gray950} />
-          </Pressable>
-        </Box>
+        {!isCollapsed && (
+          <Box flexDirection="row" alignItems="center" gap="xs" flexShrink={0}>
+            {isSoloTrip ? (
+              <Box flexDirection="row" alignItems="center">
+                {primaryMember ? (
+                  <Avatar
+                    variant="sm"
+                    seed={primaryMember.userId}
+                    profilePhoto={primaryMember.profilePhotoUrl ?? undefined}
+                  />
+                ) : null}
+                <Pressable
+                  onPress={onInviteFriends}
+                  style={({ pressed }) => [
+                    styles.invitePlusButton,
+                    pressed ? styles.pressedInvitePlusButton : null,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Invite friends"
+                >
+                  <Plus size={14} color={ColorPalette.blue500} />
+                </Pressable>
+              </Box>
+            ) : (
+              <AvatarStack members={members} showName={false} />
+            )}
+            <Pressable
+              onPress={onSettingsPress}
+              hitSlop={styles.hitSlop}
+              accessibilityRole="button"
+              accessibilityLabel="Trip settings"
+            >
+              <Settings size={20} color={ColorPalette.gray950} />
+            </Pressable>
+          </Box>
+        )}
       </Box>
 
-      <Box gap="xs">
-        <Pressable
-          onPress={onDatePress}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          accessibilityRole="button"
-          accessibilityLabel="Set trip dates"
-        >
-          <Box flexDirection="row" alignItems="center" gap="xs">
-            <Calendar size={16} color={ColorPalette.gray500} />
-            <Text variant="bodySmDefault" color="gray500">
-              {tripDate ?? "Add dates"}
-            </Text>
-          </Box>
-        </Pressable>
-        <Pressable
-          onPress={onLocationPress}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          accessibilityRole="button"
-          accessibilityLabel="Set trip location"
-        >
-          <Box flexDirection="row" alignItems="center" gap="xs">
-            <MapPin size={16} color={ColorPalette.gray500} />
-            <Text variant="bodySmDefault" color="gray500">
-              {tripLocation ?? "Add location"}
-            </Text>
-          </Box>
-        </Pressable>
-      </Box>
+      {!isCollapsed && (
+        <Box flexDirection="row" alignItems="center" gap="xs">
+          <Pressable
+            onPress={onDatePress}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            accessibilityRole="button"
+            accessibilityLabel="Set trip dates"
+          >
+            <Box flexDirection="row" alignItems="center" gap="xxs">
+              <Calendar size={16} color={ColorPalette.gray500} />
+              <Text variant="bodySmDefault" color="gray500">
+                {tripDate ?? "Add dates"}
+              </Text>
+            </Box>
+          </Pressable>
+          <Text variant="bodySmDefault" color="gray500">
+            •
+          </Text>
+          <Pressable
+            onPress={onLocationPress}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            accessibilityRole="button"
+            accessibilityLabel="Set trip location"
+          >
+            <Box flexDirection="row" alignItems="center" gap="xxs">
+              <MapPin
+                size={16}
+                color={showLocationAction ? ColorPalette.blue500 : ColorPalette.gray500}
+              />
+              <Text
+                variant={showLocationAction ? "bodySmMedium" : "bodySmDefault"}
+                color="gray500"
+                style={showLocationAction ? styles.setLocationText : undefined}
+              >
+                {tripLocation ?? "Set location"}
+              </Text>
+            </Box>
+          </Pressable>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -111,6 +181,26 @@ const styles = StyleSheet.create({
     bottom: Layout.spacing.xs,
     left: Layout.spacing.xs,
     right: Layout.spacing.xs,
+  },
+  setLocationText: {
+    color: ColorPalette.blue500,
+  },
+  collapsedTitle: {
+    textAlign: "center",
+  },
+  invitePlusButton: {
+    width: 24,
+    height: 24,
+    borderRadius: CornerRadius.full,
+    backgroundColor: ColorPalette.blue25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: -Layout.spacing.xs,
+    borderWidth: 1,
+    borderColor: ColorPalette.white,
+  },
+  pressedInvitePlusButton: {
+    opacity: 0.7,
   },
 });
 

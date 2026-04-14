@@ -8,6 +8,7 @@ alias bd := dev-be
 alias fd := dev-fe
 alias fdt := dev-fe-tunnel
 alias fx := ios-fe
+alias fp := ios-fe-device
 alias fa := android-fe
 
 # Toggo Project Commands
@@ -114,6 +115,10 @@ dev-fe-tunnel:
 # Start iOS simulator (macOS only)
 ios-fe:
     cd frontend {{ sep }} bun ios
+
+# Build and run on a connected physical iOS device (macOS only)
+ios-fe-device:
+    cd frontend {{ sep }} bun ios:device
 
 # Start Android emulator
 android-fe:

@@ -7,6 +7,7 @@
     "tunnel": "doppler run --project frontend --config dev -- expo run --tunnel",
     "android": "doppler run --project frontend --config dev -- expo run:android",
     "ios": "doppler run --project frontend --config dev -- expo run:ios",
+    "ios:device": "doppler run --project frontend --config dev -- expo run:ios --device",
     "lint": "eslint '**/*.ts' '**/*.tsx'",
     "kubb": "kubb --debug",
     "lint:fix": "eslint '**/*.ts' '**/*.tsx' --fix",
