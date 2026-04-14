@@ -19,10 +19,12 @@ function Tag({
   icon,
   label,
   truncate = false,
+  darken = false,
 }: {
   icon?: React.ReactNode;
   label: string;
   truncate?: boolean;
+  darken?: boolean;
 }) {
   return (
     <Box
@@ -31,14 +33,14 @@ function Tag({
       flexShrink={truncate ? 1 : 0}
       minWidth={truncate ? 0 : undefined}
       gap="xxs"
-      backgroundColor="gray50"
+      backgroundColor={darken ? "gray50" : "gray25"}
       borderRadius="sm"
       paddingHorizontal="xs"
       paddingVertical="xxs"
     >
       {icon}
       <Text
-        variant="bodyXsDefault"
+        variant="bodySmMedium"
         numberOfLines={1}
         style={truncate ? { flexShrink: 1 } : undefined}
       >
@@ -100,7 +102,7 @@ export function ItineraryActivityCard({
         </Box>
 
         <Box flex={1} gap="xxs">
-          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
+          <Text variant="bodyStrong" color="gray950" numberOfLines={1}>
             {activity.name ?? "Unnamed Activity"}
           </Text>
 
@@ -112,6 +114,7 @@ export function ItineraryActivityCard({
                 icon={<MapPin size={12} color={ColorPalette.gray500} />}
                 label={activity.location_name}
                 truncate
+                darken
               />
             )}
           </Box>
@@ -137,7 +140,7 @@ const containerStyle = {
   gap: Layout.spacing.xs,
   padding: Layout.spacing.xs,
   backgroundColor: ColorPalette.white,
-  borderRadius: CornerRadius.xl,
+  borderRadius: CornerRadius.lg,
   ...Elevation.sm,
 };
 
