@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@/design-system";
+import { Box, Button, Spinner, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
@@ -7,7 +7,6 @@ import { Mic, Square, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActionSheetIOS,
-  ActivityIndicator,
   Alert,
   Platform,
   Pressable,
@@ -364,7 +363,7 @@ export function AudioPitchSheet({
                 alignItems="center"
                 justifyContent="center"
               >
-                <ActivityIndicator color={ColorPalette.white} />
+                <Spinner />
               </Box>
             ) : (
               <Pressable onPress={startRecording} style={styles.micBtn}>

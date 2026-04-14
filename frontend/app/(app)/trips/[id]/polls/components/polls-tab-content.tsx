@@ -1,9 +1,8 @@
 import { useGetPollsByTripID } from "@/api/polls/useGetPollsByTripID";
-import { Box, ErrorState, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
+import { Box, ErrorState, Spinner, Text } from "@/design-system";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import PollDetailSheet from "./poll-detail-sheet";
 import RankPollRow from "./rank-poll-row";
 import VotePollCard from "./vote-poll-card";
@@ -38,7 +37,7 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
   if (isLoading) {
     return (
       <Box alignItems="center" paddingVertical="xl">
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }

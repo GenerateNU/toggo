@@ -3,7 +3,7 @@ import { useRankingData } from "@/api/pitches/custom/useRankingData";
 import { useGetRankPollResults } from "@/api/polls/useGetRankPollResults";
 import { useSubmitRanking } from "@/api/polls/useSubmitRanking";
 import { useGetTrip } from "@/api/trips/useGetTrip";
-import { Box, Button, Icon, Screen, Text, useToast } from "@/design-system";
+import { Box, Button, Icon, Screen, Spinner, Text, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import type {
   ModelsOptionWithScore,
@@ -14,7 +14,7 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { MapPinPlus } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PitchPickerSheet } from "./components/pitch-picker-sheet";
 
@@ -203,7 +203,7 @@ export default function RankingPage() {
           justifyContent="center"
           backgroundColor="white"
         >
-          <ActivityIndicator />
+          <Spinner />
         </Box>
       </Screen>
     );

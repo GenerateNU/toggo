@@ -2,7 +2,7 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
+import { Box, Button, Icon, Screen, Spinner, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -16,7 +16,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   TouchableOpacity,
@@ -146,7 +145,7 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <ActivityIndicator size="large" color={ColorPalette.brand500} />
+            <Spinner size={32}/>
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
@@ -220,7 +219,7 @@ function SearchHeader({
         placeholder="Enter a city, neighborhood, or address"
         leftIcon={
           isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray400} />
+            <Spinner />
           ) : (
             <Icon icon={Search} color="gray400" size="sm" />
           )

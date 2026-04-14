@@ -11,7 +11,6 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout, ModalHandle } from "@/design-system/tokens/layout";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   StyleSheet,
@@ -19,6 +18,7 @@ import {
 } from "react-native";
 import BottomSheetModal from "../bottom-sheet/bottom-sheet";
 import Comment, { CommentData } from "./comment";
+import { Spinner } from "@/design-system";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ const SNAP_POINTS = ["90%"];
 const EmptyState = ({ loading }: { loading: boolean }) =>
   loading ? (
     <Box style={styles.emptyContainer}>
-      <ActivityIndicator color={ColorPalette.gray500} />
+      <Spinner />
     </Box>
   ) : (
     <Box style={styles.emptyContainer}>
@@ -63,7 +63,7 @@ const EmptyState = ({ loading }: { loading: boolean }) =>
 const LoadMoreFooter = ({ loading }: { loading: boolean }) =>
   loading ? (
     <Box style={styles.loadMoreFooter}>
-      <ActivityIndicator size="small" color={ColorPalette.gray500} />
+      <Spinner />
     </Box>
   ) : null;
 

@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   DateRangePicker,
+  Spinner,
   Text,
 } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -17,7 +18,6 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { ArrowLeft, Calendar, MapPin, Search, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -190,10 +190,7 @@ export function CreateTripSheet({
                 style={styles.searchBar}
               >
                 {isLoadingPredictions ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={ColorPalette.gray400}
-                  />
+                  <Spinner />
                 ) : (
                   <Search size={16} color={ColorPalette.gray400} />
                 )}

@@ -6,7 +6,7 @@ import { useDeletePitch } from "@/api/pitches/useDeletePitch";
 import { getPitchQueryKey, useGetPitch } from "@/api/pitches/useGetPitch";
 import { useUpdatePitch } from "@/api/pitches/useUpdatePitch";
 import { useUser } from "@/contexts/user";
-import { Avatar, Box, Icon, Text, useToast } from "@/design-system";
+import { Avatar, Box, Icon, Spinner, Text, useToast } from "@/design-system";
 import AvatarStack from "@/design-system/components/avatars/avatar-stack";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -19,7 +19,6 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { MessageCircle, MoreHorizontal } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -265,7 +264,7 @@ export default function PitchDetail() {
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Stack.Screen options={{ headerTitle: "Pitch" }} />
         <Box flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator />
+          <Spinner />
         </Box>
       </SafeAreaView>
     );

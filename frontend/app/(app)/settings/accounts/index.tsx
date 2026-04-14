@@ -1,12 +1,11 @@
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
-import { BackButton, Box, Text, TextField } from "@/design-system";
+import { BackButton, Box, Spinner, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -116,7 +115,7 @@ export default function AccountScreen() {
             accessibilityLabel={isEditing ? "Done" : "Edit"}
           >
             {isSaving ? (
-              <ActivityIndicator size="small" color="blue400" />
+              <Spinner />
             ) : (
               <Text
                 color={isEditing ? "gray950" : "blue400"}

@@ -11,6 +11,7 @@ import {
   Avatar,
   Box,
   DashedBorderBox,
+  Spinner,
   Text,
   TextField,
   useToast,
@@ -33,7 +34,7 @@ import {
 import { OptionRow, OPTION_LEFT_OFFSET } from "./poll-option-row";
 import { PollSettingsPanel } from "./poll-settings-panel";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -622,7 +623,7 @@ function RankResponsesContent({
   if (isLoading) {
     return (
       <Box alignItems="center" paddingVertical="lg">
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }
@@ -919,7 +920,7 @@ function VoteOptionVotersSheet({
 
         {isLoading ? (
           <Box alignItems="center" paddingVertical="md">
-            <ActivityIndicator color={ColorPalette.brand500} />
+            <Spinner />
           </Box>
         ) : voters.length === 0 ? (
           <Text variant="bodySmDefault" color="gray500">

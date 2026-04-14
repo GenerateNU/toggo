@@ -6,7 +6,7 @@ import {
 import RankPollCard from "@/app/(app)/trips/[id]/polls/components/rank-poll-card";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
 import PollDetailSheet from "@/app/(app)/trips/[id]/polls/components/poll-detail-sheet";
-import { Box, Divider, ErrorState, Screen, Text } from "@/design-system";
+import { Box, Divider, ErrorState, Screen, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import {
@@ -18,7 +18,6 @@ import Constants from "expo-constants";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Platform,
   RefreshControl,
   ScrollView,
@@ -157,7 +156,7 @@ function RankPollRow({
         padding="lg"
         style={styles.loadingCard}
       >
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }
@@ -284,7 +283,7 @@ export default function PollsScreen() {
     return (
       <Screen>
         <Box flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator color={ColorPalette.brand500} />
+          <Spinner />
         </Box>
       </Screen>
     );
@@ -406,7 +405,7 @@ function RankPollResultsRow({
       <>
         {showDivider && <Divider />}
         <Box alignItems="center" paddingVertical="sm">
-          <ActivityIndicator color={ColorPalette.brand500} />
+          <Spinner />
         </Box>
       </>
     );

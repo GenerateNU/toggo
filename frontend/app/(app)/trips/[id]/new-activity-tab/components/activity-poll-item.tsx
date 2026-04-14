@@ -1,12 +1,12 @@
 import { useGetPoll } from "@/api/polls/useGetPoll";
 import VotePollCard from "@/app/(app)/trips/[id]/polls/components/vote-poll-card";
-import { Box } from "@/design-system";
+import { Box, Spinner } from "@/design-system";
 import ErrorState from "@/design-system/components/status/error";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { router } from "expo-router";
 import { useCallback } from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import ActivityCardHeader from "./activity-card-header";
 import ActivityFeedItem from "./activity-feed-item";
 import type { ActivityItemProps } from "../types";
@@ -61,7 +61,7 @@ export default function ActivityPollItem({
             />
           ) : isLoading || !poll ? (
             <Box padding="md" alignItems="center">
-              <ActivityIndicator size="small" color={ColorPalette.gray400} />
+              <Spinner />
             </Box>
           ) : (
             <VotePollCard
