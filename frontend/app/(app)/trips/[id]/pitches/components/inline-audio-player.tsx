@@ -1,9 +1,9 @@
-import { Box } from "@/design-system";
+import { Box, Spinner } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { Pause, Play } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { getPitchBarHeights } from "../utils/waveform";
 import { WaveformBars } from "./waveform";
 
@@ -176,7 +176,7 @@ export function InlineAudioPlayer({
           hitSlop={8}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray900} />
+            <Spinner />
           ) : isPlaying ? (
             <Pause
               size={playIconSize}

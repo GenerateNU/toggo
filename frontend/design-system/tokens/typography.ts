@@ -3,8 +3,8 @@ export const FontSize = {
   xs: 12,
   sm: 14,
   md: 16,
-  lg: 18,
-  lx: 20,
+  lx: 18,
+  lg: 20,
   xl: 24,
   logoMd: 26,
   xxl: 32,
@@ -63,14 +63,17 @@ export const Typography = {
 
   // Headings
   headingXl: createTypography({ size: "xl", family: "semiBold" }),
-  headingLg: createTypography({ size: "lg", family: "semiBold" }),
-  headingMd: createTypography({ size: "lx", family: "semiBold" }),
+  headingLg: createTypography({ size: "lx", family: "semiBold" }),
+  headingMd: createTypography({ size: "lg", family: "semiBold" }),
   headingSm: createTypography({ size: "md", family: "medium" }),
 
   // Body — default (regular), medium, strong (semibold)
   bodyDefault: createTypography({ size: "md", family: "regular" }),
   bodyMedium: createTypography({ size: "md", family: "medium" }),
   bodyStrong: createTypography({ size: "md", family: "semiBold" }),
+
+  bodyLarge: createTypography({ size: "lg", family: "regular" }),
+  bodyLargeStrong: createTypography({ size: "lg", family: "semiBold" }),
 
   bodySmDefault: createTypography({ size: "sm", family: "regular" }),
   bodySmMedium: createTypography({ size: "sm", family: "medium" }),

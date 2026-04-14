@@ -52,13 +52,11 @@ export const ItineraryTimeSection = forwardRef<View, ItineraryTimeSectionProps>(
           isDropHovered ? styles.dropHighlight : styles.dropDefault,
         ]}
       >
-        <Box paddingBottom="sm">
-          <Text variant="bodyMedium" color="gray500">
-            {title}
-          </Text>
-        </Box>
+        <Text variant="bodyMedium" color="gray500">
+          {title}
+        </Text>
 
-        <Box gap="sm" overflow="visible">
+        <Box style={{ gap: 12 }} overflow="visible">
           {activities.length > 0 &&
             activities.map((activity) => (
               <ItineraryActivityCard
@@ -119,7 +117,9 @@ const styles = StyleSheet.create({
   dropContainer: {
     borderWidth: 2,
     borderRadius: CornerRadius.md,
-    padding: Layout.spacing.xs,
+    gap: Layout.spacing.sm,
+    padding: Layout.spacing.xxs,
+    marginTop: Layout.spacing.xs,
   },
   dropDefault: {
     borderColor: "transparent",

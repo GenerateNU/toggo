@@ -12,49 +12,28 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
 } from "react";
-import { Keyboard, Platform } from "react-native";
+import { Dimensions, Keyboard, Platform } from "react-native";
 import { CornerRadius } from "../../tokens/corner-radius";
+import { Layout } from "../../tokens/layout";
 
 export const InsideBottomSheetContext = createContext(false);
 
-type BottomSheetSize =
-  | "xxs"
-  | "xs"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "xxl"
-  | "full";
-
-const SIZE_MAP: Record<BottomSheetSize, string[]> = {
-  xxs: ["25%"],
-  xs: ["33%"],
-  sm: ["40%"],
-  md: ["50%"],
-  lg: ["60%"],
-  xl: ["70%"],
-  xxl: ["80%"],
-  full: ["95%"],
-};
+const MAX_DYNAMIC_HEIGHT = Dimensions.get("window").height * 0.9;
 
 interface BottomSheetModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
-  /** Size variant - overrides snapPoints if provided */
-  size?: BottomSheetSize;
-  /** Custom snap points - ignored if size is provided */
+  /** Custom snap points — disables dynamic sizing when provided */
   snapPoints?: (string | number)[];
   initialIndex?: number;
   onClose?: () => void;
   onChange?: (index: number) => void;
   disableClose?: boolean;
-  hideHandle?: boolean;
-  enableDynamicSizing?: boolean;
   keyboardBehavior?: "interactive" | "extend" | "fillParent";
+  /** When true, children are rendered directly without BottomSheetScrollView wrapper */
+  disableScrollView?: boolean;
 }
 
 type Ref = BottomSheetMethods;
@@ -65,25 +44,17 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       onChange,
       children,
       footer,
-      size,
       snapPoints,
       initialIndex = -1,
       onClose,
       disableClose = false,
-      hideHandle = false,
-      enableDynamicSizing = false,
       keyboardBehavior = "interactive",
+      disableScrollView = false,
     },
     ref,
   ) => {
     const innerRef = useRef<BottomSheet>(null);
     const currentIndex = useRef(initialIndex);
-
-    // Determine snapPoints: size prop takes precedence, then explicit snapPoints, then default
-    const resolvedSnapPoints = useMemo(
-      () => (size ? SIZE_MAP[size] : (snapPoints ?? ["80%", "95%"])),
-      [size, snapPoints],
-    );
 
     useImperativeHandle(ref, () => ({
       snapToIndex: (...args: Parameters<BottomSheetMethods["snapToIndex"]>) =>
@@ -103,12 +74,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
 
     const handleChange = useCallback(
       (index: number) => {
-        if (index >= -1 && index <= resolvedSnapPoints.length - 1) {
-          currentIndex.current = index;
-        }
+        currentIndex.current = index;
         onChange?.(index);
       },
-      [onChange, resolvedSnapPoints],
+      [onChange],
     );
 
     useEffect(() => {
@@ -154,37 +123,51 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
         <BottomSheet
           ref={innerRef}
           index={initialIndex}
-          snapPoints={resolvedSnapPoints}
           onChange={handleChange}
           backdropComponent={renderBackdrop}
           footerComponent={footer ? renderFooter : undefined}
-          enableDynamicSizing={enableDynamicSizing}
+          {...(snapPoints
+            ? { snapPoints, enableDynamicSizing: false }
+            : {
+                enableDynamicSizing: true,
+                maxDynamicContentSize: MAX_DYNAMIC_HEIGHT,
+              })}
           keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={!disableClose}
-          handleComponent={hideHandle ? () => null : undefined}
+          handleComponent={null}
           onClose={handleClose}
           style={{
             flex: 1,
             zIndex: 9999,
             overflow: "hidden",
-            borderTopLeftRadius: CornerRadius.xl,
-            borderTopRightRadius: CornerRadius.xl,
+            borderTopLeftRadius: CornerRadius.xxl,
+            borderTopRightRadius: CornerRadius.xxl,
           }}
           backgroundStyle={{
-            borderTopLeftRadius: CornerRadius.xl,
-            borderTopRightRadius: CornerRadius.xl,
+            borderTopLeftRadius: CornerRadius.xxl,
+            borderTopRightRadius: CornerRadius.xxl,
             overflow: "hidden",
           }}
         >
-          <BottomSheetScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: footer ? 100 : 40 }}
-          >
+          {disableScrollView ? (
             <InsideBottomSheetContext.Provider value={true}>
               {children}
             </InsideBottomSheetContext.Provider>
-          </BottomSheetScrollView>
+          ) : (
+            <BottomSheetScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{
+                paddingHorizontal: Layout.spacing.xs,
+                paddingVertical: Layout.spacing.sm,
+                paddingBottom: footer ? 100 : Layout.spacing.sm,
+              }}
+            >
+              <InsideBottomSheetContext.Provider value={true}>
+                {children}
+              </InsideBottomSheetContext.Provider>
+            </BottomSheetScrollView>
+          )}
         </BottomSheet>
       </Portal>
     );

@@ -59,7 +59,7 @@ function LinkCard({ link }: { link: PitchContentLink }) {
         </Box>
         {link.onRemove ? (
           <Pressable onPress={link.onRemove} hitSlop={8}>
-            <X size={14} color={ColorPalette.gray400} />
+            <X size={24} color={ColorPalette.gray400} />
           </Pressable>
         ) : null}
       </Box>
