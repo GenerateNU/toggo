@@ -118,7 +118,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: CornerRadius.md,
     gap: Layout.spacing.sm,
-    padding: Layout.spacing.xs,
+    padding: Layout.spacing.xxs,
+    marginTop: Layout.spacing.xs,
   },
   dropDefault: {
     borderColor: "transparent",
