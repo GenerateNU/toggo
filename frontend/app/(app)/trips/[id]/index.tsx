@@ -197,7 +197,7 @@ export default function Trip() {
               paddingHorizontal="sm"
               paddingTop="sm"
               paddingBottom="xl"
-              backgroundColor="gray50"
+              backgroundColor="gray25"
               style={styles.tabContent}
             >
               {activeTab === "new" &&
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: ColorPalette.gray50,
+    backgroundColor: ColorPalette.gray25,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",

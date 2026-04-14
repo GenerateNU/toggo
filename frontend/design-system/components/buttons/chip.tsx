@@ -37,7 +37,7 @@ const VARIANT_STYLES = {
   },
   filled: {
     unselected: {
-      backgroundColor: ColorPalette.gray50,
+      backgroundColor: ColorPalette.gray25,
       borderColor: "transparent",
       textVariant: "bodySmMedium",
       cornerRadius: CornerRadius.sm,
