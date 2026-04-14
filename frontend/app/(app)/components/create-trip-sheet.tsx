@@ -250,11 +250,7 @@ export function CreateTripSheet({
           </Box>
         ) : (
           // ─── Form state ─────────────────────────────────────────────────
-          <Box
-            paddingHorizontal="sm"
-            paddingBottom="lg"
-            gap="xxs"
-          >
+          <Box paddingHorizontal="sm" paddingBottom="lg" gap="xxs">
             {/* Close button */}
             <Box flexDirection="row" justifyContent="space-between">
               <Text variant="headingMd" color="gray950">

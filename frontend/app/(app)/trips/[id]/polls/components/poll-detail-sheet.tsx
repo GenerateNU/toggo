@@ -899,11 +899,7 @@ function VoteOptionVotersSheet({
   const voters = data?.voters ?? [];
 
   return (
-    <BottomSheetComponent
-      ref={subSheetRef}
-      initialIndex={-1}
-      onClose={onClose}
-    >
+    <BottomSheetComponent ref={subSheetRef} initialIndex={-1} onClose={onClose}>
       <Box paddingHorizontal="md" gap="md">
         <Box
           flexDirection="row"

@@ -112,11 +112,7 @@ export function PitchPickerSheet({
   });
 
   return (
-    <BottomSheetComponent
-      ref={sheetRef}
-      initialIndex={0}
-      onClose={onClose}
-    >
+    <BottomSheetComponent ref={sheetRef} initialIndex={0} onClose={onClose}>
       <Box style={{ paddingBottom: 16, paddingTop: 12 }}>
         <Box
           flexDirection="row"

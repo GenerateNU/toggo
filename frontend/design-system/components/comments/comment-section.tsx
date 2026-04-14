@@ -177,20 +177,14 @@ export default function CommentSection({
               pressed && styles.sendButtonPressed,
             ]}
           >
-            <Text
-              variant="bodySmMedium"
-              style={{ color: ColorPalette.white }}
-            >
+            <Text variant="bodySmMedium" style={{ color: ColorPalette.white }}>
               Send
             </Text>
           </Pressable>
         )}
         {isSubmitting && (
           <Box style={styles.sendButton}>
-            <Text
-              variant="bodySmMedium"
-              style={{ color: ColorPalette.white }}
-            >
+            <Text variant="bodySmMedium" style={{ color: ColorPalette.white }}>
               ...
             </Text>
           </Box>
@@ -226,10 +220,7 @@ export default function CommentSection({
     >
       {/* Header */}
       <Box style={styles.header}>
-        <Pressable
-          onPress={onClose}
-          hitSlop={16}
-        >
+        <Pressable onPress={onClose} hitSlop={16}>
           <View style={styles.handle} />
         </Pressable>
         <Text variant="bodyMedium" style={styles.title}>

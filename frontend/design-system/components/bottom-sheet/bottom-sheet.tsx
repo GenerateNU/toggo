@@ -128,8 +128,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           footerComponent={footer ? renderFooter : undefined}
           {...(snapPoints
             ? { snapPoints, enableDynamicSizing: false }
-            : { enableDynamicSizing: true, maxDynamicContentSize: MAX_DYNAMIC_HEIGHT }
-          )}
+            : {
+                enableDynamicSizing: true,
+                maxDynamicContentSize: MAX_DYNAMIC_HEIGHT,
+              })}
           keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={!disableClose}

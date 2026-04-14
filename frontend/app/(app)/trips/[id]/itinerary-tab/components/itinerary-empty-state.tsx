@@ -3,7 +3,15 @@ import { Image, StyleSheet } from "react-native";
 
 export function ItineraryEmptyState() {
   return (
-    <Box borderRadius="xxxl" padding="xs" shadowColor="black" shadowOffset={{ width: 0, height: 2 }} shadowOpacity={0.1} shadowRadius={5} backgroundColor="white">
+    <Box
+      borderRadius="xxxl"
+      padding="xs"
+      shadowColor="black"
+      shadowOffset={{ width: 0, height: 2 }}
+      shadowOpacity={0.1}
+      shadowRadius={5}
+      backgroundColor="white"
+    >
       <Box alignItems="center" gap="sm">
         <Image
           source={require("@/assets/images/empty-itinerary.png")}

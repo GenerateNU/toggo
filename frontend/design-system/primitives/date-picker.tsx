@@ -4,7 +4,13 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import BottomSheetModal from "../components/bottom-sheet/bottom-sheet";
 import { X } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Dimensions, Pressable, StyleSheet } from "react-native";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
@@ -365,11 +371,7 @@ export default function DateRangePicker({
           justifyContent="center"
           padding="xs"
         >
-          <Pressable
-            onPress={onClose}
-            hitSlop={16}
-            style={styles.closeButton}
-          >
+          <Pressable onPress={onClose} hitSlop={16} style={styles.closeButton}>
             <X size={24} />
           </Pressable>
           <Text variant="headingSm">Select dates</Text>
@@ -410,9 +412,7 @@ export default function DateRangePicker({
             <Text
               variant="bodySmMedium"
               style={{
-                color: range.end
-                  ? ColorPalette.gray900
-                  : ColorPalette.gray500,
+                color: range.end ? ColorPalette.gray900 : ColorPalette.gray500,
               }}
             >
               {formatShortDate(range.end)}
