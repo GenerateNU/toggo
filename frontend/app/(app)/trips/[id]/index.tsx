@@ -32,7 +32,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_TAB: TabKey = "itinerary";
+const INITIAL_TAB: TabKey = "new";
 const CARD_TOP_OFFSET = 120;
 
 // ─── Component ────────────────────────────────────────────────────────────────
