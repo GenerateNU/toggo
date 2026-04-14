@@ -29,7 +29,6 @@ import {
   ErrorState,
   Icon,
   ImagePicker,
-  Logo,
   ProfileAvatarButton,
   SkeletonRect,
   Text,
@@ -311,26 +310,39 @@ export default function HomeScreen() {
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between"
-          paddingHorizontal="md"
+          paddingHorizontal="sm"
           paddingVertical="sm"
         >
           <ProfileAvatarButton
             profilePhoto={profile.profilePhotoUri}
             seed={profile.seed}
-            size="lg"
+            size="md"
             accessibilityLabel={profile.accessibilityLabel}
             onPress={() => router.push("/settings")}
           />
-          <Box paddingTop="sm">
-            <Logo size="xl" />
-          </Box>
-          <Button
-            accessibilityLabel="Create a trip"
-            icon={PlusIcon}
-            variant="IconSecondary"
-            layout="iconOnly"
+          <Text
+            variant="logoXl"
+            color="brand500"
+            style={{ fontSize: 26, lineHeight: 32 }}
+          >
+            toggo
+          </Text>
+          <Pressable
             onPress={requestCreateTripSheet}
-          />
+            accessibilityRole="button"
+            accessibilityLabel="Create a trip"
+          >
+            <Box
+              width={36}
+              height={36}
+              borderRadius="sm"
+              backgroundColor="gray50"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Icon icon={PlusIcon} size="iconSm" color="gray900" />
+            </Box>
+          </Pressable>
         </Box>
       </SafeAreaView>
 
@@ -346,15 +358,19 @@ export default function HomeScreen() {
           />
         }
       >
-        <Box flex={1} backgroundColor="white" gap="md">
-          <Box gap="sm">
+        <Box flex={1} backgroundColor="white">
+          <Box>
             {upcomingTrip ? (
               <LinearGradient
                 colors={topSectionGradientColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box paddingHorizontal="sm" gap="sm">
+                <Box
+                paddingHorizontal="sm"
+                gap="sm"
+                style={{ paddingTop: 20 }}
+              >
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -369,12 +385,7 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Text
-                    variant="headingMd"
-                    color="gray900"
-                    paddingBottom="sm"
-                    paddingTop="sm"
-                  >
+                  <Text variant="headingMd" color="gray950" paddingBottom="sm">
                     Upcoming Trips
                   </Text>
                 </Box>
@@ -388,7 +399,7 @@ export default function HomeScreen() {
                     paddingLeft: Layout.spacing.sm,
                     paddingRight: Layout.spacing.sm,
                   }}
-                  style={{ paddingBottom: Layout.spacing.lg }}
+                  style={{ paddingBottom: 20 }}
                 >
                   <Box flexDirection="row" gap="sm">
                     {upcoming.map((trip) => {
@@ -443,44 +454,44 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm">
-            <Box paddingHorizontal="sm" paddingVertical="xxs">
-              <Text variant="headingMd">Past Trips</Text>
-            </Box>
-            <Box paddingHorizontal="sm" gap="sm">
-              {past.length === 0 ? (
-                <Text variant="bodySmDefault" color="gray500">
-                  No past trips yet.
-                </Text>
-              ) : (
-                <Box gap="sm">
-                  {past.map((trip) => {
-                    const id = trip.id;
-                    if (!id) return null;
-                    return (
-                      <PastTripCompactCard
-                        key={id}
-                        trip={trip}
-                        currentUserId={currentUser?.id}
-                        dateLabel={formatTripDateLabel(
-                          trip,
-                          HOME_NULL_DATE_DISPLAY,
-                        )}
-                      />
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
+          <Box
+            paddingHorizontal="sm"
+            gap="sm"
+            style={{ paddingTop: 20, paddingBottom: 20 }}
+          >
+            <Text variant="headingMd" color="gray950">
+              Past Trips
+            </Text>
+            {past.length === 0 ? (
+              <Text variant="bodySmDefault" color="gray500">
+                No past trips yet.
+              </Text>
+            ) : (
+              past.map((trip) => {
+                const id = trip.id;
+                if (!id) return null;
+                return (
+                  <PastTripCompactCard
+                    key={id}
+                    trip={trip}
+                    currentUserId={currentUser?.id}
+                    dateLabel={formatTripDateLabel(
+                      trip,
+                      HOME_NULL_DATE_DISPLAY,
+                    )}
+                  />
+                );
+              })
+            )}
           </Box>
 
-          <Box gap="xxs">
-            <Box paddingHorizontal="sm" paddingTop="xs">
-              <Text variant="headingMd">Recommended Trips</Text>
+          <Box gap="sm" style={{ paddingTop: 20, paddingBottom: 20 }}>
+            <Box paddingHorizontal="sm">
+              <Text variant="headingMd" color="gray950">
+                Recommended Trips
+              </Text>
             </Box>
-            <Box>
-              <RecommendedTripsRow />
-            </Box>
+            <RecommendedTripsRow />
           </Box>
 
           <Box gap="xs" paddingHorizontal="md" paddingTop="md">

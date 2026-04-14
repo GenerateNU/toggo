@@ -14,16 +14,15 @@ export function RecommendedTripsRow() {
         flexDirection="row"
         gap="sm"
         paddingHorizontal="sm"
-        paddingVertical="sm"
       >
         {RECOMMENDED_DESTINATIONS.map((destination, index) => (
           <Box
             key={destination.id}
             width={HOME_RECOMMENDED_CARD_WIDTH}
-            borderRadius="md"
+            borderRadius="lg"
             backgroundColor="white"
             padding="xs"
-            gap="sm"
+            gap="xs"
             style={[
               HOME_CARD_FLOATING_SHADOW,
               index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined,
@@ -37,7 +36,7 @@ export function RecommendedTripsRow() {
               />
             </Box>
             <Box gap="xxs">
-              <Text variant="bodySmStrong" color="gray900">
+              <Text variant="bodyStrong" color="gray950">
                 {destination.title}
               </Text>
               <Text variant="bodyXsDefault" color="gray500" numberOfLines={3}>

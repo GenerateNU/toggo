@@ -1,5 +1,6 @@
 import { useGetUnreadActivityCount } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { Box, Button, Icon, Text } from "@/design-system";
+import { FontFamily } from "@/design-system/tokens/typography";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -38,7 +39,7 @@ export function UpcomingTripHeroCard({
     <Pressable onPress={() => router.push(`/trips/${tripId}`)}>
       <Box
         backgroundColor="white"
-        borderRadius="md"
+        borderRadius="lg"
         padding="xs"
         gap="xs"
         style={[HOME_CARD_FLOATING_SHADOW, width ? { width } : undefined]}
@@ -83,7 +84,14 @@ export function UpcomingTripHeroCard({
         </Box>
 
         <Box paddingHorizontal="xs" gap="xxs">
-          <Text variant="headingMd" color="gray900">
+          <Text
+            color="gray950"
+            style={{
+              fontSize: 18,
+              fontFamily: FontFamily.semiBold,
+              lineHeight: 24,
+            }}
+          >
             {trip.name?.trim() || "Untitled trip"}
           </Text>
           <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />

@@ -1,5 +1,6 @@
 import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { Avatar, Box, Text } from "@/design-system";
+import { Shadow } from "@/design-system/tokens/elevation";
 import { getFirstName } from "@/utils/user-display-name";
 
 const MAX_VISIBLE_MEMBERS = 3;
@@ -8,6 +9,7 @@ const AVATAR_OVERLAP = -6;
 type TripMemberPreviewRowProps = {
   tripId: string;
   currentUserId?: string | null;
+  textSize?: "default" | "small";
 };
 
 type MemberPreview = {
@@ -16,20 +18,61 @@ type MemberPreview = {
   profilePhotoUrl?: string;
 };
 
-function getSummaryText(members: MemberPreview[]) {
-  if (members.length === 0) return "";
-  const first = getFirstName(members[0]?.name) ?? members[0]?.name ?? "";
-  const second = getFirstName(members[1]?.name) ?? members[1]?.name ?? "";
-  const others = members.length - 1;
+type MemberSummaryTextProps = {
+  members: MemberPreview[];
+  textSize: "default" | "small";
+};
 
-  if (others <= 0) return first;
-  if (others === 1) return `${first} and ${second}`;
-  return `${first} and ${others} others`;
+function MemberSummaryText({ members, textSize }: MemberSummaryTextProps) {
+  if (members.length === 0) return null;
+
+  const strongVariant =
+    textSize === "small" ? "bodySmStrong" : "bodyStrong";
+  const defaultVariant =
+    textSize === "small" ? "bodySmDefault" : "bodyDefault";
+
+  const firstName =
+    getFirstName(members[0]?.name) ?? members[0]?.name ?? "";
+
+  if (members.length === 1) {
+    return (
+      <Text variant={strongVariant} color="gray950" numberOfLines={1}>
+        {firstName}
+      </Text>
+    );
+  }
+
+  if (members.length === 2) {
+    const secondName =
+      getFirstName(members[1]?.name) ?? members[1]?.name ?? "";
+    return (
+      <Text variant={defaultVariant} color="gray400" numberOfLines={1}>
+        <Text variant={strongVariant} color="gray950">
+          {firstName}
+        </Text>
+        {" and "}
+        <Text variant={strongVariant} color="gray950">
+          {secondName}
+        </Text>
+      </Text>
+    );
+  }
+
+  const othersCount = members.length - 1;
+  return (
+    <Text variant={defaultVariant} color="gray400" numberOfLines={1}>
+      <Text variant={strongVariant} color="gray950">
+        {firstName}
+      </Text>
+      {` and ${othersCount} others`}
+    </Text>
+  );
 }
 
 export function TripMemberPreviewRow({
   tripId,
   currentUserId,
+  textSize = "default",
 }: TripMemberPreviewRowProps) {
   const membersQuery = useGetTripMembers(
     tripId,
@@ -61,7 +104,6 @@ export function TripMemberPreviewRow({
 
   const visibleMembers = sortedMembers.slice(0, MAX_VISIBLE_MEMBERS);
   const overflowCount = Math.max(sortedMembers.length - MAX_VISIBLE_MEMBERS, 0);
-  const summaryText = getSummaryText(sortedMembers);
 
   if (membersQuery.isError || sortedMembers.length === 0) {
     return null;
@@ -95,7 +137,7 @@ export function TripMemberPreviewRow({
             borderColor="gray300"
             alignItems="center"
             justifyContent="center"
-            style={{ marginLeft: AVATAR_OVERLAP }}
+            style={[{ marginLeft: AVATAR_OVERLAP }, Shadow.md]}
           >
             <Text variant="bodyXsMedium" color="gray500">
               +{overflowCount}
@@ -104,9 +146,7 @@ export function TripMemberPreviewRow({
         )}
       </Box>
 
-      <Text variant="bodySmDefault" color="gray500" numberOfLines={1}>
-        {summaryText}
-      </Text>
+      <MemberSummaryText members={sortedMembers} textSize={textSize} />
     </Box>
   );
 }

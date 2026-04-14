@@ -28,7 +28,7 @@ export function PastTripCompactCard({
     <Pressable onPress={() => router.push(`/trips/${tripId}`)}>
       <Box
         backgroundColor="white"
-        borderRadius="md"
+        borderRadius="lg"
         padding="xs"
         flexDirection="row"
         gap="sm"
@@ -58,7 +58,7 @@ export function PastTripCompactCard({
         </Box>
 
         <Box flex={1} gap="xxs" justifyContent="center">
-          <Text variant="bodySmStrong" color="gray900" numberOfLines={1}>
+          <Text variant="bodyStrong" color="gray950" numberOfLines={1}>
             {trip.name?.trim() || "Untitled trip"}
           </Text>
           {dateLabel ? (
@@ -66,7 +66,7 @@ export function PastTripCompactCard({
               {dateLabel}
             </Text>
           ) : null}
-          <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />
+          <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} textSize="small" />
         </Box>
       </Box>
     </Pressable>
