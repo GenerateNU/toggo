@@ -62,28 +62,23 @@ function formatDateRange(range: DateRange): string | null {
   return `${start} – ${end}`;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── DestinationPickerSheet ───────────────────────────────────────────────────
 
-export function CreateTripSheet({
-  bottomSheetRef,
-  onCreate,
-  onDismiss,
-}: CreateTripSheetProps) {
-  const searchInputRef = useRef<TextInput>(null);
+type DestinationPickerSheetProps = {
+  sheetRef: React.RefObject<any>;
+  onSelect: (location: SelectedLocation) => void;
+};
 
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+function DestinationPickerSheet({
+  sheetRef,
+  onSelect,
+}: DestinationPickerSheetProps) {
+  const inputRef = useRef<TextInput>(null);
+  const [query, setQuery] = useState("");
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [isLoadingPredictions, setIsLoadingPredictions] = useState(false);
-  const [selectedLocation, setSelectedLocation] =
-    useState<SelectedLocation | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({
-    start: null,
-    end: null,
-  });
-  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const debouncedQuery = useDebouncedValue(searchQuery, 300);
+  const debouncedQuery = useDebouncedValue(query, 300);
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
@@ -93,56 +88,139 @@ export function CreateTripSheet({
     fetchPredictions(debouncedQuery);
   }, [debouncedQuery]);
 
-  const fetchPredictions = async (query: string) => {
-    setIsLoadingPredictions(true);
+  const fetchPredictions = async (q: string) => {
+    setIsLoading(true);
     try {
-      const res = await searchPlacesTypeahead(query, 8);
+      const res = await searchPlacesTypeahead(q, 8);
       setPredictions(res.data?.predictions ?? []);
     } catch {
       setPredictions([]);
     } finally {
-      setIsLoadingPredictions(false);
+      setIsLoading(false);
     }
   };
 
-  const enterSearchMode = () => {
-    setIsSearchMode(true);
-    bottomSheetRef.current?.snapToIndex(1);
-    setTimeout(() => searchInputRef.current?.focus(), 300);
-  };
-
-  const exitSearchMode = () => {
-    setIsSearchMode(false);
-    setSearchQuery("");
+  const handleClose = () => {
+    setQuery("");
     setPredictions([]);
-    bottomSheetRef.current?.snapToIndex(0);
+    sheetRef.current?.close();
   };
 
-  const handleSelectPrediction = async (prediction: Prediction) => {
+  const handleSelect = async (prediction: Prediction) => {
     try {
-      const res = await getPlaceDetailsCustom({
-        place_id: prediction.place_id,
-      });
+      const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
       const name =
         res.data?.name ?? res.data?.formatted_address ?? prediction.description;
-      setSelectedLocation({ name, place_id: prediction.place_id });
+      onSelect({ name, place_id: prediction.place_id });
     } catch {
-      setSelectedLocation({
-        name: prediction.description,
-        place_id: prediction.place_id,
-      });
+      onSelect({ name: prediction.description, place_id: prediction.place_id });
     } finally {
-      exitSearchMode();
+      handleClose();
     }
   };
 
-  const handleSheetChange = (index: number) => {
-    if (index === 0 && isSearchMode) {
-      setIsSearchMode(false);
-      setSearchQuery("");
-      setPredictions([]);
-    }
-  };
+  return (
+    <BottomSheet
+      ref={sheetRef}
+      snapPoints={["90%"]}
+      onClose={() => {
+        setQuery("");
+        setPredictions([]);
+      }}
+      onChange={(index) => {
+        if (index === 0) setTimeout(() => inputRef.current?.focus(), 100);
+      }}
+    >
+      <Box paddingHorizontal="sm" paddingTop="xs" gap="sm">
+        {/* Header */}
+        <Box flexDirection="row" alignItems="center" gap="sm">
+          <TouchableOpacity
+            onPress={handleClose}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+          >
+            <ArrowLeft size={20} color={ColorPalette.gray950} />
+          </TouchableOpacity>
+          <Box
+            flex={1}
+            flexDirection="row"
+            alignItems="center"
+            gap="xs"
+            style={styles.searchBar}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={ColorPalette.gray400} />
+            ) : (
+              <Search size={16} color={ColorPalette.gray400} />
+            )}
+            <TextInput
+              ref={inputRef}
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search for a destination"
+              placeholderTextColor={ColorPalette.gray400}
+              style={styles.searchInput}
+              autoCorrect={false}
+              autoCapitalize="none"
+              returnKeyType="search"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setQuery("");
+                  setPredictions([]);
+                }}
+                hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+              >
+                <X size={14} color={ColorPalette.gray400} />
+              </TouchableOpacity>
+            )}
+          </Box>
+        </Box>
+
+        {/* Results */}
+        {predictions.map((prediction) => (
+          <TouchableOpacity
+            key={prediction.place_id}
+            onPress={() => handleSelect(prediction)}
+            activeOpacity={0.7}
+          >
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              gap="sm"
+              paddingVertical="sm"
+              style={styles.predictionItem}
+            >
+              <MapPin size={16} color={ColorPalette.gray400} />
+              <Text variant="bodyDefault" color="gray950" style={{ flex: 1 }}>
+                {prediction.description}
+              </Text>
+            </Box>
+          </TouchableOpacity>
+        ))}
+      </Box>
+    </BottomSheet>
+  );
+}
+
+// ─── CreateTripSheet ──────────────────────────────────────────────────────────
+
+export function CreateTripSheet({
+  bottomSheetRef,
+  onCreate,
+  onDismiss,
+}: CreateTripSheetProps) {
+  const destinationSheetRef = useRef<any>(null);
+
+  const [selectedLocation, setSelectedLocation] =
+    useState<SelectedLocation | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
   const handleDismiss = () => {
     resetState();
@@ -150,9 +228,6 @@ export function CreateTripSheet({
   };
 
   const resetState = () => {
-    setIsSearchMode(false);
-    setSearchQuery("");
-    setPredictions([]);
     setSelectedLocation(null);
     setDateRange({ start: null, end: null });
   };
@@ -173,194 +248,116 @@ export function CreateTripSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        snapPoints={["55%", "95%"]}
-        onChange={handleSheetChange}
+        snapPoints={["55%"]}
         onClose={handleDismiss}
       >
-        {isSearchMode ? (
-          // ─── Search state ───────────────────────────────────────────────
-          <Box paddingHorizontal="sm" paddingTop="xs" gap="sm">
-            {/* Header */}
-            <Box flexDirection="row" alignItems="center" gap="sm">
-              <TouchableOpacity
-                onPress={exitSearchMode}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityRole="button"
-                accessibilityLabel="Back"
-              >
-                <ArrowLeft size={20} color={ColorPalette.gray950} />
-              </TouchableOpacity>
+        <Box
+          paddingHorizontal="sm"
+          paddingTop="sm"
+          paddingBottom="lg"
+          gap="md"
+        >
+          {/* Close button */}
+          <Box flexDirection="row" justifyContent="flex-end">
+            <TouchableOpacity
+              onPress={() => {
+                bottomSheetRef.current?.close();
+                handleDismiss();
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <X size={20} color={ColorPalette.gray950} />
+            </TouchableOpacity>
+          </Box>
+
+          <Box gap="xxs">
+            <Text variant="headingMd" color="gray950">
+              Plan a new trip
+            </Text>
+            <Text variant="bodyDefault" color="gray500">
+              Where are you headed?
+            </Text>
+          </Box>
+
+          <Box gap="sm">
+            {/* Location field */}
+            <TouchableOpacity
+              onPress={() => destinationSheetRef.current?.snapToIndex(0)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Set destination"
+            >
               <Box
-                flex={1}
+                style={styles.fieldRow}
                 flexDirection="row"
                 alignItems="center"
                 gap="xs"
-                style={styles.searchBar}
               >
-                {isLoadingPredictions ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={ColorPalette.gray400}
-                  />
-                ) : (
-                  <Search size={16} color={ColorPalette.gray400} />
-                )}
-                <TextInput
-                  ref={searchInputRef}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search for a destination"
-                  placeholderTextColor={ColorPalette.gray400}
-                  style={styles.searchInput}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  returnKeyType="search"
+                <MapPin
+                  size={16}
+                  color={
+                    selectedLocation
+                      ? ColorPalette.gray950
+                      : ColorPalette.gray300
+                  }
                 />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchQuery("");
-                      setPredictions([]);
-                    }}
-                    hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-                  >
-                    <X size={14} color={ColorPalette.gray400} />
-                  </TouchableOpacity>
-                )}
+                <Text
+                  variant="bodyDefault"
+                  color={selectedLocation ? "gray950" : "gray300"}
+                  style={{ flex: 1 }}
+                  numberOfLines={1}
+                >
+                  {selectedLocation?.name ?? "Destination"}
+                </Text>
               </Box>
-            </Box>
+            </TouchableOpacity>
 
-            {/* Predictions list */}
-            {predictions.map((prediction) => (
-              <TouchableOpacity
-                key={prediction.place_id}
-                onPress={() => handleSelectPrediction(prediction)}
-                activeOpacity={0.7}
+            {/* Date field */}
+            <TouchableOpacity
+              onPress={() => setIsDatePickerVisible(true)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Set trip dates"
+            >
+              <Box
+                style={styles.fieldRow}
+                flexDirection="row"
+                alignItems="center"
+                gap="xs"
               >
-                <Box
-                  flexDirection="row"
-                  alignItems="center"
-                  gap="sm"
-                  paddingVertical="sm"
-                  style={styles.predictionItem}
+                <Calendar
+                  size={16}
+                  color={
+                    formattedDates
+                      ? ColorPalette.gray950
+                      : ColorPalette.gray300
+                  }
+                />
+                <Text
+                  variant="bodyDefault"
+                  color={formattedDates ? "gray950" : "gray300"}
                 >
-                  <MapPin size={16} color={ColorPalette.gray400} />
-                  <Text
-                    variant="bodyDefault"
-                    color="gray950"
-                    style={{ flex: 1 }}
-                  >
-                    {prediction.description}
-                  </Text>
-                </Box>
-              </TouchableOpacity>
-            ))}
+                  {formattedDates ?? "Dates"}
+                </Text>
+              </Box>
+            </TouchableOpacity>
+
+            <Button
+              layout="textOnly"
+              label="Create Trip"
+              variant="Primary"
+              onPress={handleCreate}
+            />
           </Box>
-        ) : (
-          // ─── Form state ─────────────────────────────────────────────────
-          <Box
-            paddingHorizontal="sm"
-            paddingTop="sm"
-            paddingBottom="lg"
-            gap="md"
-          >
-            {/* Close button */}
-            <Box flexDirection="row" justifyContent="flex-end">
-              <TouchableOpacity
-                onPress={() => {
-                  bottomSheetRef.current?.close();
-                  handleDismiss();
-                }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <X size={20} color={ColorPalette.gray950} />
-              </TouchableOpacity>
-            </Box>
-
-            <Box gap="xxs">
-              <Text variant="headingMd" color="gray950">
-                Plan a new trip
-              </Text>
-              <Text variant="bodyDefault" color="gray500">
-                Where are you headed?
-              </Text>
-            </Box>
-
-            <Box gap="sm">
-              {/* Location field */}
-              <TouchableOpacity
-                onPress={enterSearchMode}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Set destination"
-              >
-                <Box
-                  style={styles.fieldRow}
-                  flexDirection="row"
-                  alignItems="center"
-                  gap="xs"
-                >
-                  <MapPin
-                    size={16}
-                    color={
-                      selectedLocation
-                        ? ColorPalette.gray950
-                        : ColorPalette.gray300
-                    }
-                  />
-                  <Text
-                    variant="bodyDefault"
-                    color={selectedLocation ? "gray950" : "gray300"}
-                    style={{ flex: 1 }}
-                    numberOfLines={1}
-                  >
-                    {selectedLocation?.name ?? "Destination"}
-                  </Text>
-                </Box>
-              </TouchableOpacity>
-
-              {/* Date field */}
-              <TouchableOpacity
-                onPress={() => setIsDatePickerVisible(true)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Set trip dates"
-              >
-                <Box
-                  style={styles.fieldRow}
-                  flexDirection="row"
-                  alignItems="center"
-                  gap="xs"
-                >
-                  <Calendar
-                    size={16}
-                    color={
-                      formattedDates
-                        ? ColorPalette.gray950
-                        : ColorPalette.gray300
-                    }
-                  />
-                  <Text
-                    variant="bodyDefault"
-                    color={formattedDates ? "gray950" : "gray300"}
-                  >
-                    {formattedDates ?? "Dates"}
-                  </Text>
-                </Box>
-              </TouchableOpacity>
-
-              <Button
-                layout="textOnly"
-                label="Create Trip"
-                variant="Primary"
-                onPress={handleCreate}
-              />
-            </Box>
-          </Box>
-        )}
+        </Box>
       </BottomSheet>
+
+      <DestinationPickerSheet
+        sheetRef={destinationSheetRef}
+        onSelect={setSelectedLocation}
+      />
 
       <DateRangePicker
         visible={isDatePickerVisible}
