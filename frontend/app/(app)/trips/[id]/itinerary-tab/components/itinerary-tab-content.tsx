@@ -52,7 +52,7 @@ export function ItineraryTabContent({
   });
 
   if (!startDateKey || !endDateKey) {
-    return <ItineraryEmptyState hasDates={false} />;
+    return <ItineraryEmptyState />;
   }
 
   return (
