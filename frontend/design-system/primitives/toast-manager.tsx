@@ -12,7 +12,7 @@ import { Animated, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
-import Toast from "./toast";
+import Toast, { ToastVariant } from "./toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,7 @@ type ToastAction = {
 type ToastConfig = {
   message: string;
   subtitle?: string;
+  variant?: ToastVariant;
   action?: ToastAction;
   showClose?: boolean;
   duration?: number;
@@ -176,6 +177,7 @@ const ToastItem = ({
       <Toast
         message={entry.message}
         subtitle={entry.subtitle}
+        variant={entry.variant}
         action={entry.action}
         showClose={showClose}
         onClose={hide}
