@@ -61,7 +61,7 @@ export const useToast = (): ToastContextValue => {
 
 const TOAST_HEIGHT = CoreSize.xxl;
 const TOAST_GAP = 10;
-const EDGE_INSET = Layout.spacing.xxl;
+const EDGE_INSET = Layout.spacing.sm;
 
 // ─── Single Toast Item ───────────────────────────────────────────────────────
 
@@ -191,7 +191,7 @@ const ToastItem = ({
 export function ToastProvider({
   children,
   position = "bottom",
-  maxVisible = 3,
+  maxVisible = 2,
 }: ToastProviderProps) {
   const [queue, setQueue] = useState<ToastEntry[]>([]);
   const nextIdRef = useRef<number>(0);
