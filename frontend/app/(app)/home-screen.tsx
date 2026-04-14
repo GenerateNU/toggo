@@ -327,7 +327,10 @@ export default function HomeScreen() {
           <Text
             variant="logoXl"
             color="brand500"
-            style={{ fontSize: HOME_LOGO_FONT_SIZE, lineHeight: HOME_LOGO_LINE_HEIGHT }}
+            style={{
+              fontSize: HOME_LOGO_FONT_SIZE,
+              lineHeight: HOME_LOGO_LINE_HEIGHT,
+            }}
           >
             toggo
           </Text>
@@ -371,10 +374,10 @@ export default function HomeScreen() {
                 end={{ x: 0, y: 1 }}
               >
                 <Box
-                paddingHorizontal="sm"
-                gap="sm"
-                style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING }}
-              >
+                  paddingHorizontal="sm"
+                  gap="sm"
+                  style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING }}
+                >
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -461,7 +464,10 @@ export default function HomeScreen() {
           <Box
             paddingHorizontal="sm"
             gap="sm"
-            style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING, paddingBottom: HOME_SECTION_VERTICAL_PADDING }}
+            style={{
+              paddingTop: HOME_SECTION_VERTICAL_PADDING,
+              paddingBottom: HOME_SECTION_VERTICAL_PADDING,
+            }}
           >
             <Text variant="headingMd" color="gray950">
               Past Trips
@@ -489,7 +495,13 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING, paddingBottom: HOME_SECTION_VERTICAL_PADDING }}>
+          <Box
+            gap="sm"
+            style={{
+              paddingTop: HOME_SECTION_VERTICAL_PADDING,
+              paddingBottom: HOME_SECTION_VERTICAL_PADDING,
+            }}
+          >
             <Box paddingHorizontal="sm">
               <Text variant="headingMd" color="gray950">
                 Recommended Trips

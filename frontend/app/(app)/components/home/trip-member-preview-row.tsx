@@ -15,13 +15,10 @@ type MemberSummaryTextProps = {
 function MemberSummaryText({ members, textSize }: MemberSummaryTextProps) {
   if (members.length === 0) return null;
 
-  const strongVariant =
-    textSize === "small" ? "bodySmStrong" : "bodyStrong";
-  const defaultVariant =
-    textSize === "small" ? "bodySmDefault" : "bodyDefault";
+  const strongVariant = textSize === "small" ? "bodySmStrong" : "bodyStrong";
+  const defaultVariant = textSize === "small" ? "bodySmDefault" : "bodyDefault";
 
-  const firstName =
-    getFirstName(members[0]?.name) ?? members[0]?.name ?? "";
+  const firstName = getFirstName(members[0]?.name) ?? members[0]?.name ?? "";
 
   if (members.length === 1) {
     return (
@@ -32,8 +29,7 @@ function MemberSummaryText({ members, textSize }: MemberSummaryTextProps) {
   }
 
   if (members.length === 2) {
-    const secondName =
-      getFirstName(members[1]?.name) ?? members[1]?.name ?? "";
+    const secondName = getFirstName(members[1]?.name) ?? members[1]?.name ?? "";
     return (
       <Text variant={defaultVariant} color="gray400" numberOfLines={1}>
         <Text variant={strongVariant} color="gray950">

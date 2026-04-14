@@ -66,7 +66,11 @@ export function PastTripCompactCard({
               {dateLabel}
             </Text>
           ) : null}
-          <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} textSize="small" />
+          <TripMemberPreviewRow
+            tripId={tripId}
+            currentUserId={currentUserId}
+            textSize="small"
+          />
         </Box>
       </Box>
     </Pressable>
