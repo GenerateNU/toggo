@@ -269,7 +269,7 @@ export function CreateTripSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={24} color={ColorPalette.gray950} />xs
+                <X size={24} color={ColorPalette.gray950} />
               </TouchableOpacity>
             </Box>
 
