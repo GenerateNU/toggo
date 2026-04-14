@@ -1,34 +1,16 @@
 import { useCreateActivity } from "@/api/activities";
-import { useUploadImage } from "@/api/files/custom";
-import {
-  Box,
-  Button,
-  DateRangePicker,
-  Dialog,
-  ImagePicker,
-  Text,
-  useToast,
-} from "@/design-system";
-import BottomSheet from "@/design-system/components/bottom-sheet/bottom-sheet";
+import { getPlaceDetailsCustom } from "@/api/places/custom";
+import { Box, DateRangePicker, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
+import { PricePicker } from "@/design-system/primitives/price-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Layout } from "@/design-system/tokens/layout";
-import { getImageURL } from "@/services/imageService";
 import type {
   ModelsActivityAPIResponse,
   ModelsParsedActivityData,
 } from "@/types/types.gen";
-import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { router } from "expo-router";
-import {
-  Calendar,
-  DollarSign,
-  Link,
-  MapPin,
-  Plus,
-} from "lucide-react-native";
+import { Calendar, DollarSign, Link, MapPin } from "lucide-react-native";
 import {
   forwardRef,
   useCallback,
@@ -36,9 +18,12 @@ import {
   useRef,
   useState,
 } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
-import { CategoriesSheet } from "./categories-sheet";
-import { FormRow } from "./form-row";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  AddItemManualSheet,
+  type AddItemManualSheetHandle,
+  type ItemManualSheetBasePrefill,
+} from "../../components/add-item-manual-sheet";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,40 +58,38 @@ export const AddActivityManualSheet = forwardRef<
   AddActivityManualSheetHandle,
   AddActivityManualSheetProps
 >(({ tripID, onSaved, onClose }, ref) => {
-  const toast = useToast();
   const createActivity = useCreateActivity();
-  const uploadImage = useUploadImage();
-  const bottomSheetRef = useRef<BottomSheetMethods>(null);
-  const categoriesSheetRef = useRef<BottomSheetMethods>(null);
-  const savedRef = useRef(false);
+  const sheetRef = useRef<AddItemManualSheetHandle>(null);
 
-  // ─── Form state ──────────────────────────────────────────────────────────
-  const [thumbnailUri, setThumbnailUri] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
+  // Activity-specific form state
+  const [price, setPrice] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
   const [locationName, setLocationName] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
-  const [price, setPrice] = useState("");
-  const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
   const [link, setLink] = useState("");
+  const [isPricePickerVisible, setIsPricePickerVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
-  // ─── Imperative handle ───────────────────────────────────────────────────
+  // ─── Ref API ───────────────────────────────────────────────────────────────
+
   useImperativeHandle(ref, () => ({
     open: (prefill) => {
-      if (prefill) {
-        if (prefill.name) setName(prefill.name);
-        if (prefill.description) setDescription(prefill.description);
-        if (prefill.thumbnail_url) setThumbnailUri(prefill.thumbnail_url);
-        if (prefill.media_url) setLink(prefill.media_url);
-      }
-      bottomSheetRef.current?.snapToIndex(0);
+      // Reset activity-specific state every time so previous session doesn't bleed in
+      setPrice(null);
+      setDateRange({ start: null, end: null });
+      setLocationName(null);
+      setLocationLat(null);
+      setLocationLng(null);
+      setLink(prefill?.media_url ?? "");
+      const basePrefill: ItemManualSheetBasePrefill = {
+        name: prefill?.name,
+        description: prefill?.description ?? "",
+        thumbnailUri: prefill?.thumbnail_url ?? undefined,
+      };
+      sheetRef.current?.open(basePrefill);
     },
-    close: () => bottomSheetRef.current?.close(),
+    close: () => sheetRef.current?.close(),
     setLocation: (loc) => {
       setLocationName(loc.name);
       setLocationLat(loc.lat);
@@ -114,50 +97,26 @@ export const AddActivityManualSheet = forwardRef<
     },
   }));
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
+  // ─── Location ──────────────────────────────────────────────────────────────
 
   const handleLocationPress = useCallback(() => {
-    router.push(
-      `/trips/${tripID}/search-location?tripID=${tripID}&returnTo=/trips/${tripID}/activities`,
-    );
+    locationSelectStore.set(async (prediction) => {
+      try {
+        const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
+        setLocationName(res.data.formatted_address || prediction.description || res.data.name);
+        setLocationLat(res.data.geometry.location.lat);
+        setLocationLng(res.data.geometry.location.lng);
+      } catch {
+        setLocationName(prediction.description ?? null);
+      }
+    });
+    router.push(`/trips/${tripID}/search-location?mode=select`);
   }, [tripID]);
 
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setThumbnailUri(null);
-    setCategories([]);
-    setLocationName(null);
-    setLocationLat(null);
-    setLocationLng(null);
-    setPrice("");
-    setDateRange({ start: null, end: null });
-    setLink("");
-  };
+  // ─── Save ──────────────────────────────────────────────────────────────────
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setIsSaving(true);
-    try {
-      let thumbnailURL: string | undefined;
-
-      if (thumbnailUri?.startsWith("http")) {
-        // Remote URL from autofill — use directly
-        thumbnailURL = thumbnailUri;
-      } else if (thumbnailUri) {
-        // Local file — upload and get presigned URL
-        try {
-          const res = await uploadImage.mutateAsync({
-            uri: thumbnailUri,
-            sizes: ["medium"],
-          });
-          const urlRes = await getImageURL(res.imageId, "medium");
-          thumbnailURL = urlRes.url;
-        } catch (uploadErr) {
-          console.warn("Image upload failed, skipping thumbnail:", uploadErr);
-        }
-      }
-
+  const handleSave = useCallback(
+    async ({ name, description, thumbnailURL }: { name: string; description: string; thumbnailURL?: string }) => {
       const dates =
         dateRange.start && dateRange.end
           ? [
@@ -168,182 +127,98 @@ export const AddActivityManualSheet = forwardRef<
             ]
           : undefined;
 
-      const estimatedPrice = parseFloat(price);
-      const result = await createActivity.mutateAsync({
+      return createActivity.mutateAsync({
         tripID,
         data: {
-          name: name.trim(),
-          description: description.trim() || undefined,
-          category_names: categories,
+          name,
+          description: description || undefined,
+          estimated_price: price ?? undefined,
+          dates,
           location_name: locationName ?? undefined,
           location_lat: locationLat ?? undefined,
           location_lng: locationLng ?? undefined,
-          estimated_price: isNaN(estimatedPrice) ? undefined : estimatedPrice,
-          dates,
           thumbnail_url: thumbnailURL,
           media_url: link.trim() || undefined,
         },
       });
+    },
+    [createActivity, tripID, price, dateRange, locationName, locationLat, locationLng, link],
+  );
 
-      toast.show({
-        message: "Activity added",
-        action: { label: "View", onPress: () => {} },
-      });
-      savedRef.current = true;
-      resetForm();
-      onSaved(result);
-    } catch (e) {
-      toast.show({ message: "Couldn't save activity. Try again." });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const formattedDate = formatDateRange(dateRange);
+  const priceLabel = price != null ? `$${price.toLocaleString()} per person` : null;
 
-  const handleCancel = () => {
-    if (savedRef.current) {
-      savedRef.current = false;
-      return;
-    }
-    const hasData = name.trim() || description.trim() || thumbnailUri;
-    if (hasData) {
-      setShowCancelConfirm(true);
-    } else {
-      resetForm();
-      onClose();
-    }
-  };
-
-  const isValid = name.trim().length > 0;
-
-  // ─── Render ──────────────────────────────────────────────────────────────
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
-      <BottomSheet
-        ref={bottomSheetRef}
-        snapPoints={["90%"]}
-        initialIndex={-1}
-        onClose={handleCancel}
-        footer={
-          <Box style={styles.footer}>
-            <Button
-              layout="textOnly"
-              label="Save activity"
-              variant="Primary"
-              disabled={!isValid || isSaving}
-              loading={isSaving}
-              onPress={handleSave}
-            />
-            <Button
-              layout="textOnly"
-              label="Cancel"
-              variant="Tertiary"
-              onPress={handleCancel}
-            />
-          </Box>
-        }
-      >
-        <BottomSheetScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Box paddingHorizontal="sm" paddingTop="sm" alignItems="center">
-            <Text variant="bodySmMedium" color="gray500">
-              Add an activity
-            </Text>
-          </Box>
+      <AddItemManualSheet
+        ref={sheetRef}
+        title="Add an activity"
+        namePlaceholder="New Activity"
+        saveLabel="Save activity"
+        successMessage="Activity added"
+        onSave={handleSave}
+        onSaved={onSaved}
+        onClose={onClose}
+        formRows={
+          <Box style={styles.formRows}>
+            {/* Price */}
+            <Pressable style={styles.formRow} onPress={() => setIsPricePickerVisible(true)}>
+              <DollarSign size={16} color={priceLabel ? ColorPalette.gray700 : ColorPalette.blue500} />
+              <Text
+                variant="bodyStrong"
+                style={priceLabel ? styles.formRowValue : styles.formRowPlaceholder}
+              >
+                {priceLabel ?? "Add price"}
+              </Text>
+            </Pressable>
 
-          <Box paddingHorizontal="sm">
-            <ImagePicker
-              variant="rectangular"
-              width="100%"
-              height={180}
-              value={thumbnailUri ?? undefined}
-              onChange={(uri) => setThumbnailUri(uri)}
-              placeholder="Add cover image"
-            />
-          </Box>
+            {/* Date */}
+            <Pressable style={styles.formRow} onPress={() => setIsDatePickerVisible(true)}>
+              <Calendar size={16} color={formattedDate ? ColorPalette.gray700 : ColorPalette.blue500} />
+              <Text
+                variant="bodyStrong"
+                style={formattedDate ? styles.formRowValue : styles.formRowPlaceholder}
+              >
+                {formattedDate ?? "Add date"}
+              </Text>
+            </Pressable>
 
-          <Box paddingHorizontal="sm" gap="xxs">
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="New Activity"
-              placeholderTextColor={ColorPalette.gray400}
-              style={styles.nameInput}
-            />
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Add a description"
-              placeholderTextColor={ColorPalette.gray400}
-              multiline
-              style={styles.descriptionInput}
-            />
-          </Box>
+            {/* Location */}
+            <Pressable style={styles.formRow} onPress={handleLocationPress}>
+              <MapPin size={16} color={locationName ? ColorPalette.gray700 : ColorPalette.blue500} />
+              <Text
+                variant="bodyStrong"
+                style={locationName ? styles.formRowValue : styles.formRowPlaceholder}
+                numberOfLines={1}
+              >
+                {locationName ?? "Add location"}
+              </Text>
+            </Pressable>
 
-          <Box paddingHorizontal="sm">
-            <Box flexDirection="row" flexWrap="wrap" gap="xs" alignItems="center">
-              {categories.map((cat) => (
-                <Box key={cat} paddingHorizontal="sm" paddingVertical="xxs" style={styles.categoryChip}>
-                  <Text variant="bodyXsMedium" color="gray700">{cat}</Text>
-                </Box>
-              ))}
-              <Pressable onPress={() => categoriesSheetRef.current?.snapToIndex(0)}>
-                <Box flexDirection="row" alignItems="center" gap="xxs" paddingHorizontal="sm" paddingVertical="xxs" style={styles.addCategoryChip}>
-                  <Plus size={12} color={ColorPalette.gray500} />
-                  <Text variant="bodyXsMedium" color="gray500">Add category</Text>
-                </Box>
-              </Pressable>
-            </Box>
-          </Box>
-
-          <Box paddingHorizontal="sm" gap="xxs" borderTopWidth={1} borderTopColor="gray100" paddingTop="sm">
-            <FormRow
-              icon={MapPin}
-              value={locationName ?? undefined}
-              placeholder="Location"
-              onPress={handleLocationPress}
-            />
-            <Box flexDirection="row" alignItems="center" gap="sm" paddingVertical="xs">
-              <DollarSign size={16} color={price ? ColorPalette.gray700 : ColorPalette.gray400} />
-              <TextInput
-                value={price}
-                onChangeText={setPrice}
-                placeholder="Price"
-                placeholderTextColor={ColorPalette.gray400}
-                keyboardType="decimal-pad"
-                style={styles.inlineInput}
-              />
-            </Box>
-            <FormRow
-              icon={Calendar}
-              value={formatDateRange(dateRange) ?? undefined}
-              placeholder="Dates"
-              onPress={() => setIsDatePickerVisible(true)}
-            />
-            <Box flexDirection="row" alignItems="center" gap="sm" paddingVertical="xs">
-              <Link size={16} color={link ? ColorPalette.gray700 : ColorPalette.gray400} />
+            {/* Link */}
+            <View style={styles.formRow}>
+              <Link size={16} color={link ? ColorPalette.gray700 : ColorPalette.blue500} />
               <TextInput
                 value={link}
                 onChangeText={setLink}
-                placeholder="Link"
-                placeholderTextColor={ColorPalette.gray400}
+                placeholder="Add link"
+                placeholderTextColor={ColorPalette.blue500}
                 autoCapitalize="none"
                 keyboardType="url"
-                style={styles.inlineInput}
+                style={[styles.formRowInput, link ? styles.formRowInputFilled : styles.formRowInputEmpty]}
               />
-            </Box>
+            </View>
           </Box>
-        </BottomSheetScrollView>
-      </BottomSheet>
+        }
+      />
 
-      <CategoriesSheet
-        ref={categoriesSheetRef}
-        tripID={tripID}
-        selected={categories}
-        onChange={setCategories}
-        onDone={() => categoriesSheetRef.current?.close()}
+      <PricePicker
+        visible={isPricePickerVisible}
+        value={price ?? undefined}
+        onConfirm={(p) => setPrice(p)}
+        onClose={() => setIsPricePickerVisible(false)}
       />
 
       <DateRangePicker
@@ -355,29 +230,6 @@ export const AddActivityManualSheet = forwardRef<
         }}
         initialRange={dateRange}
       />
-
-      <Dialog
-        visible={showCancelConfirm}
-        onClose={() => setShowCancelConfirm(false)}
-        title={`Cancel adding "${name || "New Activity"}"?`}
-        message="You'll lose any additions you made"
-        actions={[
-          {
-            label: `Delete "${name || "New Activity"}"`,
-            style: "destructive",
-            onPress: () => {
-              setShowCancelConfirm(false);
-              resetForm();
-              onClose();
-            },
-          },
-          {
-            label: `Keep "${name || "New Activity"}"`,
-            style: "default",
-            onPress: () => setShowCancelConfirm(false),
-          },
-        ]}
-      />
     </>
   );
 });
@@ -387,47 +239,33 @@ AddActivityManualSheet.displayName = "AddActivityManualSheet";
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    gap: Layout.spacing.sm,
-    paddingBottom: 120,
+  formRows: {
+    gap: 16,
   },
-  nameInput: {
-    fontFamily: "Figtree-SemiBold",
-    fontSize: 20,
-    color: ColorPalette.gray900,
-    paddingVertical: 4,
+  formRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  descriptionInput: {
-    fontFamily: "Figtree-Regular",
-    fontSize: 14,
-    color: ColorPalette.gray500,
-    paddingVertical: 4,
-  },
-  categoryChip: {
-    borderWidth: 1,
-    borderColor: ColorPalette.gray200,
-    borderRadius: CornerRadius.full,
-  },
-  addCategoryChip: {
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: ColorPalette.gray300,
-    borderRadius: CornerRadius.full,
-  },
-  inlineInput: {
+  formRowPlaceholder: {
+    color: ColorPalette.blue500,
     flex: 1,
-    fontFamily: "Figtree-Regular",
-    fontSize: 14,
-    color: ColorPalette.gray900,
+  },
+  formRowValue: {
+    color: ColorPalette.gray700,
+    flex: 1,
+  },
+  formRowInput: {
+    flex: 1,
+    fontFamily: "Figtree-SemiBold",
+    fontSize: 16,
+    lineHeight: 20,
     paddingVertical: 0,
   },
-  footer: {
-    paddingHorizontal: Layout.spacing.sm,
-    paddingBottom: Layout.spacing.md,
-    paddingTop: Layout.spacing.xs,
-    gap: Layout.spacing.xxs,
-    backgroundColor: ColorPalette.white,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: ColorPalette.gray100,
+  formRowInputEmpty: {
+    color: ColorPalette.blue500,
+  },
+  formRowInputFilled: {
+    color: ColorPalette.gray700,
   },
 });

@@ -2,22 +2,22 @@ import { Box, Text } from "@/design-system";
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Elevation } from "@/design-system/tokens/elevation";
-import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
-import { Heart } from "lucide-react-native";
+import { UserPlus } from "lucide-react-native";
 import { Pressable, StyleSheet } from "react-native";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type ActivityCardProps = {
   activity: ModelsActivityAPIResponse;
   onPress?: () => void;
-  isNew?: boolean;
 };
 
-export function ActivityCard({ activity, onPress, isNew }: ActivityCardProps) {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function ActivityCard({ activity, onPress }: ActivityCardProps) {
   const hasThumbnail = !!activity.thumbnail_url;
-  const goingCount = activity.going_count ?? 0;
   const goingUsers = activity.going_users ?? [];
 
   return (
@@ -26,63 +26,70 @@ export function ActivityCard({ activity, onPress, isNew }: ActivityCardProps) {
       style={({ pressed }) => ({ opacity: pressed ? 0.97 : 1 })}
     >
       <Box style={styles.card}>
-        {/* Thumbnail */}
+        {/* Thumbnail — sits inside card padding, has own border radius */}
         {hasThumbnail && (
-          <Box style={styles.thumbnailContainer}>
-            <Image
-              source={{ uri: activity.thumbnail_url! }}
-              style={styles.thumbnail}
-              contentFit="cover"
-            />
-            {isNew && (
-              <Box style={styles.newBadge}>
-                <Text variant="bodyXxsMedium" color="white">
-                  New • 1m
-                </Text>
-              </Box>
-            )}
-          </Box>
+          <Image
+            source={{ uri: activity.thumbnail_url! }}
+            style={styles.thumbnail}
+            contentFit="cover"
+          />
         )}
 
-        {/* Content */}
-        <Box style={styles.content}>
+        {/* Content: [avatar] [name + price column] [RSVP button] */}
+        <Box
+          flexDirection="row"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          gap="xs"
+        >
+          {/* Left: avatar + name/price column */}
           <Box
             flexDirection="row"
-            alignItems="center"
-            justifyContent="space-between"
+            alignItems="flex-start"
+            gap="xs"
+            style={styles.infoLeft}
           >
-            <Text
-              variant="bodySmMedium"
-              color="gray900"
-              style={{ flex: 1 }}
-              numberOfLines={1}
-            >
-              {activity.name}
-            </Text>
-            <Box flexDirection="row" alignItems="center" gap="xs">
-              {goingCount > 0 && (
-                <Box flexDirection="row" alignItems="center" gap="xxs">
-                  <Heart
-                    size={14}
-                    color={ColorPalette.statusError}
-                    fill={ColorPalette.statusError}
-                  />
-                  <Text variant="bodyXsMedium" color="gray500">
-                    {goingCount}
+            {activity.proposed_by && (
+              <Avatar
+                variant="md"
+                seed={activity.proposed_by}
+                profilePhoto={activity.proposer_picture_url ?? undefined}
+              />
+            )}
+            <Box style={styles.namePrice}>
+              <Text
+                variant="bodyStrong"
+                color="gray950"
+                numberOfLines={1}
+              >
+                {activity.name}
+              </Text>
+              {activity.estimated_price != null && (
+                <Box flexDirection="row">
+                  <Text variant="bodyXsStrong" color="gray950">
+                    ${activity.estimated_price}
+                  </Text>
+                  <Text variant="bodyXsDefault" color="gray950">
+                    {" per person"}
                   </Text>
                 </Box>
               )}
             </Box>
           </Box>
 
-          {activity.estimated_price != null && (
-            <Text variant="bodyXsDefault" color="gray500">
-              ${activity.estimated_price} per person
+          {/* Right: RSVP button — static for now, RSVP interaction is a separate ticket */}
+          <Box style={styles.rsvpButton}>
+            <UserPlus size={12} color={ColorPalette.white} />
+            <Text variant="bodySmStrong" style={styles.rsvpText}>
+              I'm going
             </Text>
-          )}
+          </Box>
+        </Box>
 
-          {goingUsers.length > 0 && (
-            <Box flexDirection="row" alignItems="center" gap="xxs">
+        {/* Comment row */}
+        {goingUsers.length > 0 && (
+          <Box style={styles.commentRow}>
+            <Box flexDirection="row" gap="xxs">
               {goingUsers.slice(0, 3).map((u) => (
                 <Avatar
                   key={u.user_id}
@@ -92,13 +99,7 @@ export function ActivityCard({ activity, onPress, isNew }: ActivityCardProps) {
                 />
               ))}
             </Box>
-          )}
-        </Box>
-
-        {/* Comments row — placeholder, comments ticket is separate */}
-        {isNew && (
-          <Box style={styles.commentRow}>
-            <Text variant="bodyXsMedium" color="blue500">
+            <Text variant="bodySmStrong" style={styles.commentText}>
               1 new comment
             </Text>
           </Box>
@@ -108,38 +109,55 @@ export function ActivityCard({ activity, onPress, isNew }: ActivityCardProps) {
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: ColorPalette.white,
-    borderRadius: CornerRadius.lg,
-    overflow: "hidden",
-    ...Elevation.xs,
-  },
-  thumbnailContainer: {
-    height: 160,
-    width: "100%",
-    position: "relative",
+    borderRadius: 20,
+    padding: 12,
+    gap: 12,
   },
   thumbnail: {
-    width: "100%",
-    height: "100%",
+    width: 346,
+    height: 230,
+    borderRadius: CornerRadius.md,
   },
-  newBadge: {
-    position: "absolute",
-    top: Layout.spacing.xs,
-    left: Layout.spacing.xs,
+  // Left side of content row: shrinks to give RSVP button room
+  infoLeft: {
+    flex: 1,
+    minWidth: 0,
+  },
+  // Name + price stacked, sit to the right of the avatar
+  namePrice: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  rsvpButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     backgroundColor: ColorPalette.brand500,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: CornerRadius.sm,
+    borderRadius: CornerRadius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    flexShrink: 0,
   },
-  content: {
-    padding: Layout.spacing.xs,
-    gap: 4,
+  rsvpText: {
+    color: ColorPalette.white,
+    lineHeight: 16,
   },
   commentRow: {
-    paddingHorizontal: Layout.spacing.xs,
-    paddingVertical: Layout.spacing.xs,
-    backgroundColor: ColorPalette.blue50,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: ColorPalette.blue25,
+    borderRadius: CornerRadius.md,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  commentText: {
+    color: ColorPalette.blue500,
   },
 });

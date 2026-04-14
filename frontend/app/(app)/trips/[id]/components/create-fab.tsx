@@ -16,6 +16,7 @@ const AnimatedBox = Animated.createAnimatedComponent(Box);
 interface CreateFABProps {
   tripID: string;
   onCreatePoll: () => void;
+  onCreateActivity: () => void;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
@@ -28,7 +29,7 @@ const ABSOLUTE_FILL = {
   bottom: 0,
 };
 
-export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
+export default function CreateFAB({ tripID, onCreatePoll, onCreateActivity }: CreateFABProps) {
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
 
@@ -74,7 +75,7 @@ export default function CreateFAB({ tripID, onCreatePoll }: CreateFABProps) {
     {
       label: "Activity",
       icon: MapPin,
-      onPress: () => router.push(`/trips/${tripID}/activities/creation`),
+      onPress: onCreateActivity
     },
     {
       label: "Pitch",
