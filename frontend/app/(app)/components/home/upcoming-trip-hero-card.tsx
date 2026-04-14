@@ -94,6 +94,7 @@ export function UpcomingTripHeroCard({
           layout="leadingIcon"
           variant="Blue"
           leftIcon={BellDot}
+          onPress={() => router.push(`/trips/${tripId}?tab=new`)}
         />
       </Box>
     </Pressable>

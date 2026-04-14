@@ -3,6 +3,7 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
+import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
@@ -38,8 +39,13 @@ const CARD_TOP_OFFSET = 120;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
-  const { id: tripID } = useLocalSearchParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<TabKey>(INITIAL_TAB);
+  const { id: tripID, tab } = useLocalSearchParams<{
+    id: string;
+    tab?: string;
+  }>();
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    (tab as TabKey) || INITIAL_TAB,
+  );
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
@@ -200,17 +206,21 @@ export default function Trip() {
               backgroundColor="gray25"
               style={styles.tabContent}
             >
-              {activeTab === "new" &&
-                trip?.pitch_deadline &&
-                new Date(trip.pitch_deadline) > new Date() && (
-                  <PitchingActiveCard
-                    tripID={tripID}
-                    deadline={new Date(trip.pitch_deadline)}
-                    onViewPitches={() =>
-                      router.push(`/trips/${tripID}/pitches` as any)
-                    }
-                  />
-                )}
+              {activeTab === "new" && (
+                <Box gap="sm">
+                  {trip?.pitch_deadline &&
+                    new Date(trip.pitch_deadline) > new Date() && (
+                      <PitchingActiveCard
+                        tripID={tripID}
+                        deadline={new Date(trip.pitch_deadline)}
+                        onViewPitches={() =>
+                          router.push(`/trips/${tripID}/pitches` as any)
+                        }
+                      />
+                    )}
+                  <ActivityFeedTabContent tripId={tripID} />
+                </Box>
+              )}
               {activeTab === "itinerary" && (
                 <ItineraryTabContent
                   tripID={tripID}
