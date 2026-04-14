@@ -24,7 +24,7 @@ export const AddActivityEntrySheet = forwardRef<
     illustration={require("@/assets/images/binoculars.png")}
     title="Add an activity"
     loadingTitle="Add activity details"
-    subtitle="Easily import from from yelp, tripadvisor, instagram, tiktok, or another social media platform"
+    subtitle="Easily import from from Yelp, Tripadvisor, Instagram, TikTok, or another social media platform"
     loadingSubtitle="Hang tight while we pull the details from your link. This only takes a second or two."
     urlPlaceholder="https://www.yelp.com/biz/your-option"
     onParseLink={(url) => parseActivityLink(tripID, { url })}
