@@ -145,7 +145,7 @@ export default function SearchLocationScreen() {
           <LocationMapView location={selectedLocation} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <Spinner size={32}/>
+            <Spinner size={36}/>
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
