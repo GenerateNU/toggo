@@ -1,11 +1,12 @@
-import { BottomSheet, Box, Button, Text } from "@/design-system";
+import { BottomSheet, Box, Button, Text, TextField } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { X } from "lucide-react-native";
+import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 
 type DeleteAccountSheetProps = {
   bottomSheetRef: React.RefObject<any>;
-  onConfirm: () => void;
+  onConfirm: (usernameInput: string) => void;
   onDismiss?: () => void;
 };
 
@@ -14,9 +15,16 @@ export function DeleteAccountSheet({
   onConfirm,
   onDismiss,
 }: DeleteAccountSheetProps) {
+  const [username, setUsername] = useState("");
+
   const handleNevermind = () => {
+    setUsername("");
     bottomSheetRef.current?.close();
     onDismiss?.();
+  };
+
+  const handleConfirm = () => {
+    onConfirm(username.trim());
   };
 
   return (
@@ -35,24 +43,28 @@ export function DeleteAccountSheet({
 
         <Box gap="xxs">
           <Text variant="headingMd" color="gray950">
-            Delete Account?
-          </Text>
-          <Text variant="bodyDefault" color="gray500">
-            This will permanently delete your account and all your data. This
-            cannot be undone.
+            Input your username to delete your account
           </Text>
         </Box>
+
+        <TextField
+          placeholder="Enter username"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+        />
 
         <Box gap="sm">
           <Button
             layout="textOnly"
             label="Delete Account"
             variant="Destructive"
-            onPress={onConfirm}
+            onPress={handleConfirm}
+            disabled={username.trim().length === 0}
           />
           <Button
             layout="textOnly"
-            label="Nevermind"
+            label="Cancel"
             variant="Secondary"
             onPress={handleNevermind}
           />

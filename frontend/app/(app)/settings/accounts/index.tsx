@@ -1,24 +1,24 @@
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
 import {
-    BackButton,
-    Box,
-    EmptyState,
-    Spinner,
-    Text,
-    TextField,
-    useToast,
+  BackButton,
+  Box,
+  EmptyState,
+  Spinner,
+  Text,
+  TextField,
+  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

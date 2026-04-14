@@ -107,10 +107,7 @@ export default function Settings() {
     data: profileImageData,
     isLoading: isProfileImageLoading,
     errors: profileImageErrors,
-  } = useGetImage(
-    [currentUser?.profile_picture],
-    "small",
-  );
+  } = useGetImage([currentUser?.profile_picture], "small");
   const profilePhotoUrl = profileImageData[0]?.url;
 
   const { mutateAsync: uploadPhoto, isPending: isUploading } =
@@ -146,20 +143,31 @@ export default function Settings() {
     }
   };
 
-  const handleDeleteConfirm = () => {
-    deleteSheetRef.current?.close();
-    if (currentUser?.id) {
-      deleteUser(
-        { userID: currentUser.id },
-        {
-          onError: () => {
-            toast.show({
-              message: "Couldn't delete account. Please try again.",
-            });
-          },
-        },
-      );
+  const handleDeleteConfirm = (usernameInput: string) => {
+    if (!currentUser?.id) return;
+
+    const normalizeUsername = (v: string) =>
+      v.trim().replace(/^@+/, "").toLowerCase();
+
+    const expected = normalizeUsername(currentUser.username ?? "");
+    const entered = normalizeUsername(usernameInput);
+
+    if (!entered || entered !== expected) {
+      toast.show({ message: "Username does not match. Please try again." });
+      return;
     }
+
+    deleteSheetRef.current?.close();
+    deleteUser(
+      { userID: currentUser.id },
+      {
+        onError: () => {
+          toast.show({
+            message: "Couldn't delete account. Please try again.",
+          });
+        },
+      },
+    );
   };
 
   if (isPending) {
@@ -274,7 +282,11 @@ export default function Settings() {
         <Box paddingHorizontal="sm" paddingTop="lg" gap="xs">
           <SectionHeader title="Preferences" />
           <Box gap="xs">
-            <SettingsRow icon={Map} label="Map View" onPress={() => {}} />
+            <SettingsRow
+              icon={Map}
+              label="Map View"
+              onPress={() => router.push("/settings/maps" as any)}
+            />
             <SettingsRow
               icon={Timer}
               label="Time Zone"

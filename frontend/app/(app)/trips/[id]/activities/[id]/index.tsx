@@ -65,7 +65,10 @@ export default function ActivityDetail() {
     return (
       <Screen>
         <Box flex={1} backgroundColor="gray50" justifyContent="center">
-          <ErrorState title="Couldn't load activity" refresh={() => refetch()} />
+          <ErrorState
+            title="Couldn't load activity"
+            refresh={() => refetch()}
+          />
         </Box>
       </Screen>
     );

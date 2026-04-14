@@ -1,6 +1,9 @@
 import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
-import { getAllTripsQueryKey, useGetAllTrips } from "@/api/trips/useGetAllTrips";
+import {
+  getAllTripsQueryKey,
+  useGetAllTrips,
+} from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";

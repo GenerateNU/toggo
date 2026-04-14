@@ -2512,10 +2512,18 @@ export type ModelsUpdateUserNotificationPreferencesRequest = {
 
 export type ModelsUpdateUserRequest = {
   /**
+   * @type boolean | undefined
+   */
+  apple_maps_enabled?: boolean;
+  /**
    * @maxLength 200
    * @type string | undefined
    */
   device_token?: string;
+  /**
+   * @type boolean | undefined
+   */
+  google_maps_enabled?: boolean;
   /**
    * @minLength 1
    * @type string | undefined
@@ -2577,6 +2585,10 @@ export type ModelsUploadURLResponse = {
 
 export type ModelsUser = {
   /**
+   * @type boolean | undefined
+   */
+  apple_maps_enabled?: boolean;
+  /**
    * @type string | undefined
    */
   created_at?: string;
@@ -2588,6 +2600,10 @@ export type ModelsUser = {
    * @type string | undefined
    */
   device_token_updated_at?: string;
+  /**
+   * @type boolean | undefined
+   */
+  google_maps_enabled?: boolean;
   /**
    * @type string | undefined
    */

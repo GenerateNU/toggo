@@ -49,7 +49,9 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			AssertField("username", normalizedUsername).
 			AssertField("name", "John Doe").
-			AssertField("phone_number", phoneNumber)
+			AssertField("phone_number", phoneNumber).
+			AssertField("apple_maps_enabled", true).
+			AssertField("google_maps_enabled", true)
 	})
 
 	t.Run("get created user", func(t *testing.T) {
@@ -62,7 +64,9 @@ func TestUserLifecycle(t *testing.T) {
 			}).
 			AssertStatus(http.StatusOK).
 			AssertField("username", normalizedUsername).
-			AssertField("name", "John Doe")
+			AssertField("name", "John Doe").
+			AssertField("apple_maps_enabled", true).
+			AssertField("google_maps_enabled", true)
 	})
 
 	t.Run("update user", func(t *testing.T) {
@@ -132,6 +136,26 @@ func TestUserLifecycle(t *testing.T) {
 			AssertField("timezone", "Asia/Tokyo")
 	})
 
+	t.Run("update user map preferences", func(t *testing.T) {
+		appleMapsEnabled := false
+		googleMapsEnabled := true
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/users/%s", createdUserID),
+				Method: testkit.PATCH,
+				UserID: &authUserID,
+				Body: models.UpdateUserRequest{
+					AppleMaps:  &appleMapsEnabled,
+					GoogleMaps: &googleMapsEnabled,
+				},
+			}).
+			AssertStatus(http.StatusOK).
+			AssertField("apple_maps_enabled", false).
+			AssertField("google_maps_enabled", true)
+	})
+
 	t.Run("update user with invalid timezone returns 422", func(t *testing.T) {
 		tz := "Invalid/Timezone"
 		testkit.New(t).
@@ -173,7 +197,9 @@ func TestUserLifecycle(t *testing.T) {
 			AssertStatus(http.StatusOK).
 			AssertField("name", "Jane Doe").
 			AssertField("phone_number", "+16175559999").
-			AssertField("timezone", "Asia/Tokyo")
+			AssertField("timezone", "Asia/Tokyo").
+			AssertField("apple_maps_enabled", false).
+			AssertField("google_maps_enabled", true)
 	})
 
 	t.Run("user cannot update another user's profile", func(t *testing.T) {

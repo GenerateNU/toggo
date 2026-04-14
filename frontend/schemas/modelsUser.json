@@ -1,9 +1,11 @@
 {
   "type": "object",
   "properties": {
+    "apple_maps_enabled": { "type": "boolean" },
     "created_at": { "type": "string" },
     "device_token": { "type": "string" },
     "device_token_updated_at": { "type": "string" },
+    "google_maps_enabled": { "type": "boolean" },
     "id": { "type": "string" },
     "name": { "type": "string" },
     "phone_number": { "type": "string" },

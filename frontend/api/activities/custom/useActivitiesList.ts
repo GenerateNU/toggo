@@ -20,17 +20,17 @@ export function useActivitiesList(tripID: string | undefined) {
     hasNextPage,
     refetch,
   } = useInfiniteQuery({
-      queryKey: activitiesQueryKey(tripID ?? ""),
-      queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-        getActivitiesByTripID(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
-      initialPageParam: undefined as string | undefined,
-      getNextPageParam: (lastPage) =>
-        lastPage?.items?.length && lastPage.next_cursor
-          ? lastPage.next_cursor
-          : undefined,
-      refetchOnWindowFocus: false,
-      enabled: !!tripID,
-    });
+    queryKey: activitiesQueryKey(tripID ?? ""),
+    queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+      getActivitiesByTripID(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.items?.length && lastPage.next_cursor
+        ? lastPage.next_cursor
+        : undefined,
+    refetchOnWindowFocus: false,
+    enabled: !!tripID,
+  });
 
   const activities = useMemo(() => {
     const seen = new Set<string>();

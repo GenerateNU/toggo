@@ -1706,9 +1706,13 @@ definitions:
     type: object
   models.UpdateUserRequest:
     properties:
+      apple_maps_enabled:
+        type: boolean
       device_token:
         maxLength: 200
         type: string
+      google_maps_enabled:
+        type: boolean
       name:
         minLength: 1
         type: string
@@ -1755,12 +1759,16 @@ definitions:
     type: object
   models.User:
     properties:
+      apple_maps_enabled:
+        type: boolean
       created_at:
         type: string
       device_token:
         type: string
       device_token_updated_at:
         type: string
+      google_maps_enabled:
+        type: boolean
       id:
         type: string
       name:

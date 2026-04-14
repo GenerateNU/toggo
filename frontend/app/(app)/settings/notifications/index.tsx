@@ -1,18 +1,18 @@
 import {
-    getNotificationPreferencesQueryKey,
-    useGetNotificationPreferences,
+  getNotificationPreferencesQueryKey,
+  useGetNotificationPreferences,
 } from "@/api/notification-preferences/useGetNotificationPreferences";
 import { useGetOrCreateDefaultNotificationPreferences } from "@/api/notification-preferences/useGetOrCreateDefaultNotificationPreferences";
 import { useUpdateNotificationPreferences } from "@/api/notification-preferences/useUpdateNotificationPreferences";
 import {
-    BackButton,
-    Box,
-    EmptyState,
-    ErrorState,
-    SkeletonRect,
-    Text,
-    Toggle,
-    useToast,
+  BackButton,
+  Box,
+  EmptyState,
+  ErrorState,
+  SkeletonRect,
+  Text,
+  Toggle,
+  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";

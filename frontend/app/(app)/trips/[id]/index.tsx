@@ -1,3 +1,4 @@
+import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
 import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
@@ -17,6 +18,7 @@ import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
+import { PAGE_SIZE } from "@/constants/pagination";
 import {
   Box,
   EmptyState,
@@ -32,6 +34,10 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import { formatTripDates } from "@/utils/date-helpers";
+import {
+  activityHasMapLocation,
+  encodeMapViewActivitiesParam,
+} from "@/utils/map-view-activities";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
@@ -54,6 +60,7 @@ export default function Trip() {
   const [activeTab, setActiveTab] = useState<TabKey>(
     (tab as TabKey) || INITIAL_TAB,
   );
+  const [isOpeningMap, setIsOpeningMap] = useState(false);
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
@@ -66,7 +73,11 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
 
-  const { data: trip, isLoading, isError } = useGetTrip(tripID ?? "", {
+  const {
+    data: trip,
+    isLoading,
+    isError,
+  } = useGetTrip(tripID ?? "", {
     query: { enabled: !!tripID },
   });
 
@@ -140,7 +151,9 @@ export default function Trip() {
       });
     } catch (error) {
       console.error("Failed to update trip location:", error);
-      toast.show({ message: "Couldn't update trip location. Please try again." });
+      toast.show({
+        message: "Couldn't update trip location. Please try again.",
+      });
     } finally {
       locationSheetRef.current?.close();
     }
@@ -152,6 +165,46 @@ export default function Trip() {
   };
 
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
+
+  const handleOpenMapView = useCallback(async () => {
+    if (!tripID || isOpeningMap) return;
+
+    setIsOpeningMap(true);
+    try {
+      const allActivities: any[] = [];
+      let cursor: string | undefined;
+
+      for (let i = 0; i < 50; i += 1) {
+        const page = await getActivitiesByTripID(tripID, {
+          limit: PAGE_SIZE,
+          ...(cursor ? { cursor } : {}),
+        });
+
+        const items = page?.items ?? [];
+        allActivities.push(...items);
+
+        if (!page?.next_cursor || items.length === 0) {
+          break;
+        }
+        cursor = page.next_cursor;
+      }
+
+      const locationActivities = allActivities.filter((activity) =>
+        activityHasMapLocation(activity),
+      );
+
+      router.push({
+        pathname: "/map-view",
+        params: {
+          activities: encodeMapViewActivitiesParam(locationActivities),
+        },
+      });
+    } catch {
+      toast.show({ message: "Couldn't load map activities. Please try again." });
+    } finally {
+      setIsOpeningMap(false);
+    }
+  }, [tripID, isOpeningMap, toast]);
 
   if (!tripID) {
     return null;
@@ -172,16 +225,14 @@ export default function Trip() {
           <BackButton hasBackground />
 
           <Pressable
-            onPress={() =>
-              router.push(`/trips/${tripID}/search-location` as any)
-            }
+            onPress={handleOpenMapView}
             style={styles.mapButton}
             accessibilityRole="button"
             accessibilityLabel="View map"
           >
             <Map size={16} color={ColorPalette.gray950} />
             <Text variant="bodySmMedium" color="gray950">
-              Map
+              {isOpeningMap ? "Loading..." : "Map"}
             </Text>
           </Pressable>
         </Box>

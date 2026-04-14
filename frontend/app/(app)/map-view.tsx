@@ -1,3 +1,4 @@
+import { useUser } from "@/contexts/user";
 import {
   BottomSheet,
   Box,
@@ -6,6 +7,7 @@ import {
   Icon,
   Screen,
   Text,
+  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -25,7 +27,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Linking, Platform, Pressable, StyleSheet, View } from "react-native";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 11;
@@ -66,14 +68,19 @@ function formatActivityLocationLine(activity: MapViewActivityForMap): string {
 
 function ActivityDetailSheetBody({
   activity,
+  providerLabel,
+  onOpenDirections,
 }: {
   activity: MapViewActivityForMap;
+  providerLabel: string;
+  onOpenDirections: () => void;
 }) {
   const imageUri = activity.thumbnail_url ?? activity.media_url;
   const scheduleLine = formatMapViewActivityScheduleLine(activity);
 
   return (
-    <Box padding="lg" gap="md">
+    <Pressable onPress={onOpenDirections}>
+      <Box padding="lg" gap="md">
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         {imageUri ? (
           <Image
@@ -120,11 +127,34 @@ function ActivityDetailSheetBody({
           ? activity.description.trim()
           : "No description for this activity yet."}
       </Text>
+      <Button
+        layout="textOnly"
+        variant="Primary"
+        label={`Open in ${providerLabel}`}
+        onPress={onOpenDirections}
+      />
     </Box>
+    </Pressable>
   );
 }
 
+type MapProvider = "apple" | "google";
+
+function resolveProvider(
+  appleEnabled?: boolean,
+  googleEnabled?: boolean,
+): MapProvider {
+  if (appleEnabled && googleEnabled) {
+    return Platform.OS === "ios" ? "apple" : "google";
+  }
+  if (appleEnabled) return "apple";
+  if (googleEnabled) return "google";
+  return Platform.OS === "ios" ? "apple" : "google";
+}
+
 export default function MapViewScreen() {
+  const { currentUser } = useUser();
+  const toast = useToast();
   const { activities: activitiesParam } = useLocalSearchParams<{
     activities?: string;
   }>();
@@ -246,6 +276,33 @@ export default function MapViewScreen() {
     setSelectedActivity(activity);
   };
 
+  const mapProvider = resolveProvider(
+    currentUser?.apple_maps_enabled,
+    currentUser?.google_maps_enabled,
+  );
+
+  const providerLabel = mapProvider === "apple" ? "Apple Maps" : "Google Maps";
+
+  const openDirections = async (activity: MapViewActivityForMap) => {
+    const lat = activity.location_lat;
+    const lng = activity.location_lng;
+    const label = encodeURIComponent(activity.location_name?.trim() || activity.name);
+
+    try {
+      if (mapProvider === "apple") {
+        await Linking.openURL(`http://maps.apple.com/?ll=${lat},${lng}&q=${label}`);
+        return;
+      }
+
+      const nativeGoogleURL = `comgooglemaps://?q=${lat},${lng}`;
+      const webGoogleURL = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      const canOpenNative = await Linking.canOpenURL(nativeGoogleURL);
+      await Linking.openURL(canOpenNative ? nativeGoogleURL : webGoogleURL);
+    } catch {
+      toast.show({ message: "Couldn't open maps. Please try again." });
+    }
+  };
+
   return (
     <Screen edges={[]}>
       <Box flex={1} backgroundColor="gray50">
@@ -309,6 +366,8 @@ export default function MapViewScreen() {
               <ActivityDetailSheetBody
                 key={selectedActivity.id}
                 activity={selectedActivity}
+                providerLabel={providerLabel}
+                onOpenDirections={() => openDirections(selectedActivity)}
               />
             ) : (
               <Box padding="lg" minHeight={Layout.spacing.xxl} />
