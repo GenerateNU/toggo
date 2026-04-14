@@ -107,15 +107,16 @@ export function CreateTripSheet({
 
   const enterSearchMode = () => {
     setIsSearchMode(true);
-    bottomSheetRef.current?.snapToIndex(1);
-    setTimeout(() => searchInputRef.current?.focus(), 300);
+    setTimeout(() => {
+      bottomSheetRef.current?.snapToIndex(0);
+      searchInputRef.current?.focus();
+    }, 100);
   };
 
   const exitSearchMode = () => {
     setIsSearchMode(false);
     setSearchQuery("");
     setPredictions([]);
-    bottomSheetRef.current?.snapToIndex(0);
   };
 
   const handleSelectPrediction = async (prediction: Prediction) => {
@@ -133,14 +134,6 @@ export function CreateTripSheet({
       });
     } finally {
       exitSearchMode();
-    }
-  };
-
-  const handleSheetChange = (index: number) => {
-    if (index === 0 && isSearchMode) {
-      setIsSearchMode(false);
-      setSearchQuery("");
-      setPredictions([]);
     }
   };
 
@@ -173,8 +166,8 @@ export function CreateTripSheet({
     <>
       <BottomSheet
         ref={bottomSheetRef}
-        onChange={handleSheetChange}
         onClose={handleDismiss}
+        {...(isSearchMode && { snapPoints: ["90%"] })}
       >
         {isSearchMode ? (
           // ─── Search state ───────────────────────────────────────────────
@@ -265,7 +258,7 @@ export function CreateTripSheet({
             {/* Close button */}
             <Box flexDirection="row" justifyContent="space-between">
               <Text variant="headingMd" color="gray950">
-                Know where you're going?
+                {"Know where you're going?"}
               </Text>
               <TouchableOpacity
                 onPress={() => {
