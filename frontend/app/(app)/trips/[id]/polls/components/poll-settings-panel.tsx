@@ -1,9 +1,8 @@
-import type { TimeValue } from "@/design-system";
+import type { TimeRange } from "@/design-system";
 import {
   Box,
   DateRangePicker,
   Text,
-  TimePicker,
   Toggle,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -62,7 +61,6 @@ export function PollSettingsPanel({
   onAnonymousChange,
 }: PollSettingsPanelProps) {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-  const [timePickerVisible, setTimePickerVisible] = useState(false);
 
   const hasTime =
     deadline && (deadline.getHours() !== 0 || deadline.getMinutes() !== 0);
@@ -84,17 +82,17 @@ export function PollSettingsPanel({
         })
       : null;
 
-  const initialTime: TimeValue =
+  const initialTimeRange: TimeRange | undefined =
     deadline && hasTime
-      ? (() => {
-          const h = deadline.getHours();
-          return {
-            hour: h % 12 === 0 ? 12 : h % 12,
+      ? {
+          start: {
+            hour: deadline.getHours() % 12 === 0 ? 12 : deadline.getHours() % 12,
             minute: deadline.getMinutes(),
-            period: h < 12 ? "AM" : "PM",
-          };
-        })()
-      : { hour: 12, minute: 0, period: "PM" };
+            period: deadline.getHours() < 12 ? "AM" : "PM",
+          },
+          end: null,
+        }
+      : undefined;
 
   return (
     <Box gap="md">
@@ -130,7 +128,7 @@ export function PollSettingsPanel({
                   </Box>
                 </Pressable>
                 {timeLabel && (
-                  <Pressable onPress={() => setTimePickerVisible(true)}>
+                  <Pressable onPress={() => setDatePickerVisible(true)}>
                     <Box style={styles.deadlineChip}>
                       <Text
                         variant="bodyXsDefault"
@@ -169,47 +167,32 @@ export function PollSettingsPanel({
       <DateRangePicker
         visible={datePickerVisible}
         onClose={() => setDatePickerVisible(false)}
-        onSave={(range) => {
+        onSave={(range, timeRange) => {
           setDatePickerVisible(false);
           if (!range.start) {
             onDeadlineChange(null);
-          } else {
-            const combined = new Date(range.start);
-            if (deadline && hasTime) {
-              combined.setHours(
-                deadline.getHours(),
-                deadline.getMinutes(),
-                0,
-                0,
-              );
-            }
-            onDeadlineChange(combined);
-            setTimePickerVisible(true);
+            return;
           }
-        }}
-        initialRange={{ start: deadline, end: null }}
-        minDate={new Date()}
-      />
-
-      <TimePicker
-        visible={timePickerVisible}
-        initialTime={initialTime}
-        onClose={() => setTimePickerVisible(false)}
-        onSave={(time) => {
-          if (!deadline) return;
-          const combined = new Date(deadline);
-          const h24 =
-            time.period === "AM"
-              ? time.hour === 12
-                ? 0
-                : time.hour
-              : time.hour === 12
-                ? 12
-                : time.hour + 12;
-          combined.setHours(h24, time.minute, 0, 0);
+          const combined = new Date(range.start);
+          if (timeRange.start) {
+            const h24 =
+              timeRange.start.period === "AM"
+                ? timeRange.start.hour === 12
+                  ? 0
+                  : timeRange.start.hour
+                : timeRange.start.hour === 12
+                  ? 12
+                  : timeRange.start.hour + 12;
+            combined.setHours(h24, timeRange.start.minute, 0, 0);
+          }
           onDeadlineChange(combined);
-          setTimePickerVisible(false);
         }}
+        singleDate
+        allowSelectTime
+        singleTimeSelection
+        initialRange={{ start: deadline, end: null }}
+        initialTimeRange={initialTimeRange}
+        minDate={new Date()}
       />
     </Box>
   );
