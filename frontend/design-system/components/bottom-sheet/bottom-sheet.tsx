@@ -25,6 +25,8 @@ const MAX_DYNAMIC_HEIGHT = Dimensions.get("window").height * 0.9;
 interface BottomSheetModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** Custom snap points — disables dynamic sizing when provided */
+  snapPoints?: (string | number)[];
   initialIndex?: number;
   onClose?: () => void;
   onChange?: (index: number) => void;
@@ -40,6 +42,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       onChange,
       children,
       footer,
+      snapPoints,
       initialIndex = -1,
       onClose,
       disableClose = false,
@@ -120,8 +123,10 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           onChange={handleChange}
           backdropComponent={renderBackdrop}
           footerComponent={footer ? renderFooter : undefined}
-          enableDynamicSizing
-          maxDynamicContentSize={MAX_DYNAMIC_HEIGHT}
+          {...(snapPoints
+            ? { snapPoints, enableDynamicSizing: false }
+            : { enableDynamicSizing: true, maxDynamicContentSize: MAX_DYNAMIC_HEIGHT }
+          )}
           keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={!disableClose}
