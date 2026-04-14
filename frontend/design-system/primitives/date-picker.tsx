@@ -9,33 +9,22 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import InlineTimePicker from "./inline-time-picker";
-import type { TimeRange } from "./inline-time-picker";
 import { ColorPalette } from "../tokens/color";
 import { CornerRadius } from "../tokens/corner-radius";
 import { Layout } from "../tokens/layout";
-
-export type { TimeRange } from "./inline-time-picker";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type DateRange = { start: Date | null; end: Date | null };
 
-const DEFAULT_TIME_RANGE: TimeRange = { start: null, end: null };
-
 export type DateRangePickerProps = {
   visible: boolean;
   onClose: () => void;
-  onSave: (range: DateRange, timeRange: TimeRange) => void;
+  onSave: (range: DateRange) => void;
   initialRange?: DateRange;
   monthsToShow?: number;
   minDate?: Date;
   singleDate?: boolean;
-  /** When true, renders an inline time picker above the calendar. */
-  allowSelectTime?: boolean;
-  /** When true, the time picker only allows a single time (no range). */
-  singleTimeSelection?: boolean;
-  initialTimeRange?: TimeRange;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -234,19 +223,12 @@ export default function DateRangePicker({
   monthsToShow = 12,
   minDate,
   singleDate = false,
-  allowSelectTime = false,
-  singleTimeSelection = false,
-  initialTimeRange,
 }: DateRangePickerProps) {
   const [range, setRange] = useState<DateRange>(initialRange);
-  const [timeRange, setTimeRange] = useState<TimeRange>(
-    initialTimeRange ?? DEFAULT_TIME_RANGE,
-  );
 
-  // Initialize range and time when modal opens
+  // Initialize range when modal opens
   useEffect(() => {
     if (visible) {
-      // Only clear if no initialRange provided, otherwise use initialRange
       if (!initialRange.start && !initialRange.end) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setRange({ start: null, end: null });
@@ -254,10 +236,8 @@ export default function DateRangePicker({
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setRange(initialRange);
       }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTimeRange(initialTimeRange ?? DEFAULT_TIME_RANGE);
     }
-  }, [visible, initialRange, initialTimeRange]);
+  }, [visible, initialRange]);
 
   // Normalize minDate to midnight for accurate date comparisons
   const normalizedMinDate = useMemo(() => {
@@ -334,11 +314,10 @@ export default function DateRangePicker({
 
   const handleClear = () => {
     setRange({ start: null, end: null });
-    setTimeRange(DEFAULT_TIME_RANGE);
   };
 
   const handleSave = () => {
-    onSave(range, timeRange);
+    onSave(range);
     onClose();
   };
 
@@ -427,15 +406,12 @@ export default function DateRangePicker({
           ))}
         </Box>
 
-        {/* ─── Calendar + optional time picker ─────────────────────── */}
+        {/* ─── Calendar ────────────────────────────────────────────── */}
         <Box style={styles.calendarArea}>
           <ScrollView
             style={styles.scroll}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.scrollContent,
-              allowSelectTime && styles.scrollContentWithTimePicker,
-            ]}
+            contentContainerStyle={styles.scrollContent}
           >
             {months.map(({ year, month }) => (
               <MonthGrid
@@ -448,16 +424,6 @@ export default function DateRangePicker({
               />
             ))}
           </ScrollView>
-
-          {allowSelectTime && (
-            <Box style={styles.timePickerOverlay}>
-              <InlineTimePicker
-                singleTime={singleTimeSelection}
-                value={timeRange}
-                onChange={setTimeRange}
-              />
-            </Box>
-          )}
         </Box>
 
         {/* ─── Footer ───────────────────────────────────────────────── */}
@@ -580,18 +546,6 @@ const styles = StyleSheet.create({
     paddingTop: Layout.spacing.xs,
     paddingBottom: 120,
   },
-  scrollContentWithTimePicker: {
-    paddingBottom: 340,
-  },
-
-  /* Time picker overlay */
-  timePickerOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-
   /* Month */
   monthBlock: {
     paddingHorizontal: GRID_PADDING,
