@@ -1,8 +1,8 @@
 import { Box, Text } from "@/design-system";
 import { Image } from "expo-image";
 import { ScrollView } from "react-native";
+import { Elevation } from "@/design-system/tokens/elevation";
 import {
-  HOME_CARD_FLOATING_SHADOW,
   HOME_RECOMMENDED_CARD_WIDTH,
   RECOMMENDED_DESTINATIONS,
 } from "./constants";
@@ -20,7 +20,7 @@ export function RecommendedTripsRow() {
             padding="xs"
             gap="xs"
             style={[
-              HOME_CARD_FLOATING_SHADOW,
+              Elevation.sm,
               index === 0 ? { transform: [{ rotate: "-1deg" }] } : undefined,
             ]}
           >

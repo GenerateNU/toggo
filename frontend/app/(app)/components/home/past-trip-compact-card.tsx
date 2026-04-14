@@ -4,10 +4,8 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { MapPin } from "lucide-react-native";
 import { Pressable } from "react-native";
-import {
-  HOME_CARD_FLOATING_SHADOW,
-  HOME_PAST_TRIP_IMAGE_SIZE,
-} from "./constants";
+import { Elevation } from "@/design-system/tokens/elevation";
+import { HOME_PAST_TRIP_IMAGE_SIZE } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
 
 type PastTripCompactCardProps = {
@@ -32,7 +30,7 @@ export function PastTripCompactCard({
         padding="xs"
         flexDirection="row"
         gap="sm"
-        style={HOME_CARD_FLOATING_SHADOW}
+        style={Elevation.sm}
       >
         <Box borderRadius="sm" overflow="hidden">
           {trip.cover_image_url ? (

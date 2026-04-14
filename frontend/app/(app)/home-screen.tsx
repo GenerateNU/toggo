@@ -7,10 +7,7 @@ import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet"
 import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
   HOME_HEADER_BUTTON_SIZE,
-  HOME_LOGO_FONT_SIZE,
-  HOME_LOGO_LINE_HEIGHT,
   HOME_NULL_DATE_DISPLAY,
-  HOME_SECTION_VERTICAL_PADDING,
   HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
 import { HomeUpcomingEmptyCard } from "@/app/(app)/components/home/home-upcoming-empty-card";
@@ -324,14 +321,7 @@ export default function HomeScreen() {
             accessibilityLabel={profile.accessibilityLabel}
             onPress={() => router.push("/settings")}
           />
-          <Text
-            variant="logoXl"
-            color="brand500"
-            style={{
-              fontSize: HOME_LOGO_FONT_SIZE,
-              lineHeight: HOME_LOGO_LINE_HEIGHT,
-            }}
-          >
+          <Text variant="logoLx" color="brand500">
             toggo
           </Text>
           <Pressable
@@ -373,11 +363,7 @@ export default function HomeScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box
-                  paddingHorizontal="sm"
-                  gap="sm"
-                  style={{ paddingTop: HOME_SECTION_VERTICAL_PADDING }}
-                >
+                <Box paddingHorizontal="sm" gap="sm" paddingTop="lx">
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -406,7 +392,7 @@ export default function HomeScreen() {
                     paddingLeft: Layout.spacing.sm,
                     paddingRight: Layout.spacing.sm,
                   }}
-                  style={{ paddingBottom: HOME_SECTION_VERTICAL_PADDING }}
+                  style={{ paddingBottom: Layout.spacing.lx }}
                 >
                   <Box flexDirection="row" gap="sm">
                     {upcoming.map((trip) => {
@@ -461,14 +447,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box
-            paddingHorizontal="sm"
-            gap="sm"
-            style={{
-              paddingTop: HOME_SECTION_VERTICAL_PADDING,
-              paddingBottom: HOME_SECTION_VERTICAL_PADDING,
-            }}
-          >
+          <Box paddingHorizontal="sm" gap="sm" paddingVertical="lx">
             <Text variant="headingMd" color="gray950">
               Past Trips
             </Text>
@@ -495,13 +474,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box
-            gap="sm"
-            style={{
-              paddingTop: HOME_SECTION_VERTICAL_PADDING,
-              paddingBottom: HOME_SECTION_VERTICAL_PADDING,
-            }}
-          >
+          <Box gap="sm" paddingVertical="lx">
             <Box paddingHorizontal="sm">
               <Text variant="headingMd" color="gray950">
                 Recommended Trips
