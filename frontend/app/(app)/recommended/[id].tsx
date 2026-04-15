@@ -330,7 +330,7 @@ export default function RecommendedDestinationScreen() {
         >
           <BackButton />
           <Box flex={1} alignItems="center" paddingHorizontal="xs">
-            <Text variant="headingSm" color="gray950" numberOfLines={1}>
+            <Text variant="headingMd" color="gray950" numberOfLines={1}>
               {destination.title}
             </Text>
           </Box>
