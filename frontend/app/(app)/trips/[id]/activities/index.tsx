@@ -1,12 +1,12 @@
 import { useCreateActivity } from "@/api/activities";
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
+import { useUser } from "@/contexts/user";
 import { Box, Screen, Spinner, Text } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { useUser } from "@/contexts/user";
-import { modelsEntityType } from "@/types/types.gen";
 import type { ModelsActivity } from "@/types/types.gen";
+import { modelsEntityType } from "@/types/types.gen";
 import {
   activityHasMapLocation,
   encodeMapViewActivitiesParam,

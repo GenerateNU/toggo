@@ -138,14 +138,13 @@ export default function SearchLocationScreen() {
           onDismiss={() => router.back()}
           isLoading={isLoadingPredictions}
         />
-
         {showPredictions ? (
           <PredictionsList
             predictions={predictions}
             onSelect={handleSelectPrediction}
           />
         ) : showMap ? (
-          <LocationMapView location={selectedLocation} />
+          <LocationMapView location={selectedLocation!} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
             <Spinner size={36} />
@@ -215,7 +214,6 @@ function SearchHeader({
           </TouchableOpacity>
         )}
       </Box>
-
       <TextField
         value={query}
         onChangeText={onChangeQuery}
@@ -239,7 +237,7 @@ function PredictionsList({
   onSelect,
 }: {
   predictions: Prediction[];
-  onSelect: (prediction: Prediction) => void;
+  onSelect: (p: Prediction) => void;
 }) {
   return (
     <FlatList
@@ -263,7 +261,6 @@ function PredictionsList({
       ItemSeparatorComponent={() => (
         <Box style={styles.separator} backgroundColor="gray50" />
       )}
-      style={styles.predictionsList}
     />
   );
 }
@@ -275,7 +272,6 @@ function LocationMapView({ location }: { location: LocationDetails }) {
     location.geometry.location.lng,
     location.geometry.location.lat,
   ];
-
   return (
     <View style={styles.mapContainer}>
       <MapView
@@ -296,7 +292,6 @@ function LocationMapView({ location }: { location: LocationDetails }) {
           </View>
         </PointAnnotation>
       </MapView>
-
       <View style={styles.locationLabel} pointerEvents="none">
         <Box
           backgroundColor="white"
@@ -313,7 +308,7 @@ function LocationMapView({ location }: { location: LocationDetails }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   header: {
