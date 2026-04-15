@@ -6,7 +6,6 @@ import {
   ChartColumnBig,
   House,
   List,
-  PiggyBank,
   type LucideIcon,
 } from "lucide-react-native";
 import { ScrollView, StyleSheet } from "react-native";
@@ -18,7 +17,6 @@ export type TabKey =
   | "itinerary"
   | "polls"
   | "housing"
-  | "budget"
   | "activities"
   | "settings";
 
@@ -36,7 +34,6 @@ export function TripTabBar({ activeTab, onTabPress }: TripTabBarProps) {
       { key: "itinerary", label: "Itinerary", icon: List },
       { key: "polls", label: "Polls", icon: ChartColumnBig },
       { key: "housing", label: "Housing", icon: House },
-      { key: "budget", label: "Budget", icon: PiggyBank },
       { key: "activities", label: "Activities", icon: Binoculars },
     ];
 

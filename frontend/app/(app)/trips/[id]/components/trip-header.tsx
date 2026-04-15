@@ -1,7 +1,6 @@
-import { Logo } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
+import { Box, ImagePicker } from "@/design-system";
 import { Image } from "expo-image";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -11,21 +10,49 @@ const TRIP_HEADER_IMAGE_HEIGHT = 300;
 
 type TripHeaderProps = {
   coverImageUrl?: string;
+  onChangeCoverImage?: (uri: string | null) => void;
+  isCoverUploading?: boolean;
+  disabled?: boolean;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TripHeader({ coverImageUrl }: TripHeaderProps) {
-  return coverImageUrl ? (
-    <Image
-      source={{ uri: coverImageUrl }}
-      style={styles.coverImage}
-      contentFit="cover"
-    />
-  ) : (
-    <View style={[styles.coverImage, styles.coverImageFallback]}>
-      <Logo color="white" size="xxxl" />
-    </View>
+export function TripHeader({
+  coverImageUrl,
+  onChangeCoverImage,
+  isCoverUploading,
+  disabled,
+}: TripHeaderProps) {
+  if (coverImageUrl) {
+    return (
+      <Box style={styles.coverImage}>
+        <Image
+          source={{ uri: coverImageUrl }}
+          style={styles.coverImageFill}
+          contentFit="cover"
+        />
+      </Box>
+    );
+  }
+
+  return (
+    <Box style={styles.coverImage}>
+      <ImagePicker
+        variant="rectangular"
+        width="100%"
+        height={TRIP_HEADER_IMAGE_HEIGHT}
+        value={coverImageUrl}
+        onChange={onChangeCoverImage}
+        placeholder=""
+        showPlaceholderText={false}
+        emptyStateBackgroundColor="blue25"
+        emptyStateIconColor="blue500"
+        disabled={disabled || isCoverUploading}
+        title="Change cover photo"
+        showCameraAction={false}
+        showRemoveAction={false}
+      />
+    </Box>
   );
 }
 
@@ -39,10 +66,9 @@ const styles = StyleSheet.create({
     right: 0,
     height: TRIP_HEADER_IMAGE_HEIGHT,
   },
-  coverImageFallback: {
-    backgroundColor: ColorPalette.brand400,
-    alignItems: "center",
-    justifyContent: "center",
+  coverImageFill: {
+    width: "100%",
+    height: "100%",
   },
 });
 

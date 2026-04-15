@@ -311,8 +311,14 @@ export default function TripSettings() {
             height={200}
             value={trip?.cover_image_url}
             onChange={handleCoverImageChange}
-            placeholder={isCoverUploading ? "Uploading..." : "Add cover image"}
+            placeholder=""
+            showPlaceholderText={false}
+            emptyStateBackgroundColor="blue25"
+            emptyStateIconColor="blue500"
             disabled={isCoverUploading || isLoadingTrip}
+            title="Change cover photo"
+            showCameraAction={false}
+            showRemoveAction={false}
           />
         </Box>
 

@@ -1,5 +1,7 @@
 import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
+import { useUploadImage } from "@/api/files/custom/useImageUpload";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
+import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
 import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
@@ -65,6 +67,7 @@ export default function Trip() {
   const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
+  const uploadImageMutation = useUploadImage();
   const queryClient = useQueryClient();
   const parentScrollViewRef = useRef<ScrollView>(null);
   const parentScrollOffsetRef = useRef(0);
@@ -80,6 +83,36 @@ export default function Trip() {
   } = useGetTrip(tripID ?? "", {
     query: { enabled: !!tripID },
   });
+  const isCoverUploading =
+    uploadImageMutation.isPending || updateTripMutation.isPending;
+
+  const handleCoverImageChange = async (uri: string | null) => {
+    if (!tripID || !uri) return;
+
+    try {
+      const { imageId } = await uploadImageMutation.mutateAsync({
+        uri,
+        sizes: ["large", "medium"],
+      });
+
+      await updateTripMutation.mutateAsync({
+        tripID,
+        data: {
+          cover_image_id: imageId,
+        },
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getTripQueryKey(tripID) }),
+        queryClient.invalidateQueries({ queryKey: getAllTripsQueryKey({}) }),
+        queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY }),
+      ]);
+
+      toast.show({ message: "Cover image updated." });
+    } catch {
+      toast.show({ message: "Couldn't update cover image. Please try again." });
+    }
+  };
 
   const handleTabPress = (tab: TabKey) => {
     if (tab === "settings") {
@@ -214,9 +247,18 @@ export default function Trip() {
 
   return (
     <View style={styles.container}>
-      <TripHeader coverImageUrl={trip?.cover_image_url} />
+      <TripHeader
+        coverImageUrl={trip?.cover_image_url}
+        onChangeCoverImage={handleCoverImageChange}
+        isCoverUploading={isCoverUploading}
+        disabled={isLoading}
+      />
 
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top"]}
+        pointerEvents="box-none"
+      >
         <Box
           flexDirection="row"
           justifyContent="space-between"

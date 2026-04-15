@@ -296,12 +296,17 @@ export default function HomeScreen() {
       });
       if (!result?.id) return;
 
-      if (params.startDate) {
+      const hasTripDetailsToUpdate = Boolean(
+        params.startDate || params.endDate || params.locationName,
+      );
+
+      if (hasTripDetailsToUpdate) {
         await updateTripMutation.mutateAsync({
           tripID: result.id,
           data: {
-            start_date: params.startDate,
+            ...(params.startDate ? { start_date: params.startDate } : {}),
             ...(params.endDate ? { end_date: params.endDate } : {}),
+            ...(params.locationName ? { location: params.locationName } : {}),
           },
         });
       }
