@@ -27,13 +27,34 @@ export type TripMapActivity = {
 export type MapCategoryFilter = "all" | string;
 
 /**
+ * Category slugs that use the housing/transport card style (Style A).
+ * Add synonyms here as needed — the card and pin both reference this.
+ */
+export const HOUSING_TRANSPORT_CATEGORIES = new Set([
+  "housing",
+  "accommodation",
+  "hotel",
+  "lodging",
+  "transportation",
+  "transport",
+  "transit",
+]);
+
+/** Returns true when the first category name belongs to housing or transportation. */
+export function isHousingOrTransportType(categoryNames?: string[]): boolean {
+  return (
+    categoryNames?.some((name) =>
+      HOUSING_TRANSPORT_CATEGORIES.has(name.toLowerCase().trim()),
+    ) ?? false
+  );
+}
+
+/**
  * Converts a backend category slug to Title Case for display.
  * e.g. "activities" → "Activities", "day_trips" → "Day Trips"
  */
 export function formatCategoryLabel(slug: string): string {
-  return slug
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function toTripMapActivity(

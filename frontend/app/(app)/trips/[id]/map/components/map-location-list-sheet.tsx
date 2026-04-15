@@ -5,7 +5,11 @@ import { CoreSize } from "@/design-system/tokens/core-size";
 import { Layout, ModalHandle } from "@/design-system/tokens/layout";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { MapSpacing } from "../tokens";
-import { formatCategoryLabel, type MapCategoryFilter, type TripMapActivity } from "../types";
+import {
+  formatCategoryLabel,
+  type MapCategoryFilter,
+  type TripMapActivity,
+} from "../types";
 import { getActivityCategoryIcon } from "./map-pin";
 import { MapLocationCard } from "./map-location-card";
 

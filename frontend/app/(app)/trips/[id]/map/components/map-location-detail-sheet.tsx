@@ -109,24 +109,29 @@ export function MapLocationDetailSheetContent({
         <Pressable style={styles.commentsPill}>
           <View style={styles.commentsPillInner}>
             <View style={styles.avatarStack}>
-              {commentPreviews.slice(0, MAX_COMMENT_AVATARS).map((user, index) => (
-                <View
-                  key={user.user_id ?? index}
-                  style={[
-                    // Figma: mr-[-4px] overlap between 16px avatars
-                    index > 0 && { marginLeft: -Layout.spacing.xxs },
-                    { zIndex: 1 },
-                  ]}
-                >
-                  <Avatar
-                    variant="xs"
-                    seed={user.user_id ?? String(index)}
-                    profilePhoto={user.profile_picture_url ?? undefined}
-                  />
-                </View>
-              ))}
+              {commentPreviews
+                .slice(0, MAX_COMMENT_AVATARS)
+                .map((user, index) => (
+                  <View
+                    key={user.user_id ?? index}
+                    style={[
+                      // Figma: mr-[-4px] overlap between 16px avatars
+                      index > 0 && { marginLeft: -Layout.spacing.xxs },
+                      { zIndex: 1 },
+                    ]}
+                  >
+                    <Avatar
+                      variant="xs"
+                      seed={user.user_id ?? String(index)}
+                      profilePhoto={user.profile_picture_url ?? undefined}
+                    />
+                  </View>
+                ))}
               {commentPreviews.length === 0 && (
-                <MessageCircle size={CoreSize.xs} color={ColorPalette.gray500} />
+                <MessageCircle
+                  size={CoreSize.xs}
+                  color={ColorPalette.gray500}
+                />
               )}
             </View>
             <Text variant="bodySmStrong" color="gray950">

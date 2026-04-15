@@ -292,9 +292,7 @@ export default function Trip() {
                 <BackButton hasBackground />
 
                 <Pressable
-                  onPress={() =>
-                    router.push(`/trips/${tripID}/map` as any)
-                  }
+                  onPress={() => router.push(`/trips/${tripID}/map` as any)}
                   style={styles.mapButton}
                   accessibilityRole="button"
                   accessibilityLabel="View map"

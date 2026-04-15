@@ -36,14 +36,19 @@ const DEFAULT_ZOOM = 11;
 const DEFAULT_CENTER: [number, number] = [-122.4194, 37.7749];
 const ACTIVITIES_FETCH_LIMIT = 100;
 
-// List sheet: peek and expanded
+/** List sheet snap points: peek (38%) and fully expanded (82%). */
 const LIST_SNAP_POINTS: (string | number)[] = ["38%", "82%"];
-// Detail sheet: fixed height sufficient for the detail content
+/** Detail sheet: fixed height avoids dynamic-sizing measurement delay. */
 const DETAIL_SNAP_POINTS: (string | number)[] = ["55%"];
+
+/** Vertical offset of the floating back button below the safe-area top. */
+const BACK_BUTTON_TOP_OFFSET = Layout.spacing.md;
+/** Vertical offset of the loading badge below the safe-area top. */
+const LOADING_BADGE_TOP_OFFSET = Layout.spacing.xl + Layout.spacing.md;
 
 const CAMERA_PADDING = {
   paddingTop: Layout.spacing.xl,
-  paddingBottom: Layout.spacing.xl + 80,
+  paddingBottom: Layout.spacing.xl + Layout.spacing.xl,
   paddingLeft: Layout.spacing.md,
   paddingRight: Layout.spacing.md,
 };
@@ -178,7 +183,10 @@ export default function TripMapScreen() {
       {/* Floating back button */}
       <Pressable
         onPress={() => router.back()}
-        style={[styles.backButton, { top: insets.top + 24 }]}
+        style={[
+          styles.backButton,
+          { top: insets.top + BACK_BUTTON_TOP_OFFSET },
+        ]}
         accessibilityRole="button"
         accessibilityLabel="Go back"
       >
@@ -187,14 +195,19 @@ export default function TripMapScreen() {
 
       {/* Loading indicator */}
       {isLoading && (
-        <View style={[styles.loadingOverlay, { top: insets.top + 80 }]}>
+        <View
+          style={[
+            styles.loadingOverlay,
+            { top: insets.top + LOADING_BADGE_TOP_OFFSET },
+          ]}
+        >
           <Box
             backgroundColor="white"
             padding="xs"
             borderRadius="md"
             style={styles.loadingBadge}
           >
-            <Spinner size={20} />
+            <Spinner size={CoreSize.iconSm} />
           </Box>
         </View>
       )}
