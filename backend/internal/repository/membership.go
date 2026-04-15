@@ -23,6 +23,7 @@ type MembershipRepository interface {
 	IsAdmin(ctx context.Context, tripID, userID uuid.UUID) (bool, error)
 	CountMembers(ctx context.Context, tripID uuid.UUID) (int, error)
 	CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error)
+	GetMemberStatsForTrips(ctx context.Context, tripIDs []uuid.UUID) (map[uuid.UUID]*models.TripMemberStats, error)
 	Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error)
 	UpdateNotificationPreferences(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateNotificationPreferencesRequest) (*models.Membership, error)
 	Delete(ctx context.Context, userID, tripID uuid.UUID) error
@@ -132,6 +133,78 @@ func (r *membershipRepository) FindByTripIDWithCursor(ctx context.Context, tripI
 	}
 
 	return memberships, nextCursor, nil
+}
+
+func (r *membershipRepository) GetMemberStatsForTrips(ctx context.Context, tripIDs []uuid.UUID) (map[uuid.UUID]*models.TripMemberStats, error) {
+	result := make(map[uuid.UUID]*models.TripMemberStats, len(tripIDs))
+	if len(tripIDs) == 0 {
+		return result, nil
+	}
+
+	type statsRow struct {
+		TripID           uuid.UUID `bun:"trip_id"`
+		UserID           uuid.UUID `bun:"user_id"`
+		MemberName       string    `bun:"member_name"`
+		MemberUsername   string    `bun:"member_username"`
+		MemberPfpKey     *string   `bun:"member_pfp_key"`
+		TotalMemberCount int       `bun:"total_member_count"`
+	}
+
+	var rows []statsRow
+	err := r.db.NewSelect().
+		TableExpr(`(
+			SELECT
+				m.trip_id,
+				m.user_id,
+				u.name                                                                                     AS member_name,
+				u.username                                                                                 AS member_username,
+				pfp.file_key                                                                               AS member_pfp_key,
+				COUNT(*) OVER (PARTITION BY m.trip_id)                                                    AS total_member_count,
+				ROW_NUMBER() OVER (PARTITION BY m.trip_id ORDER BY m.created_at, m.user_id)               AS rn
+			FROM memberships AS m
+			JOIN users AS u ON u.id = m.user_id
+			LEFT JOIN images AS pfp
+				ON u.profile_picture IS NOT NULL
+				AND pfp.image_id = u.profile_picture
+				AND pfp.size = ?
+				AND pfp.status = ?
+			WHERE m.trip_id IN (?)
+		) AS ranked`,
+			models.ImageSizeSmall,
+			models.UploadStatusConfirmed,
+			bun.In(tripIDs),
+		).
+		ColumnExpr("trip_id, user_id, member_name, member_username, member_pfp_key, total_member_count").
+		Where("rn <= ?", 3).
+		Scan(ctx, &rows)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range rows {
+		stats, ok := result[row.TripID]
+		if !ok {
+			stats = &models.TripMemberStats{Count: row.TotalMemberCount}
+			result[row.TripID] = stats
+		}
+		stats.Previews = append(stats.Previews, models.TripMemberPreviewDB{
+			UserID:            row.UserID,
+			Name:              row.MemberName,
+			Username:          row.MemberUsername,
+			ProfilePictureKey: row.MemberPfpKey,
+		})
+	}
+
+	for _, tripID := range tripIDs {
+		if _, ok := result[tripID]; !ok {
+			result[tripID] = &models.TripMemberStats{
+				Count:    0,
+				Previews: []models.TripMemberPreviewDB{},
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // FindByUserID retrieves all trips a user is a member of

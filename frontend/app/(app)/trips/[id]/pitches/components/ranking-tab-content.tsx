@@ -1,9 +1,9 @@
 import type { RankedPitchItem } from "@/api/pitches/custom/useRankingData";
-import { Box, Icon, Text } from "@/design-system";
+import { Box, Icon, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Elevation } from "@/design-system/tokens/elevation";
 import { ArrowUpDown, ChevronRight } from "lucide-react-native";
-import { ActivityIndicator, Pressable, ScrollView } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import { RankingSummaryCard } from "./ranking-summary-card";
 
 interface RankingTabContentProps {
@@ -120,7 +120,7 @@ export function RankingTabContent({
 
       {!pollId && hasPitches && (
         <Box padding="md" alignItems="center">
-          <ActivityIndicator />
+          <Spinner />
         </Box>
       )}
     </ScrollView>

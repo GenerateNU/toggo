@@ -39,7 +39,6 @@ export function AddLinkSheet({ onClose, onAdd }: AddLinkSheetProps) {
   return (
     <BottomSheetComponent
       ref={sheetRef}
-      snapPoints={["45%"]}
       initialIndex={0}
       onClose={handleClose}
       footer={
@@ -75,7 +74,7 @@ export function AddLinkSheet({ onClose, onAdd }: AddLinkSheetProps) {
           Add a link
         </Text>
         <Pressable onPress={handleClose} hitSlop={8}>
-          <X size={20} color={ColorPalette.gray500} />
+          <X size={24} color={ColorPalette.gray500} />
         </Pressable>
       </Box>
 

@@ -1,3 +1,24 @@
+export const Shadow = {
+  sm: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 7.5,
+    elevation: 3,
+    spreadRadius: -5,
+  },
+  md: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 7.5,
+    elevation: 4,
+    spreadRadius: -5,
+  },
+} as const;
+
+export type ShadowKey = keyof typeof Shadow;
+
 export const Elevation = {
   xs: {
     shadowColor: "#000000",

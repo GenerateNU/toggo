@@ -1,10 +1,10 @@
-import { Avatar, Box, Icon, Text } from "@/design-system";
+import { Avatar, Box, Spinner, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import type { ModelsVoterInfo } from "@/types/types.gen";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { X } from "lucide-react-native";
 import { useEffect, useRef } from "react";
-import { ActivityIndicator, Pressable } from "react-native";
+import { Pressable } from "react-native";
 
 interface RankingVotersSheetProps {
   visible: boolean;
@@ -43,7 +43,6 @@ export function RankingVotersSheet({
       initialIndex={-1}
       snapPoints={["46%"]}
       onClose={onClose}
-      hideHandle={true}
     >
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="sm" gap="sm">
         <Box
@@ -60,7 +59,7 @@ export function RankingVotersSheet({
             hitSlop={8}
             style={{ position: "absolute", right: 0 }}
           >
-            <Icon icon={X} size="sm" color="gray500" />
+            <X size={24} />
           </Pressable>
         </Box>
 
@@ -83,7 +82,7 @@ export function RankingVotersSheet({
         <Box gap="sm" paddingTop="xxs">
           {isLoading ? (
             <Box paddingVertical="sm" alignItems="center">
-              <ActivityIndicator />
+              <Spinner />
             </Box>
           ) : votedUsers.length > 0 ? (
             votedUsers.map((voter) => (

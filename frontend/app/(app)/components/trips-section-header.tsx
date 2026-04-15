@@ -1,7 +1,7 @@
-import { Box, Text } from "@/design-system";
+import { Box, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Plus } from "lucide-react-native";
-import { ActivityIndicator, Pressable } from "react-native";
+import { Pressable } from "react-native";
 
 type TripsSectionHeaderProps = {
   onCreateTrip: () => void;
@@ -38,7 +38,7 @@ export function TripsSectionHeader({
           backgroundColor="brand500"
         >
           {isCreating ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray900} />
+            <Spinner />
           ) : (
             <Plus size={14} color={ColorPalette.gray900} />
           )}

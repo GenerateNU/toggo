@@ -451,6 +451,37 @@ func TestTripCurrency(t *testing.T) {
 		require.Equal(t, "JPY", trip["currency"])
 	})
 
+	t.Run("list trips includes member_count and member_previews", func(t *testing.T) {
+		ownerID := createUser(t, app)
+		memberA := createUser(t, app)
+		memberB := createUser(t, app)
+		tripID := createTrip(t, app, ownerID)
+		addMember(t, app, ownerID, memberA, tripID)
+		addMember(t, app, ownerID, memberB, tripID)
+
+		listResp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/trips",
+				Method: testkit.GET,
+				UserID: &ownerID,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := listResp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+
+		trip := items[0].(map[string]interface{})
+		require.Equal(t, tripID, trip["id"])
+		require.Equal(t, float64(3), trip["member_count"])
+
+		previews, ok := trip["member_previews"].([]interface{})
+		require.True(t, ok)
+		require.GreaterOrEqual(t, len(previews), 1)
+		require.LessOrEqual(t, len(previews), 3)
+	})
+
 	t.Run("update trip currency", func(t *testing.T) {
 		ownerID := createUser(t, app)
 		tripID := createTrip(t, app, ownerID)

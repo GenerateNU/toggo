@@ -38,7 +38,7 @@ function Tag({
     >
       {icon}
       <Text
-        variant="bodyXsDefault"
+        variant="bodySmMedium"
         numberOfLines={1}
         style={truncate ? { flexShrink: 1 } : undefined}
       >
@@ -100,12 +100,12 @@ export function ItineraryActivityCard({
         </Box>
 
         <Box flex={1} gap="xxs">
-          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
+          <Text variant="bodyStrong" color="gray950" numberOfLines={1}>
             {activity.name ?? "Unnamed Activity"}
           </Text>
 
           <Box flexDirection="row" alignItems="center" gap="xxs">
-            {priceLabel && <Tag label={priceLabel} />}
+            <Tag label={priceLabel ?? "Free"} />
 
             {activity.location_name && (
               <Tag
@@ -123,7 +123,7 @@ export function ItineraryActivityCard({
           )}
         </Box>
 
-        {draggable && <GripVertical size={16} color={ColorPalette.gray300} />}
+        {draggable && <GripVertical size={16} color={ColorPalette.gray500} />}
       </Animated.View>
     </GestureDetector>
   );
@@ -137,7 +137,7 @@ const containerStyle = {
   gap: Layout.spacing.xs,
   padding: Layout.spacing.xs,
   backgroundColor: ColorPalette.white,
-  borderRadius: CornerRadius.xl,
+  borderRadius: CornerRadius.lg,
   ...Elevation.sm,
 };
 

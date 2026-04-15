@@ -63,6 +63,22 @@ type TripCursorPageResult struct {
 	Limit      int                `json:"limit"`
 }
 
+// TripMemberPreviewDB is an internal struct used for building member previews in list responses.
+// It contains the profile picture file key (not URL) to enable batch URL resolution.
+type TripMemberPreviewDB struct {
+	UserID            uuid.UUID `bun:"user_id"`
+	Name              string    `bun:"member_name"`
+	Username          string    `bun:"member_username"`
+	ProfilePictureKey *string   `bun:"member_pfp_key"`
+}
+
+// TripMemberStats contains the total member count and up to a small preview set
+// of members (for avatar stacks).
+type TripMemberStats struct {
+	Count    int
+	Previews []TripMemberPreviewDB
+}
+
 type TripDatabaseResponse struct {
 	TripID        uuid.UUID  `bun:"trip_id"`
 	Name          string     `bun:"name"`
@@ -92,6 +108,8 @@ type TripAPIResponse struct {
 	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
 	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
 	Location      *string    `json:"location,omitempty"`
+	MemberCount   int        `json:"member_count"`
+	MemberPreviews []CommenterPreview `json:"member_previews"`
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 }

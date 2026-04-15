@@ -35,6 +35,7 @@ import type {
   ModelsDateRange,
   ModelsActivityTimeOfDay,
   ModelsActivity,
+  ModelsCommenterPreview,
   ModelsActivityGoingUserResponse,
   ModelsActivityImageResponse,
   ModelsActivityAPIResponse,
@@ -60,7 +61,6 @@ import type {
   ModelsCommentReactionUser,
   ModelsCommentReactionUsersResponse,
   ModelsCommentReactionsSummaryResponse,
-  ModelsCommenterPreview,
   ModelsImageSize,
   ModelsConfirmUploadRequest,
   ModelsConfirmUploadResponse,
@@ -876,6 +876,13 @@ export const modelsActivitySchema = z.object({
   updated_at: z.optional(z.string()),
 }) as unknown as z.ZodType<ModelsActivity>;
 
+export const modelsCommenterPreviewSchema = z.object({
+  name: z.optional(z.string()),
+  profile_picture_url: z.optional(z.string()),
+  user_id: z.optional(z.string()),
+  username: z.optional(z.string()),
+}) as unknown as z.ZodType<ModelsCommenterPreview>;
+
 export const modelsActivityGoingUserResponseSchema = z.object({
   name: z.optional(z.string()),
   profile_picture_url: z.optional(z.string()),
@@ -890,6 +897,10 @@ export const modelsActivityImageResponseSchema = z.object({
 
 export const modelsActivityAPIResponseSchema = z.object({
   category_names: z.optional(z.array(z.string())),
+  comment_count: z.optional(z.int()),
+  get comment_previews() {
+    return z.array(modelsCommenterPreviewSchema).optional();
+  },
   created_at: z.optional(z.string()),
   get dates() {
     return z.array(modelsDateRangeSchema).optional();
@@ -1090,13 +1101,6 @@ export const modelsCommentReactionsSummaryResponseSchema = z.object({
     return z.array(modelsCommentReactionSummarySchema).optional();
   },
 }) as unknown as z.ZodType<ModelsCommentReactionsSummaryResponse>;
-
-export const modelsCommenterPreviewSchema = z.object({
-  name: z.optional(z.string()),
-  profile_picture_url: z.optional(z.string()),
-  user_id: z.optional(z.string()),
-  username: z.optional(z.string()),
-}) as unknown as z.ZodType<ModelsCommenterPreview>;
 
 export const modelsImageSizeSchema = z.enum([
   "large",
@@ -1741,6 +1745,10 @@ export const modelsTripAPIResponseSchema = z.object({
   end_date: z.optional(z.iso.datetime()),
   id: z.optional(z.string()),
   location: z.optional(z.string()),
+  member_count: z.optional(z.int()),
+  get member_previews() {
+    return z.array(modelsCommenterPreviewSchema).optional();
+  },
   name: z.optional(z.string()),
   pitch_deadline: z.optional(z.string()),
   rank_poll_id: z.optional(z.string()),

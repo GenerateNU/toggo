@@ -1,14 +1,12 @@
 import { useGetUnreadActivityCount } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { Box, Button, Icon, Text } from "@/design-system";
+import { Elevation } from "@/design-system/tokens/elevation";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { BellDot, CalendarDays, MapPin } from "lucide-react-native";
 import { Pressable } from "react-native";
-import {
-  HOME_CARD_FLOATING_SHADOW,
-  HOME_UPCOMING_IMAGE_HEIGHT,
-} from "./constants";
+import { HOME_UPCOMING_IMAGE_HEIGHT } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
 
 type UpcomingTripHeroCardProps = {
@@ -38,10 +36,10 @@ export function UpcomingTripHeroCard({
     <Pressable onPress={() => router.push(`/trips/${tripId}`)}>
       <Box
         backgroundColor="white"
-        borderRadius="md"
+        borderRadius="lg"
         padding="xs"
         gap="xs"
-        style={[HOME_CARD_FLOATING_SHADOW, width ? { width } : undefined]}
+        style={[Elevation.sm, width ? { width } : undefined]}
       >
         <Box borderRadius="sm" overflow="hidden">
           {trip.cover_image_url ? (
@@ -83,7 +81,7 @@ export function UpcomingTripHeroCard({
         </Box>
 
         <Box paddingHorizontal="xs" gap="xxs">
-          <Text variant="headingMd" color="gray900">
+          <Text variant="headingLg" color="gray950">
             {trip.name?.trim() || "Untitled trip"}
           </Text>
           <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />
