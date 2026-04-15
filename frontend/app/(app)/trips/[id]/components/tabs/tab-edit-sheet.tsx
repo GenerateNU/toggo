@@ -5,6 +5,7 @@ import { useShowCategory } from "@/api/categories/useShowCategory";
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
+import { useToast } from "@/design-system/primitives/toast-manager";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -41,6 +42,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
     const bottomSheetRef = useRef<BottomSheetMethods>(null);
     const createTabSheetRef = useRef<CreateTabSheetMethods>(null);
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     const hideCategory = useHideCategory();
     const showCategory = useShowCategory();
@@ -61,7 +63,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
           queryKey: getTripTabsQueryKey(tripID),
         });
       } catch {
-        // TODO: show error toast
+        toast.show({ message: "Could not reorder tabs. Please try again." });
       }
     };
 
@@ -90,7 +92,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
           queryKey: getTripTabsQueryKey(tripID),
         });
       } catch {
-        // TODO: show error toast
+        toast.show({ message: "Could not update tab visibility. Please try again." });
       }
     };
 
