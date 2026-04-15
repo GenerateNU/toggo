@@ -1,3 +1,4 @@
+import Constants from "expo-constants";
 import * as Crypto from "expo-crypto";
 
 import type { RequestConfig, ResponseErrorConfig } from "../api/client";
@@ -12,6 +13,25 @@ import type {
   UploadImageResponse,
 } from "../types/images";
 import { compressImage, uriToBlob } from "../utilities/images";
+
+/**
+ * Rewrites the LocalStack host in presigned PUT URLs to the Expo LAN IP.
+ * Only needed for direct S3 uploads — API responses are rewritten globally
+ * by the API client interceptor in api/client.ts.
+ */
+function rewriteLocalDevUrl(url: string): string {
+  if (!url.includes("127.0.0.1") && !url.includes("localhost")) return url;
+  const constants = Constants as Record<string, any>;
+  const debuggerHost =
+    constants.expoGoConfig?.debuggerHost ??
+    constants.expoConfig?.hostUri ??
+    constants.manifest?.debuggerHost;
+  if (!debuggerHost) return url;
+  return url.replace(
+    /127\.0\.0\.1|localhost(?=:\d{4})/,
+    debuggerHost.split(":")[0],
+  );
+}
 
 interface UploadURLsResponse {
   imageId: string;
@@ -73,12 +93,22 @@ async function confirmUpload(
  * Uploads a Blob to the specified S3 presigned URL.
  */
 async function uploadToS3(url: string, blob: Blob): Promise<void> {
-  const response = await globalThis.fetch(url, {
-    method: "PUT",
-    body: blob,
-    headers: { "Content-Type": "image/jpeg" },
-  });
+  let response: Response;
+  try {
+    response = await globalThis.fetch(url, {
+      method: "PUT",
+      body: blob,
+      headers: { "Content-Type": "image/jpeg" },
+    });
+  } catch (err) {
+    console.error("[imageService] S3 fetch threw network error:", err);
+    throw err;
+  }
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    console.error(
+      `[imageService] S3 upload failed — status: ${response.status}, body: ${body}`,
+    );
     throw new Error(`S3 upload failed: ${response.status}`);
   }
 }
@@ -134,12 +164,18 @@ export async function uploadImage(
       }
 
       const blob = await uriToBlob(variant.uri);
-      await uploadToS3(presignedURL.url, blob);
+      const s3Url = rewriteLocalDevUrl(presignedURL.url);
+      await uploadToS3(s3Url, blob);
     }),
   );
 
   // Confirm upload with server
-  await confirmUpload(uploadResponse.imageId, undefined, config);
+  const confirmResponse = await confirmUpload(
+    uploadResponse.imageId,
+    undefined,
+    config,
+  );
+  console.log("[imageService] confirm response:", confirmResponse);
 
   return { imageId: uploadResponse.imageId, variants: sizes };
 }
@@ -198,7 +234,10 @@ export async function getImageURL(
     url: `${baseFilePath}/${imageId}/${size}`,
     ...config,
   });
-  return res.data;
+  return {
+    ...res.data,
+    url: rewriteLocalDevUrl(res.data.url),
+  };
 }
 
 /**

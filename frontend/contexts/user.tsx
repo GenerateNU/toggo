@@ -37,6 +37,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const refreshCurrentUser = useUserStore((state) => state.refreshCurrentUser);
   const setPendingTripCode = useUserStore((state) => state.setPendingTripCode);
 
+  // Sync currentUser with the server on mount so stale persisted data
+  // (e.g. profile_picture) is always up to date across devices/simulators.
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshCurrentUser().catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Keep Zustand auth state in sync with Supabase session events.
   // Handles cases where the refresh token expires or is invalidated externally.
   useEffect(() => {

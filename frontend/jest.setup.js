@@ -1,6 +1,17 @@
 // Jest setup file for React Native testing
 /* eslint-env jest */
 
+// Mock expo-constants (native module — unavailable in Node/Jest)
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: {
+    expoGoConfig: undefined,
+    expoConfig: undefined,
+    manifest: undefined,
+    manifest2: undefined,
+  },
+}));
+
 // Mock expo-crypto
 jest.mock("expo-crypto", () => ({
   randomUUID: jest.fn(() => "test-uuid-1234"),

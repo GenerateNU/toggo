@@ -7,15 +7,14 @@ import (
 )
 
 // DefaultCategoryNames are the system categories created automatically when a new trip is created
-var DefaultCategoryNames = []string{"housing", "transportation", "activities", "polls", "itinerary"}
+var DefaultCategoryNames = []string{"itinerary", "polls", "housing", "activities"}
 
 // DefaultCategoryLabels maps default category names to their display labels
 var DefaultCategoryLabels = map[string]string{
-	"housing":        "Housing",
-	"transportation": "Transportation",
-	"activities":     "Activities",
-	"polls":          "Polls",
 	"itinerary":      "Itinerary",
+	"polls":          "Polls",
+	"housing":        "Housing",
+	"activities":     "Activities",
 }
 
 // Category represents a category within a trip, identified by the combination of TripID and Name.
