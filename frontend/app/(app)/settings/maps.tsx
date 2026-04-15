@@ -57,12 +57,21 @@ export default function MapsSettingsScreen() {
   const handleToggle = async (field: ProviderKey, next: boolean) => {
     if (!currentUser?.id) return;
 
+    const data =
+      field === "apple_maps_enabled"
+        ? {
+            apple_maps_enabled: next,
+            google_maps_enabled: !next,
+          }
+        : {
+            apple_maps_enabled: !next,
+            google_maps_enabled: next,
+          };
+
     try {
       await updateUser({
         userID: currentUser.id,
-        data: {
-          [field]: next,
-        } as any,
+        data,
       });
       await refreshCurrentUser();
     } catch {
@@ -113,7 +122,7 @@ export default function MapsSettingsScreen() {
         <Box width={36} height={36} />
       </Box>
 
-      <Text variant="bodyXxsDefault" color="gray500" style={styles.subtitle}>
+      <Text variant="bodyXsDefault" color="gray500" style={styles.subtitle}>
         Customize your map view to best match your needs.
       </Text>
 

@@ -2979,6 +2979,13 @@ export const getAllTripsQueryParamsSchema = z
           "Opaque cursor from previous response next_cursor for next page",
         ),
     ),
+    end_date_before: z.optional(
+      z
+        .string()
+        .describe(
+          "Only include trips where end_date is before this RFC3339 timestamp",
+        ),
+    ),
   })
   .optional() as unknown as z.ZodType<GetAllTripsQueryParams>;
 

@@ -22,7 +22,7 @@ import (
 type TripServiceInterface interface {
 	CreateTrip(ctx context.Context, creatorUserID uuid.UUID, req models.CreateTripRequest) (*models.Trip, error)
 	GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAPIResponse, error)
-	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error)
+	GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string, endDateBefore *time.Time) (*models.TripCursorPageResult, error)
 	UpdateTrip(ctx context.Context, tripID uuid.UUID, actorID uuid.UUID, req models.UpdateTripRequest) (*models.Trip, error)
 	DeleteTrip(ctx context.Context, userID, tripID uuid.UUID) error
 	CreateTripInvite(ctx context.Context, tripID uuid.UUID, createdBy uuid.UUID, req models.CreateTripInviteRequest) (*models.TripInviteAPIResponse, error)
@@ -161,13 +161,13 @@ func (s *TripService) GetTrip(ctx context.Context, id uuid.UUID) (*models.TripAP
 	return s.toAPIResponse(ctx, tripData)
 }
 
-func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string) (*models.TripCursorPageResult, error) {
+func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursorToken string, endDateBefore *time.Time) (*models.TripCursorPageResult, error) {
 	cursor, err := pagination.ParseCursor(cursorToken)
 	if err != nil {
 		return nil, err
 	}
 
-	tripsData, nextCursor, err := s.Trip.FindAllWithCursorAndCoverImage(ctx, userID, limit, cursor)
+	tripsData, nextCursor, err := s.Trip.FindAllWithCursorAndCoverImage(ctx, userID, limit, cursor, endDateBefore)
 	if err != nil {
 		return nil, err
 	}

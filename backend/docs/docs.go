@@ -1343,6 +1343,12 @@ const docTemplate = `{
                         "description": "Opaque cursor from previous response next_cursor for next page",
                         "name": "cursor",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only include trips where end_date is before this RFC3339 timestamp",
+                        "name": "end_date_before",
+                        "in": "query"
                     }
                 ],
                 "responses": {

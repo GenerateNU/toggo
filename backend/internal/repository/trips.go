@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 
@@ -15,7 +16,7 @@ type TripRepository interface {
 	Create(ctx context.Context, trip *models.Trip) (*models.Trip, error)
 	Find(ctx context.Context, id uuid.UUID) (*models.Trip, error)
 	FindWithCoverImage(ctx context.Context, id uuid.UUID) (*models.TripDatabaseResponse, error)
-	FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
+	FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor, endDateBefore *time.Time) ([]*models.TripDatabaseResponse, *models.TripCursor, error)
 	FindAllWithCursor(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.Trip, *models.TripCursor, error)
 	Update(ctx context.Context, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
 	UpdateTx(ctx context.Context, tx bun.Tx, id uuid.UUID, req *models.UpdateTripRequest) (*models.Trip, error)
@@ -113,7 +114,7 @@ func (r *tripRepository) FindAllWithCursor(ctx context.Context, userID uuid.UUID
 }
 
 // FindAllWithCursorAndCoverImage retrieves trips a user belongs to with cursor pagination and cover image IDs
-func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
+func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, userID uuid.UUID, limit int, cursor *models.TripCursor, endDateBefore *time.Time) ([]*models.TripDatabaseResponse, *models.TripCursor, error) {
 	query := r.db.NewSelect().
 		TableExpr("trips AS t").
 		ColumnExpr("t.id AS trip_id, t.name, t.budget_min, t.budget_max, t.currency, t.pitch_deadline, t.rank_poll_id, t.start_date, t.end_date, t.location, t.created_at, t.updated_at").
@@ -127,6 +128,10 @@ func (r *tripRepository) FindAllWithCursorAndCoverImage(ctx context.Context, use
 
 	if cursor != nil {
 		query = query.Where("(t.created_at < ?) OR (t.created_at = ? AND t.id < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.ID)
+	}
+
+	if endDateBefore != nil {
+		query = query.Where("t.end_date IS NOT NULL AND t.end_date < ?", *endDateBefore)
 	}
 
 	var tripsData []*models.TripDatabaseResponse

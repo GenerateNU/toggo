@@ -3686,6 +3686,11 @@ export type GetAllTripsQueryParams = {
    * @type string | undefined
    */
   cursor?: string;
+  /**
+   * @description Only include trips where end_date is before this RFC3339 timestamp
+   * @type string | undefined
+   */
+  end_date_before?: string;
 };
 
 /**

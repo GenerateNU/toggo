@@ -47,7 +47,7 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check, PlusIcon, X } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -135,6 +135,7 @@ export default function HomeScreen() {
 
   const needsProfile = !currentUser?.username;
   const tripsQueryEnabled = Boolean(userId && currentUser?.username);
+  const pastTripsCutoffISO = useMemo(() => new Date().toISOString(), []);
 
   const tripsQuery = useGetAllTrips(
     { limit: HOME_TRIPS_PAGE_SIZE },
@@ -145,8 +146,21 @@ export default function HomeScreen() {
     },
   );
 
+  const pastTripsQuery = useGetAllTrips(
+    {
+      limit: HOME_TRIPS_PAGE_SIZE,
+      end_date_before: pastTripsCutoffISO,
+    },
+    {
+      query: {
+        enabled: tripsQueryEnabled,
+      },
+    },
+  );
+
   const allTrips = tripsQuery.data?.items ?? [];
-  const { upcoming, past } = partitionTripsForHome(allTrips);
+  const { upcoming } = partitionTripsForHome(allTrips);
+  const pastTrips = pastTripsQuery.data?.items ?? [];
   const upcomingTrip = upcoming[0] ?? null;
   const upcomingTripIds = upcoming
     .map((trip) => trip.id)
@@ -455,23 +469,29 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm">
+          <Box gap="sm" paddingTop="sm">
             <Box paddingHorizontal="sm" paddingVertical="xxs">
               <Text variant="headingMd">Past Trips</Text>
             </Box>
             <Box paddingHorizontal="sm" gap="sm">
-              {tripsQueryEnabled && tripsQuery.isPending ? (
+              {tripsQueryEnabled && pastTripsQuery.isPending ? (
                 <Box gap="sm">
                   <SkeletonRect width="full" style={{ height: 96 }} />
                   <SkeletonRect width="full" style={{ height: 96 }} />
                 </Box>
-              ) : past.length === 0 ? (
+              ) : tripsQueryEnabled && pastTripsQuery.isError ? (
+                <ErrorState
+                  title="Couldn't load past trips"
+                  description="Pull to refresh or try again in a moment."
+                  refresh={() => pastTripsQuery.refetch()}
+                />
+              ) : pastTrips.length === 0 ? (
                 <Text variant="bodySmDefault" color="gray500">
                   No past trips yet.
                 </Text>
               ) : (
                 <Box gap="sm">
-                  {past.map((trip) => {
+                  {pastTrips.map((trip) => {
                     const id = trip.id;
                     if (!id) return null;
                     return (

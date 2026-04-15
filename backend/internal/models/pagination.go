@@ -11,6 +11,11 @@ type CursorPaginationParams struct {
 	Cursor string `query:"cursor" validate:"omitempty"`
 }
 
+type TripsCursorPaginationParams struct {
+	CursorPaginationParams
+	EndDateBefore string `query:"end_date_before" validate:"omitempty"`
+}
+
 func (p *CursorPaginationParams) GetLimit() *int {
 	if p.Limit == nil {
 		defaultLimit := 20

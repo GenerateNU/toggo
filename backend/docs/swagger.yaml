@@ -2728,6 +2728,10 @@ paths:
         in: query
         name: cursor
         type: string
+      - description: Only include trips where end_date is before this RFC3339 timestamp
+        in: query
+        name: end_date_before
+        type: string
       produces:
       - application/json
       responses:
