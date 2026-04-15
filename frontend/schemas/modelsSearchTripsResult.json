@@ -14,6 +14,20 @@
           "end_date": { "type": "string", "format": "date-time" },
           "id": { "type": "string" },
           "location": { "type": "string" },
+          "member_count": { "type": "integer" },
+          "member_previews": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "profile_picture_url": { "type": "string" },
+                "user_id": { "type": "string" },
+                "username": { "type": "string" }
+              },
+              "x-readme-ref-name": "models.CommenterPreview"
+            }
+          },
           "name": { "type": "string" },
           "pitch_deadline": { "type": "string" },
           "rank_poll_id": { "type": "string" },

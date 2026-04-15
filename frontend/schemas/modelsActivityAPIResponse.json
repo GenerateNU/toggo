@@ -2,6 +2,20 @@
   "type": "object",
   "properties": {
     "category_names": { "type": "array", "items": { "type": "string" } },
+    "comment_count": { "type": "integer" },
+    "comment_previews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "profile_picture_url": { "type": "string" },
+          "user_id": { "type": "string" },
+          "username": { "type": "string" }
+        },
+        "x-readme-ref-name": "models.CommenterPreview"
+      }
+    },
     "created_at": { "type": "string" },
     "dates": {
       "type": "array",
