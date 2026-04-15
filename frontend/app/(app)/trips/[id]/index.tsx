@@ -47,9 +47,7 @@ export default function Trip() {
     id: string;
     tab?: string;
   }>();
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    (tab as TabKey) || INITIAL_TAB,
-  );
+  const [activeTab, setActiveTab] = useState<string>(tab || INITIAL_TAB);
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
@@ -66,7 +64,7 @@ export default function Trip() {
     query: { enabled: !!tripID },
   });
 
-  const handleTabPress = (tab: TabKey) => {
+  const handleTabPress = (tab: string) => {
     if (tab === "settings") {
       router.push(`/trips/${tripID}/settings` as any);
       return;
@@ -205,7 +203,11 @@ export default function Trip() {
               />
 
               <Box paddingVertical="sm">
-                <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+                <TripTabBar
+                  tripID={tripID}
+                  activeTab={activeTab}
+                  onTabPress={handleTabPress}
+                />
               </Box>
             </Box>
 
@@ -242,6 +244,20 @@ export default function Trip() {
                 />
               )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+              {activeTab !== "new" &&
+                activeTab !== "itinerary" &&
+                activeTab !== "polls" &&
+                activeTab !== "settings" && (
+                  <Box
+                    flex={1}
+                    alignItems="flex-start"
+                    justifyContent="flex-start"
+                  >
+                    <Text variant="bodySmDefault" color="gray400">
+                      Post notes, photos, videos, and links
+                    </Text>
+                  </Box>
+                )}
               {activeTab === "activities" && (
                 <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
               )}

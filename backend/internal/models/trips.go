@@ -97,19 +97,19 @@ type TripDatabaseResponse struct {
 }
 
 type TripAPIResponse struct {
-	ID            uuid.UUID  `json:"id"`
-	Name          string     `json:"name"`
-	CoverImageURL *string    `json:"cover_image_url"`
-	BudgetMin     int        `json:"budget_min"`
-	BudgetMax     int        `json:"budget_max"`
-	Currency      string     `json:"currency"`
-	PitchDeadline *time.Time `json:"pitch_deadline,omitempty"`
-	RankPollID    *uuid.UUID `json:"rank_poll_id,omitempty"`
-	StartDate     *time.Time `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
-	EndDate       *time.Time `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
-	Location      *string    `json:"location,omitempty"`
-	MemberCount   int        `json:"member_count"`
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	CoverImageURL  *string            `json:"cover_image_url"`
+	BudgetMin      int                `json:"budget_min"`
+	BudgetMax      int                `json:"budget_max"`
+	Currency       string             `json:"currency"`
+	PitchDeadline  *time.Time         `json:"pitch_deadline,omitempty"`
+	RankPollID     *uuid.UUID         `json:"rank_poll_id,omitempty"`
+	StartDate      *time.Time         `json:"start_date,omitempty" swaggertype:"string" format:"date-time"`
+	EndDate        *time.Time         `json:"end_date,omitempty" swaggertype:"string" format:"date-time"`
+	Location       *string            `json:"location,omitempty"`
+	MemberCount    int                `json:"member_count"`
 	MemberPreviews []CommenterPreview `json:"member_previews"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
+	CreatedAt      time.Time          `json:"created_at"`
+	UpdatedAt      time.Time          `json:"updated_at"`
 }
