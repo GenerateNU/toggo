@@ -299,8 +299,8 @@ export default function Trip() {
                   accessibilityRole="button"
                   accessibilityLabel="View map"
                 >
-                  <Map size={16} color={ColorPalette.gray950} />
-                  <Text variant="bodySmMedium" color="gray950">
+                  <Map size={20} color={ColorPalette.gray950} />
+                  <Text variant="bodyMedium">
                     Map
                   </Text>
                 </Pressable>
@@ -489,8 +489,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: Layout.spacing.xxs,
     backgroundColor: ColorPalette.white,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xxs,
+    paddingHorizontal: 12,
+    paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.full,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
