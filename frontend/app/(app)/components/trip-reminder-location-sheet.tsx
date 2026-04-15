@@ -76,7 +76,11 @@ export function TripReminderLocationSheet({
               accessibilityRole="button"
               accessibilityLabel="Search for a destination"
             >
-              <Box style={styles.fieldRow} flexDirection="row" alignItems="center">
+              <Box
+                style={styles.fieldRow}
+                flexDirection="row"
+                alignItems="center"
+              >
                 <Text
                   variant="bodyDefault"
                   style={{

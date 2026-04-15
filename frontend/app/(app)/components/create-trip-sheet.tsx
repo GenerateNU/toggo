@@ -1,4 +1,10 @@
-import { BottomSheet, Box, Button, DateRangePicker, Text } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  DateRangePicker,
+  Text,
+} from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -158,9 +164,7 @@ export function CreateTripSheet({
                 <Calendar
                   size={16}
                   color={
-                    formattedDates
-                      ? ColorPalette.gray950
-                      : ColorPalette.gray300
+                    formattedDates ? ColorPalette.gray950 : ColorPalette.gray300
                   }
                 />
                 <Text

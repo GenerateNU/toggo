@@ -74,7 +74,9 @@ export function DestinationPickerSheet({
 
   const handleSelect = async (prediction: Prediction) => {
     try {
-      const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
+      const res = await getPlaceDetailsCustom({
+        place_id: prediction.place_id,
+      });
       const name =
         res.data?.name ?? res.data?.formatted_address ?? prediction.description;
       onSelect({ name, place_id: prediction.place_id });

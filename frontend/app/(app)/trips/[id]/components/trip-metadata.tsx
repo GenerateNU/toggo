@@ -85,7 +85,9 @@ export function TripMetadata({
             />
             <Text
               variant="bodySmDefault"
-              style={{ color: tripDate ? ColorPalette.gray500 : ColorPalette.blue500 }}
+              style={{
+                color: tripDate ? ColorPalette.gray500 : ColorPalette.blue500,
+              }}
             >
               {tripDate ?? "Add dates"}
             </Text>
@@ -104,7 +106,11 @@ export function TripMetadata({
             />
             <Text
               variant="bodySmDefault"
-              style={{ color: tripLocation ? ColorPalette.gray500 : ColorPalette.blue500 }}
+              style={{
+                color: tripLocation
+                  ? ColorPalette.gray500
+                  : ColorPalette.blue500,
+              }}
             >
               {tripLocation ?? "Add location"}
             </Text>
