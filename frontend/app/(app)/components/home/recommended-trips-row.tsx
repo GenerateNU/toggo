@@ -10,7 +10,7 @@ import {
 export function RecommendedTripsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <Box flexDirection="row" gap="sm" paddingHorizontal="sm">
+      <Box flexDirection="row" gap="sm" paddingHorizontal="sm" paddingVertical="xs">
         {RECOMMENDED_DESTINATIONS.map((destination, index) => (
           <Box
             key={destination.id}
