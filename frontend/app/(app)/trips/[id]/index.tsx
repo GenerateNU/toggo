@@ -395,6 +395,7 @@ export default function Trip() {
             paddingTop="sm"
             paddingBottom="xl"
             backgroundColor="gray25"
+            style={styles.sheetContent}
           >
             {isLoading ? (
               <Box gap="sm">
