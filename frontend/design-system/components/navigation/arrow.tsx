@@ -25,7 +25,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       borderRadius={hasBackground ? "md" : undefined}
       backgroundColor={hasBackground ? "white" : undefined}
     >
-      <Icon icon={ArrowLeft} size="sm" color="black" />
+      <Icon icon={ArrowLeft} size="sm" color="gray500" />
     </Box>
   );
 };
