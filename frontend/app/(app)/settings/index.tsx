@@ -61,12 +61,7 @@ function SettingsRow({
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        gap="md"
-        style={styles.row}
-      >
+      <Box flexDirection="row" alignItems="center" gap="md" style={styles.row}>
         <Box flex={1} flexDirection="row" alignItems="center" gap="sm">
           <IconComponent size={20} color={iconColor} />
           <Box gap="xxs">

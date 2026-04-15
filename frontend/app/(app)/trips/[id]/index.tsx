@@ -49,7 +49,10 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

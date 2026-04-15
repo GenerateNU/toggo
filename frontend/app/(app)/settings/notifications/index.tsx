@@ -99,7 +99,11 @@ function NotificationRow({
             {description}
           </Text>
         </Box>
-        <Toggle onColor={ColorPalette.blue500} value={value} onChange={onChange} />
+        <Toggle
+          onColor={ColorPalette.blue500}
+          value={value}
+          onChange={onChange}
+        />
       </Box>
       {!isLast && (
         <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />

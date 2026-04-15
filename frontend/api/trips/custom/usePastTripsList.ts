@@ -1,10 +1,7 @@
 import { getAllTrips } from "@/api/trips/useGetAllTrips";
 import { PAGE_SIZE } from "@/constants/pagination";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
 export const PAST_TRIPS_QUERY_KEY = ["trips", "past"] as const;

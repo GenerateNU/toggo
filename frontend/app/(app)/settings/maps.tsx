@@ -39,7 +39,11 @@ function SettingRow({
         <Text variant="bodyMedium" color="gray950">
           {title}
         </Text>
-        <Toggle value={value} onChange={onToggle}  onColor={ColorPalette.blue500} />
+        <Toggle
+          value={value}
+          onChange={onToggle}
+          onColor={ColorPalette.blue500}
+        />
       </Box>
       <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />
     </Pressable>

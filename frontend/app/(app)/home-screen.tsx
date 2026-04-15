@@ -113,9 +113,7 @@ export default function HomeScreen() {
     refetchPastTrips();
   }, [refetchAllTrips, refetchPastTrips]);
 
-  const { upcoming } = partitionTripsForHome(
-    tripsQueryEnabled ? allTrips : [],
-  );
+  const { upcoming } = partitionTripsForHome(tripsQueryEnabled ? allTrips : []);
   const upcomingTrip = upcoming[0] ?? null;
   const upcomingTripIds = upcoming
     .map((trip) => trip.id)
