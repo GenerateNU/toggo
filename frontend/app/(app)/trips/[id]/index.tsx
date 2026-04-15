@@ -240,7 +240,7 @@ export default function Trip() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={["left", "right", "bottom"]}>
+      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
         <Animated.View
           pointerEvents="none"
           style={[
