@@ -22,11 +22,23 @@ export type NullDateDisplayOption =
 export const HOME_NULL_DATE_DISPLAY: NullDateDisplayOption =
   NULL_DATE_DISPLAY_OPTIONS.placeholder;
 
+export type RecommendedActivity = {
+  id: string;
+  name: string;
+  thumbnail_url: string;
+  estimated_price: number;
+  description: string;
+};
+
 export type RecommendedTripDestination = {
   id: string;
   title: string;
+  country: string;
   description: string;
   imageUrl: string;
+  locationLat: number;
+  locationLng: number;
+  activities: RecommendedActivity[];
 };
 
 export { default as RECOMMENDED_DESTINATIONS } from "./recommended_destinations.json";

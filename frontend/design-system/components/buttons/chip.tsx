@@ -8,7 +8,7 @@ import { Animated, Pressable } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type ChipVariant = "outlined" | "filled";
+export type ChipVariant = "outlined" | "filled" | "subtle";
 
 export type ChipProps = {
   label: string;
@@ -17,6 +17,8 @@ export type ChipProps = {
   disabled?: boolean;
   icon?: LucideIcon;
   variant?: ChipVariant;
+  iconSize?: number;
+  style?: any;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -50,6 +52,20 @@ const VARIANT_STYLES = {
       cornerRadius: CornerRadius.sm,
     },
   },
+  subtle: {
+    unselected: {
+      backgroundColor: ColorPalette.gray50,
+      borderColor: "transparent",
+      textVariant: "bodySmMedium",
+      cornerRadius: CornerRadius.sm,
+    },
+    selected: {
+      backgroundColor: ColorPalette.gray50,
+      borderColor: "transparent",
+      textVariant: "bodySmMedium",
+      cornerRadius: CornerRadius.sm,
+    },
+  },
 } as const;
 
 export default function Chip({
@@ -59,10 +75,17 @@ export default function Chip({
   disabled = false,
   icon: Icon,
   variant = "outlined",
+  iconSize = 16,
+  style,
 }: ChipProps) {
   const variantStyle =
     VARIANT_STYLES[variant][selected ? "selected" : "unselected"];
-  const iconColor = selected ? ColorPalette.white : ColorPalette.gray900;
+  const iconColor =
+    variant === "subtle"
+      ? ColorPalette.gray600
+      : selected
+        ? ColorPalette.white
+        : ColorPalette.gray900;
 
   const { scaleAnim, onPressIn, onPressOut } = usePressScale({
     pressedScale: 0.95,
@@ -90,11 +113,13 @@ export default function Chip({
           borderRadius: variantStyle.cornerRadius,
           borderColor: variantStyle.borderColor,
           backgroundColor: variantStyle.backgroundColor,
-          opacity: disabled ? 0.5 : pressed ? 0.9 : 1,
+          opacity:
+            variant === "subtle" ? 1 : disabled ? 0.5 : pressed ? 0.9 : 1,
           overflow: "hidden",
+          ...style,
         })}
       >
-        {Icon && <Icon size={16} color={iconColor} />}
+        {Icon && <Icon size={iconSize} color={iconColor} />}
         <Text variant={variantStyle.textVariant} style={{ color: iconColor }}>
           {label}
         </Text>
