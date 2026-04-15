@@ -6,7 +6,7 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { getCategoryIcon } from "@/utilities/category-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { Settings2 } from "lucide-react-native";
+import { SlidersHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import TabContextMenu, { type TabMenuPosition } from "./tabs/tab-context-menu";
@@ -50,7 +50,6 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
   };
 
   const handleLongPress = (name: string, event: any) => {
-    // Only show context menu for non-fixed tabs
     const isFixed = FIXED_TABS.some((t) => t.key === name);
     if (isFixed) return;
 
@@ -117,7 +116,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
         accessibilityLabel="Edit tabs"
         accessibilityRole="button"
       >
-        <Settings2 size={16} color={ColorPalette.gray600} />
+        <SlidersHorizontal size={16} color={ColorPalette.gray600} />
       </Pressable>
 
       <TabEditSheet
