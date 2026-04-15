@@ -7,7 +7,14 @@ import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
-import { ImagePlus, Images, Image as LucideImage, Trash2, Upload, X } from "lucide-react-native";
+import {
+  ImagePlus,
+  Images,
+  Image as LucideImage,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react-native";
 import React, { useCallback, useRef } from "react";
 import {
   Alert,
