@@ -16,7 +16,10 @@ function formatPrice(price: number): string {
   return `$${price} per person`;
 }
 
-export function RecommendedActivityCard({ activity, onPress }: ActivityCardProps) {
+export function RecommendedActivityCard({
+  activity,
+  onPress,
+}: ActivityCardProps) {
   const hasThumbnail = !!activity.thumbnail_url;
 
   return (
@@ -39,7 +42,7 @@ export function RecommendedActivityCard({ activity, onPress }: ActivityCardProps
           </Text>
           {activity.estimated_price != null && (
             <Text variant="bodyXsDefault" color="gray950">
-                {formatPrice(activity.estimated_price)}
+              {formatPrice(activity.estimated_price)}
             </Text>
           )}
         </Box>
@@ -54,7 +57,7 @@ const styles = StyleSheet.create({
     borderRadius: CornerRadius.xl,
     padding: 12,
     gap: 12,
-    ...Shadow.md
+    ...Shadow.md,
   },
   thumbnail: {
     width: 291,

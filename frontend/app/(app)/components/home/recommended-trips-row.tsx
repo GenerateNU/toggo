@@ -11,13 +11,16 @@ import {
 export function RecommendedTripsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <Box flexDirection="row" gap="sm" paddingHorizontal="sm" paddingVertical="xs">
+      <Box
+        flexDirection="row"
+        gap="sm"
+        paddingHorizontal="sm"
+        paddingVertical="xs"
+      >
         {RECOMMENDED_DESTINATIONS.map((destination, index) => (
           <Pressable
             key={destination.id}
-            onPress={() =>
-              router.push(`/recommended/${destination.id}`)
-            }
+            onPress={() => router.push(`/recommended/${destination.id}`)}
             style={({ pressed }) => ({ opacity: pressed ? 0.95 : 1 })}
           >
             <Box
