@@ -156,10 +156,13 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
     }
   }, [closeSheet, onChange]);
 
-  const handleSelectRecent = useCallback((uri: string) => {
-    closeSheet();
-    onChange?.(uri);
-  }, [closeSheet, onChange]);
+  const handleSelectRecent = useCallback(
+    (uri: string) => {
+      closeSheet();
+      onChange?.(uri);
+    },
+    [closeSheet, onChange],
+  );
 
   const handleRemove = useCallback(() => {
     closeSheet();
@@ -242,7 +245,11 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   );
 
   const renderRecentThumbnails = () => (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 14, paddingRight: 12 }}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingLeft: 14, paddingRight: 12 }}
+    >
       <Box flexDirection="row" gap="xs">
         <Pressable onPress={handleLibrary}>
           <Box
