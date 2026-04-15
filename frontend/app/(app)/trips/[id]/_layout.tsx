@@ -54,6 +54,13 @@ const Layout = () => {
         }}
       />
       <Stack.Screen
+        name="map"
+        options={{
+          headerShown: false,
+          gestureEnabled: true,
+        }}
+      />
+      <Stack.Screen
         name="search-location"
         options={{
           headerShown: false,

@@ -293,7 +293,7 @@ export default function Trip() {
 
                 <Pressable
                   onPress={() =>
-                    router.push(`/trips/${tripID}/search-location` as any)
+                    router.push(`/trips/${tripID}/map` as any)
                   }
                   style={styles.mapButton}
                   accessibilityRole="button"

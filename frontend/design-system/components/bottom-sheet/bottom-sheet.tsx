@@ -30,7 +30,10 @@ interface BottomSheetModalProps {
   initialIndex?: number;
   onClose?: () => void;
   onChange?: (index: number) => void;
+  /** When true, the sheet cannot be dismissed by panning below the lowest snap point */
   disableClose?: boolean;
+  /** When true, no backdrop is rendered behind the sheet */
+  disableBackdrop?: boolean;
   keyboardBehavior?: "interactive" | "extend" | "fillParent";
   /** When true, children are rendered directly without BottomSheetScrollView wrapper */
   disableScrollView?: boolean;
@@ -48,6 +51,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       initialIndex = -1,
       onClose,
       disableClose = false,
+      disableBackdrop = false,
       keyboardBehavior = "interactive",
       disableScrollView = false,
     },
@@ -92,15 +96,16 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
     }, []);
 
     const renderBackdrop = useCallback(
-      (props: any) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          pressBehavior={disableClose ? "none" : "close"}
-        />
-      ),
-      [disableClose],
+      (props: any) =>
+        disableBackdrop ? null : (
+          <BottomSheetBackdrop
+            {...props}
+            disappearsOnIndex={-1}
+            appearsOnIndex={0}
+            pressBehavior={disableClose ? "none" : "close"}
+          />
+        ),
+      [disableClose, disableBackdrop],
     );
 
     const renderFooter = useCallback(
@@ -134,7 +139,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
               })}
           keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
-          enableHandlePanningGesture={!disableClose}
+          enableHandlePanningGesture={true}
           handleComponent={null}
           onClose={handleClose}
           style={{

@@ -15,6 +15,20 @@ export const Shadow = {
     elevation: 4,
     spreadRadius: -5,
   },
+  lg: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  xl: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 20,
+    elevation: 5,
+  },
 } as const;
 
 export type ShadowKey = keyof typeof Shadow;

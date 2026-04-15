@@ -35,7 +35,7 @@ export const Layout = {
  * Used to indicate draggable sheet UI
  */
 export const ModalHandle = {
-  width: 36,
+  width: 38,
   height: 4,
   borderRadius: 2,
   marginBottom: 12,
