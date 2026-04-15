@@ -77,7 +77,7 @@ describe("image-service", () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.spyOn(Date, "now").mockReturnValue(1704067200000);
     (Crypto.randomUUID as jest.Mock).mockReturnValue("test-uuid-1234");
   });
@@ -236,7 +236,11 @@ describe("image-service", () => {
           data: createMockUploadURLsResponse(["large"]),
         });
         (uriToBlob as jest.Mock).mockResolvedValue(createMockBlob(100000));
-        mockGlobalFetch.mockResolvedValue({ ok: false, status: 403 });
+        mockGlobalFetch.mockResolvedValue({
+          ok: false,
+          status: 403,
+          text: jest.fn().mockResolvedValue(""),
+        });
 
         await expect(uploadImage({ uri: testUri })).rejects.toThrow(
           "S3 upload failed: 403",
@@ -420,7 +424,9 @@ describe("image-service", () => {
     });
 
     it("passes config to fetch", async () => {
-      (fetch as jest.Mock).mockResolvedValue({ data: {} });
+      (fetch as jest.Mock).mockResolvedValue({
+        data: { url: "https://s3.amazonaws.com/bucket/img-123/medium" },
+      });
       const config = { headers: { "X-Custom": "header" } };
 
       await getImageURL("img-123", "medium", config);
