@@ -5,7 +5,7 @@ import {
 import { useHideCategory } from "@/api/categories/useHideCategory";
 import { useGetMembership } from "@/api/memberships/useGetMembership";
 import { useUser } from "@/contexts/user";
-import { Chip, SkeletonRect } from "@/design-system";
+import { Chip, SkeletonRect, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -55,6 +55,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
   const isAdmin = myMembership?.is_admin ?? false;
 
   const hideCategory = useHideCategory();
+  const toast = useToast();
 
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPosition, setMenuPosition] = useState<TabMenuPosition | null>(
@@ -87,7 +88,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
         queryKey: getTripTabsQueryKey(tripID),
       });
     } catch {
-      // tab reverts to server state on next fetch
+      toast.show({ message: "Could not hide tab. Please try again." });
     }
   };
 
