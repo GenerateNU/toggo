@@ -4,6 +4,7 @@ import { Box, DateRangePicker, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { PricePicker } from "@/design-system/primitives/price-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { FontFamily } from "@/design-system/tokens/typography";
 import type {
   ModelsActivityAPIResponse,
   ModelsParsedActivityData,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   },
   formRowInput: {
     flex: 1,
-    fontFamily: "Figtree-SemiBold",
+    fontFamily: FontFamily.semiBold,
     fontSize: 16,
     lineHeight: 20,
     paddingVertical: 0,

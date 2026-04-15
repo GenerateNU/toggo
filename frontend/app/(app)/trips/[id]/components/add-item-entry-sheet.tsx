@@ -1,6 +1,7 @@
 import { Box, Divider, Text, TextField, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { FontFamily } from "@/design-system/tokens/typography";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, X } from "lucide-react-native";
 import {
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.gray300,
   },
   autofillButtonText: {
-    fontFamily: "Figtree-Medium",
+    fontFamily: FontFamily.medium,
     fontSize: 14,
     color: ColorPalette.white,
   },
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   manualButtonText: {
-    fontFamily: "Figtree-Medium",
+    fontFamily: FontFamily.medium,
     fontSize: 14,
     color: ColorPalette.gray900,
   },
