@@ -8,7 +8,14 @@ import { getCategoryIcon } from "@/utilities/category-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  GestureResponderEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import TabContextMenu, { type TabMenuPosition } from "./tabs/tab-context-menu";
 import TabEditSheet, { TabEditSheetMethods } from "./tabs/tab-edit-sheet";
 
@@ -52,7 +59,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
     editSheetRef.current?.open();
   };
 
-  const handleLongPress = (name: string, event: any) => {
+  const handleLongPress = (name: string, event: GestureResponderEvent) => {
     const isFixed = FIXED_TABS.some((t) => t.key === name);
     if (isFixed) return;
 
