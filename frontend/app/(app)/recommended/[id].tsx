@@ -342,8 +342,9 @@ export default function RecommendedDestinationScreen() {
       <LinearGradient
         colors={[
           "rgba(255,255,255,0)",
-          "rgba(255,255,255,0.7)",
+          "rgba(255,255,255,0.6)",
           "rgba(255,255,255,0.9)",
+          "rgba(255,255,255,1)",
           "rgba(255,255,255,1)",
         ]}
         style={[styles.bottomCta, { paddingBottom: insets.bottom + 16 }]}
