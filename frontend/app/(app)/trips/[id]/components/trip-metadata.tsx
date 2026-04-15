@@ -156,7 +156,11 @@ export function TripMetadata({
             <Box flexDirection="row" alignItems="center" gap="xxs">
               <MapPin
                 size={16}
-                color={showLocationAction ? ColorPalette.blue500 : ColorPalette.gray500}
+                color={
+                  showLocationAction
+                    ? ColorPalette.blue500
+                    : ColorPalette.gray500
+                }
               />
               <Text
                 variant={showLocationAction ? "bodySmMedium" : "bodySmDefault"}

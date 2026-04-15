@@ -16,11 +16,17 @@ type TripHeaderProps = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TripHeader({ coverImageUrl, absolute = true }: TripHeaderProps) {
+export function TripHeader({
+  coverImageUrl,
+  absolute = true,
+}: TripHeaderProps) {
   return coverImageUrl ? (
     <Image
       source={{ uri: coverImageUrl }}
-      style={[styles.coverImage, absolute ? styles.absoluteCoverImage : undefined]}
+      style={[
+        styles.coverImage,
+        absolute ? styles.absoluteCoverImage : undefined,
+      ]}
       contentFit="cover"
     />
   ) : (

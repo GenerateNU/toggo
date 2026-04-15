@@ -34,7 +34,10 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -92,7 +95,9 @@ export default function Trip() {
   );
   const tripMembers =
     tripMembersData?.items
-      ?.filter((member): member is NonNullable<typeof member> => Boolean(member))
+      ?.filter((member): member is NonNullable<typeof member> =>
+        Boolean(member),
+      )
       .map((member) => ({
         userId: member.user_id ?? "",
         name: member.name ?? member.username ?? "Traveler",
@@ -278,27 +283,27 @@ export default function Trip() {
               ]}
             >
               <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              paddingHorizontal="sm"
-              paddingVertical="xs"
-            >
-              <BackButton hasBackground />
-
-              <Pressable
-                onPress={() =>
-                  router.push(`/trips/${tripID}/search-location` as any)
-                }
-                style={styles.mapButton}
-                accessibilityRole="button"
-                accessibilityLabel="View map"
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                paddingHorizontal="sm"
+                paddingVertical="xs"
               >
-                <Map size={16} color={ColorPalette.gray950} />
-                <Text variant="bodySmMedium" color="gray950">
-                  Map
-                </Text>
-              </Pressable>
+                <BackButton hasBackground />
+
+                <Pressable
+                  onPress={() =>
+                    router.push(`/trips/${tripID}/search-location` as any)
+                  }
+                  style={styles.mapButton}
+                  accessibilityRole="button"
+                  accessibilityLabel="View map"
+                >
+                  <Map size={16} color={ColorPalette.gray950} />
+                  <Text variant="bodySmMedium" color="gray950">
+                    Map
+                  </Text>
+                </Pressable>
               </Box>
             </Animated.View>
           </View>
@@ -382,7 +387,11 @@ export default function Trip() {
               activeTab !== "polls" &&
               activeTab !== "settings" &&
               activeTab !== "activities" && (
-                <Box flex={1} alignItems="flex-start" justifyContent="flex-start">
+                <Box
+                  flex={1}
+                  alignItems="flex-start"
+                  justifyContent="flex-start"
+                >
                   <Text variant="bodySmDefault" color="gray400">
                     Post notes, photos, videos, and links
                   </Text>
