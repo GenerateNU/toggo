@@ -1,12 +1,15 @@
-import { getTripTabsQueryKey, useGetTripTabs } from "@/api/categories/useGetTripTabs";
+import {
+  getTripTabsQueryKey,
+  useGetTripTabs,
+} from "@/api/categories/useGetTripTabs";
 import { useHideCategory } from "@/api/categories/useHideCategory";
 import { useGetMembership } from "@/api/memberships/useGetMembership";
+import { useUser } from "@/contexts/user";
 import { Chip } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { getCategoryIcon } from "@/utilities/category-icons";
-import { useUser } from "@/contexts/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
@@ -50,13 +53,18 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
   const { currentUser } = useUser();
   const { data, isLoading } = useGetTripTabs(tripID);
   const tabs = data?.tabs ?? [];
-  const { data: myMembership } = useGetMembership(tripID, currentUser?.id ?? "");
+  const { data: myMembership } = useGetMembership(
+    tripID,
+    currentUser?.id ?? "",
+  );
   const isAdmin = myMembership?.is_admin ?? false;
 
   const hideCategory = useHideCategory();
 
   const [menuVisible, setMenuVisible] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<TabMenuPosition | null>(null);
+  const [menuPosition, setMenuPosition] = useState<TabMenuPosition | null>(
+    null,
+  );
   const [menuTabName, setMenuTabName] = useState<string | null>(null);
 
   const handleEditPress = () => {
@@ -90,7 +98,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -126,22 +134,18 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
                 </Pressable>
               );
             })}
+
+        <Pressable
+          onPress={handleEditPress}
+          style={styles.editButton}
+          accessibilityLabel="Edit tabs"
+          accessibilityRole="button"
+        >
+          <SlidersHorizontal size={16} color={ColorPalette.gray600} />
+        </Pressable>
       </ScrollView>
 
-      <Pressable
-        onPress={handleEditPress}
-        style={styles.editButton}
-        accessibilityLabel="Edit tabs"
-        accessibilityRole="button"
-      >
-        <SlidersHorizontal size={16} color={ColorPalette.gray600} />
-      </Pressable>
-
-      <TabEditSheet
-        ref={editSheetRef}
-        tripID={tripID}
-        isAdmin={isAdmin}
-      />
+      <TabEditSheet ref={editSheetRef} tripID={tripID} isAdmin={isAdmin} />
 
       <TabContextMenu
         visible={menuVisible}
@@ -156,20 +160,19 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   content: {
     flexDirection: "row",
+    alignItems: "center",
     gap: Layout.spacing.xs,
     paddingHorizontal: Layout.spacing.sm,
   },
   editButton: {
-    padding: Layout.spacing.xs,
-    marginRight: Layout.spacing.xs,
+    paddingHorizontal: 10,
     borderRadius: CornerRadius.sm,
     backgroundColor: ColorPalette.gray50,
+    alignSelf: "stretch",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

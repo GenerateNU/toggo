@@ -233,15 +233,19 @@ export default function Trip() {
               )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
               {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "settings" && (
-                <Box flex={1} alignItems="flex-start" justifyContent="flex-start">
-                  <Text variant="bodySmDefault" color="gray400">
-                    Post notes, photos, videos, and links
-                  </Text>
-                </Box>
-              )}
+                activeTab !== "itinerary" &&
+                activeTab !== "polls" &&
+                activeTab !== "settings" && (
+                  <Box
+                    flex={1}
+                    alignItems="flex-start"
+                    justifyContent="flex-start"
+                  >
+                    <Text variant="bodySmDefault" color="gray400">
+                      Post notes, photos, videos, and links
+                    </Text>
+                  </Box>
+                )}
             </Box>
           </ScrollView>
         </View>

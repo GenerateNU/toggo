@@ -5,6 +5,7 @@ import { useSharedValue } from "react-native-reanimated";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 export const ROW_HEIGHT = 56;
+export const SWAP_THRESHOLD = ROW_HEIGHT * 0.5;
 export const SPRING_CONFIG = { damping: 20, stiffness: 300 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -19,57 +20,61 @@ type UseTabReorderParams = {
 export function useTabReorder({ tabs, onReorder }: UseTabReorderParams) {
   const [orderedTabs, setOrderedTabs] =
     useState<ModelsCategoryAPIResponse[]>(tabs);
+  const [draggingName, setDraggingName] = useState<string | null>(null);
 
-  // Sync orderedTabs when the tabs prop changes (e.g. after create or hide)
-  useEffect(() => {
+  // Stable ref so onDragEnd can read the latest order without stale closure
+  const orderedTabsRef = useRef<ModelsCategoryAPIResponse[]>(tabs);
+
+  // Sync orderedTabs when the tabs prop changes (e.g. after create or hide).
+  // Setting state during render is the React-recommended pattern for resetting
+  // derived state when a prop changes — React immediately discards the current
+  // render and re-runs with the updated state.
+  const [prevTabs, setPrevTabs] = useState(tabs);
+  if (prevTabs !== tabs) {
+    setPrevTabs(tabs);
     setOrderedTabs(tabs);
-  }, [tabs]);
+  }
 
   const dragIndex = useSharedValue(-1);
-  const dragY = useSharedValue(0);
-  const activeIndex = useRef(-1);
+  const translateY = useSharedValue(0);
+  const swapBudget = useSharedValue(0);
+  const listLength = useSharedValue(tabs.length);
 
-  const commitReorder = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      if (fromIndex === toIndex) return;
-      const reordered = [...orderedTabs];
-      const [moved] = reordered.splice(fromIndex, 1);
-      if (moved) {
-        reordered.splice(toIndex, 0, moved);
-        setOrderedTabs(reordered);
-        onReorder(reordered);
-      }
-    },
-    [orderedTabs, onReorder],
-  );
+  useEffect(() => {
+    orderedTabsRef.current = orderedTabs;
+    listLength.value = orderedTabs.length;
+  }, [orderedTabs]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onDragStart = useCallback((index: number) => {
-    activeIndex.current = index;
+  const setDragging = useCallback((name: string | null) => {
+    setDraggingName(name);
   }, []);
 
-  const onDragEnd = useCallback(
-    (translationY: number) => {
-      const fromIndex = activeIndex.current;
-      const toIndex = Math.round(
-        Math.max(
-          0,
-          Math.min(
-            orderedTabs.length - 1,
-            fromIndex + translationY / ROW_HEIGHT,
-          ),
-        ),
-      );
-      activeIndex.current = -1;
-      commitReorder(fromIndex, toIndex);
-    },
-    [orderedTabs.length, commitReorder],
-  );
+  const doSwap = useCallback((from: number, to: number) => {
+    setOrderedTabs((prev) => {
+      if (from < 0 || to < 0 || from >= prev.length || to >= prev.length)
+        return prev;
+      const next = [...prev];
+      const tmp = next[from]!;
+      next[from] = next[to]!;
+      next[to] = tmp;
+      orderedTabsRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const onDragEnd = useCallback(() => {
+    onReorder(orderedTabsRef.current);
+  }, [onReorder]);
 
   return {
     orderedTabs,
+    draggingName,
     dragIndex,
-    dragY,
-    onDragStart,
+    translateY,
+    swapBudget,
+    listLength,
+    setDragging,
+    doSwap,
     onDragEnd,
   };
 }

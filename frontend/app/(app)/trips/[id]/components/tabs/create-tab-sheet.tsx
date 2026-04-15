@@ -1,4 +1,5 @@
 import { useCreateCategory } from "@/api/categories/useCreateCategory";
+import { getCategoriesByTripIDQueryKey } from "@/api/categories/useGetCategoriesByTripID";
 import { getTripTabsQueryKey } from "@/api/categories/useGetTripTabs";
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
 import TextField from "@/design-system/components/inputs/text-field";
@@ -28,7 +29,20 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
   ({ tripID }, ref) => {
     const bottomSheetRef = useRef<BottomSheetMethods>(null);
     const queryClient = useQueryClient();
-    const createCategory = useCreateCategory();
+    const createCategory = useCreateCategory({
+      mutation: {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: getTripTabsQueryKey(tripID),
+          });
+          queryClient.invalidateQueries({
+            queryKey: getCategoriesByTripIDQueryKey(tripID, {
+              include_hidden: true,
+            }),
+          });
+        },
+      },
+    });
     const [label, setLabel] = useState("");
     const [error, setError] = useState<string | null>(null);
 
@@ -59,9 +73,6 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
             trip_id: tripID,
           },
         });
-        await queryClient.invalidateQueries({
-          queryKey: getTripTabsQueryKey(tripID),
-        });
         bottomSheetRef.current?.close();
       } catch {
         setError("Could not create tab. Please try again.");
@@ -73,8 +84,7 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
     };
 
     return (
-      <BottomSheetModal ref={bottomSheetRef} size="sm" hideHandle={false}>
-        {/* Header */}
+      <BottomSheetModal ref={bottomSheetRef} size="sm" hideHandle>
         <Box style={styles.header}>
           <Pressable onPress={handleClose} style={styles.headerButton}>
             <Text variant="bodySmDefault" color="gray600">
@@ -101,7 +111,6 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
           </Pressable>
         </Box>
 
-        {/* Input */}
         <Box style={styles.content}>
           <TextField
             label="Tab name"
@@ -134,8 +143,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: ColorPalette.gray100,
   },
   headerButton: {
     minWidth: 60,

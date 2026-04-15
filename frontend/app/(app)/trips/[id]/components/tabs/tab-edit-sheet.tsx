@@ -1,8 +1,12 @@
-import { getCategoriesByTripIDQueryKey, useGetCategoriesByTripID } from "@/api/categories/useGetCategoriesByTripID";
+import {
+  getCategoriesByTripIDQueryKey,
+  useGetCategoriesByTripID,
+} from "@/api/categories/useGetCategoriesByTripID";
 import { getTripTabsQueryKey } from "@/api/categories/useGetTripTabs";
 import { useHideCategory } from "@/api/categories/useHideCategory";
 import { useReorderTripTabs } from "@/api/categories/useReorderTripTabs";
 import { useShowCategory } from "@/api/categories/useShowCategory";
+import { Button } from "@/design-system";
 import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
@@ -13,12 +17,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsCategoryAPIResponse } from "@/types/types.gen";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-    forwardRef,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-} from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import CreateTabSheet, { CreateTabSheetMethods } from "./create-tab-sheet";
 import { useTabReorder } from "./hooks/useTabReorder";
@@ -45,8 +44,13 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
     const queryClient = useQueryClient();
     const toast = useToast();
 
-    const { data: categoriesData } = useGetCategoriesByTripID(tripID, { include_hidden: true });
-    const allTabs = useMemo(() => categoriesData?.categories ?? [], [categoriesData?.categories]);
+    const { data: categoriesData } = useGetCategoriesByTripID(tripID, {
+      include_hidden: true,
+    });
+    const allTabs = useMemo(
+      () => categoriesData?.categories ?? [],
+      [categoriesData?.categories],
+    );
 
     const hideCategory = useHideCategory();
     const showCategory = useShowCategory();
@@ -54,8 +58,14 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
 
     const invalidateTabQueries = () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: getTripTabsQueryKey(tripID) }),
-        queryClient.invalidateQueries({ queryKey: getCategoriesByTripIDQueryKey(tripID, { include_hidden: true }) }),
+        queryClient.invalidateQueries({
+          queryKey: getTripTabsQueryKey(tripID),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getCategoriesByTripIDQueryKey(tripID, {
+            include_hidden: true,
+          }),
+        }),
       ]);
 
     const handleReorder = async (reordered: ModelsCategoryAPIResponse[]) => {
@@ -77,9 +87,13 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
 
     const {
       orderedTabs,
+      draggingName,
       dragIndex,
-      dragY,
-      onDragStart,
+      translateY,
+      swapBudget,
+      listLength,
+      setDragging,
+      doSwap,
       onDragEnd,
     } = useTabReorder({ tabs: allTabs, onReorder: handleReorder });
 
@@ -98,7 +112,9 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
         }
         await invalidateTabQueries();
       } catch {
-        toast.show({ message: "Could not update tab visibility. Please try again." });
+        toast.show({
+          message: "Could not update tab visibility. Please try again.",
+        });
       }
     };
 
@@ -114,7 +130,6 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
           hideHandle
           disableClose={false}
         >
-          {/* Header */}
           <Box style={styles.header}>
             <Pressable onPress={handleClose} style={styles.headerButton}>
               <Text variant="bodySmDefault" color="gray600">
@@ -131,33 +146,34 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
             </Pressable>
           </Box>
 
-          {/* Tab rows */}
           <Box style={styles.list}>
             {orderedTabs.map((tab, index) => (
               <TabRowItem
                 key={tab.name}
                 tab={tab}
                 index={index}
-                totalTabs={orderedTabs.length}
+                isDragging={draggingName === tab.name}
                 isAdmin={isAdmin}
                 dragIndex={dragIndex}
-                dragY={dragY}
+                translateY={translateY}
+                swapBudget={swapBudget}
+                listLength={listLength}
                 onToggle={() => handleToggle(tab)}
-                onDragStart={onDragStart}
+                setDragging={setDragging}
+                doSwap={doSwap}
                 onDragEnd={onDragEnd}
               />
             ))}
           </Box>
 
-          {/* Create new tab */}
-          <Pressable
-            style={styles.createButton}
-            onPress={() => createTabSheetRef.current?.open()}
-          >
-            <Text variant="bodySmDefault" color="gray600">
-              Create a new tab
-            </Text>
-          </Pressable>
+          <Box padding="sm">
+            <Button
+              layout="textOnly"
+              variant="Secondary"
+              label="Create a new tab"
+              onPress={() => createTabSheetRef.current?.open()}
+            />
+          </Box>
         </BottomSheetModal>
 
         <CreateTabSheet ref={createTabSheetRef} tripID={tripID} />
@@ -177,8 +193,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: ColorPalette.gray100,
   },
   headerButton: {
     minWidth: 60,
@@ -189,6 +203,8 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingTop: Layout.spacing.xs,
+    gap: Layout.spacing.xs,
+    paddingHorizontal: Layout.spacing.sm,
   },
   createButton: {
     alignItems: "center",
