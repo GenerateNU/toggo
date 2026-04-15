@@ -49,7 +49,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -59,6 +59,7 @@ const CARD_TOP_OFFSET = 120;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
+  const insets = useSafeAreaInsets();
   const { id: tripID, tab } = useLocalSearchParams<{
     id: string;
     tab?: string;
@@ -262,33 +263,29 @@ export default function Trip() {
         disabled={isLoading}
       />
 
-      <SafeAreaView
-        style={styles.safeArea}
-        edges={["top"]}
-        pointerEvents="box-none"
+      <Box
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        paddingHorizontal="sm"
+        paddingBottom="xs"
+        style={{ position: "relative", zIndex: 10, paddingTop: insets.top }}
       >
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-          paddingHorizontal="sm"
-          paddingVertical="xs"
+        <BackButton hasBackground />
+        <Pressable
+          onPress={handleOpenMapView}
+          style={styles.mapButton}
+          accessibilityRole="button"
+          accessibilityLabel="View map"
         >
-          <BackButton hasBackground />
+          <Map size={16} color={ColorPalette.gray950} />
+          <Text variant="bodySmMedium" color="gray950">
+            {isOpeningMap ? "Loading..." : "Map"}
+          </Text>
+        </Pressable>
+      </Box>
 
-          <Pressable
-            onPress={handleOpenMapView}
-            style={styles.mapButton}
-            accessibilityRole="button"
-            accessibilityLabel="View map"
-          >
-            <Map size={16} color={ColorPalette.gray950} />
-            <Text variant="bodySmMedium" color="gray950">
-              {isOpeningMap ? "Loading..." : "Map"}
-            </Text>
-          </Pressable>
-        </Box>
-
+      <SafeAreaView style={styles.safeArea} edges={[]} pointerEvents="box-none">
         <View ref={cardContainerRef} style={styles.card}>
           <ScrollView
             ref={parentScrollViewRef}
@@ -312,7 +309,6 @@ export default function Trip() {
                 onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
                 onLocationPress={handleLocationPress}
               />
-
               <Box paddingVertical="sm">
                 <TripTabBar
                   tripID={tripID}
@@ -321,7 +317,6 @@ export default function Trip() {
                 />
               </Box>
             </Box>
-
             <Box
               paddingHorizontal="sm"
               paddingTop="sm"
@@ -336,21 +331,18 @@ export default function Trip() {
                   <SkeletonRect width="threeQuarter" style={{ height: 90 }} />
                 </Box>
               ) : null}
-
               {!isLoading && isError ? (
                 <ErrorState
                   title="Couldn't load trip"
                   description="Pull to refresh or try again in a moment."
                 />
               ) : null}
-
               {!isLoading && !isError && !trip ? (
                 <EmptyState
                   title="Trip not found"
                   description="This trip may have been removed or you may not have access to it."
                 />
               ) : null}
-
               {!isLoading && !isError && trip && activeTab === "new" && (
                 <Box gap="sm">
                   {trip?.pitch_deadline &&

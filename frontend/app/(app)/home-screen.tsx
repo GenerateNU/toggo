@@ -1,8 +1,8 @@
 import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
-import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
-import { useTripsList } from "@/api/trips/custom/useTripsList";
 import { usePastTripsList } from "@/api/trips/custom/usePastTripsList";
+import { useTripsList } from "@/api/trips/custom/useTripsList";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
@@ -340,7 +340,7 @@ export default function HomeScreen() {
       >
         <Box flex={1} backgroundColor="white">
           <Box>
-            {upcomingTrip ? (
+            {upcomingTrip || (tripsQueryEnabled && isTripsLoading) ? (
               <LinearGradient
                 colors={topSectionGradientColors}
                 start={{ x: 0, y: 0 }}
