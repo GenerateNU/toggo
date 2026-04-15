@@ -4,7 +4,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
-import { EyeOff } from "lucide-react-native";
+import { EyeClosed } from "lucide-react-native";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export default function TabContextMenu({
                 pressed && styles.rowPressed,
               ]}
             >
-              <EyeOff
+              <EyeClosed
                 size={CONTEXT_MENU_ICON_SIZE}
                 color={ColorPalette.gray900}
               />
