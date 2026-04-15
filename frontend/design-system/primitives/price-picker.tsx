@@ -83,10 +83,9 @@ export function PricePicker({
     value != null && value > 0 ? String(value) : "",
   );
 
-  const translateX = useMemo(
-    () => new Animated.Value(priceToOffset(value ?? 0)),
-    [],
-  );
+  const translateX = useRef(
+    new Animated.Value(priceToOffset(value ?? 0)),
+  ).current;
   const currentOffset = useRef(priceToOffset(value ?? 0));
   const baseOffset = useRef(priceToOffset(value ?? 0));
   const inputRef = useRef<TextInput>(null);
@@ -101,7 +100,7 @@ export function PricePicker({
       currentOffset.current = offset;
       baseOffset.current = offset;
     }
-  }, [visible, value]);
+  }, [visible, value, translateX]);
 
   // ─── Text → ruler ──────────────────────────────────────────────────────
 

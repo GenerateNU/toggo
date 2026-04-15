@@ -252,21 +252,21 @@ func (s *TripService) convertToAPITrips(
 		}
 
 		tripResponses = append(tripResponses, &models.TripAPIResponse{
-			ID:            tripData.TripID,
-			Name:          tripData.Name,
-			CoverImageURL: coverImageURL,
-			BudgetMin:     tripData.BudgetMin,
-			BudgetMax:     tripData.BudgetMax,
-			Currency:      tripData.Currency,
-			PitchDeadline: tripData.PitchDeadline,
-			RankPollID:    tripData.RankPollID,
-			StartDate:     tripData.StartDate,
-			EndDate:       tripData.EndDate,
-			Location:      tripData.Location,
-			MemberCount:   memberCount,
+			ID:             tripData.TripID,
+			Name:           tripData.Name,
+			CoverImageURL:  coverImageURL,
+			BudgetMin:      tripData.BudgetMin,
+			BudgetMax:      tripData.BudgetMax,
+			Currency:       tripData.Currency,
+			PitchDeadline:  tripData.PitchDeadline,
+			RankPollID:     tripData.RankPollID,
+			StartDate:      tripData.StartDate,
+			EndDate:        tripData.EndDate,
+			Location:       tripData.Location,
+			MemberCount:    memberCount,
 			MemberPreviews: memberPreviews,
-			CreatedAt:     tripData.CreatedAt,
-			UpdatedAt:     tripData.UpdatedAt,
+			CreatedAt:      tripData.CreatedAt,
+			UpdatedAt:      tripData.UpdatedAt,
 		})
 	}
 	return tripResponses

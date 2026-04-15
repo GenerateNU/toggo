@@ -1,26 +1,27 @@
 import { Box, Divider, Text, TextField, useToast } from "@/design-system";
+import BottomSheetModal from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily } from "@/design-system/tokens/typography";
+import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, X } from "lucide-react-native";
+import { Link } from "lucide-react-native";
 import {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
   Animated,
   Image,
   ImageSourcePropType,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
   Pressable,
-  Text as RNText,
   StyleSheet,
+  Text as RNText,
 } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -134,28 +135,40 @@ function AddItemEntrySheetInner<T>(
   ref: React.ForwardedRef<AddItemEntrySheetHandle>,
 ) {
   const toast = useToast();
-  const [visible, setVisible] = useState(false);
+  const bottomSheetRef = useRef<BottomSheetMethods>(null);
   const [url, setUrl] = useState("");
   const [isAutofilling, setIsAutofilling] = useState(false);
 
+  // Tracks whether close was triggered programmatically (autofill / manual)
+  // so we don't fire onClose() in those cases.
+  const suppressCloseCallback = useRef(false);
+
+  const reset = () => setUrl("");
+
   useImperativeHandle(ref, () => ({
-    open: () => setVisible(true),
+    open: () => {
+      reset();
+      bottomSheetRef.current?.snapToIndex(0);
+    },
     close: () => {
-      setVisible(false);
-      setUrl("");
+      suppressCloseCallback.current = true;
+      bottomSheetRef.current?.close();
+      reset();
     },
   }));
 
-  const handleClose = () => {
-    if (isAutofilling) return;
-    setVisible(false);
-    setUrl("");
-    onClose();
+  const handleSheetClose = () => {
+    if (!suppressCloseCallback.current) {
+      onClose();
+    }
+    suppressCloseCallback.current = false;
+    reset();
   };
 
   const handleManual = () => {
-    setVisible(false);
-    setUrl("");
+    suppressCloseCallback.current = true;
+    bottomSheetRef.current?.close();
+    reset();
     onManual();
   };
 
@@ -165,8 +178,9 @@ function AddItemEntrySheetInner<T>(
     try {
       const data = await onParseLink(url.trim());
       setIsAutofilling(false);
-      setVisible(false);
-      setUrl("");
+      suppressCloseCallback.current = true;
+      bottomSheetRef.current?.close();
+      reset();
       onAutofilled(data);
     } catch {
       setIsAutofilling(false);
@@ -175,91 +189,68 @@ function AddItemEntrySheetInner<T>(
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
+    <BottomSheetModal
+      ref={bottomSheetRef}
+      disableClose={isAutofilling}
+      onClose={handleSheetClose}
     >
-      <Pressable style={styles.backdrop} onPress={handleClose}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={styles.sheetWrapper}
+      <Box style={styles.content}>
+        {/* Illustration */}
+        <Box alignItems="center">
+          <Image
+            source={illustration}
+            style={[
+              styles.illustration,
+              isAutofilling && styles.illustrationLoading,
+            ]}
+            resizeMode="contain"
+          />
+        </Box>
+
+        {/* Title + subtitle */}
+        <Box style={styles.headerGroup}>
+          <Text variant="headingMd" color="gray900">
+            {isAutofilling ? loadingTitle : title}
+          </Text>
+          <Text variant="bodyDefault" color="gray500">
+            {isAutofilling ? loadingSubtitle : subtitle}
+          </Text>
+        </Box>
+
+        {/* URL field */}
+        <TextField
+          value={url}
+          onChangeText={setUrl}
+          placeholder={urlPlaceholder}
+          leftIcon={<Link size={16} color={ColorPalette.gray400} />}
+          autoCapitalize="none"
+          keyboardType="url"
+          disabled={isAutofilling}
+        />
+
+        {/* Autofill button */}
+        <AutofillButton
+          label={isAutofilling ? "Autofilling..." : "Autofill from link"}
+          disabled={!url.trim() || isAutofilling}
+          loading={isAutofilling}
+          onPress={handleAutofill}
+        />
+
+        <Divider style={styles.divider} />
+
+        {/* Manual fallback */}
+        <Pressable
+          onPress={handleManual}
+          disabled={isAutofilling}
+          style={[
+            styles.manualButton,
+            isAutofilling && styles.manualButtonDisabled,
+          ]}
         >
-          <Pressable style={styles.sheet} onPress={() => {}}>
-            {/* X button */}
-            <Pressable
-              style={styles.closeButton}
-              onPress={handleClose}
-              hitSlop={12}
-            >
-              <X size={20} color={ColorPalette.gray900} />
-            </Pressable>
-
-            {/* Illustration */}
-            <Box alignItems="center" style={styles.illustrationContainer}>
-              <Image
-                source={illustration}
-                style={[
-                  styles.illustration,
-                  isAutofilling && styles.illustrationLoading,
-                ]}
-                resizeMode="contain"
-              />
-            </Box>
-
-            {/* Title + subtitle */}
-            <Box style={styles.headerGroup}>
-              <Text variant="headingMd" color="gray900">
-                {isAutofilling ? loadingTitle : title}
-              </Text>
-              <Text variant="bodyDefault" color="gray500">
-                {isAutofilling ? loadingSubtitle : subtitle}
-              </Text>
-            </Box>
-
-            {/* URL field */}
-            <Box style={styles.fullWidth}>
-              <TextField
-                value={url}
-                onChangeText={setUrl}
-                placeholder={urlPlaceholder}
-                leftIcon={<Link size={16} color={ColorPalette.gray400} />}
-                autoCapitalize="none"
-                keyboardType="url"
-                disabled={isAutofilling}
-              />
-            </Box>
-
-            {/* Autofill button with shimmer */}
-            <Box style={styles.fullWidth}>
-              <AutofillButton
-                label={isAutofilling ? "Autofilling..." : "Autofill from link"}
-                disabled={!url.trim() || isAutofilling}
-                loading={isAutofilling}
-                onPress={handleAutofill}
-              />
-            </Box>
-
-            <Divider style={styles.divider} />
-
-            {/* Manual fallback */}
-            <Box style={styles.fullWidth}>
-              <Pressable
-                onPress={handleManual}
-                disabled={isAutofilling}
-                style={[
-                  styles.manualButton,
-                  isAutofilling && styles.manualButtonDisabled,
-                ]}
-              >
-                <RNText style={styles.manualButtonText}>Add manually</RNText>
-              </Pressable>
-            </Box>
-          </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
-    </Modal>
+          <RNText style={styles.manualButtonText}>Add manually</RNText>
+        </Pressable>
+      </Box>
+    </BottomSheetModal>
   );
 }
 
@@ -272,33 +263,10 @@ export const AddItemEntrySheet = forwardRef(AddItemEntrySheetInner) as <T>(
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  sheetWrapper: {
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 32,
-    gap: 20,
-    position: "relative",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    zIndex: 1,
-  },
-  illustrationContainer: {
-    width: "100%",
-    marginTop: 8,
+  content: {
+    gap: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingBottom: Layout.spacing.xl,
   },
   illustration: {
     width: 94,
@@ -310,11 +278,7 @@ const styles = StyleSheet.create({
   headerGroup: {
     gap: 6,
   },
-  fullWidth: {
-    width: "100%",
-  },
   divider: {
-    width: "100%",
     marginVertical: 0,
     backgroundColor: ColorPalette.gray10,
   },
