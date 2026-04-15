@@ -187,7 +187,7 @@ func (s *CategoryService) GetTabs(ctx context.Context, tripID, userID uuid.UUID)
 	return s.convertToAPICategories(categories), nil
 }
 
-// ReorderTabs updates the position of all visible categories for a trip
+// ReorderTabs updates the position of all categories for a trip
 func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.UUID, req models.UpdateCategoryTabOrderRequest) error {
 	isMember, err := s.Membership.IsMember(ctx, tripID, userID)
 	if err != nil {
@@ -197,17 +197,17 @@ func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.U
 		return errs.ErrNotFound
 	}
 
-	// Fetch only visible categories for validation
-	currentCategories, err := s.Category.FindByTripID(ctx, tripID, false)
+	// Fetch all categories (visible and hidden) for validation
+	currentCategories, err := s.Category.FindByTripID(ctx, tripID, true)
 	if err != nil {
 		return err
 	}
 
 	if len(req.Tabs) != len(currentCategories) {
-		return errs.BadRequest(errors.New("reorder request must include all visible tabs exactly once"))
+		return errs.BadRequest(errors.New("reorder request must include all tabs exactly once"))
 	}
 
-	// Build lookup of current visible category names
+	// Build lookup of all category names for this trip
 	currentNames := make(map[string]bool)
 	for _, c := range currentCategories {
 		currentNames[c.Name] = true
@@ -218,7 +218,7 @@ func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.U
 	seenPositions := make(map[int]bool)
 	for _, t := range req.Tabs {
 		if !currentNames[t.Name] {
-			return errs.BadRequest(errors.New("category does not belong to this trip or is hidden"))
+			return errs.BadRequest(errors.New("category does not belong to this trip"))
 		}
 		if seenNames[t.Name] {
 			return errs.BadRequest(errors.New("duplicate category names in reorder request"))
@@ -228,25 +228,6 @@ func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.U
 		}
 		seenNames[t.Name] = true
 		seenPositions[t.Position] = true
-	}
-
-	// Ensure no requested position conflicts with a hidden category's reserved position
-	allCategories, err := s.Category.FindByTripID(ctx, tripID, true)
-	if err != nil {
-		return err
-	}
-
-	hiddenPositions := make(map[int]bool)
-	for _, c := range allCategories {
-		if c.IsHidden {
-			hiddenPositions[c.Position] = true
-		}
-	}
-
-	for _, t := range req.Tabs {
-		if hiddenPositions[t.Position] {
-			return errs.BadRequest(errors.New("position conflicts with a hidden category"))
-		}
 	}
 
 	return s.Category.UpdateOrder(ctx, tripID, req.Tabs)

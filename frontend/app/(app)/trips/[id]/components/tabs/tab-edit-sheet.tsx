@@ -1,3 +1,4 @@
+import { getCategoriesByTripIDQueryKey, useGetCategoriesByTripID } from "@/api/categories/useGetCategoriesByTripID";
 import { getTripTabsQueryKey } from "@/api/categories/useGetTripTabs";
 import { useHideCategory } from "@/api/categories/useHideCategory";
 import { useReorderTripTabs } from "@/api/categories/useReorderTripTabs";
@@ -15,6 +16,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
     forwardRef,
     useImperativeHandle,
+    useMemo,
     useRef,
 } from "react";
 import { Pressable, StyleSheet } from "react-native";
@@ -31,22 +33,30 @@ export interface TabEditSheetMethods {
 
 interface TabEditSheetProps {
   tripID: string;
-  tabs: ModelsCategoryAPIResponse[];
   isAdmin: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
-  ({ tripID, tabs, isAdmin }, ref) => {
+  ({ tripID, isAdmin }, ref) => {
     const bottomSheetRef = useRef<BottomSheetMethods>(null);
     const createTabSheetRef = useRef<CreateTabSheetMethods>(null);
     const queryClient = useQueryClient();
     const toast = useToast();
 
+    const { data: categoriesData } = useGetCategoriesByTripID(tripID, { include_hidden: true });
+    const allTabs = useMemo(() => categoriesData?.categories ?? [], [categoriesData?.categories]);
+
     const hideCategory = useHideCategory();
     const showCategory = useShowCategory();
     const reorderTabs = useReorderTripTabs();
+
+    const invalidateTabQueries = () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: getTripTabsQueryKey(tripID) }),
+        queryClient.invalidateQueries({ queryKey: getCategoriesByTripIDQueryKey(tripID, { include_hidden: true }) }),
+      ]);
 
     const handleReorder = async (reordered: ModelsCategoryAPIResponse[]) => {
       try {
@@ -59,9 +69,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
             })),
           },
         });
-        await queryClient.invalidateQueries({
-          queryKey: getTripTabsQueryKey(tripID),
-        });
+        await invalidateTabQueries();
       } catch {
         toast.show({ message: "Could not reorder tabs. Please try again." });
       }
@@ -73,7 +81,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
       dragY,
       onDragStart,
       onDragEnd,
-    } = useTabReorder({ tabs, onReorder: handleReorder });
+    } = useTabReorder({ tabs: allTabs, onReorder: handleReorder });
 
     useImperativeHandle(ref, () => ({
       open: () => bottomSheetRef.current?.snapToIndex(0),
@@ -88,9 +96,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
         } else {
           await hideCategory.mutateAsync({ tripID, name });
         }
-        await queryClient.invalidateQueries({
-          queryKey: getTripTabsQueryKey(tripID),
-        });
+        await invalidateTabQueries();
       } catch {
         toast.show({ message: "Could not update tab visibility. Please try again." });
       }

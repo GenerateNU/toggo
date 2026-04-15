@@ -1,10 +1,12 @@
 import { getTripTabsQueryKey, useGetTripTabs } from "@/api/categories/useGetTripTabs";
 import { useHideCategory } from "@/api/categories/useHideCategory";
+import { useGetMembership } from "@/api/memberships/useGetMembership";
 import { Chip } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { getCategoryIcon } from "@/utilities/category-icons";
+import { useUser } from "@/contexts/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
@@ -45,9 +47,11 @@ type TripTabBarProps = {
 export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
   const editSheetRef = useRef<TabEditSheetMethods>(null);
   const queryClient = useQueryClient();
+  const { currentUser } = useUser();
   const { data, isLoading } = useGetTripTabs(tripID);
   const tabs = data?.tabs ?? [];
-  const isAdmin = tabs.some((tab) => tab.is_hidden !== undefined);
+  const { data: myMembership } = useGetMembership(tripID, currentUser?.id ?? "");
+  const isAdmin = myMembership?.is_admin ?? false;
 
   const hideCategory = useHideCategory();
 
@@ -136,7 +140,6 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
       <TabEditSheet
         ref={editSheetRef}
         tripID={tripID}
-        tabs={tabs}
         isAdmin={isAdmin}
       />
 
