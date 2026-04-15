@@ -8,9 +8,20 @@ import { getCategoryIcon } from "@/utilities/category-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { SlidersHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import TabContextMenu, { type TabMenuPosition } from "./tabs/tab-context-menu";
 import TabEditSheet, { TabEditSheetMethods } from "./tabs/tab-edit-sheet";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CONTEXT_MENU_WIDTH = 180;
+const screenWidth = Dimensions.get("window").width;
+
+const FIXED_TABS: { key: FixedTabKey; label: string }[] = [
+  { key: "new", label: "New" },
+  { key: "itinerary", label: "Itinerary" },
+  { key: "polls", label: "Polls" },
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,14 +32,6 @@ type TripTabBarProps = {
   activeTab: string;
   onTabPress: (tab: string) => void;
 };
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const FIXED_TABS: { key: FixedTabKey; label: string }[] = [
-  { key: "new", label: "New" },
-  { key: "itinerary", label: "Itinerary" },
-  { key: "polls", label: "Polls" },
-];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -54,8 +57,12 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
     if (isFixed) return;
 
     const { pageX, pageY } = event.nativeEvent;
+    const clampedLeft = Math.min(
+      pageX,
+      screenWidth - CONTEXT_MENU_WIDTH - Layout.spacing.sm,
+    );
     setMenuTabName(name);
-    setMenuPosition({ top: pageY, left: pageX });
+    setMenuPosition({ top: pageY, left: clampedLeft });
     setMenuVisible(true);
   };
 
