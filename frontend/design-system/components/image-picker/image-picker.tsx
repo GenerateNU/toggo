@@ -7,22 +7,20 @@ import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import * as ExpoImagePicker from "expo-image-picker";
-import * as MediaLibrary from "expo-media-library";
 import {
   ImagePlus,
   Images,
-  Image as LucideIconImage,
   Trash2,
   Upload,
   X,
 } from "lucide-react-native";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import {
   Alert,
   Pressable,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ViewStyle,
 } from "react-native";
 
 export type ImagePickerVariant = "circular" | "rectangular";
@@ -32,22 +30,16 @@ export interface ImagePickerProps {
   onChange?: (uri: string | null) => void;
   variant?: ImagePickerVariant;
   size?: number;
-  width?: number | string;
+  width?: ViewStyle["width"];
   height?: number;
   placeholder?: string;
   disabled?: boolean;
   title?: string;
   subtitle?: string;
-  emptyStateBackgroundColor?: ColorName;
-  emptyStateIconColor?: ColorName;
   showPlaceholderText?: boolean;
-  showCameraAction?: boolean;
   showRemoveAction?: boolean;
   showUploadFromFilesAction?: boolean;
-  recentsCount?: number;
 }
-
-const RECENT_THUMBNAIL_SIZE = 72;
 
 const PICKER_OPTIONS: ExpoImagePicker.ImagePickerOptions = {
   mediaTypes: ["images"],
@@ -55,6 +47,20 @@ const PICKER_OPTIONS: ExpoImagePicker.ImagePickerOptions = {
   aspect: [1, 1],
   quality: 0.8,
 };
+
+let isPickerActive = false;
+
+async function withPickerGuard<T>(
+  fn: () => Promise<T>,
+): Promise<T | undefined> {
+  if (isPickerActive) return undefined;
+  isPickerActive = true;
+  try {
+    return await fn();
+  } finally {
+    isPickerActive = false;
+  }
+}
 
 interface ActionRowProps {
   icon: React.ComponentType<any>;
@@ -79,19 +85,6 @@ const ActionRow: React.FC<ActionRowProps> = ({
   </Pressable>
 );
 
-const requestLibraryPermission = async (): Promise<boolean> => {
-  const { status } =
-    await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== "granted") {
-    Alert.alert(
-      "Photo Library Access Required",
-      "Please allow photo library access in your settings to choose a photo.",
-    );
-    return false;
-  }
-  return true;
-};
-
 export const ImagePicker: React.FC<ImagePickerProps> = ({
   value,
   onChange,
@@ -103,71 +96,72 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   disabled = false,
   title = "Add media",
   subtitle,
-  emptyStateBackgroundColor = "gray100",
-  emptyStateIconColor = "gray500",
   showPlaceholderText = true,
   showRemoveAction = true,
   showUploadFromFilesAction = true,
-  recentsCount = 10,
 }) => {
   const sheetRef = useRef<BottomSheetMethods>(null);
-  const [recentPhotos, setRecentPhotos] = useState<MediaLibrary.Asset[]>([]);
 
   const closeSheet = useCallback(() => sheetRef.current?.close(), []);
 
-  const loadRecentPhotos = useCallback(async () => {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== "granted") return;
-    const { assets } = await MediaLibrary.getAssetsAsync({
-      first: recentsCount,
-      mediaType: [MediaLibrary.MediaType.photo],
-      sortBy: [MediaLibrary.SortBy.creationTime],
-    });
-    setRecentPhotos(assets);
-  }, [recentsCount]);
+  const requestLibraryPermission = async (): Promise<boolean> => {
+    const { status } =
+      await ExpoImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Photo Library Access Required",
+        "Please allow photo library access in settings.",
+      );
+      return false;
+    }
+    return true;
+  };
 
   const openSheet = useCallback(() => {
-    if (!disabled) {
-      loadRecentPhotos();
-      sheetRef.current?.expand();
-    }
-  }, [disabled, loadRecentPhotos]);
+    if (!disabled) sheetRef.current?.expand();
+  }, [disabled]);
 
   const handleLibrary = useCallback(async () => {
     closeSheet();
+
     const granted = await requestLibraryPermission();
     if (!granted) return;
-    const result =
-      await ExpoImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
-    if (!result.canceled && result.assets[0]) {
+
+    const result = await withPickerGuard(() =>
+      ExpoImagePicker.launchImageLibraryAsync(PICKER_OPTIONS),
+    );
+
+    if (result && !result.canceled && result.assets?.[0]) {
       onChange?.(result.assets[0].uri);
     }
   }, [closeSheet, onChange]);
 
   const handleFiles = useCallback(async () => {
     closeSheet();
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/*"],
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
-    if (!result.canceled && result.assets?.[0]?.uri) {
+
+    const result = await withPickerGuard(() =>
+      DocumentPicker.getDocumentAsync({
+        type: ["image/*"],
+        copyToCacheDirectory: true,
+        multiple: false,
+      }),
+    );
+
+    if (result && !result.canceled && result.assets?.[0]?.uri) {
       onChange?.(result.assets[0].uri);
     }
   }, [closeSheet, onChange]);
-
-  const handleSelectRecent = useCallback(
-    (uri: string) => {
-      closeSheet();
-      onChange?.(uri);
-    },
-    [closeSheet, onChange],
-  );
 
   const handleRemove = useCallback(() => {
     closeSheet();
     onChange?.(null);
   }, [closeSheet, onChange]);
+
+  const containerStyle: ViewStyle = {
+    height,
+    width,
+  };
 
   const renderCircular = () => (
     <Pressable onPress={openSheet} disabled={disabled}>
@@ -175,7 +169,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
         width={size}
         height={size}
         borderRadius="full"
-        backgroundColor="gray200"
+        backgroundColor={value ? "gray200" : "blue25"}
         justifyContent="center"
         alignItems="center"
         style={{ overflow: "hidden" }}
@@ -187,23 +181,19 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             contentFit="cover"
           />
         ) : (
-          <Icon icon={ImagePlus} size="md" color="gray500" />
+          <Icon icon={ImagePlus} size="md" color="blue500" />
         )}
       </Box>
     </Pressable>
   );
 
   const renderRectangular = () => (
-    <Pressable
-      onPress={openSheet}
-      disabled={disabled}
-      style={{ width: width as any }}
-    >
+    <Pressable onPress={openSheet} disabled={disabled}>
       <Box
         borderRadius="xl"
-        backgroundColor={emptyStateBackgroundColor}
+        backgroundColor={value ? "gray200" : "blue25"}
         overflow="hidden"
-        style={{ height }}
+        style={containerStyle}
         justifyContent="center"
         alignItems="center"
       >
@@ -214,6 +204,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               style={StyleSheet.absoluteFillObject}
               contentFit="cover"
             />
+
             <Box
               style={[
                 StyleSheet.absoluteFillObject,
@@ -224,7 +215,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
               alignItems="center"
               justifyContent="center"
             >
-              <Icon icon={LucideIconImage} size="iconSm" color="white" />
+              <Icon icon={Images} size="sm" color="white" />
               <Text variant="bodySmMedium" color="white">
                 Change cover image
               </Text>
@@ -232,9 +223,9 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
           </>
         ) : (
           <Box gap="xs" alignItems="center">
-            <Icon icon={ImagePlus} size="md" color={emptyStateIconColor} />
+            <Icon icon={ImagePlus} size="md" color="blue500" />
             {showPlaceholderText ? (
-              <Text variant="bodySmMedium" color={emptyStateIconColor}>
+              <Text variant="bodySmMedium" color="blue500">
                 {placeholder}
               </Text>
             ) : null}
@@ -244,67 +235,16 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
     </Pressable>
   );
 
-  const renderRecentThumbnails = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingLeft: 14, paddingRight: 12 }}
-    >
-      <Box flexDirection="row" gap="xs">
-        <Pressable onPress={handleLibrary}>
-          <Box
-            width={RECENT_THUMBNAIL_SIZE}
-            height={RECENT_THUMBNAIL_SIZE}
-            borderRadius="md"
-            backgroundColor="gray100"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Icon icon={ImagePlus} size="sm" color="gray600" />
-          </Box>
-        </Pressable>
-        {recentPhotos.map((asset) => (
-          <Pressable
-            key={asset.id}
-            onPress={() => handleSelectRecent(asset.uri)}
-          >
-            <Box
-              width={RECENT_THUMBNAIL_SIZE}
-              height={RECENT_THUMBNAIL_SIZE}
-              borderRadius="md"
-              overflow="hidden"
-            >
-              <Image
-                source={{ uri: asset.uri }}
-                style={{
-                  width: RECENT_THUMBNAIL_SIZE,
-                  height: RECENT_THUMBNAIL_SIZE,
-                }}
-                contentFit="cover"
-              />
-            </Box>
-          </Pressable>
-        ))}
-      </Box>
-    </ScrollView>
-  );
-
   return (
     <>
       {variant === "circular" ? renderCircular() : renderRectangular()}
 
-      <BottomSheetModal
-        ref={sheetRef}
-        snapPoints={["38%"]}
-        initialIndex={-1}
-        disableScrollView
-      >
-        <Box flex={1} paddingVertical="sm" gap="md">
+      <BottomSheetModal ref={sheetRef} snapPoints={["38%"]} initialIndex={-1}>
+        <Box flex={1} padding="sm" gap="md">
           <Box
             flexDirection="row"
             justifyContent="space-between"
             alignItems="flex-start"
-            paddingHorizontal="sm"
           >
             <Box gap="xxs">
               <Text variant="headingLg">{title}</Text>
@@ -314,19 +254,13 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
                 </Text>
               ) : null}
             </Box>
+
             <TouchableOpacity onPress={closeSheet} hitSlop={12}>
               <X size={24} />
             </TouchableOpacity>
           </Box>
 
-          <Box gap="xs">
-            <Text variant="bodySmMedium" color="black" paddingLeft="sm">
-              Recents
-            </Text>
-            {renderRecentThumbnails()}
-          </Box>
-
-          <Box gap="xxs" paddingHorizontal="sm">
+          <Box gap="xxs">
             <ActionRow
               icon={Images}
               label="Choose from library"

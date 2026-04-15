@@ -9,7 +9,6 @@ import {
   Box,
   EmptyState,
   ErrorState,
-  Icon,
   ImagePicker,
   SkeletonRect,
   Text,
@@ -18,6 +17,7 @@ import {
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import {
   ArrowRight,
@@ -29,7 +29,6 @@ import {
   Trash2,
   User,
 } from "lucide-react-native";
-import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -42,6 +41,7 @@ type SettingsRowProps = {
   onPress: () => void;
   destructive?: boolean;
   subtitle?: string;
+  isLast?: boolean;
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -52,6 +52,7 @@ function SettingsRow({
   onPress,
   destructive = false,
   subtitle,
+  isLast = false,
 }: SettingsRowProps) {
   const textColor = destructive ? "statusError" : "gray950";
   const iconColor = destructive
@@ -64,8 +65,6 @@ function SettingsRow({
         flexDirection="row"
         alignItems="center"
         gap="md"
-        backgroundColor="gray50"
-        borderRadius="md"
         style={styles.row}
       >
         <Box flex={1} flexDirection="row" alignItems="center" gap="sm">
@@ -81,8 +80,11 @@ function SettingsRow({
             ) : null}
           </Box>
         </Box>
-        <Icon icon={ArrowRight} size="sm" color="gray500" />
+        {!destructive && <ArrowRight size={16} color={ColorPalette.black} />}
       </Box>
+      {!isLast && (
+        <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />
+      )}
     </TouchableOpacity>
   );
 }
@@ -254,9 +256,9 @@ export default function Settings() {
           </Box>
         </Box>
 
-        <Box paddingHorizontal="sm" paddingTop="sm" gap="xs">
+        <Box paddingHorizontal="md" paddingTop="sm" gap="xs">
           <SectionHeader title="General" />
-          <Box gap="xs">
+          <Box>
             <SettingsRow
               icon={User}
               label="Account"
@@ -270,6 +272,7 @@ export default function Settings() {
             <SettingsRow
               icon={LogOut}
               label="Logout"
+              destructive
               onPress={() => logoutSheetRef.current?.snapToIndex(0)}
             />
             <SettingsRow
@@ -277,6 +280,7 @@ export default function Settings() {
               label="Delete Account"
               onPress={() => deleteSheetRef.current?.snapToIndex(0)}
               destructive
+              isLast
             />
           </Box>
         </Box>
@@ -284,7 +288,7 @@ export default function Settings() {
         {/* Preferences section */}
         <Box paddingHorizontal="sm" paddingTop="lg" gap="xs">
           <SectionHeader title="Preferences" />
-          <Box gap="xs">
+          <Box>
             <SettingsRow
               icon={Map}
               label="Map View"
@@ -295,6 +299,7 @@ export default function Settings() {
               label="Time Zone"
               subtitle={currentUser?.timezone ?? undefined}
               onPress={() => router.push("/settings/timezone" as any)}
+              isLast
             />
           </Box>
         </Box>
@@ -356,7 +361,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   row: {
-    paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.sm,
     minHeight: 52,
   },

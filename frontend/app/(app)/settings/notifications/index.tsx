@@ -75,31 +75,35 @@ function NotificationRow({
   description,
   value,
   onChange,
+  isLast = false,
 }: {
   title: string;
   description: string;
   value: boolean;
   onChange: (value: boolean) => void;
+  isLast?: boolean;
 }) {
   return (
-    <Box
-      flexDirection="row"
-      alignItems="center"
-      justifyContent="space-between"
-      backgroundColor="gray50"
-      borderRadius="md"
-      paddingHorizontal="sm"
-      paddingVertical="sm"
-    >
-      <Box flex={1} gap="xxs" paddingRight="md">
-        <Text variant="bodyDefault" color="gray950">
-          {title}
-        </Text>
-        <Text variant="bodySmDefault" color="gray500">
-          {description}
-        </Text>
+    <Box>
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+        paddingVertical="sm"
+      >
+        <Box flex={1} gap="xxs" paddingRight="md">
+          <Text variant="bodyMedium" color="gray950">
+            {title}
+          </Text>
+          <Text variant="bodySmDefault" color="gray400">
+            {description}
+          </Text>
+        </Box>
+        <Toggle onColor={ColorPalette.blue500} value={value} onChange={onChange} />
       </Box>
-      <Toggle value={value} onChange={onChange} />
+      {!isLast && (
+        <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />
+      )}
     </Box>
   );
 }
@@ -210,14 +214,15 @@ export default function NotificationsScreen() {
         ) : null}
 
         {!isLoading && !isError && prefs ? (
-          <Box gap="md" paddingHorizontal="sm">
-            {NOTIFICATION_ITEMS.map((item) => (
+          <Box paddingHorizontal="sm">
+            {NOTIFICATION_ITEMS.map((item, index) => (
               <NotificationRow
                 key={item.field}
                 title={item.title}
                 description={item.description}
                 value={prefs[item.field] ?? false}
                 onChange={(val) => handleToggle(item.field, val)}
+                isLast={index === NOTIFICATION_ITEMS.length - 1}
               />
             ))}
           </Box>
@@ -241,6 +246,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: Layout.spacing.md,
     paddingTop: Layout.spacing.xs,
-    paddingBottom: Layout.spacing.lg,
+    paddingBottom: Layout.spacing.sm,
   },
 });

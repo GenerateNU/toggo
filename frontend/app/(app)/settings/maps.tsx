@@ -34,12 +34,12 @@ function SettingRow({
         flexDirection="row"
         alignItems="center"
         justifyContent="space-between"
-        paddingVertical="sm"
+        paddingBottom="sm"
       >
-        <Text variant="bodyDefault" color="gray950">
+        <Text variant="bodyMedium" color="gray950">
           {title}
         </Text>
-        <Toggle value={value} onChange={onToggle} />
+        <Toggle value={value} onChange={onToggle}  onColor={ColorPalette.blue500} />
       </Box>
       <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />
     </Pressable>
@@ -122,7 +122,7 @@ export default function MapsSettingsScreen() {
         <Box width={36} height={36} />
       </Box>
 
-      <Text variant="bodyXsDefault" color="gray500" style={styles.subtitle}>
+      <Text variant="bodyDefault" color="gray700" style={styles.subtitle}>
         Customize your map view to best match your needs.
       </Text>
 
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: Layout.spacing.md,
     paddingTop: Layout.spacing.xs,
-    paddingBottom: Layout.spacing.lg,
+    paddingBottom: Layout.spacing.sm,
   },
   row: {
     backgroundColor: ColorPalette.white,

@@ -313,11 +313,8 @@ export default function TripSettings() {
             onChange={handleCoverImageChange}
             placeholder=""
             showPlaceholderText={false}
-            emptyStateBackgroundColor="blue25"
-            emptyStateIconColor="blue500"
             disabled={isCoverUploading || isLoadingTrip}
             title="Change cover photo"
-            showCameraAction={false}
             showRemoveAction={false}
           />
         </Box>

@@ -45,11 +45,8 @@ export function TripHeader({
         onChange={onChangeCoverImage}
         placeholder=""
         showPlaceholderText={false}
-        emptyStateBackgroundColor="blue25"
-        emptyStateIconColor="blue500"
         disabled={disabled || isCoverUploading}
         title="Change cover photo"
-        showCameraAction={false}
         showRemoveAction={false}
       />
     </Box>
