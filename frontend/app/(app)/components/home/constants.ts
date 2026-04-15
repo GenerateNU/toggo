@@ -5,13 +5,9 @@ export const HOME_UPCOMING_IMAGE_HEIGHT = 170;
 export const HOME_PAST_TRIP_IMAGE_SIZE = 72;
 export const HOME_RECOMMENDED_CARD_WIDTH = 250;
 
-export const HOME_CARD_FLOATING_SHADOW = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 6,
-  elevation: 2,
-} as const;
+export const HOME_HEADER_BUTTON_SIZE = 36;
+
+export const MAX_VISIBLE_MEMBERS = 3;
 
 export const NULL_DATE_DISPLAY_OPTIONS = {
   hide: "hide",

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet } from "react-native";
 import { ColorPalette } from "../tokens/color";
 import { CoreSize } from "../tokens/core-size";
 import { CornerRadius } from "../tokens/corner-radius";
+import { Shadow } from "../tokens/elevation";
 import { Layout } from "../tokens/layout";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -108,11 +109,7 @@ const styles = StyleSheet.create({
     paddingVertical: Layout.spacing.sm + Layout.spacing.xxs,
     paddingHorizontal: Layout.spacing.sm,
     gap: Layout.spacing.sm,
-    shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 8,
+    ...Shadow.md,
   },
   content: {
     flex: 1,
