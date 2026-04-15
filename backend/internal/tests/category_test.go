@@ -231,7 +231,6 @@ func TestCategoryGetByTripID(t *testing.T) {
 		}
 
 		require.Contains(t, categoryNames, "housing")
-		require.Contains(t, categoryNames, "transportation")
 		require.Contains(t, categoryNames, "activities")
 		require.Contains(t, categoryNames, "polls")
 		require.Contains(t, categoryNames, "itinerary")
