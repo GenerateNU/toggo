@@ -436,6 +436,7 @@ export default function HomeScreen() {
             </Box>
             <RecommendedTripsRow />
           </Box>
+          <SafeAreaView edges={["bottom"]} />
         </Box>
       </ScrollView>
 

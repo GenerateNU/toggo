@@ -36,7 +36,7 @@ export function RecommendedActivityCard({
           />
         )}
 
-        <Box gap="xxs">
+        <Box>
           <Text variant="bodyStrong" numberOfLines={1}>
             {activity.name}
           </Text>
@@ -56,11 +56,11 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
     borderRadius: CornerRadius.xl,
     padding: 12,
-    gap: 12,
+    gap: 8,
     ...Shadow.md,
   },
   thumbnail: {
-    width: 291,
+    width: "100%",
     height: 194.09,
     borderRadius: CornerRadius.md,
   },

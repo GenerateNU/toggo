@@ -28,6 +28,8 @@ export type RecommendedActivity = {
   thumbnail_url: string;
   estimated_price: number;
   description: string;
+  location_lat: number;
+  location_lng: number;
 };
 
 export type RecommendedTripDestination = {
