@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ldn",
+    "title": "London",
+    "description": "Vibrant, historic, and cosmopolitan capital blending centuries-old tradition with modern innovation.",
+    "imageUrl": "https://www.figma.com/api/mcp/asset/134bec24-3629-41ee-bb00-acf957538daf"
+  },
+  {
+    "id": "puerto-rico",
+    "title": "Puerto Rico",
+    "description": "Tropical island paradise with turquoise waters, colorful colonial towns, and white-sand beaches.",
+    "imageUrl": "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7"
+  },
+  {
+    "id": "tokyo",
+    "title": "Tokyo",
+    "description": "A dazzling mix of ultra-modern skyscrapers, ancient temples, world-class cuisine, and neon-lit nightlife.",
+    "imageUrl": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80"
+  },
+  {
+    "id": "barcelona",
+    "title": "Barcelona",
+    "description": "Sun-drenched Mediterranean gem famous for stunning architecture, lively tapas bars, and golden beaches.",
+    "imageUrl": "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&q=80"
+  },
+  {
+    "id": "cape-town",
+    "title": "Cape Town",
+    "description": "Breathtaking coastal city nestled between mountains and ocean, offering diverse culture and natural beauty.",
+    "imageUrl": "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80"
+  }
+]
