@@ -65,6 +65,12 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
+          name="recommended"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="trips"
           options={{
             headerTransparent: true,
