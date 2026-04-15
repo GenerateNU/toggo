@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     color: ColorPalette.gray950,
   },
   priceInput: {
-    fontFamily:FontFamily.medium,
+    fontFamily: FontFamily.medium,
     fontSize: FontSize.xxl,
     lineHeight: 38,
     color: ColorPalette.gray950,
