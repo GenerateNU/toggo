@@ -1,5 +1,6 @@
 import { Avatar, AvatarStack, Box, Text } from "@/design-system";
 import type { AvatarStackMember } from "@/design-system/components/avatars/avatar-stack";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -123,7 +124,7 @@ export function TripMetadata({
               accessibilityRole="button"
               accessibilityLabel="Trip settings"
             >
-              <Settings size={20} color={ColorPalette.gray950} />
+              <Settings size={CoreSize.iconSm} color={ColorPalette.gray950} />
             </Pressable>
           </Box>
         )}
@@ -138,8 +139,16 @@ export function TripMetadata({
             accessibilityLabel="Set trip dates"
           >
             <Box flexDirection="row" alignItems="center" gap="xxs">
-              <Calendar size={16} color={ColorPalette.gray500} />
-              <Text variant="bodySmDefault" color="gray500">
+              <Calendar
+                size={CoreSize.xs}
+                color={tripDate ? ColorPalette.gray500 : ColorPalette.blue500}
+              />
+              <Text
+                variant="bodySmDefault"
+                style={{
+                  color: tripDate ? ColorPalette.gray500 : ColorPalette.blue500,
+                }}
+              >
                 {tripDate ?? "Add dates"}
               </Text>
             </Box>
@@ -155,19 +164,20 @@ export function TripMetadata({
           >
             <Box flexDirection="row" alignItems="center" gap="xxs">
               <MapPin
-                size={16}
+                size={CoreSize.xs}
                 color={
-                  showLocationAction
-                    ? ColorPalette.blue500
-                    : ColorPalette.gray500
+                  tripLocation ? ColorPalette.gray500 : ColorPalette.blue500
                 }
               />
               <Text
-                variant={showLocationAction ? "bodySmMedium" : "bodySmDefault"}
-                color="gray500"
-                style={showLocationAction ? styles.setLocationText : undefined}
+                variant="bodySmDefault"
+                style={{
+                  color: tripLocation
+                    ? ColorPalette.gray500
+                    : ColorPalette.blue500,
+                }}
               >
-                {tripLocation ?? "Set location"}
+                {tripLocation ?? "Add location"}
               </Text>
             </Box>
           </Pressable>
