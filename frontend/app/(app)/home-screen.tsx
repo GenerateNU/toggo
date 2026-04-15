@@ -26,7 +26,6 @@ import {
   AnimatedBox,
   BottomSheet,
   Box,
-  Button,
   ErrorState,
   Icon,
   ImagePicker,
@@ -38,8 +37,6 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
-import type { ModelsActivity } from "@/types/types.gen";
-import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
 import { useQueries } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -53,49 +50,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-/** Example pins around San Francisco for the dev map shortcut. */
-const DEV_MAP_SAMPLE_ACTIVITIES: ModelsActivity[] = [
-  {
-    id: "dev-sample-1",
-    name: "Golden Gate Bridge",
-    location_name: "Golden Gate Bridge, San Francisco",
-    location_lat: 37.8199,
-    location_lng: -122.4783,
-    dates: [{ start: "2026-06-10", end: "2026-06-10" }],
-    time_of_day: "morning",
-    description:
-      "Iconic suspension bridge and a classic Bay Area viewpoint over the Pacific.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
-  },
-  {
-    id: "dev-sample-2",
-    name: "Ferry Building",
-    location_name: "Ferry Building Marketplace",
-    location_lat: 37.7955,
-    location_lng: -122.3934,
-    dates: [{ start: "2026-06-11", end: "2026-06-12" }],
-    time_of_day: "afternoon",
-    description:
-      "Historic transit hub along the Embarcadero, known for farmers markets and local food.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1549692520-acc6669e2f0c?w=800&q=80",
-  },
-  {
-    id: "dev-sample-3",
-    name: "Mission Dolores Park",
-    location_name: "Dolores Park, Mission District",
-    location_lat: 37.7694,
-    location_lng: -122.4253,
-    dates: [{ start: "2026-06-13" }],
-    time_of_day: "evening",
-    description:
-      "Sunny urban park with skyline views—a popular spot to relax on weekends.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1564694202779-bc908c327862?w=800&q=80",
-  },
-];
 
 export default function HomeScreen() {
   const { currentUser, userId } = useUser();
@@ -481,40 +435,6 @@ export default function HomeScreen() {
               </Text>
             </Box>
             <RecommendedTripsRow />
-          </Box>
-
-          <Box gap="xs" paddingHorizontal="md" paddingTop="md">
-            <Button
-              layout="textOnly"
-              label="See all trips"
-              variant="Tertiary"
-              onPress={() => router.push("/trips")}
-            />
-            {__DEV__ ? (
-              <>
-                <Button
-                  layout="textOnly"
-                  label="Map view (dev)"
-                  variant="Tertiary"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/map-view",
-                      params: {
-                        activities: encodeMapViewActivitiesParam(
-                          DEV_MAP_SAMPLE_ACTIVITIES,
-                        ),
-                      },
-                    })
-                  }
-                />
-                <Button
-                  layout="textOnly"
-                  label="Join trip with code (dev)"
-                  variant="Tertiary"
-                  onPress={() => router.push("/join-trip-code")}
-                />
-              </>
-            ) : null}
           </Box>
         </Box>
       </ScrollView>
