@@ -29,7 +29,6 @@ import TabEditSheet, { TabEditSheetMethods } from "./tabs/tab-edit-sheet";
 const CONTEXT_MENU_WIDTH = 180;
 const screenWidth = Dimensions.get("window").width;
 
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type FixedTabKey = "new" | "itinerary" | "polls" | "settings";
@@ -136,8 +135,8 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
                   variant="filled"
                 />
               </Pressable>
-              );
-            })}
+            );
+          })}
 
         {!isLoading && (
           <Pressable
