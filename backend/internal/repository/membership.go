@@ -223,17 +223,27 @@ func (r *membershipRepository) FindByUserID(ctx context.Context, userID uuid.UUI
 
 // FindUserIDsWithNotificationPreference returns user IDs of trip members who have the given
 // notification preference enabled, excluding the specified user.
+// It also checks the user's global notification preferences: the user must have both
+// push_enabled and the relevant global category enabled. Users with no global preferences
+// row are treated as having all notifications enabled (consistent with defaults).
 func (r *membershipRepository) FindUserIDsWithNotificationPreference(ctx context.Context, tripID uuid.UUID, preference models.NotificationPreference, excludeUserID uuid.UUID) ([]uuid.UUID, error) {
-	col, err := notificationPreferenceColumn(preference)
+	tripCol, err := notificationPreferenceColumn(preference)
+	if err != nil {
+		return nil, err
+	}
+
+	globalCol, err := globalPreferenceColumn(preference)
 	if err != nil {
 		return nil, err
 	}
 
 	var userIDs []uuid.UUID
 	scanErr := r.db.NewSelect().
-		TableExpr("memberships").
-		ColumnExpr("user_id").
-		Where("trip_id = ? AND user_id != ? AND "+col+" = TRUE", tripID, excludeUserID).
+		TableExpr("memberships AS m").
+		ColumnExpr("m.user_id").
+		Join("LEFT JOIN notification_preferences AS np ON np.user_id = m.user_id").
+		Where("m.trip_id = ? AND m.user_id != ? AND m."+tripCol+" = TRUE", tripID, excludeUserID).
+		Where("(np.user_id IS NULL OR (np.push_enabled = TRUE AND np."+globalCol+" = TRUE))").
 		Scan(ctx, &userIDs)
 	if scanErr != nil {
 		return nil, scanErr
@@ -394,6 +404,19 @@ func notificationPreferenceColumn(preference models.NotificationPreference) (str
 		return "notify_new_polls", nil
 	case models.NotificationPreferenceNewComment:
 		return "notify_new_comments", nil
+	default:
+		return "", fmt.Errorf("unknown notification preference: %s", preference)
+	}
+}
+
+// globalPreferenceColumn maps a trip-level NotificationPreference to the corresponding
+// column in the notification_preferences table.
+func globalPreferenceColumn(preference models.NotificationPreference) (string, error) {
+	switch preference {
+	case models.NotificationPreferenceNewPitch,
+		models.NotificationPreferenceNewPoll,
+		models.NotificationPreferenceNewComment:
+		return "trip_activity", nil
 	default:
 		return "", fmt.Errorf("unknown notification preference: %s", preference)
 	}
