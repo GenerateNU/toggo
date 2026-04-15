@@ -1,17 +1,16 @@
-import GlassContainer from "@/design-system/components/glass-container";
 import { Text } from "@/design-system/primitives/text";
 import { BorderWidth } from "@/design-system/tokens/border";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
 import { EyeOff } from "lucide-react-native";
-import { Modal, Pressable, StyleSheet } from "react-native";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CONTEXT_MENU_ICON_SIZE = 18;
 const CONTEXT_MENU_WIDTH = 180;
-const DIVIDER_COLOR = "rgba(41, 54, 68, 0.2)";
-const ROW_PRESSED_BG = "rgba(255, 255, 255, 0.35)";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,7 +55,7 @@ export default function TabContextMenu({
             },
           ]}
         >
-          <GlassContainer>
+          <View style={styles.menu}>
             <Pressable
               onPress={() => {
                 onClose();
@@ -75,7 +74,7 @@ export default function TabContextMenu({
                 Hide Tab
               </Text>
             </Pressable>
-          </GlassContainer>
+          </View>
         </Pressable>
       </Pressable>
     </Modal>
@@ -87,25 +86,28 @@ export default function TabContextMenu({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: ColorPalette.backgroundOverlay,
+    backgroundColor: "transparent",
   },
   menuAnchor: {
     position: "absolute",
   },
+  menu: {
+    backgroundColor: ColorPalette.white,
+    borderRadius: CornerRadius.md,
+    borderWidth: BorderWidth.hairline,
+    borderColor: ColorPalette.gray100,
+    overflow: "hidden",
+    ...Elevation.md,
+  },
   row: {
-    minHeight: 54,
     flexDirection: "row",
     alignItems: "center",
     gap: Layout.spacing.xs,
     paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xs,
+    paddingVertical: Layout.spacing.sm,
+    minHeight: 48,
   },
   rowPressed: {
-    backgroundColor: ROW_PRESSED_BG,
-  },
-  divider: {
-    height: BorderWidth.thin,
-    marginHorizontal: Layout.spacing.sm,
-    backgroundColor: DIVIDER_COLOR,
+    backgroundColor: ColorPalette.gray50,
   },
 });

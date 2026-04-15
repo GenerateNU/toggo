@@ -3,21 +3,19 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
-import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
-import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
-import TripTabBar, {
-  type TabKey,
-} from "@/app/(app)/trips/[id]/components/trip-tab-bar";
+import TripTabBar from "@/app/(app)/trips/[id]/components/trip-tab-bar";
+import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
+import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
-import { BackButton } from "@/design-system/components/navigation/arrow";
 import { Box, Text } from "@/design-system";
+import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -33,7 +31,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_TAB: TabKey = "itinerary";
+const INITIAL_TAB = "itinerary";
 const CARD_TOP_OFFSET = 120;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -43,9 +41,7 @@ export default function Trip() {
     id: string;
     tab?: string;
   }>();
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    (tab as TabKey) || INITIAL_TAB,
-  );
+  const [activeTab, setActiveTab] = useState<string>(tab || INITIAL_TAB);
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
@@ -61,7 +57,7 @@ export default function Trip() {
     query: { enabled: !!tripID },
   });
 
-  const handleTabPress = (tab: TabKey) => {
+  const handleTabPress = (tab: string) => {
     if (tab === "settings") {
       router.push(`/trips/${tripID}/settings` as any);
       return;
@@ -195,7 +191,11 @@ export default function Trip() {
               />
 
               <Box paddingVertical="sm">
-                <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+                <TripTabBar
+                  tripID={tripID}
+                  activeTab={activeTab}
+                  onTabPress={handleTabPress}
+                />
               </Box>
             </Box>
 
@@ -232,6 +232,16 @@ export default function Trip() {
                 />
               )}
               {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+              {activeTab !== "new" &&
+              activeTab !== "itinerary" &&
+              activeTab !== "polls" &&
+              activeTab !== "settings" && (
+                <Box flex={1} alignItems="flex-start" justifyContent="flex-start">
+                  <Text variant="bodySmDefault" color="gray400">
+                    Post notes, photos, videos, and links
+                  </Text>
+                </Box>
+              )}
             </Box>
           </ScrollView>
         </View>
