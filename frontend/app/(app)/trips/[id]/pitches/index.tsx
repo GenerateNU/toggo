@@ -387,12 +387,11 @@ export default function Pitches() {
         onReact={onReact}
       />
 
-      {deadlineFlowVisible && (
-        <DeadlinePickerFlow
-          onClose={() => setDeadlineFlowVisible(false)}
-          onSave={handleSaveDeadline}
-        />
-      )}
+      <DeadlinePickerFlow
+        visible={deadlineFlowVisible}
+        onClose={() => setDeadlineFlowVisible(false)}
+        onSave={handleSaveDeadline}
+      />
 
       <CreatePitchFlowSheet
         tripID={tripID!}

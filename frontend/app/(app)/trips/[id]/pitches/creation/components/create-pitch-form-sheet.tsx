@@ -117,6 +117,7 @@ export function CreatePitchFormSheet({
   return (
     <BottomSheetComponent
       ref={sheetRef}
+      snapPoints={["80%"]}
       initialIndex={-1}
       onClose={handleClose}
       footer={
