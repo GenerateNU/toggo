@@ -26,6 +26,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 11;
@@ -55,12 +56,6 @@ const CAMERA_PADDING = {
 function activityAnnotationId(item: MapViewActivityForMap, index: number) {
   if (item.id) return `activity-pin-${item.id}`;
   return `activity-pin-${index}-${item.location_lat}-${item.location_lng}`;
-}
-
-function formatActivityLocationLine(activity: MapViewActivityForMap): string {
-  const name = activity.location_name?.trim();
-  if (name) return name;
-  return `${activity.location_lat.toFixed(4)}, ${activity.location_lng.toFixed(4)}`;
 }
 
 function ActivityDetailSheetBody({
@@ -97,8 +92,10 @@ function ActivityDetailSheetBody({
           <Text variant="headingSm" color="gray900" numberOfLines={2}>
             {activity.name}
           </Text>
-          <Text variant="bodySmDefault" color="gray500" numberOfLines={3}>
-            {formatActivityLocationLine(activity)}
+          <Text variant="bodyDefault" color="gray600">
+            {activity.description?.trim()
+              ? activity.description.trim()
+              : "No description for this activity yet."}
           </Text>
           {scheduleLine ? (
             <Box flexDirection="row" alignItems="center" gap="xs">
@@ -114,11 +111,7 @@ function ActivityDetailSheetBody({
           ) : null}
         </Box>
       </Box>
-      <Text variant="bodyDefault" color="gray600">
-        {activity.description?.trim()
-          ? activity.description.trim()
-          : "No description for this activity yet."}
-      </Text>
+      <SafeAreaView edges={["bottom"]} />
     </Box>
   );
 }
@@ -149,10 +142,11 @@ export default function MapViewScreen() {
 
   useEffect(() => {
     if (selectedActivity) {
-      const id = requestAnimationFrame(() => {
+      // Allow BottomSheetView to complete its layout measurement before expanding
+      const timeout = setTimeout(() => {
         detailSheetRef.current?.expand();
-      });
-      return () => cancelAnimationFrame(id);
+      }, 100);
+      return () => clearTimeout(timeout);
     }
     detailSheetRef.current?.close();
   }, [selectedActivity]);
