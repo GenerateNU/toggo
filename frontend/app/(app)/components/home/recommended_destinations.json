@@ -4,7 +4,7 @@
     "title": "London",
     "country": "United Kingdom",
     "description": "Vibrant, historic, and cosmopolitan capital blending centuries-old tradition with modern innovation. Motorbikes stream through the streets like rivers of motion, carrying locals past sidewalk cafes, street food stalls, and historic landmarks.",
-    "imageUrl": "https://www.figma.com/api/mcp/asset/134bec24-3629-41ee-bb00-acf957538daf",
+    "imageUrl": "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     "locationLat": 51.5074,
     "locationLng": -0.1278,
     "activities": [
@@ -42,7 +42,7 @@
     "title": "Puerto Rico",
     "country": "Caribbean",
     "description": "Tropical island paradise with turquoise waters, colorful colonial towns, and white-sand beaches. From the bioluminescent bays to the cobblestone streets of Old San Juan, every corner pulses with vibrant culture and natural wonder.",
-    "imageUrl": "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7",
+    "imageUrl": "https://images.unsplash.com/photo-1716512717499-bf31c6b3bcea?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     "locationLat": 18.4655,
     "locationLng": -66.1057,
     "activities": [
