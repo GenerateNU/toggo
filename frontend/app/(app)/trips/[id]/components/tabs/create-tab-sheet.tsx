@@ -84,7 +84,7 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
     };
 
     return (
-      <BottomSheetModal ref={bottomSheetRef} size="sm" hideHandle>
+      <BottomSheetModal ref={bottomSheetRef}>
         <Box style={styles.header}>
           <Pressable onPress={handleClose} style={styles.headerButton}>
             <Text variant="bodySmDefault" color="gray600">

@@ -1,11 +1,11 @@
 import { useGetPitch } from "@/api/pitches/useGetPitch";
-import { Box } from "@/design-system";
+import { Box, Spinner } from "@/design-system";
 import ErrorState from "@/design-system/components/status/error";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { router } from "expo-router";
 import { useCallback } from "react";
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import ActivityFeedItem from "./activity-feed-item";
 import ActivityPitchCard from "./activity-pitch-card";
 import type { ActivityItemProps } from "../types";
@@ -58,7 +58,7 @@ export default function ActivityPitchItem({
           alignItems="center"
           style={styles.cardShadow}
         >
-          <ActivityIndicator size="small" color={ColorPalette.gray400} />
+          <Spinner />
         </Box>
       ) : (
         <ActivityPitchCard

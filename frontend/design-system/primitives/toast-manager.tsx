@@ -12,7 +12,7 @@ import { Animated, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CoreSize } from "../tokens/core-size";
 import { Layout } from "../tokens/layout";
-import Toast from "./toast";
+import Toast, { ToastVariant } from "./toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ type ToastAction = {
 type ToastConfig = {
   message: string;
   subtitle?: string;
-  variant?: "pollSent" | "default";
+  variant?: ToastVariant;
   action?: ToastAction;
   showClose?: boolean;
   duration?: number;
@@ -61,7 +61,7 @@ export const useToast = (): ToastContextValue => {
 
 const TOAST_HEIGHT = CoreSize.xxl;
 const TOAST_GAP = 10;
-const EDGE_INSET = Layout.spacing.xxl;
+const EDGE_INSET = Layout.spacing.sm;
 
 // ─── Single Toast Item ───────────────────────────────────────────────────────
 
@@ -191,7 +191,7 @@ const ToastItem = ({
 export function ToastProvider({
   children,
   position = "bottom",
-  maxVisible = 3,
+  maxVisible = 2,
 }: ToastProviderProps) {
   const [queue, setQueue] = useState<ToastEntry[]>([]);
   const nextIdRef = useRef<number>(0);

@@ -1,13 +1,6 @@
 import { useCreatePoll } from "@/api/polls/useCreatePoll";
 import { useCreateRankPoll } from "@/api/polls/useCreateRankPoll";
-import {
-  BottomSheet,
-  Box,
-  Button,
-  Icon,
-  Text,
-  useToast,
-} from "@/design-system";
+import { BottomSheet, Box, Button, Text, useToast } from "@/design-system";
 import { X } from "lucide-react-native";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
@@ -140,6 +133,11 @@ const CreatePollSheet = forwardRef<
         });
       }
       close();
+      toast.show({
+        message: "Poll created!",
+        subtitle: "Your trip will get a notification to vote.",
+        action: { label: "Dismiss", onPress: () => {} },
+      });
       onCreated?.();
     } catch (e) {
       console.error("Failed to create poll:", e);
@@ -171,7 +169,6 @@ const CreatePollSheet = forwardRef<
     <BottomSheet
       ref={sheetRef}
       snapPoints={["95%"]}
-      hideHandle={true}
       onClose={handleClose}
       footer={navButtons}
     >
@@ -195,7 +192,7 @@ const CreatePollSheet = forwardRef<
             onPress={close}
             style={{ width: 24, alignItems: "flex-end" }}
           >
-            <Icon icon={X} size="xs" color="gray900" />
+            <X size={24} />
           </Pressable>
         </Box>
 

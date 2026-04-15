@@ -2,7 +2,15 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { Box, Button, Icon, Screen, Text, TextField } from "@/design-system";
+import {
+  Box,
+  Button,
+  Icon,
+  Screen,
+  Spinner,
+  Text,
+  TextField,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -15,13 +23,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Search, X } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -136,17 +138,16 @@ export default function SearchLocationScreen() {
           onDismiss={() => router.back()}
           isLoading={isLoadingPredictions}
         />
-
         {showPredictions ? (
           <PredictionsList
             predictions={predictions}
             onSelect={handleSelectPrediction}
           />
         ) : showMap ? (
-          <LocationMapView location={selectedLocation} />
+          <LocationMapView location={selectedLocation!} />
         ) : isLoadingDetails ? (
           <Box flex={1} justifyContent="center" alignItems="center">
-            <ActivityIndicator size="large" color={ColorPalette.brand500} />
+            <Spinner size={36} />
           </Box>
         ) : (
           <Box flex={1} backgroundColor="white" />
@@ -209,18 +210,17 @@ function SearchHeader({
             hitSlop={styles.hitSlop}
             style={styles.dismissButton}
           >
-            <Icon icon={X} color="gray900" size="sm" />
+            <X size={24} />
           </TouchableOpacity>
         )}
       </Box>
-
       <TextField
         value={query}
         onChangeText={onChangeQuery}
         placeholder="Enter a city, neighborhood, or address"
         leftIcon={
           isLoading ? (
-            <ActivityIndicator size="small" color={ColorPalette.gray400} />
+            <Spinner />
           ) : (
             <Icon icon={Search} color="gray400" size="sm" />
           )
@@ -237,7 +237,7 @@ function PredictionsList({
   onSelect,
 }: {
   predictions: Prediction[];
-  onSelect: (prediction: Prediction) => void;
+  onSelect: (p: Prediction) => void;
 }) {
   return (
     <FlatList
@@ -261,7 +261,6 @@ function PredictionsList({
       ItemSeparatorComponent={() => (
         <Box style={styles.separator} backgroundColor="gray50" />
       )}
-      style={styles.predictionsList}
     />
   );
 }
@@ -273,7 +272,6 @@ function LocationMapView({ location }: { location: LocationDetails }) {
     location.geometry.location.lng,
     location.geometry.location.lat,
   ];
-
   return (
     <View style={styles.mapContainer}>
       <MapView
@@ -294,7 +292,6 @@ function LocationMapView({ location }: { location: LocationDetails }) {
           </View>
         </PointAnnotation>
       </MapView>
-
       <View style={styles.locationLabel} pointerEvents="none">
         <Box
           backgroundColor="white"
@@ -311,7 +308,7 @@ function LocationMapView({ location }: { location: LocationDetails }) {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   header: {

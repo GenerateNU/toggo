@@ -1,5 +1,5 @@
 import { Box, Button, Text } from "@/design-system";
-import { HOME_CARD_FLOATING_SHADOW } from "./constants";
+import { Elevation } from "@/design-system/tokens/elevation";
 
 type HomeUpcomingEmptyCardProps = {
   onPressCreateTrip: () => void;
@@ -16,7 +16,7 @@ export function HomeUpcomingEmptyCard({
       borderRadius="lg"
       padding="sm"
       gap="sm"
-      style={HOME_CARD_FLOATING_SHADOW}
+      style={Elevation.sm}
     >
       <Box alignItems="center" paddingVertical="md" gap="xxs">
         <Text style={{ fontSize: 48, lineHeight: 64 }}>🌎</Text>

@@ -172,6 +172,8 @@ type ActivityAPIResponse struct {
 	Images             []ActivityImageResponse     `json:"image_ids"`
 	GoingCount         int                         `json:"going_count"`
 	GoingUsers         []ActivityGoingUserResponse `json:"going_users"`
+	CommentCount       int                         `json:"comment_count"`
+	CommentPreviews    []CommenterPreview          `json:"comment_previews"`
 }
 
 // AddCategoryResponse represents the response for adding a category to an activity

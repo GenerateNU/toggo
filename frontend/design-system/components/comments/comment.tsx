@@ -3,11 +3,10 @@ import { Box } from "@/design-system/primitives/box";
 import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Smile } from "lucide-react-native";
+import { SmilePlus } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import EmojiPicker, { type EmojiType } from "rn-emoji-keyboard";
-import { withOpacity } from "../../utils/color";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,16 +48,18 @@ const ReactionBadge = ({
     ]}
   >
     <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-    <Text
-      variant="bodyXsMedium"
-      style={{
-        color: reaction.reactedByMe
-          ? ColorPalette.brand500
-          : ColorPalette.gray500,
-      }}
-    >
-      {reaction.count}
-    </Text>
+    {reaction.count > 1 && (
+      <Text
+        variant={reaction.reactedByMe ? "bodyXsMedium" : "bodyXsDefault"}
+        style={{
+          color: reaction.reactedByMe
+            ? ColorPalette.blue500
+            : ColorPalette.gray950,
+        }}
+      >
+        {reaction.count}
+      </Text>
+    )}
   </Pressable>
 );
 
@@ -89,20 +90,16 @@ export default function Comment({ comment, onReact }: CommentProps) {
           <Box style={styles.content}>
             {/* Header */}
             <Box flexDirection="row" alignItems="center" gap="xs">
-              <Text
-                variant="bodySmMedium"
-                color="gray900"
-                style={styles.authorName}
-              >
+              <Text variant="bodyStrong" color="gray900">
                 {comment.authorName}
               </Text>
-              <Text variant="bodyXsMedium" color="gray500">
+              <Text variant="bodyDefault" style={styles.timestamp}>
                 {comment.timestamp}
               </Text>
             </Box>
 
             {/* Body */}
-            <Text variant="bodySmDefault" color="gray900">
+            <Text variant="bodyDefault" color="gray900">
               {comment.body}
             </Text>
 
@@ -124,7 +121,7 @@ export default function Comment({ comment, onReact }: CommentProps) {
                     pressed && styles.addReactionButtonPressed,
                   ]}
                 >
-                  <Smile size={16} color={ColorPalette.gray500} />
+                  <SmilePlus size={16} color={ColorPalette.gray500} />
                 </Pressable>
               </Box>
             )}
@@ -178,36 +175,33 @@ export default function Comment({ comment, onReact }: CommentProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    gap: 10,
-    paddingVertical: 10,
+    gap: 6,
   },
   content: {
     flex: 1,
-    gap: 4,
-  },
-  authorName: {
-    fontWeight: "600",
+    gap: 2,
   },
   reactionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: 6,
-    marginTop: 6,
+    gap: 4,
+    marginTop: 4,
   },
   reactionBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 4,
     borderRadius: CornerRadius.full,
+    borderWidth: 1,
+    borderColor: "transparent",
     backgroundColor: ColorPalette.gray50,
   },
   reactionBadgeActive: {
-    backgroundColor: withOpacity(ColorPalette.brand500, 0.12),
-    borderWidth: 1,
-    borderColor: ColorPalette.brand500,
+    backgroundColor: ColorPalette.blue25,
+    borderColor: ColorPalette.blue500,
   },
   reactionEmoji: {
     fontSize: 14,
@@ -222,5 +216,8 @@ const styles = StyleSheet.create({
   },
   addReactionButtonPressed: {
     backgroundColor: ColorPalette.gray200,
+  },
+  timestamp: {
+    color: "#A9A9A9",
   },
 });

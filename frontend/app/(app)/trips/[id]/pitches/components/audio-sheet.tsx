@@ -1,10 +1,10 @@
-import { Box, Text } from "@/design-system";
+import { Box, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { WaveformBars } from "./waveform";
 import { Audio, AVPlaybackStatus } from "expo-av";
 import { Pause, Play, RotateCcw, Scissors, Trash2 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable } from "react-native";
+import { Pressable } from "react-native";
 
 function formatTime(ms: number): string {
   const s = Math.floor(ms / 1000);
@@ -171,7 +171,7 @@ function Controls({
         }}
       >
         {isLoading ? (
-          <ActivityIndicator color={ColorPalette.white} />
+          <Spinner />
         ) : isPlaying ? (
           <Pause
             size={26}

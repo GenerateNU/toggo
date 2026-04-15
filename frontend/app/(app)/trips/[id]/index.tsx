@@ -3,11 +3,17 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
+import {
+  ActivitiesTabContent,
+  type ActivitiesTabContentHandle,
+} from "@/app/(app)/trips/[id]/activities/components/activities-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
-import TripTabBar from "@/app/(app)/trips/[id]/components/trip-tab-bar";
+import TripTabBar, {
+  type TabKey,
+} from "@/app/(app)/trips/[id]/components/trip-tab-bar";
 import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
 import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreatePollSheet, {
@@ -31,7 +37,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const INITIAL_TAB = "itinerary";
+const INITIAL_TAB: TabKey = "new";
 const CARD_TOP_OFFSET = 120;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -52,6 +58,7 @@ export default function Trip() {
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
+  const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
 
   const { data: trip, isLoading } = useGetTrip(tripID ?? "", {
     query: { enabled: !!tripID },
@@ -67,6 +74,11 @@ export default function Trip() {
 
   const handleOpenCreatePoll = useCallback(() => {
     createPollSheetRef.current?.open();
+  }, []);
+
+  const handleOpenCreateActivity = useCallback(() => {
+    setActiveTab("activities");
+    setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
   }, []);
 
   const handlePollCreated = useCallback(() => {
@@ -203,7 +215,7 @@ export default function Trip() {
               paddingHorizontal="sm"
               paddingTop="sm"
               paddingBottom="xl"
-              backgroundColor="gray50"
+              backgroundColor="gray25"
               style={styles.tabContent}
             >
               {activeTab === "new" && (
@@ -246,13 +258,20 @@ export default function Trip() {
                     </Text>
                   </Box>
                 )}
+              {activeTab === "activities" && (
+                <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
+              )}
             </Box>
           </ScrollView>
         </View>
       </SafeAreaView>
 
       {activeTab !== "itinerary" && (
-        <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+        <CreateFAB
+          tripID={tripID}
+          onCreatePoll={handleOpenCreatePoll}
+          onCreateActivity={handleOpenCreateActivity}
+        />
       )}
 
       <CreatePollSheet
@@ -306,7 +325,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: ColorPalette.gray50,
+    backgroundColor: ColorPalette.gray25,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",

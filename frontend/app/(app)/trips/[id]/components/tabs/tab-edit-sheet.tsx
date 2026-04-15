@@ -126,8 +126,7 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
       <>
         <BottomSheetModal
           ref={bottomSheetRef}
-          size="full"
-          hideHandle
+          snapPoints={["90%"]}
           disableClose={false}
         >
           <Box style={styles.header}>

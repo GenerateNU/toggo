@@ -11,6 +11,7 @@ import {
   Avatar,
   Box,
   DashedBorderBox,
+  Spinner,
   Text,
   TextField,
   useToast,
@@ -33,7 +34,7 @@ import {
 import { OptionRow, OPTION_LEFT_OFFSET } from "./poll-option-row";
 import { PollSettingsPanel } from "./poll-settings-panel";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -622,7 +623,7 @@ function RankResponsesContent({
   if (isLoading) {
     return (
       <Box alignItems="center" paddingVertical="lg">
-        <ActivityIndicator color={ColorPalette.brand500} />
+        <Spinner />
       </Box>
     );
   }
@@ -899,12 +900,7 @@ function VoteOptionVotersSheet({
   const voters = data?.voters ?? [];
 
   return (
-    <BottomSheetComponent
-      ref={subSheetRef}
-      initialIndex={-1}
-      snapPoints={["50%"]}
-      onClose={onClose}
-    >
+    <BottomSheetComponent ref={subSheetRef} initialIndex={-1} onClose={onClose}>
       <Box paddingHorizontal="md" gap="md">
         <Box
           flexDirection="row"
@@ -918,13 +914,13 @@ function VoteOptionVotersSheet({
               : ""}
           </Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <X size={20} color={ColorPalette.gray500} />
+            <X size={24} color={ColorPalette.gray500} />
           </Pressable>
         </Box>
 
         {isLoading ? (
           <Box alignItems="center" paddingVertical="md">
-            <ActivityIndicator color={ColorPalette.brand500} />
+            <Spinner />
           </Box>
         ) : voters.length === 0 ? (
           <Text variant="bodySmDefault" color="gray500">
@@ -995,7 +991,6 @@ export default function PollDetailSheet({
       <BottomSheetComponent
         ref={sheetRef}
         initialIndex={-1}
-        snapPoints={["80%", "95%"]}
         onClose={handleClose}
       >
         {poll && (
@@ -1009,7 +1004,7 @@ export default function PollDetailSheet({
             >
               <TabBar active={activeTab} onChange={setActiveTab} />
               <Pressable onPress={handleClose} hitSlop={8}>
-                <X size={20} color={ColorPalette.gray500} />
+                <X size={24} color={ColorPalette.gray500} />
               </Pressable>
             </Box>
 
