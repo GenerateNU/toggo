@@ -1,4 +1,5 @@
 import { BottomSheet, Box, Button, Text } from "@/design-system";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -59,7 +60,7 @@ export function TripReminderLocationSheet({
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
-                <X size={20} color={ColorPalette.gray950} />
+                <X size={CoreSize.iconSm} color={ColorPalette.gray950} />
               </TouchableOpacity>
             </Box>
 
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.sm,
-    minHeight: 48,
+    minHeight: CoreSize.xl,
     justifyContent: "center",
   },
 });

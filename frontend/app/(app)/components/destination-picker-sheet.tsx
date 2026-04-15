@@ -3,6 +3,7 @@ import {
   searchPlacesTypeahead,
 } from "@/api/places/custom";
 import { BottomSheet, Box, Text } from "@/design-system";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -15,23 +16,16 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import type { Prediction, SelectedLocation } from "./types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type Prediction = {
-  place_id: string;
-  description: string;
-};
-
-export type SelectedLocation = {
-  name: string;
-  place_id: string;
-};
 
 type DestinationPickerSheetProps = {
   sheetRef: React.RefObject<any>;
   onSelect: (location: SelectedLocation) => void;
 };
+
+export type { SelectedLocation };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -104,11 +98,11 @@ export function DestinationPickerSheet({
         <Box flexDirection="row" alignItems="center" gap="sm">
           <TouchableOpacity
             onPress={handleClose}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={styles.hitSlop}
             accessibilityRole="button"
             accessibilityLabel="Back"
           >
-            <ArrowLeft size={20} color={ColorPalette.gray950} />
+            <ArrowLeft size={CoreSize.iconSm} color={ColorPalette.gray950} />
           </TouchableOpacity>
           <Box
             flex={1}
@@ -120,7 +114,7 @@ export function DestinationPickerSheet({
             {isLoading ? (
               <ActivityIndicator size="small" color={ColorPalette.gray400} />
             ) : (
-              <Search size={16} color={ColorPalette.gray400} />
+              <Search size={CoreSize.xs} color={ColorPalette.gray400} />
             )}
             <TextInput
               ref={inputRef}
@@ -139,9 +133,9 @@ export function DestinationPickerSheet({
                   setQuery("");
                   setPredictions([]);
                 }}
-                hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                hitSlop={styles.clearHitSlop}
               >
-                <X size={14} color={ColorPalette.gray400} />
+                <X size={CoreSize.xxs} color={ColorPalette.gray400} />
               </TouchableOpacity>
             )}
           </Box>
@@ -161,7 +155,7 @@ export function DestinationPickerSheet({
               paddingVertical="sm"
               style={styles.predictionItem}
             >
-              <MapPin size={16} color={ColorPalette.gray400} />
+              <MapPin size={CoreSize.xs} color={ColorPalette.gray400} />
               <Text variant="bodyDefault" color="gray950" style={{ flex: 1 }}>
                 {prediction.description}
               </Text>
@@ -176,6 +170,18 @@ export function DestinationPickerSheet({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  hitSlop: {
+    top: Layout.spacing.xs,
+    bottom: Layout.spacing.xs,
+    left: Layout.spacing.xs,
+    right: Layout.spacing.xs,
+  },
+  clearHitSlop: {
+    top: Layout.spacing.xxs,
+    bottom: Layout.spacing.xxs,
+    left: Layout.spacing.xxs,
+    right: Layout.spacing.xxs,
+  },
   searchBar: {
     borderWidth: 1,
     borderColor: ColorPalette.gray200,
@@ -183,11 +189,11 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
     paddingHorizontal: Layout.spacing.sm,
     paddingVertical: Layout.spacing.xs,
-    minHeight: 44,
+    minHeight: CoreSize.xl,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: CoreSize.xs,
     color: ColorPalette.gray950,
     paddingVertical: 0,
   },

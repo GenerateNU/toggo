@@ -6,6 +6,7 @@ import {
   Text,
 } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -102,7 +103,7 @@ export function CreateTripSheet({
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <X size={20} color={ColorPalette.gray950} />
+              <X size={CoreSize.iconSm} color={ColorPalette.gray950} />
             </TouchableOpacity>
           </Box>
 
@@ -130,7 +131,7 @@ export function CreateTripSheet({
                 gap="xs"
               >
                 <MapPin
-                  size={16}
+                  size={CoreSize.xs}
                   color={
                     selectedLocation
                       ? ColorPalette.gray950
@@ -162,7 +163,7 @@ export function CreateTripSheet({
                 gap="xs"
               >
                 <Calendar
-                  size={16}
+                  size={CoreSize.xs}
                   color={
                     formattedDates ? ColorPalette.gray950 : ColorPalette.gray300
                   }
