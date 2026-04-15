@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-INTERFACE=$(route get default 2>/dev/null | awk '/interface: / {print $2}')
-LAN_IP=$(ipconfig getifaddr "$INTERFACE" 2>/dev/null || true)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  INTERFACE=$(route get default 2>/dev/null | awk '/interface: / {print $2}')
+  LAN_IP=$(ipconfig getifaddr "$INTERFACE" 2>/dev/null || true)
+else
+  # Windows (Git Bash) — parse ipconfig output, strip CRLF
+  LAN_IP=$(ipconfig 2>/dev/null | tr -d '\r' | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -v '^127\.' | grep -v '^169\.' | head -1 || true)
+fi
 
 if [[ -z "${LAN_IP:-}" ]]; then
   echo "⚠️ Could not detect LAN IP. Falling back to localhost."
@@ -21,7 +26,7 @@ if docker ps -a --format '{{.Names}}' | grep -q "^localstack-main$"; then
   docker rm -f localstack-main >/dev/null 2>&1 || true
 fi
 
-AUTH_TOKEN=$(python3 -c "import json,sys; print(json.load(open('$HOME/.localstack/auth.json'))['LOCALSTACK_AUTH_TOKEN'])" 2>/dev/null || true)
+AUTH_TOKEN=$(sed -n 's/.*"LOCALSTACK_AUTH_TOKEN": *"\([^"]*\)".*/\1/p' "$HOME/.localstack/auth.json" 2>/dev/null || true)
 if [[ -z "${AUTH_TOKEN:-}" ]]; then
   echo "❌ LocalStack auth token not found. Run: localstack auth set-token <your-token>"
   exit 1
