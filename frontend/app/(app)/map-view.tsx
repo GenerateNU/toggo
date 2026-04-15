@@ -33,7 +33,6 @@ const DEFAULT_ZOOM = 11;
 const DEFAULT_CENTER: [number, number] = [-122.4194, 37.7749];
 const DEFAULT_LABEL = "San Francisco";
 
-const DETAIL_SHEET_SNAP_POINTS = ["48%", "78%"] as const;
 const ACTIVITY_IMAGE_SIZE = Layout.grid.base * 14;
 
 const DEFAULT_PIN_DETAIL: MapViewActivityForMap = {
@@ -73,7 +72,7 @@ function ActivityDetailSheetBody({
   const scheduleLine = formatMapViewActivityScheduleLine(activity);
 
   return (
-    <Box padding="lg" gap="md">
+    <Box padding="sm" gap="md">
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         {imageUri ? (
           <Image
@@ -151,7 +150,7 @@ export default function MapViewScreen() {
   useEffect(() => {
     if (selectedActivity) {
       const id = requestAnimationFrame(() => {
-        detailSheetRef.current?.snapToIndex(0);
+        detailSheetRef.current?.expand();
       });
       return () => cancelAnimationFrame(id);
     }
@@ -301,9 +300,9 @@ export default function MapViewScreen() {
         {showActivityDetailSheet ? (
           <BottomSheet
             ref={detailSheetRef}
-            snapPoints={[...DETAIL_SHEET_SNAP_POINTS]}
             initialIndex={-1}
             onChange={handleSheetIndexChange}
+            disableScrollView
           >
             {selectedActivity ? (
               <ActivityDetailSheetBody
