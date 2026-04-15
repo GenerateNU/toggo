@@ -428,7 +428,7 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm" paddingVertical="lx">
+          <Box gap="xs" paddingVertical="lx">
             <Box paddingHorizontal="sm">
               <Text variant="headingMd" color="gray950">
                 Recommended Trips
