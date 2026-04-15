@@ -2,6 +2,7 @@ import { Box, Text } from "@/design-system";
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
 import { UserPlus } from "lucide-react-native";
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.brand500,
     borderRadius: CornerRadius.md,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: Layout.spacing.xs,
     flexShrink: 0,
   },
   rsvpText: {
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: ColorPalette.blue25,
     borderRadius: CornerRadius.md,
-    paddingHorizontal: 8,
+    paddingHorizontal: Layout.spacing.xs,
     paddingVertical: 6,
   },
   commentText: {

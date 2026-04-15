@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { FontFamily, FontSize } from "../tokens/typography";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -281,14 +282,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dollarSign: {
-    fontFamily: "Figtree-Medium",
-    fontSize: 32,
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.xxl,
     lineHeight: 38,
     color: ColorPalette.gray950,
   },
   priceInput: {
-    fontFamily: "Figtree-Medium",
-    fontSize: 32,
+    fontFamily:FontFamily.medium,
+    fontSize: FontSize.xxl,
     lineHeight: 38,
     color: ColorPalette.gray950,
     minWidth: 60,
