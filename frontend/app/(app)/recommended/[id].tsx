@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: ColorPalette.white,
   },
   activitiesContainer: {
-    paddingLeft: Layout.spacing.sm,
+    paddingHorizontal: Layout.spacing.sm,
     gap: 12,
     paddingVertical: 12,
   },
