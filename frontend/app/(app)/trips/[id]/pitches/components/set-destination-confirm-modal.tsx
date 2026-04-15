@@ -34,7 +34,6 @@ export function SetDestinationConfirmModal({
       ref={sheetRef}
       snapPoints={["28%"]}
       initialIndex={-1}
-      hideHandle={true}
       onClose={onCancel}
     >
       <Box

@@ -3,6 +3,7 @@ import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
 import { useGetAllTrips } from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
+import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
 import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
@@ -19,17 +20,14 @@ import {
 } from "@/app/(app)/components/home/trip-date-utils";
 import { UpcomingTripHeroCard } from "@/app/(app)/components/home/upcoming-trip-hero-card";
 import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
-import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
 import {
   AnimatedBox,
-  BottomSheet,
   Box,
   Button,
   ErrorState,
   Icon,
-  ImagePicker,
   ProfileAvatarButton,
   SkeletonRect,
   Text,
@@ -114,7 +112,6 @@ export default function HomeScreen() {
     (s) => s.clearCreateTripSheetRequest,
   );
 
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastPrefix, setToastPrefix] = useState("");
   const [toastBold, setToastBold] = useState<string | null>(null);
@@ -163,15 +160,6 @@ export default function HomeScreen() {
     viewportWidth - Layout.spacing.sm * 2,
   );
   const upcomingCardGap = 12;
-
-  useEffect(() => {
-    if (needsProfile) {
-      const t = setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
-      }, 300);
-      return () => clearTimeout(t);
-    }
-  }, [needsProfile]);
 
   useEffect(() => {
     if (createTripSheetRequested) {
@@ -519,30 +507,11 @@ export default function HomeScreen() {
         </Box>
       </ScrollView>
 
-      <BottomSheet
-        ref={bottomSheetRef}
-        snapPoints={["80%", "95%"]}
-        disableClose={needsProfile}
-      >
-        <Box flex={1} padding="lg" gap="lg">
-          <Text variant="bodyMedium" color="gray900">
-            Create a profile
-          </Text>
-          <Box justifyContent="center" alignItems="center">
-            <ImagePicker
-              variant="circular"
-              size={88}
-              value={profilePhoto ?? undefined}
-              onChange={(uri) => setProfilePhoto(uri)}
-              placeholder="Add photo"
-            />
-          </Box>
-          <CompleteProfileForm
-            profilePhotoUri={profilePhoto}
-            onSuccess={handleProfileCreated}
-          />
-        </Box>
-      </BottomSheet>
+      <CreateProfileSheet
+        bottomSheetRef={bottomSheetRef}
+        needsProfile={needsProfile}
+        onSuccess={handleProfileCreated}
+      />
 
       <CreateTripSheet
         bottomSheetRef={createTripSheetRef}
