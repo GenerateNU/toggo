@@ -1,5 +1,5 @@
 import type { ModelsCategoryAPIResponse } from "@/types/types.gen";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSharedValue } from "react-native-reanimated";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -20,8 +20,11 @@ export function useTabReorder({ tabs, onReorder }: UseTabReorderParams) {
   const [orderedTabs, setOrderedTabs] =
     useState<ModelsCategoryAPIResponse[]>(tabs);
 
-  // Shared values are exposed directly so gesture handlers in tab-row-item
-  // can mutate them on the worklet thread without violating immutability rules.
+  // Sync orderedTabs when the tabs prop changes (e.g. after create or hide)
+  useEffect(() => {
+    setOrderedTabs(tabs);
+  }, [tabs]);
+
   const dragIndex = useSharedValue(-1);
   const dragY = useSharedValue(0);
   const activeIndex = useRef(-1);
