@@ -295,7 +295,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
 
       <BottomSheetModal
         ref={sheetRef}
-        snapPoints={["36%"]}
+        snapPoints={["38%"]}
         initialIndex={-1}
         disableScrollView
       >

@@ -272,8 +272,21 @@ export default function PitchDetail() {
           headerTitle: pitch?.title ?? "Pitch",
           headerRight: isOwner
             ? () => (
-                <Pressable onPress={openOwnerMenu} hitSlop={8}>
-                  <MoreHorizontal size={20} color={ColorPalette.gray900} />
+                <Pressable
+                  onPress={openOwnerMenu}
+                  hitSlop={8}
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: 40,
+                    width: 40,
+                  }}
+                >
+                  <MoreHorizontal
+                    size={24}
+                    color={ColorPalette.gray900}
+                    style={{ alignSelf: "center" }}
+                  />
                 </Pressable>
               )
             : undefined,

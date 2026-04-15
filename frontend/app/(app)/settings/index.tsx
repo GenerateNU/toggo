@@ -29,6 +29,7 @@ import {
   Trash2,
   User,
 } from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRef } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -114,6 +115,7 @@ export default function Settings() {
     useUploadProfilePicture();
   const { mutateAsync: updateUser } = useUpdateUser();
   const { mutate: deleteUser } = useDeleteUser();
+  const queryClient = useQueryClient();
 
   const logoutSheetRef = useRef<any>(null);
   const deleteSheetRef = useRef<any>(null);
@@ -127,6 +129,7 @@ export default function Settings() {
         data: { profile_picture: imageId },
       });
       await refreshCurrentUser();
+      queryClient.invalidateQueries({ queryKey: ["image"] });
     } catch {
       toast.show({
         message: "Couldn't update profile photo. Please try again.",

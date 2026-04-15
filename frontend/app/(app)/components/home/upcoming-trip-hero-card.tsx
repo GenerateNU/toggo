@@ -8,6 +8,7 @@ import { BellDot, CalendarDays, MapPin } from "lucide-react-native";
 import { Pressable } from "react-native";
 import { HOME_UPCOMING_IMAGE_HEIGHT } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
+import { tripMemberPreviews } from "./types";
 
 type UpcomingTripHeroCardProps = {
   trip: ModelsTripAPIResponse;
@@ -84,7 +85,10 @@ export function UpcomingTripHeroCard({
           <Text variant="headingLg" color="gray950">
             {trip.name?.trim() || "Untitled trip"}
           </Text>
-          <TripMemberPreviewRow tripId={tripId} currentUserId={currentUserId} />
+          <TripMemberPreviewRow
+            members={tripMemberPreviews(trip)}
+            currentUserId={currentUserId}
+          />
         </Box>
 
         <Button

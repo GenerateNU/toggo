@@ -98,6 +98,25 @@ export type ModelsActivity = {
   updated_at?: string;
 };
 
+export type ModelsCommenterPreview = {
+  /**
+   * @type string | undefined
+   */
+  name?: string;
+  /**
+   * @type string | undefined
+   */
+  profile_picture_url?: string;
+  /**
+   * @type string | undefined
+   */
+  user_id?: string;
+  /**
+   * @type string | undefined
+   */
+  username?: string;
+};
+
 export type ModelsActivityGoingUserResponse = {
   /**
    * @type string | undefined
@@ -133,6 +152,14 @@ export type ModelsActivityAPIResponse = {
    * @type array | undefined
    */
   category_names?: string[];
+  /**
+   * @type integer | undefined
+   */
+  comment_count?: number;
+  /**
+   * @type array | undefined
+   */
+  comment_previews?: ModelsCommenterPreview[];
   /**
    * @type string | undefined
    */
@@ -602,25 +629,6 @@ export type ModelsCommentReactionsSummaryResponse = {
    * @type array | undefined
    */
   reactions?: ModelsCommentReactionSummary[];
-};
-
-export type ModelsCommenterPreview = {
-  /**
-   * @type string | undefined
-   */
-  name?: string;
-  /**
-   * @type string | undefined
-   */
-  profile_picture_url?: string;
-  /**
-   * @type string | undefined
-   */
-  user_id?: string;
-  /**
-   * @type string | undefined
-   */
-  username?: string;
 };
 
 export const modelsImageSize = {
@@ -2081,6 +2089,14 @@ export type ModelsTripAPIResponse = {
    * @type string | undefined
    */
   location?: string;
+  /**
+   * @type integer | undefined
+   */
+  member_count?: number;
+  /**
+   * @type array | undefined
+   */
+  member_previews?: ModelsCommenterPreview[];
   /**
    * @type string | undefined
    */

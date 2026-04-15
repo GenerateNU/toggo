@@ -3,15 +3,17 @@ export const Shadow = {
     shadowColor: "#000000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 20,
+    shadowRadius: 7.5,
     elevation: 3,
+    spreadRadius: -5,
   },
   md: {
     shadowColor: "#000000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 20,
+    shadowRadius: 7.5,
     elevation: 4,
+    spreadRadius: -5,
   },
 } as const;
 

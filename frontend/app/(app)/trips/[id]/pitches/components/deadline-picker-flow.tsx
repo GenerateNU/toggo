@@ -3,6 +3,7 @@ import { DateRangePicker, TimePicker } from "@/design-system";
 import { useMemo, useRef, useState } from "react";
 
 interface DeadlinePickerFlowProps {
+  visible: boolean;
   onClose: () => void;
   onSave: (date: Date) => void | Promise<void>;
 }
@@ -38,6 +39,7 @@ function to24HourTime(time: TimeValue) {
 }
 
 export function DeadlinePickerFlow({
+  visible,
   onClose,
   onSave,
 }: DeadlinePickerFlowProps) {
@@ -53,7 +55,7 @@ export function DeadlinePickerFlow({
   return (
     <>
       <DateRangePicker
-        visible={!timePickerVisible}
+        visible={visible && !timePickerVisible}
         onClose={() => {
           if (!transitioningRef.current) {
             onClose();
@@ -68,7 +70,6 @@ export function DeadlinePickerFlow({
           transitioningRef.current = true;
           setPendingDeadline(toEndOfDay(range.start));
           setTimeout(() => {
-            transitioningRef.current = false;
             setTimePickerVisible(true);
           }, 400);
         }}
@@ -78,15 +79,17 @@ export function DeadlinePickerFlow({
       />
 
       <TimePicker
-        visible={timePickerVisible}
+        visible={visible && timePickerVisible}
         initialTime={initialTime}
         onClose={() => {
+          transitioningRef.current = false;
           setTimePickerVisible(false);
           setPendingDeadline(null);
           onClose();
         }}
         onSave={(time) => {
           if (!pendingDeadline) return;
+          transitioningRef.current = false;
           const date = new Date(pendingDeadline);
           date.setHours(to24HourTime(time), time.minute, 0, 0);
           setTimePickerVisible(false);

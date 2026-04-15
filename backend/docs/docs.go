@@ -6040,6 +6040,15 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "comment_count": {
+                    "type": "integer"
+                },
+                "comment_previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommenterPreview"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -8214,6 +8223,15 @@ const docTemplate = `{
                 },
                 "location": {
                     "type": "string"
+                },
+                "member_count": {
+                    "type": "integer"
+                },
+                "member_previews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.CommenterPreview"
+                    }
                 },
                 "name": {
                     "type": "string"

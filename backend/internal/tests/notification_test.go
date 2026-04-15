@@ -171,6 +171,9 @@ func (n *noopMembershipRepo) CountMembers(ctx context.Context, tripID uuid.UUID)
 func (n *noopMembershipRepo) CountAdmins(ctx context.Context, tripID uuid.UUID) (int, error) {
 	return 0, nil
 }
+func (n *noopMembershipRepo) GetMemberStatsForTrips(ctx context.Context, tripIDs []uuid.UUID) (map[uuid.UUID]*models.TripMemberStats, error) {
+	return map[uuid.UUID]*models.TripMemberStats{}, nil
+}
 func (n *noopMembershipRepo) Update(ctx context.Context, userID, tripID uuid.UUID, req *models.UpdateMembershipRequest) (*models.Membership, error) {
 	return nil, nil
 }

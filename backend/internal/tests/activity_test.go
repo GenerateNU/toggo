@@ -983,6 +983,51 @@ func TestActivityLocationAndEstimatedPrice(t *testing.T) {
 		require.Equal(t, estimatedPrice, activity["estimated_price"])
 	})
 
+	t.Run("list activities includes comment_count and comment_previews", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		commenter := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, commenter, trip)
+
+		activityID := createActivity(t, app, owner, trip, "Activity With Comments")
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  "/api/v1/comments",
+				Method: testkit.POST,
+				UserID: &commenter,
+				Body: models.CreateCommentRequest{
+					TripID:     uuid.MustParse(trip),
+					EntityType: models.ActivityEntity,
+					EntityID:   uuid.MustParse(activityID),
+					Content:    "Looks good!",
+				},
+			}).
+			AssertStatus(http.StatusCreated)
+
+		resp := testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities", trip),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK).
+			GetBody()
+
+		items := resp["items"].([]interface{})
+		require.Equal(t, 1, len(items))
+		activity := items[0].(map[string]interface{})
+
+		require.Equal(t, float64(1), activity["comment_count"])
+		previews, ok := activity["comment_previews"].([]interface{})
+		require.True(t, ok)
+		require.Equal(t, 1, len(previews))
+	})
+
 	t.Run("supports cents in estimated price", func(t *testing.T) {
 		app := fakes.GetSharedTestApp()
 

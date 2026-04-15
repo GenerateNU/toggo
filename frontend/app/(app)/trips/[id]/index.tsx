@@ -7,6 +7,10 @@ import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
 import { TripReminderLocationSheet } from "@/app/(app)/components/trip-reminder-location-sheet";
+import {
+  ActivitiesTabContent,
+  type ActivitiesTabContentHandle,
+} from "@/app/(app)/trips/[id]/activities/components/activities-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
@@ -59,10 +63,7 @@ export default function Trip() {
     id: string;
     tab?: string;
   }>();
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    (tab as TabKey) || INITIAL_TAB,
-  );
-  const [isOpeningMap, setIsOpeningMap] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(tab || INITIAL_TAB);
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
@@ -75,6 +76,8 @@ export default function Trip() {
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
+  const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
+  const [isOpeningMap, setIsOpeningMap] = useState(false);
 
   const {
     data: trip,
@@ -114,7 +117,7 @@ export default function Trip() {
     }
   };
 
-  const handleTabPress = (tab: TabKey) => {
+  const handleTabPress = (tab: string) => {
     if (tab === "settings") {
       router.push(`/trips/${tripID}/settings` as any);
       return;
@@ -124,6 +127,11 @@ export default function Trip() {
 
   const handleOpenCreatePoll = useCallback(() => {
     createPollSheetRef.current?.open();
+  }, []);
+
+  const handleOpenCreateActivity = useCallback(() => {
+    setActiveTab("activities");
+    setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
   }, []);
 
   const handlePollCreated = useCallback(() => {
@@ -306,7 +314,11 @@ export default function Trip() {
               />
 
               <Box paddingVertical="sm">
-                <TripTabBar activeTab={activeTab} onTabPress={handleTabPress} />
+                <TripTabBar
+                  tripID={tripID}
+                  activeTab={activeTab}
+                  onTabPress={handleTabPress}
+                />
               </Box>
             </Box>
 
@@ -364,8 +376,23 @@ export default function Trip() {
                   parentContainerRef={cardContainerRef}
                 />
               )}
-              {!isLoading && !isError && trip && activeTab === "polls" && (
-                <PollsTabContent tripId={tripID} />
+              {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+              {activeTab !== "new" &&
+                activeTab !== "itinerary" &&
+                activeTab !== "polls" &&
+                activeTab !== "settings" && (
+                  <Box
+                    flex={1}
+                    alignItems="flex-start"
+                    justifyContent="flex-start"
+                  >
+                    <Text variant="bodySmDefault" color="gray400">
+                      Post notes, photos, videos, and links
+                    </Text>
+                  </Box>
+                )}
+              {activeTab === "activities" && (
+                <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
               )}
             </Box>
           </ScrollView>
@@ -373,7 +400,11 @@ export default function Trip() {
       </SafeAreaView>
 
       {activeTab !== "itinerary" && (
-        <CreateFAB tripID={tripID} onCreatePoll={handleOpenCreatePoll} />
+        <CreateFAB
+          tripID={tripID}
+          onCreatePoll={handleOpenCreatePoll}
+          onCreateActivity={handleOpenCreateActivity}
+        />
       )}
 
       <CreatePollSheet

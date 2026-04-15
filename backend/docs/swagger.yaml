@@ -47,6 +47,12 @@ definitions:
         items:
           type: string
         type: array
+      comment_count:
+        type: integer
+      comment_previews:
+        items:
+          $ref: '#/definitions/models.CommenterPreview'
+        type: array
       created_at:
         type: string
       dates:
@@ -1508,6 +1514,12 @@ definitions:
         type: string
       location:
         type: string
+      member_count:
+        type: integer
+      member_previews:
+        items:
+          $ref: '#/definitions/models.CommenterPreview'
+        type: array
       name:
         type: string
       pitch_deadline:
