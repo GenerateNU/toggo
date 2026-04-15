@@ -18,11 +18,12 @@ export function CreateProfileSheet({
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      snapPoints={["80%", "95%"]}
+      snapPoints={["50%", "60%"]}
+      initialIndex={needsProfile ? 0 : -1}
       disableClose={needsProfile}
     >
-      <Box flex={1} padding="lg" gap="lg">
-        <Text variant="bodyMedium" color="white">
+      <Box flex={1} padding="sm" gap="lg">
+        <Text variant="bodyMedium" color="black">
           Create a profile
         </Text>
         <Box justifyContent="center" alignItems="center">

@@ -327,11 +327,28 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 		}
 	}
 
+	commentStatsMap, err := s.Comment.GetCommentStatsForActivities(ctx, activityIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	commentPreviewRows := make([]models.PitchCommenterDB, 0, len(activities)*3)
+	for _, id := range activityIDs {
+		stats := commentStatsMap[id]
+		if stats == nil {
+			continue
+		}
+		commentPreviewRows = append(commentPreviewRows, stats.Previews...)
+	}
+	commentPicURLMap := pagination.FetchFileURLs(ctx, s.fileService, commentPreviewRows, func(item models.PitchCommenterDB) *string {
+		return item.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
 	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, activities, func(item *models.ActivityDatabaseResponse) *string {
 		return item.ProposerPictureKey
 	}, models.ImageSizeSmall)
 
-	apiActivities, err := s.convertToAPIActivities(ctx, activities, fileURLMap)
+	apiActivities, err := s.convertToAPIActivities(ctx, activities, fileURLMap, commentStatsMap, commentPicURLMap)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +356,12 @@ func (s *ActivityService) buildActivityListResponse(ctx context.Context, activit
 	return s.buildActivityPageResult(apiActivities, nextCursor, limit)
 }
 
-func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPictureURL *string) *models.ActivityAPIResponse {
+func mapToAPIResponse(
+	activity *models.ActivityDatabaseResponse,
+	proposerPictureURL *string,
+	commentCount int,
+	commentPreviews []models.CommenterPreview,
+) *models.ActivityAPIResponse {
 	return &models.ActivityAPIResponse{
 		ID:                 activity.ID,
 		TripID:             activity.TripID,
@@ -360,6 +382,8 @@ func mapToAPIResponse(activity *models.ActivityDatabaseResponse, proposerPicture
 		ProposerUsername:   activity.ProposerUsername,
 		ProposerPictureURL: proposerPictureURL,
 		CategoryNames:      activity.CategoryNames,
+		CommentCount:       commentCount,
+		CommentPreviews:    commentPreviews,
 	}
 }
 
@@ -381,14 +405,20 @@ func (s *ActivityService) toAPIResponse(ctx context.Context, activity *models.Ac
 		return u.ProfilePictureKey
 	}, models.ImageSizeSmall)
 
-	apiResp := mapToAPIResponse(activity, proposerPictureURL)
+	apiResp := mapToAPIResponse(activity, proposerPictureURL, 0, []models.CommenterPreview{})
 	apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
 	apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, picURLMap)
 	apiResp.GoingCount = len(apiResp.GoingUsers)
 	return apiResp, nil
 }
 
-func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities []*models.ActivityDatabaseResponse, fileURLMap map[string]string) ([]*models.ActivityAPIResponse, error) {
+func (s *ActivityService) convertToAPIActivities(
+	ctx context.Context,
+	activities []*models.ActivityDatabaseResponse,
+	fileURLMap map[string]string,
+	commentStatsMap map[uuid.UUID]*models.PitchCommentStats,
+	commentPicURLMap map[string]string,
+) ([]*models.ActivityAPIResponse, error) {
 	imageURLMap, err := s.batchFetchImageURLs(ctx, activities)
 	if err != nil {
 		return nil, err
@@ -404,7 +434,30 @@ func (s *ActivityService) convertToAPIActivities(ctx context.Context, activities
 				proposerPictureURL = &url
 			}
 		}
-		apiResp := mapToAPIResponse(activity, proposerPictureURL)
+
+		commentCount := 0
+		commentPreviews := []models.CommenterPreview{}
+		if stats := commentStatsMap[activity.ID]; stats != nil {
+			commentCount = stats.Count
+			if len(stats.Previews) > 0 {
+				commentPreviews = make([]models.CommenterPreview, 0, len(stats.Previews))
+				for _, c := range stats.Previews {
+					preview := models.CommenterPreview{
+						UserID:   c.UserID,
+						Name:     c.Name,
+						Username: c.Username,
+					}
+					if c.ProfilePictureKey != nil {
+						if url, ok := commentPicURLMap[*c.ProfilePictureKey]; ok {
+							preview.ProfilePictureURL = &url
+						}
+					}
+					commentPreviews = append(commentPreviews, preview)
+				}
+			}
+		}
+
+		apiResp := mapToAPIResponse(activity, proposerPictureURL, commentCount, commentPreviews)
 		apiResp.Images = buildImageResponses(activity.ImageKeys, imageURLMap)
 		apiResp.GoingUsers = resolveGoingUsers(activity.GoingUsers, goingUserPicURLMap)
 		apiResp.GoingCount = len(apiResp.GoingUsers)

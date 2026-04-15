@@ -112,13 +112,7 @@ export function PitchPickerSheet({
   });
 
   return (
-    <BottomSheetComponent
-      ref={sheetRef}
-      initialIndex={0}
-      snapPoints={["42%"]}
-      onClose={onClose}
-      hideHandle={true}
-    >
+    <BottomSheetComponent ref={sheetRef} initialIndex={0} onClose={onClose}>
       <Box style={{ paddingBottom: 16, paddingTop: 12 }}>
         <Box
           flexDirection="row"
@@ -132,7 +126,7 @@ export function PitchPickerSheet({
             Select your #{slotNumber} choice
           </Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <X size={18} color={ColorPalette.gray900} />
+            <X size={24} color={ColorPalette.gray900} />
           </Pressable>
         </Box>
 

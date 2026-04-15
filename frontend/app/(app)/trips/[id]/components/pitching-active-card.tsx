@@ -67,7 +67,7 @@ export function PitchingActiveCard({
             style={styles.dismissButton}
             onPress={() => setDismissed(true)}
           >
-            <X size={16} color={ColorPalette.gray400} />
+            <X size={24} color={ColorPalette.gray400} />
           </Pressable>
 
           <Box gap="xxs" paddingRight="lg">

@@ -7,6 +7,7 @@ export const Layout = {
     xxs: 4,
     xs: 8,
     sm: 16,
+    lx: 20,
     md: 24,
     lg: 32,
     xl: 48,

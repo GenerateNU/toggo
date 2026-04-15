@@ -65,7 +65,7 @@ export const Button: React.FC<ButtonProps> = ({
   const renderContent = () => {
     if (loading) {
       return (
-        <Text variant="bodyMedium" color={resolved.contentColor as ColorName}>
+        <Text variant="bodyStrong" color={resolved.contentColor as ColorName}>
           {loadingLabel}
         </Text>
       );
@@ -75,7 +75,7 @@ export const Button: React.FC<ButtonProps> = ({
       case "textOnly":
         return (
           <Text
-            variant="bodySmMedium"
+            variant="bodyStrong"
             color={resolved.contentColor as ColorName}
             numberOfLines={1}
           >
@@ -89,7 +89,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Box flexDirection="row" alignItems="center" gap="xs">
             <Icon size={resolved.iconSize} color={iconColor} />
             <Text
-              variant="bodySmMedium"
+              variant="bodyStrong"
               color={resolved.contentColor as ColorName}
               numberOfLines={1}
               style={{ flexShrink: 1 }}
@@ -107,7 +107,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Box flexDirection="row" alignItems="center" gap="xs">
             <Left size={resolved.iconSize} color={iconColor} />
             <Text
-              variant="bodySmMedium"
+              variant="bodyStrong"
               color={resolved.contentColor as ColorName}
               numberOfLines={1}
               style={{ flexShrink: 1 }}

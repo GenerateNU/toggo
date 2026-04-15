@@ -19,6 +19,7 @@ type CommentRepository interface {
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 	FindPaginatedComments(ctx context.Context, tripID uuid.UUID, entityType models.EntityType, entityID uuid.UUID, limit int, cursor *models.CommentCursor) ([]*models.CommentDatabaseResponse, error)
 	GetCommentStatsForPitches(ctx context.Context, pitchIDs []uuid.UUID) (map[uuid.UUID]*models.PitchCommentStats, error)
+	GetCommentStatsForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID]*models.PitchCommentStats, error)
 }
 
 var _ CommentRepository = (*commentRepository)(nil)
@@ -157,6 +158,71 @@ func (r *commentRepository) GetCommentStatsForPitches(ctx context.Context, pitch
 		if !ok {
 			stats = &models.PitchCommentStats{Count: row.TotalCommentCount}
 			result[row.PitchID] = stats
+		}
+		stats.Previews = append(stats.Previews, models.PitchCommenterDB{
+			UserID:            row.UserID,
+			Name:              row.CommenterName,
+			Username:          row.CommenterUsername,
+			ProfilePictureKey: row.CommenterPfpKey,
+		})
+	}
+	return result, nil
+}
+
+func (r *commentRepository) GetCommentStatsForActivities(ctx context.Context, activityIDs []uuid.UUID) (map[uuid.UUID]*models.PitchCommentStats, error) {
+	result := make(map[uuid.UUID]*models.PitchCommentStats, len(activityIDs))
+	if len(activityIDs) == 0 {
+		return result, nil
+	}
+
+	type statsRow struct {
+		ActivityID        uuid.UUID `bun:"activity_id"`
+		UserID            uuid.UUID `bun:"user_id"`
+		CommenterName     string    `bun:"commenter_name"`
+		CommenterUsername string    `bun:"commenter_username"`
+		CommenterPfpKey   *string   `bun:"commenter_pfp_key"`
+		TotalCommentCount int       `bun:"total_comment_count"`
+	}
+
+	var rows []statsRow
+	err := r.db.NewSelect().
+		TableExpr(`(
+			SELECT
+				c.entity_id                                                                               AS activity_id,
+				c.user_id,
+				u.name                                                                                    AS commenter_name,
+				u.username                                                                                AS commenter_username,
+				pfp.file_key                                                                              AS commenter_pfp_key,
+				SUM(COUNT(c.id)) OVER (PARTITION BY c.entity_id)                                         AS total_comment_count,
+				ROW_NUMBER() OVER (PARTITION BY c.entity_id ORDER BY MIN(c.created_at))                  AS rn
+			FROM comments AS c
+			JOIN users AS u ON u.id = c.user_id
+			LEFT JOIN images AS pfp
+				ON u.profile_picture IS NOT NULL
+				AND pfp.image_id = u.profile_picture
+				AND pfp.size = ?
+				AND pfp.status = ?
+			WHERE c.entity_type = ?
+			  AND c.entity_id IN (?)
+			GROUP BY c.entity_id, c.user_id, u.name, u.username, pfp.file_key
+		) AS ranked`,
+			models.ImageSizeSmall,
+			models.UploadStatusConfirmed,
+			models.ActivityEntity,
+			bun.In(activityIDs),
+		).
+		ColumnExpr("activity_id, user_id, commenter_name, commenter_username, commenter_pfp_key, total_comment_count").
+		Where("rn <= ?", maxCommentPreviewCount).
+		Scan(ctx, &rows)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range rows {
+		stats, ok := result[row.ActivityID]
+		if !ok {
+			stats = &models.PitchCommentStats{Count: row.TotalCommentCount}
+			result[row.ActivityID] = stats
 		}
 		stats.Previews = append(stats.Previews, models.PitchCommenterDB{
 			UserID:            row.UserID,

@@ -5,13 +5,9 @@ export const HOME_UPCOMING_IMAGE_HEIGHT = 170;
 export const HOME_PAST_TRIP_IMAGE_SIZE = 72;
 export const HOME_RECOMMENDED_CARD_WIDTH = 250;
 
-export const HOME_CARD_FLOATING_SHADOW = {
-  shadowColor: "#000000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.08,
-  shadowRadius: 6,
-  elevation: 2,
-} as const;
+export const HOME_HEADER_BUTTON_SIZE = 36;
+
+export const MAX_VISIBLE_MEMBERS = 3;
 
 export const NULL_DATE_DISPLAY_OPTIONS = {
   hide: "hide",
@@ -26,31 +22,28 @@ export type NullDateDisplayOption =
 export const HOME_NULL_DATE_DISPLAY: NullDateDisplayOption =
   NULL_DATE_DISPLAY_OPTIONS.placeholder;
 
+export type RecommendedActivity = {
+  id: string;
+  name: string;
+  thumbnail_url: string;
+  estimated_price: number;
+  description: string;
+  location_lat: number;
+  location_lng: number;
+};
+
 export type RecommendedTripDestination = {
   id: string;
   title: string;
+  country: string;
   description: string;
   imageUrl: string;
+  locationLat: number;
+  locationLng: number;
+  activities: RecommendedActivity[];
 };
 
-export const RECOMMENDED_DESTINATIONS: RecommendedTripDestination[] = [
-  {
-    id: "ldn",
-    title: "London",
-    description:
-      "Vibrant, historic, and cosmopolitan capital blending centuries-old tradition with modern innovation.",
-    imageUrl:
-      "https://www.figma.com/api/mcp/asset/134bec24-3629-41ee-bb00-acf957538daf",
-  },
-  {
-    id: "puerto-rico",
-    title: "Puerto Rico",
-    description:
-      "Tropical island paradise with turquoise waters, colorful colonial towns, and white-sand beaches.",
-    imageUrl:
-      "https://www.figma.com/api/mcp/asset/79b431a6-3b0d-4293-9bc6-8e4f5d2c48c7",
-  },
-];
+export { default as RECOMMENDED_DESTINATIONS } from "./recommended_destinations.json";
 
 export default function HomeConstantsRoute() {
   return null;

@@ -1,6 +1,6 @@
-import { Box, ErrorState } from "@/design-system";
+import { Box, ErrorState, Spinner } from "@/design-system";
 import type { ModelsPitchAPIResponse } from "@/types/types.gen";
-import { ActivityIndicator, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { EmptyPitchState } from "./empty-pitch-state";
 import { PitchCard } from "./pitch-card";
 import { PitchCardSkeleton } from "./pitch-card-skeleton";
@@ -84,7 +84,7 @@ export function PitchesTabContent({
       ))}
       {isLoadingMore && (
         <Box padding="md" alignItems="center">
-          <ActivityIndicator />
+          <Spinner />
         </Box>
       )}
     </ScrollView>

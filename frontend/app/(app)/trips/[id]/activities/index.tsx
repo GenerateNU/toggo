@@ -1,12 +1,12 @@
 import { useCreateActivity } from "@/api/activities";
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
-import { Box, Screen, Text } from "@/design-system";
+import { useUser } from "@/contexts/user";
+import { Box, Screen, Spinner, Text } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { useUser } from "@/contexts/user";
-import { modelsEntityType } from "@/types/types.gen";
 import type { ModelsActivity } from "@/types/types.gen";
+import { modelsEntityType } from "@/types/types.gen";
 import {
   activityHasMapLocation,
   encodeMapViewActivitiesParam,
@@ -14,12 +14,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { MapPinned, MessageCircle, Plus } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -75,7 +70,7 @@ export default function Activities() {
     () =>
       isLoadingMore ? (
         <Box paddingVertical="sm" alignItems="center">
-          <ActivityIndicator size="small" color={ColorPalette.gray500} />
+          <Spinner />
         </Box>
       ) : null,
     [isLoadingMore],
@@ -152,10 +147,7 @@ export default function Activities() {
                 ]}
               >
                 {isCreating ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={ColorPalette.gray900}
-                  />
+                  <Spinner />
                 ) : (
                   <Plus size={18} color={ColorPalette.gray900} />
                 )}
@@ -191,7 +183,7 @@ export default function Activities() {
 
               {isLoading && (
                 <Box alignItems="center" paddingVertical="md">
-                  <ActivityIndicator color={ColorPalette.gray500} />
+                  <Spinner />
                 </Box>
               )}
 

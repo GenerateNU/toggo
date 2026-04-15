@@ -1,0 +1,192 @@
+[
+  {
+    "id": "ldn",
+    "title": "London",
+    "country": "United Kingdom",
+    "description": "Vibrant, historic, and cosmopolitan capital blending centuries-old tradition with modern innovation. Motorbikes stream through the streets like rivers of motion, carrying locals past sidewalk cafes, street food stalls, and historic landmarks.",
+    "imageUrl": "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "locationLat": 51.5074,
+    "locationLng": -0.1278,
+    "activities": [
+      {
+        "id": "ldn-1",
+        "name": "Tower of London & Crown Jewels Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=800&q=80",
+        "estimated_price": 33,
+        "description": "Explore 1,000 years of royal history at one of the world's most famous fortresses and see the dazzling Crown Jewels.",
+        "location_lat": 51.5081,
+        "location_lng": -0.0759
+      },
+      {
+        "id": "ldn-2",
+        "name": "Borough Market Food Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1662714194223-7afefe9417a3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "estimated_price": 45,
+        "description": "Taste your way through London's oldest and most renowned food market with a guided culinary tour.",
+        "location_lat": 51.5055,
+        "location_lng": -0.091
+      },
+      {
+        "id": "ldn-3",
+        "name": "Thames River Cruise at Sunset",
+        "thumbnail_url": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&q=80",
+        "estimated_price": 22,
+        "description": "Glide past Parliament, the London Eye, and Tower Bridge aboard a scenic evening river cruise.",
+        "location_lat": 51.5033,
+        "location_lng": -0.1195
+      }
+    ]
+  },
+  {
+    "id": "puerto-rico",
+    "title": "Puerto Rico",
+    "country": "Caribbean",
+    "description": "Tropical island paradise with turquoise waters, colorful colonial towns, and white-sand beaches. From the bioluminescent bays to the cobblestone streets of Old San Juan, every corner pulses with vibrant culture and natural wonder.",
+    "imageUrl": "https://images.unsplash.com/photo-1716512717499-bf31c6b3bcea?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "locationLat": 18.4655,
+    "locationLng": -66.1057,
+    "activities": [
+      {
+        "id": "pr-1",
+        "name": "Bioluminescent Bay Kayak Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80",
+        "estimated_price": 55,
+        "description": "Paddle through glowing waters in one of the brightest bioluminescent bays in the world.",
+        "location_lat": 18.093,
+        "location_lng": -65.719
+      },
+      {
+        "id": "pr-2",
+        "name": "Old San Juan Walking Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1589402249680-5ff95f2ac3bd?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "estimated_price": 25,
+        "description": "Wander through 500 years of history along colorful cobblestone streets and Spanish colonial fortresses.",
+        "location_lat": 18.4663,
+        "location_lng": -66.1057
+      },
+      {
+        "id": "pr-3",
+        "name": "El Yunque Rainforest Hike",
+        "thumbnail_url": "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&q=80",
+        "estimated_price": 30,
+        "description": "Trek through the only tropical rainforest in the U.S. National Forest system, with waterfalls and panoramic views.",
+        "location_lat": 18.2955,
+        "location_lng": -65.7866
+      }
+    ]
+  },
+  {
+    "id": "tokyo",
+    "title": "Tokyo",
+    "country": "Japan",
+    "description": "A dazzling mix of ultra-modern skyscrapers, ancient temples, world-class cuisine, and neon-lit nightlife. From the serene Meiji Shrine to the electric buzz of Shibuya, Tokyo is a city of endless contrasts.",
+    "imageUrl": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+    "locationLat": 35.6762,
+    "locationLng": 139.6503,
+    "activities": [
+      {
+        "id": "tko-1",
+        "name": "Tsukiji Outer Market Food Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1553621042-f6e147245754?w=800&q=80",
+        "estimated_price": 40,
+        "description": "Sample the freshest sushi, tamagoyaki, and street snacks at Tokyo's legendary seafood market.",
+        "location_lat": 35.6654,
+        "location_lng": 139.7707
+      },
+      {
+        "id": "tko-2",
+        "name": "Meiji Shrine & Harajuku Walk",
+        "thumbnail_url": "https://images.unsplash.com/photo-1703443371292-0d9081cc4787?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "estimated_price": 0,
+        "description": "Visit the peaceful Meiji Shrine nestled in a forested park, then explore Harajuku's vibrant fashion district.",
+        "location_lat": 35.6764,
+        "location_lng": 139.6993
+      },
+      {
+        "id": "tko-3",
+        "name": "Shibuya Night Photography Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800&q=80",
+        "estimated_price": 35,
+        "description": "Capture the neon-lit energy of Shibuya Crossing and the backstreets of Golden Gai with a local photographer.",
+        "location_lat": 35.6595,
+        "location_lng": 139.7004
+      }
+    ]
+  },
+  {
+    "id": "barcelona",
+    "title": "Barcelona",
+    "country": "Spain",
+    "description": "Sun-drenched Mediterranean gem famous for stunning architecture, lively tapas bars, and golden beaches. Gaudi's whimsical masterpieces dot the skyline while vibrant neighbourhoods buzz with art, music, and flavour.",
+    "imageUrl": "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800&q=80",
+    "locationLat": 41.3874,
+    "locationLng": 2.1686,
+    "activities": [
+      {
+        "id": "bcn-1",
+        "name": "Sagrada Familia Guided Tour",
+        "thumbnail_url": "https://images.unsplash.com/photo-1578912996078-305d92249aa6?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "estimated_price": 47,
+        "description": "Marvel at Gaudi's unfinished masterpiece with skip-the-line access and an expert guide.",
+        "location_lat": 41.4036,
+        "location_lng": 2.1744
+      },
+      {
+        "id": "bcn-2",
+        "name": "Gothic Quarter Tapas Crawl",
+        "thumbnail_url": "https://images.unsplash.com/photo-1515443961218-a51367888e4b?w=800&q=80",
+        "estimated_price": 60,
+        "description": "Wind through medieval alleyways tasting patatas bravas, jamón ibérico, and local cava at hidden gems.",
+        "location_lat": 41.3833,
+        "location_lng": 2.1761
+      },
+      {
+        "id": "bcn-3",
+        "name": "Barceloneta Beach & Sailing",
+        "thumbnail_url": "https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=800&q=80",
+        "estimated_price": 50,
+        "description": "Relax on the iconic beach before setting sail along the Mediterranean coastline at golden hour.",
+        "location_lat": 41.3785,
+        "location_lng": 2.1924
+      }
+    ]
+  },
+  {
+    "id": "cape-town",
+    "title": "Cape Town",
+    "country": "South Africa",
+    "description": "Breathtaking coastal city nestled between mountains and ocean, offering diverse culture and natural beauty. Table Mountain towers over a landscape of vineyards, penguin colonies, and world-class surf breaks.",
+    "imageUrl": "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80",
+    "locationLat": -33.9249,
+    "locationLng": 18.4241,
+    "activities": [
+      {
+        "id": "cpt-1",
+        "name": "Table Mountain Hike via Platteklip",
+        "thumbnail_url": "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80",
+        "estimated_price": 0,
+        "description": "Summit the iconic flat-topped mountain for sweeping 360-degree views over the city and coastline.",
+        "location_lat": -33.9625,
+        "location_lng": 18.4039
+      },
+      {
+        "id": "cpt-2",
+        "name": "Cape Winelands Day Trip",
+        "thumbnail_url": "https://images.unsplash.com/photo-1567529692333-de9fd6772897?w=800&q=80",
+        "estimated_price": 65,
+        "description": "Tour the picturesque vineyards of Stellenbosch and Franschhoek with tastings at award-winning estates.",
+        "location_lat": -33.9321,
+        "location_lng": 18.8602
+      },
+      {
+        "id": "cpt-3",
+        "name": "Boulders Beach Penguin Visit",
+        "thumbnail_url": "https://images.unsplash.com/photo-1497271679421-ce9c3d6a31da?w=800&q=80",
+        "estimated_price": 10,
+        "description": "Get up close with a colony of African penguins on a sheltered beach along the scenic Cape Peninsula.",
+        "location_lat": -34.1976,
+        "location_lng": 18.4512
+      }
+    ]
+  }
+]

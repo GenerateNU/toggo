@@ -3,9 +3,11 @@ import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
 import { useGetAllTrips } from "@/api/trips/useGetAllTrips";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
+import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
 import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
+  HOME_HEADER_BUTTON_SIZE,
   HOME_NULL_DATE_DISPLAY,
   HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
@@ -18,18 +20,13 @@ import {
 } from "@/app/(app)/components/home/trip-date-utils";
 import { UpcomingTripHeroCard } from "@/app/(app)/components/home/upcoming-trip-hero-card";
 import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
-import CompleteProfileForm from "@/app/(auth)/components/complete-profile-form";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
 import {
   AnimatedBox,
-  BottomSheet,
   Box,
-  Button,
   ErrorState,
   Icon,
-  ImagePicker,
-  Logo,
   ProfileAvatarButton,
   SkeletonRect,
   Text,
@@ -38,8 +35,6 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
-import type { ModelsActivity } from "@/types/types.gen";
-import { encodeMapViewActivitiesParam } from "@/utils/map-view-activities";
 import { useQueries } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -53,49 +48,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-/** Example pins around San Francisco for the dev map shortcut. */
-const DEV_MAP_SAMPLE_ACTIVITIES: ModelsActivity[] = [
-  {
-    id: "dev-sample-1",
-    name: "Golden Gate Bridge",
-    location_name: "Golden Gate Bridge, San Francisco",
-    location_lat: 37.8199,
-    location_lng: -122.4783,
-    dates: [{ start: "2026-06-10", end: "2026-06-10" }],
-    time_of_day: "morning",
-    description:
-      "Iconic suspension bridge and a classic Bay Area viewpoint over the Pacific.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80",
-  },
-  {
-    id: "dev-sample-2",
-    name: "Ferry Building",
-    location_name: "Ferry Building Marketplace",
-    location_lat: 37.7955,
-    location_lng: -122.3934,
-    dates: [{ start: "2026-06-11", end: "2026-06-12" }],
-    time_of_day: "afternoon",
-    description:
-      "Historic transit hub along the Embarcadero, known for farmers markets and local food.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1549692520-acc6669e2f0c?w=800&q=80",
-  },
-  {
-    id: "dev-sample-3",
-    name: "Mission Dolores Park",
-    location_name: "Dolores Park, Mission District",
-    location_lat: 37.7694,
-    location_lng: -122.4253,
-    dates: [{ start: "2026-06-13" }],
-    time_of_day: "evening",
-    description:
-      "Sunny urban park with skyline views—a popular spot to relax on weekends.",
-    thumbnail_url:
-      "https://images.unsplash.com/photo-1564694202779-bc908c327862?w=800&q=80",
-  },
-];
 
 export default function HomeScreen() {
   const { currentUser, userId } = useUser();
@@ -114,7 +66,6 @@ export default function HomeScreen() {
     (s) => s.clearCreateTripSheetRequest,
   );
 
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastPrefix, setToastPrefix] = useState("");
   const [toastBold, setToastBold] = useState<string | null>(null);
@@ -163,15 +114,6 @@ export default function HomeScreen() {
     viewportWidth - Layout.spacing.sm * 2,
   );
   const upcomingCardGap = 12;
-
-  useEffect(() => {
-    if (needsProfile) {
-      const t = setTimeout(() => {
-        bottomSheetRef.current?.snapToIndex(0);
-      }, 300);
-      return () => clearTimeout(t);
-    }
-  }, [needsProfile]);
 
   useEffect(() => {
     if (createTripSheetRequested) {
@@ -311,26 +253,35 @@ export default function HomeScreen() {
           flexDirection="row"
           alignItems="center"
           justifyContent="space-between"
-          paddingHorizontal="md"
+          paddingHorizontal="sm"
           paddingVertical="sm"
         >
           <ProfileAvatarButton
             profilePhoto={profile.profilePhotoUri}
             seed={profile.seed}
-            size="lg"
+            size="md"
             accessibilityLabel={profile.accessibilityLabel}
             onPress={() => router.push("/settings")}
           />
-          <Box paddingTop="sm">
-            <Logo size="xl" />
-          </Box>
-          <Button
-            accessibilityLabel="Create a trip"
-            icon={PlusIcon}
-            variant="IconSecondary"
-            layout="iconOnly"
+          <Text variant="logoLx" color="brand500">
+            toggo
+          </Text>
+          <Pressable
             onPress={requestCreateTripSheet}
-          />
+            accessibilityRole="button"
+            accessibilityLabel="Create a trip"
+          >
+            <Box
+              width={HOME_HEADER_BUTTON_SIZE}
+              height={HOME_HEADER_BUTTON_SIZE}
+              borderRadius="sm"
+              backgroundColor="gray50"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Icon icon={PlusIcon} size="iconSm" color="gray900" />
+            </Box>
+          </Pressable>
         </Box>
       </SafeAreaView>
 
@@ -346,15 +297,15 @@ export default function HomeScreen() {
           />
         }
       >
-        <Box flex={1} backgroundColor="white" gap="md">
-          <Box gap="sm">
+        <Box flex={1} backgroundColor="white">
+          <Box>
             {upcomingTrip ? (
               <LinearGradient
                 colors={topSectionGradientColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Box paddingHorizontal="sm" gap="sm">
+                <Box paddingHorizontal="sm" gap="sm" paddingTop="lx">
                   {tripsQueryEnabled && tripsQuery.isPending ? (
                     <SkeletonRect
                       width="full"
@@ -369,12 +320,7 @@ export default function HomeScreen() {
                       refresh={() => tripsQuery.refetch()}
                     />
                   ) : null}
-                  <Text
-                    variant="headingMd"
-                    color="gray900"
-                    paddingBottom="sm"
-                    paddingTop="sm"
-                  >
+                  <Text variant="headingMd" color="gray950" paddingBottom="sm">
                     Upcoming Trips
                   </Text>
                 </Box>
@@ -388,7 +334,7 @@ export default function HomeScreen() {
                     paddingLeft: Layout.spacing.sm,
                     paddingRight: Layout.spacing.sm,
                   }}
-                  style={{ paddingBottom: Layout.spacing.lg }}
+                  style={{ paddingBottom: Layout.spacing.lx }}
                 >
                   <Box flexDirection="row" gap="sm">
                     {upcoming.map((trip) => {
@@ -443,106 +389,50 @@ export default function HomeScreen() {
             )}
           </Box>
 
-          <Box gap="sm">
-            <Box paddingHorizontal="sm" paddingVertical="xxs">
-              <Text variant="headingMd">Past Trips</Text>
-            </Box>
-            <Box paddingHorizontal="sm" gap="sm">
-              {past.length === 0 ? (
-                <Text variant="bodySmDefault" color="gray500">
-                  No past trips yet.
-                </Text>
-              ) : (
-                <Box gap="sm">
-                  {past.map((trip) => {
-                    const id = trip.id;
-                    if (!id) return null;
-                    return (
-                      <PastTripCompactCard
-                        key={id}
-                        trip={trip}
-                        currentUserId={currentUser?.id}
-                        dateLabel={formatTripDateLabel(
-                          trip,
-                          HOME_NULL_DATE_DISPLAY,
-                        )}
-                      />
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
+          <Box paddingHorizontal="sm" gap="sm" paddingVertical="lx">
+            <Text variant="headingMd" color="gray950">
+              Past Trips
+            </Text>
+            {past.length === 0 ? (
+              <Text variant="bodySmDefault" color="gray500">
+                No past trips yet.
+              </Text>
+            ) : (
+              past.map((trip) => {
+                const id = trip.id;
+                if (!id) return null;
+                return (
+                  <PastTripCompactCard
+                    key={id}
+                    trip={trip}
+                    currentUserId={currentUser?.id}
+                    dateLabel={formatTripDateLabel(
+                      trip,
+                      HOME_NULL_DATE_DISPLAY,
+                    )}
+                  />
+                );
+              })
+            )}
           </Box>
 
-          <Box gap="xxs">
-            <Box paddingHorizontal="sm" paddingTop="xs">
-              <Text variant="headingMd">Recommended Trips</Text>
+          <Box gap="xs" paddingVertical="lx">
+            <Box paddingHorizontal="sm">
+              <Text variant="headingMd" color="gray950">
+                Recommended Trips
+              </Text>
             </Box>
-            <Box>
-              <RecommendedTripsRow />
-            </Box>
+            <RecommendedTripsRow />
           </Box>
-
-          <Box gap="xs" paddingHorizontal="md" paddingTop="md">
-            <Button
-              layout="textOnly"
-              label="See all trips"
-              variant="Tertiary"
-              onPress={() => router.push("/trips")}
-            />
-            {__DEV__ ? (
-              <>
-                <Button
-                  layout="textOnly"
-                  label="Map view (dev)"
-                  variant="Tertiary"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/map-view",
-                      params: {
-                        activities: encodeMapViewActivitiesParam(
-                          DEV_MAP_SAMPLE_ACTIVITIES,
-                        ),
-                      },
-                    })
-                  }
-                />
-                <Button
-                  layout="textOnly"
-                  label="Join trip with code (dev)"
-                  variant="Tertiary"
-                  onPress={() => router.push("/join-trip-code")}
-                />
-              </>
-            ) : null}
-          </Box>
+          <SafeAreaView edges={["bottom"]} />
         </Box>
       </ScrollView>
 
-      <BottomSheet
-        ref={bottomSheetRef}
-        snapPoints={["80%", "95%"]}
-        disableClose={needsProfile}
-      >
-        <Box flex={1} padding="lg" gap="lg">
-          <Text variant="bodyMedium" color="gray900">
-            Create a profile
-          </Text>
-          <Box justifyContent="center" alignItems="center">
-            <ImagePicker
-              variant="circular"
-              size={88}
-              value={profilePhoto ?? undefined}
-              onChange={(uri) => setProfilePhoto(uri)}
-              placeholder="Add photo"
-            />
-          </Box>
-          <CompleteProfileForm
-            profilePhotoUri={profilePhoto}
-            onSuccess={handleProfileCreated}
-          />
-        </Box>
-      </BottomSheet>
+      <CreateProfileSheet
+        bottomSheetRef={bottomSheetRef}
+        needsProfile={needsProfile}
+        onSuccess={handleProfileCreated}
+      />
 
       <CreateTripSheet
         bottomSheetRef={createTripSheetRef}
@@ -598,7 +488,7 @@ export default function HomeScreen() {
               }).start(() => setShowToast(false));
             }}
           >
-            <Icon icon={X} size="xs" color="gray500" />
+            <X size={24} />
           </Pressable>
         </AnimatedBox>
       )}

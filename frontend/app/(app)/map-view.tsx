@@ -26,6 +26,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const DEFAULT_ZOOM = 11;
@@ -33,7 +34,6 @@ const DEFAULT_ZOOM = 11;
 const DEFAULT_CENTER: [number, number] = [-122.4194, 37.7749];
 const DEFAULT_LABEL = "San Francisco";
 
-const DETAIL_SHEET_SNAP_POINTS = ["48%", "78%"] as const;
 const ACTIVITY_IMAGE_SIZE = Layout.grid.base * 14;
 
 const DEFAULT_PIN_DETAIL: MapViewActivityForMap = {
@@ -58,12 +58,6 @@ function activityAnnotationId(item: MapViewActivityForMap, index: number) {
   return `activity-pin-${index}-${item.location_lat}-${item.location_lng}`;
 }
 
-function formatActivityLocationLine(activity: MapViewActivityForMap): string {
-  const name = activity.location_name?.trim();
-  if (name) return name;
-  return `${activity.location_lat.toFixed(4)}, ${activity.location_lng.toFixed(4)}`;
-}
-
 function ActivityDetailSheetBody({
   activity,
 }: {
@@ -73,7 +67,7 @@ function ActivityDetailSheetBody({
   const scheduleLine = formatMapViewActivityScheduleLine(activity);
 
   return (
-    <Box padding="lg" gap="md">
+    <Box padding="sm" gap="md">
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         {imageUri ? (
           <Image
@@ -98,8 +92,10 @@ function ActivityDetailSheetBody({
           <Text variant="headingSm" color="gray900" numberOfLines={2}>
             {activity.name}
           </Text>
-          <Text variant="bodySmDefault" color="gray500" numberOfLines={3}>
-            {formatActivityLocationLine(activity)}
+          <Text variant="bodyDefault" color="gray600">
+            {activity.description?.trim()
+              ? activity.description.trim()
+              : "No description for this activity yet."}
           </Text>
           {scheduleLine ? (
             <Box flexDirection="row" alignItems="center" gap="xs">
@@ -115,11 +111,7 @@ function ActivityDetailSheetBody({
           ) : null}
         </Box>
       </Box>
-      <Text variant="bodyDefault" color="gray600">
-        {activity.description?.trim()
-          ? activity.description.trim()
-          : "No description for this activity yet."}
-      </Text>
+      <SafeAreaView edges={["bottom"]} />
     </Box>
   );
 }
@@ -150,10 +142,11 @@ export default function MapViewScreen() {
 
   useEffect(() => {
     if (selectedActivity) {
-      const id = requestAnimationFrame(() => {
-        detailSheetRef.current?.snapToIndex(0);
-      });
-      return () => cancelAnimationFrame(id);
+      // Allow BottomSheetView to complete its layout measurement before expanding
+      const timeout = setTimeout(() => {
+        detailSheetRef.current?.expand();
+      }, 100);
+      return () => clearTimeout(timeout);
     }
     detailSheetRef.current?.close();
   }, [selectedActivity]);
@@ -301,9 +294,9 @@ export default function MapViewScreen() {
         {showActivityDetailSheet ? (
           <BottomSheet
             ref={detailSheetRef}
-            snapPoints={[...DETAIL_SHEET_SNAP_POINTS]}
             initialIndex={-1}
             onChange={handleSheetIndexChange}
+            disableScrollView
           >
             {selectedActivity ? (
               <ActivityDetailSheetBody
