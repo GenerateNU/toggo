@@ -1,9 +1,8 @@
 import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
-import {
-  getAllTripsQueryKey,
-  useGetAllTrips,
-} from "@/api/trips/useGetAllTrips";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
+import { useTripsList } from "@/api/trips/custom/useTripsList";
+import { usePastTripsList } from "@/api/trips/custom/usePastTripsList";
 import { getTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
@@ -12,7 +11,6 @@ import { CreateTripSheet } from "@/app/(app)/components/create-trip-sheet";
 import {
   HOME_HEADER_BUTTON_SIZE,
   HOME_NULL_DATE_DISPLAY,
-  HOME_TRIPS_PAGE_SIZE,
 } from "@/app/(app)/components/home/constants";
 import { HomeUpcomingEmptyCard } from "@/app/(app)/components/home/home-upcoming-empty-card";
 import { PastTripCompactCard } from "@/app/(app)/components/home/past-trip-compact-card";
@@ -42,9 +40,10 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check, PlusIcon, X } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
+  FlatList,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -86,32 +85,37 @@ export default function HomeScreen() {
 
   const needsProfile = !currentUser?.username;
   const tripsQueryEnabled = Boolean(userId && currentUser?.username);
-  const pastTripsCutoffISO = useMemo(() => new Date().toISOString(), []);
+  const pastTripsCutoff = useMemo(() => new Date().toISOString(), []);
 
-  const tripsQuery = useGetAllTrips(
-    { limit: HOME_TRIPS_PAGE_SIZE },
-    {
-      query: {
-        enabled: tripsQueryEnabled,
-      },
-    },
+  const {
+    trips: allTrips,
+    isLoading: isTripsLoading,
+    isError: isTripsError,
+    isRefetching: isRefetchingTrips,
+    fetchMore: fetchMoreUpcoming,
+    refetch: refetchAllTrips,
+  } = useTripsList();
+
+  const {
+    trips: pastTrips,
+    isLoading: isPastTripsLoading,
+    isError: isPastTripsError,
+    isLoadingMore,
+    isRefetching: isRefetchingPast,
+    fetchMore,
+    refetch: refetchPastTrips,
+  } = usePastTripsList(pastTripsCutoff);
+
+  const isRefetching = isRefetchingTrips || isRefetchingPast;
+
+  const refetchTrips = useCallback(() => {
+    refetchAllTrips();
+    refetchPastTrips();
+  }, [refetchAllTrips, refetchPastTrips]);
+
+  const { upcoming } = partitionTripsForHome(
+    tripsQueryEnabled ? allTrips : [],
   );
-
-  const pastTripsQuery = useGetAllTrips(
-    {
-      limit: HOME_TRIPS_PAGE_SIZE,
-      end_date_before: pastTripsCutoffISO,
-    },
-    {
-      query: {
-        enabled: tripsQueryEnabled,
-      },
-    },
-  );
-
-  const allTrips = tripsQuery.data?.items ?? [];
-  const { upcoming } = partitionTripsForHome(allTrips);
-  const pastTrips = pastTripsQuery.data?.items ?? [];
   const upcomingTrip = upcoming[0] ?? null;
   const upcomingTripIds = upcoming
     .map((trip) => trip.id)
@@ -316,10 +320,20 @@ export default function HomeScreen() {
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          const { contentOffset, contentSize, layoutMeasurement } =
+            e.nativeEvent;
+          const distanceToBottom =
+            contentSize.height - contentOffset.y - layoutMeasurement.height;
+          if (distanceToBottom < 300) {
+            fetchMore();
+          }
+        }}
         refreshControl={
           <RefreshControl
-            refreshing={tripsQuery.isFetching && !tripsQuery.isPending}
-            onRefresh={() => tripsQuery.refetch()}
+            refreshing={isRefetching}
+            onRefresh={refetchTrips}
             tintColor={ColorPalette.brand500}
           />
         }
@@ -333,26 +347,28 @@ export default function HomeScreen() {
                 end={{ x: 0, y: 1 }}
               >
                 <Box paddingHorizontal="sm" gap="sm" paddingTop="lx">
-                  {tripsQueryEnabled && tripsQuery.isPending ? (
+                  {tripsQueryEnabled && isTripsLoading ? (
                     <SkeletonRect
                       width="full"
                       borderRadius="lg"
                       style={{ height: 260 }}
                     />
                   ) : null}
-                  {tripsQueryEnabled && tripsQuery.isError ? (
+                  {tripsQueryEnabled && isTripsError ? (
                     <ErrorState
                       title="Couldn’t load trips"
                       description="Pull to refresh or try again in a moment."
-                      refresh={() => tripsQuery.refetch()}
+                      refresh={refetchTrips}
                     />
                   ) : null}
                   <Text variant="headingMd" color="gray950" paddingBottom="sm">
                     Upcoming Trips
                   </Text>
                 </Box>
-                <ScrollView
+                <FlatList
                   horizontal
+                  data={upcoming}
+                  keyExtractor={(trip) => trip.id ?? ""}
                   showsHorizontalScrollIndicator={false}
                   decelerationRate="fast"
                   snapToAlignment="start"
@@ -360,28 +376,26 @@ export default function HomeScreen() {
                   contentContainerStyle={{
                     paddingLeft: Layout.spacing.sm,
                     paddingRight: Layout.spacing.sm,
+                    paddingBottom: Layout.spacing.lx,
+                    gap: upcomingCardGap,
                   }}
-                  style={{ paddingBottom: Layout.spacing.lx }}
-                >
-                  <Box flexDirection="row" gap="sm">
-                    {upcoming.map((trip) => {
-                      const id = trip.id;
-                      if (!id) return null;
-                      return (
-                        <UpcomingTripHeroCard
-                          key={id}
-                          trip={trip}
-                          width={upcomingCardWidth}
-                          currentUserId={currentUser?.id}
-                          dateLabel={formatTripDateLabel(
-                            trip,
-                            HOME_NULL_DATE_DISPLAY,
-                          )}
-                        />
-                      );
-                    })}
-                  </Box>
-                </ScrollView>
+                  onEndReachedThreshold={0.5}
+                  onEndReached={fetchMoreUpcoming}
+                  renderItem={({ item: trip }) => {
+                    if (!trip.id) return null;
+                    return (
+                      <UpcomingTripHeroCard
+                        trip={trip}
+                        width={upcomingCardWidth}
+                        currentUserId={currentUser?.id}
+                        dateLabel={formatTripDateLabel(
+                          trip,
+                          HOME_NULL_DATE_DISPLAY,
+                        )}
+                      />
+                    );
+                  }}
+                />
               </LinearGradient>
             ) : (
               <LinearGradient
@@ -395,11 +409,11 @@ export default function HomeScreen() {
                   paddingBottom="lg"
                   gap="sm"
                 >
-                  {tripsQueryEnabled && tripsQuery.isError ? (
+                  {tripsQueryEnabled && isTripsError ? (
                     <ErrorState
-                      title="Couldn't load trips"
+                      title="Couldn’t load trips"
                       description="Pull to refresh or try again in a moment."
-                      refresh={() => tripsQuery.refetch()}
+                      refresh={refetchTrips}
                     />
                   ) : null}
                   <Box gap="sm">
@@ -421,16 +435,16 @@ export default function HomeScreen() {
               <Text variant="headingMd">Past Trips</Text>
             </Box>
             <Box paddingHorizontal="sm" gap="sm">
-              {tripsQueryEnabled && pastTripsQuery.isPending ? (
+              {tripsQueryEnabled && isPastTripsLoading ? (
                 <Box gap="sm">
                   <SkeletonRect width="full" style={{ height: 96 }} />
                   <SkeletonRect width="full" style={{ height: 96 }} />
                 </Box>
-              ) : tripsQueryEnabled && pastTripsQuery.isError ? (
+              ) : tripsQueryEnabled && isPastTripsError ? (
                 <ErrorState
-                  title="Couldn't load past trips"
+                  title="Couldn’t load past trips"
                   description="Pull to refresh or try again in a moment."
-                  refresh={() => pastTripsQuery.refetch()}
+                  refresh={refetchPastTrips}
                 />
               ) : pastTrips.length === 0 ? (
                 <Text variant="bodySmDefault" color="gray500">
@@ -453,6 +467,12 @@ export default function HomeScreen() {
                       />
                     );
                   })}
+                  {isLoadingMore ? (
+                    <Box gap="sm">
+                      <SkeletonRect width="full" style={{ height: 96 }} />
+                      <SkeletonRect width="full" style={{ height: 96 }} />
+                    </Box>
+                  ) : null}
                 </Box>
               )}
             </Box>
