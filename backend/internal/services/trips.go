@@ -17,6 +17,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
+	"golang.org/x/sync/errgroup"
 )
 
 type TripServiceInterface interface {
@@ -172,21 +173,81 @@ func (s *TripService) GetTripsWithCursor(ctx context.Context, userID uuid.UUID, 
 		return nil, err
 	}
 
-	fileURLMap := pagination.FetchFileURLs(ctx, s.fileService, tripsData, func(item *models.TripDatabaseResponse) *string {
-		return item.CoverImageKey
-	}, models.ImageSizeMedium)
-	tripResponses := s.convertToAPITrips(tripsData, fileURLMap)
+	tripIDs := make([]uuid.UUID, 0, len(tripsData))
+	for _, t := range tripsData {
+		tripIDs = append(tripIDs, t.TripID)
+	}
+
+	var coverURLMap map[string]string
+	var memberStatsMap map[uuid.UUID]*models.TripMemberStats
+
+	g, gctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		coverURLMap = pagination.FetchFileURLs(gctx, s.fileService, tripsData, func(item *models.TripDatabaseResponse) *string {
+			return item.CoverImageKey
+		}, models.ImageSizeMedium)
+		return nil
+	})
+	g.Go(func() error {
+		var err error
+		memberStatsMap, err = s.Membership.GetMemberStatsForTrips(gctx, tripIDs)
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	memberPreviewRows := make([]models.TripMemberPreviewDB, 0, len(tripsData)*3)
+	for _, tripID := range tripIDs {
+		stats := memberStatsMap[tripID]
+		if stats == nil {
+			continue
+		}
+		memberPreviewRows = append(memberPreviewRows, stats.Previews...)
+	}
+	memberPicURLMap := pagination.FetchFileURLs(ctx, s.fileService, memberPreviewRows, func(item models.TripMemberPreviewDB) *string {
+		return item.ProfilePictureKey
+	}, models.ImageSizeSmall)
+
+	tripResponses := s.convertToAPITrips(tripsData, coverURLMap, memberStatsMap, memberPicURLMap)
 
 	return s.buildTripPageResult(tripResponses, nextCursor, limit)
 }
 
-func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse, fileURLMap map[string]string) []*models.TripAPIResponse {
+func (s *TripService) convertToAPITrips(
+	tripsData []*models.TripDatabaseResponse,
+	coverURLMap map[string]string,
+	memberStatsMap map[uuid.UUID]*models.TripMemberStats,
+	memberPicURLMap map[string]string,
+) []*models.TripAPIResponse {
 	tripResponses := make([]*models.TripAPIResponse, 0, len(tripsData))
 	for _, tripData := range tripsData {
 		var coverImageURL *string
 		if tripData.CoverImageKey != nil && *tripData.CoverImageKey != "" {
-			if url, exists := fileURLMap[*tripData.CoverImageKey]; exists {
+			if url, exists := coverURLMap[*tripData.CoverImageKey]; exists {
 				coverImageURL = &url
+			}
+		}
+
+		memberCount := 0
+		memberPreviews := []models.CommenterPreview{}
+		if stats := memberStatsMap[tripData.TripID]; stats != nil {
+			memberCount = stats.Count
+			if len(stats.Previews) > 0 {
+				memberPreviews = make([]models.CommenterPreview, 0, len(stats.Previews))
+				for _, m := range stats.Previews {
+					preview := models.CommenterPreview{
+						UserID:   m.UserID,
+						Name:     m.Name,
+						Username: m.Username,
+					}
+					if m.ProfilePictureKey != nil {
+						if url, ok := memberPicURLMap[*m.ProfilePictureKey]; ok {
+							preview.ProfilePictureURL = &url
+						}
+					}
+					memberPreviews = append(memberPreviews, preview)
+				}
 			}
 		}
 
@@ -202,6 +263,8 @@ func (s *TripService) convertToAPITrips(tripsData []*models.TripDatabaseResponse
 			StartDate:     tripData.StartDate,
 			EndDate:       tripData.EndDate,
 			Location:      tripData.Location,
+			MemberCount:   memberCount,
+			MemberPreviews: memberPreviews,
 			CreatedAt:     tripData.CreatedAt,
 			UpdatedAt:     tripData.UpdatedAt,
 		})
