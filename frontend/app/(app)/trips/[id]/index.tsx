@@ -62,13 +62,10 @@ import {
 
 const INITIAL_TAB: TabKey = "new";
 const HERO_HEIGHT = 210;
-const SHEET_OVERLAP = 24;
+const SHEET_OVERLAP = 36;
 const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
-const HEADER_FADE_DURATION = 200;
+const HEADER_FADE_DURATION = 100;
 const FIXED_HEADER_HEIGHT = 44;
-const HERO_PARALLAX_UP_SHIFT = HERO_HEIGHT * 0.35;
-const HERO_PULL_DISTANCE = 120;
-const HERO_PULL_SCALE = 1.08;
 const DEFAULT_TABS = [
   "new",
   "itinerary",
@@ -304,7 +301,7 @@ export default function Trip() {
     return null;
   }
 
-  const titleScrollThreshold = CONTENT_CARD_TOP - insets.top;
+  const titleScrollThreshold = CONTENT_CARD_TOP - 12;
 
   const handleParentScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: headerScrollY } } }],
@@ -329,14 +326,6 @@ export default function Trip() {
   );
 
   const headerOpacity = headerAnim;
-  const navOverlayOpacity = headerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
-  const inFlowHeaderOpacity = headerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
   const safeAreaOverlayOpacity = headerAnim;
   const heroScale = headerScrollY.interpolate({
     inputRange: [-HERO_HEIGHT, 0],
@@ -374,63 +363,7 @@ export default function Trip() {
           onScroll={handleParentScroll}
           scrollEventThrottle={16}
         >
-          <View style={styles.heroSection}>
-            <Animated.View
-              style={[
-                styles.heroImageLayer,
-                {
-                  transform: [
-                    { translateY: heroParallaxTranslateY },
-                    { scale: heroParallaxScale },
-                  ],
-                },
-              ]}
-            >
-              <TripHeader coverImageUrl={trip?.cover_image_url} />
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.topNavigation,
-                {
-                  top: insets.top + Layout.spacing.xs,
-                  opacity: navOverlayOpacity,
-                },
-              ]}
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                paddingHorizontal="sm"
-                paddingVertical="xs"
-              >
-                <BackButton hasBackground />
-
-                <Pressable
-                  onPress={() =>
-                    router.push(`/trips/${tripID}/search-location` as any)
-                  }
-                  style={styles.mapButton}
-                  accessibilityRole="button"
-                  accessibilityLabel="View map"
-                >
-                  <Map size={20} color={ColorPalette.gray950} />
-                  <Text variant="bodyMedium">Map</Text>
-                </Pressable>
-              </Box>
-            </Animated.View>
-          </View>
-
-          <Animated.View
-            onLayout={(event) => {
-              const nextY = event.nativeEvent.layout.y;
-              setSheetTopActivationY((previous) =>
-                previous === nextY ? previous : nextY,
-              );
-            }}
-            style={{ opacity: inFlowHeaderOpacity }}
-          >
-          <Animated.View style={{ opacity: inFlowHeaderOpacity }}>
+          <View>
             <Box style={styles.sheetTop} backgroundColor="white">
               <TripMetadata
                 tripName={trip?.name}
@@ -454,7 +387,7 @@ export default function Trip() {
                 />
               </Box>
             </Box>
-          </Animated.View>
+          </View>
           <Box
             flex={1}
             paddingHorizontal="sm"
@@ -523,11 +456,11 @@ export default function Trip() {
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
             {!DEFAULT_TABS.includes(activeTab) && (
-                <EmptyState
-                  title="Nothing here yet"
-                  description="Post notes, photos, videos, and links."
-                />
-              )}
+              <EmptyState
+                title="Nothing here yet"
+                description="Post notes, photos, videos, and links."
+              />
+            )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -568,13 +501,12 @@ export default function Trip() {
         </Animated.View>
       )}
 
-      {/* Nav buttons — absolute over hero, fade out when fixed header appears */}
+      {/* Nav buttons — absolute over hero, always visible behind the fixed header */}
       <Animated.View
         style={[
           styles.topNavigation,
           {
             top: insets.top + Layout.spacing.xs,
-            opacity: navOverlayOpacity,
           },
         ]}
       >
