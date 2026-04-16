@@ -40,7 +40,7 @@ export function ConfirmSheet({
   return (
     <BottomSheet
       ref={sheetRef}
-      snapPoints={[280]}
+      snapPoints={[320]}
       initialIndex={-1}
       onChange={(index) => {
         if (index < 0) onCancel();

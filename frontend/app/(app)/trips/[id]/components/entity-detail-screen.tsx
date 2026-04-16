@@ -3,6 +3,7 @@ import { BottomSheet, Box, DateRangePicker, Text, useToast } from "@/design-syst
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import type { DateRange } from "@/design-system/primitives/date-picker";
+import { PricePicker } from "@/design-system/primitives/price-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
@@ -319,6 +320,17 @@ export function EntityDetailScreen({
       </ScrollView>
 
       {/* ─── Overlays ─────────────────────────────────────────────────── */}
+
+      <PricePicker
+  visible={isPricePickerVisible}
+  value={price ?? undefined}
+  onConfirm={async (p) => {
+    onPriceChange(p);
+    setIsPricePickerVisible(false);
+    await onSavePrice(p);
+  }}
+  onClose={() => setIsPricePickerVisible(false)}
+/>
 
       <DateRangePicker
         visible={isDatePickerVisible}
