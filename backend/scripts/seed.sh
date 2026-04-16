@@ -314,17 +314,13 @@ seed_trip_santorini() {
     add_member_sql "$PRIYA_ID"  "$trip_id" false 1800 3500
     ok "Members added (Carlos + Priya, not you)"
 
-    # Custom categories
-    api_post "$MAYA_JWT" "/trips/$trip_id/categories" \
-        '{"name":"beaches","label":"Beaches","icon":"🏖️"}' >/dev/null
+    # Categories
     api_post "$MAYA_JWT" "/trips/$trip_id/categories" \
         '{"name":"food","label":"Food & Wine","icon":"🍷"}' >/dev/null
-    api_post "$MAYA_JWT" "/trips/$trip_id/categories" \
-        '{"name":"nightlife","label":"Nightlife","icon":"🌙"}' >/dev/null
     ok "Categories created"
 
     # Activities
-    local a1 a2 a3 a4 a5 a6
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10
     resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
         "name": "Sunset at Oia",
         "description": "Watch the famous Santorini sunset from the cliffs of Oia village.",
@@ -407,26 +403,83 @@ seed_trip_santorini() {
     }')
     check_resp "$resp" "Activity: Red Beach"
     a6=$(echo "$resp" | jq -r '.id')
-    ok "6 activities created"
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Canaves Oia Epitome Suites",
+        "description": "Luxury cave suite carved into the caldera cliff with private plunge pool and panoramic sea views.",
+        "location_name": "Oia, Santorini",
+        "location_lat": 36.4618,
+        "location_lng": 25.3756,
+        "estimated_price": 450,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-hotel/400/400",
+        "dates": [{"start":"2026-01-15","end":"2026-01-22"}]
+    }')
+    check_resp "$resp" "Activity: Hotel"
+    a7=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Athens to Santorini Ferry",
+        "description": "High-speed ferry from Piraeus Port to Santorini (Athinios). Book in advance – fills up fast in summer.",
+        "location_name": "Athinios Port, Santorini",
+        "location_lat": 36.3887,
+        "location_lng": 25.4387,
+        "estimated_price": 60,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-ferry/400/400",
+        "dates": [{"start":"2026-01-15","end":"2026-01-15"},{"start":"2026-01-22","end":"2026-01-22"}]
+    }')
+    check_resp "$resp" "Activity: Ferry"
+    a8=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Blue Domes Suite, Imerovigli",
+        "description": "Boutique cave hotel in Imerovigli, the highest village on the caldera rim. Shared pool and stunning sunrise views.",
+        "location_name": "Imerovigli, Santorini",
+        "location_lat": 36.4322,
+        "location_lng": 25.4252,
+        "estimated_price": 120,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-suite/400/400",
+        "dates": [{"start":"2026-01-15","end":"2026-01-22"}]
+    }')
+    check_resp "$resp" "Activity: Hotel 2"
+    a9=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "ATV Island Loop",
+        "description": "Rent ATVs and explore the island at your own pace – Red Beach, Ancient Akrotiri, and the black sand beaches.",
+        "location_name": "ATV Rental Depot, Fira",
+        "location_lat": 36.4163,
+        "location_lng": 25.4315,
+        "estimated_price": 40,
+        "thumbnail_url": "https://picsum.photos/seed/santorini-atv/400/400",
+        "dates": [{"start":"2026-01-17","end":"2026-01-17"},{"start":"2026-01-20","end":"2026-01-20"}]
+    }')
+    check_resp "$resp" "Activity: ATV"
+    a10=$(echo "$resp" | jq -r '.id')
+    ok "10 activities created"
 
     # Assign categories to activities
-    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a1/categories/nightlife" '{}' >/dev/null
-    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a2/categories/beaches"  '{}' >/dev/null
-    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a4/categories/food"     '{}' >/dev/null
-    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a6/categories/beaches"  '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a1/categories/activities"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a2/categories/activities"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a3/categories/activities"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a4/categories/food"           '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a5/categories/activities"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a6/categories/activities"     '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a7/categories/housing"        '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a8/categories/transportation" '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a9/categories/housing"        '{}' >/dev/null
+    api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a10/categories/transportation" '{}' >/dev/null
 
     # RSVPs
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
+    # a3 (Akrotiri) and a9/a10 intentionally have no RSVPs
     ok "RSVPs recorded"
 
     # Polls
@@ -508,6 +561,18 @@ seed_trip_santorini() {
     api_post "$PRIYA_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a4\",\"content\":\"The Assyrtiko wine from here is incredible – already tried it at a restaurant back home.\"}" >/dev/null
 
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a7\",\"content\":\"450 a night is steep – is this within budget? Looks absolutely unreal though.\"}" >/dev/null
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a7\",\"content\":\"January is off-season so maybe they'll do a discount if we contact them directly?\"}" >/dev/null
+
+    api_post "$MAYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a10\",\"content\":\"ATVs are such a fun way to see the island. No traffic, no tour buses!\"}" >/dev/null
+
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a10\",\"content\":\"I'm in. Do we need an international driving licence?\"}" >/dev/null
+
     # Reactions on a comment
     api_post "$CARLOS_JWT" "/comments/$c1/reactions" '{"emoji":"❤️"}'  >/dev/null
     api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"🔥"}'  >/dev/null
@@ -547,16 +612,12 @@ seed_trip_tokyo() {
     add_member_sql "$JAMES_ID" "$trip_id" false 2500 5000
     ok "Members added (Priya + James, not you)"
 
-    # Custom categories
+    # Categories
     api_post "$CARLOS_JWT" "/trips/$trip_id/categories" \
         '{"name":"food","label":"Food & Ramen","icon":"🍜"}' >/dev/null
-    api_post "$CARLOS_JWT" "/trips/$trip_id/categories" \
-        '{"name":"tech","label":"Tech & Anime","icon":"🎮"}' >/dev/null
-    api_post "$CARLOS_JWT" "/trips/$trip_id/categories" \
-        '{"name":"day_trips","label":"Day Trips","icon":"🗻"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5 a6 a7
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11
     resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
         "name": "Shibuya Crossing & Scramble",
         "description": "Experience the world-famous pedestrian scramble and explore Shibuya Centre-gai.",
@@ -653,14 +714,72 @@ seed_trip_tokyo() {
     }')
     check_resp "$resp" "Activity: Sumida Fireworks"
     a7=$(echo "$resp" | jq -r '.id')
-    ok "7 activities created"
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Shinjuku Granbell Hotel",
+        "description": "Boutique hotel in the heart of Shinjuku, walking distance to restaurants and nightlife.",
+        "location_name": "Shinjuku, Tokyo",
+        "location_lat": 35.6940,
+        "location_lng": 139.7030,
+        "estimated_price": 180,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-hotel/400/400",
+        "dates": [{"start":"2026-07-10","end":"2026-07-20"}]
+    }')
+    check_resp "$resp" "Activity: Hotel"
+    a8=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Narita Express (N'\''EX)",
+        "description": "Direct train from Narita Airport to Shinjuku. Buy tickets in advance at the airport.",
+        "location_name": "Shinjuku Station, Tokyo",
+        "location_lat": 35.6896,
+        "location_lng": 139.7006,
+        "estimated_price": 30,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-nex/400/400",
+        "dates": [{"start":"2026-07-10","end":"2026-07-10"},{"start":"2026-07-20","end":"2026-07-20"}]
+    }')
+    check_resp "$resp" "Activity: N'EX train"
+    a9=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Koenji Guesthouse",
+        "description": "Friendly guesthouse in bohemian Koenji, one of Tokyo'\''s most characterful neighbourhoods. Shared kitchen and rooftop garden.",
+        "location_name": "Koenji, Suginami, Tokyo",
+        "location_lat": 35.7055,
+        "location_lng": 139.6492,
+        "estimated_price": 55,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-guesthouse/400/400",
+        "dates": [{"start":"2026-07-10","end":"2026-07-20"}]
+    }')
+    check_resp "$resp" "Activity: Guesthouse"
+    a10=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "IC Card (Suica / Pasmo)",
+        "description": "Rechargeable contactless card for all Tokyo trains, buses, and convenience stores. Buy at any major station on arrival.",
+        "location_name": "Tokyo Station",
+        "location_lat": 35.6812,
+        "location_lng": 139.7671,
+        "estimated_price": 15,
+        "thumbnail_url": "https://picsum.photos/seed/tokyo-suica/400/400",
+        "dates": [{"start":"2026-07-10","end":"2026-07-10"}]
+    }')
+    check_resp "$resp" "Activity: IC Card"
+    a11=$(echo "$resp" | jq -r '.id')
+    ok "11 activities created"
 
     # Category assignments
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/categories/activities" '{}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/categories/activities" '{}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a3/categories/food"       '{}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/categories/tech"       '{}' >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/categories/day_trips"  '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/categories/activities"      '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/categories/activities"      '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a3/categories/food"            '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a4/categories/activities"      '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/categories/activities"      '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a6/categories/food"            '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a7/categories/activities"      '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a8/categories/housing"         '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a9/categories/transportation"  '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a10/categories/housing"        '{}' >/dev/null
+    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a11/categories/transportation" '{}' >/dev/null
 
     # RSVPs
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
@@ -668,15 +787,14 @@ seed_trip_tokyo() {
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a5/rsvps" '{"status":"no"}'    >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
+    # a6 (Golden Gai), a8/a9/a10/a11 intentionally have no RSVPs
     ok "RSVPs recorded"
 
     # Rank poll – neighbourhood
@@ -771,6 +889,18 @@ seed_trip_tokyo() {
     api_post "$CARLOS_JWT" "/comments" \
         "{\"trip_id\":\"$trip_id\",\"entity_type\":\"pitch\",\"entity_id\":\"$p2\",\"content\":\"Kyoto in July sounds amazing – the bamboo forest would be so green.\"}" >/dev/null
 
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a8\",\"content\":\"Shinjuku location is perfect – station is right there and Golden Gai is a 5 min walk.\"}" >/dev/null
+
+    api_post "$JAMES_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a8\",\"content\":\"I'll book this one – do they have a 10-night rate?\"}" >/dev/null
+
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a11\",\"content\":\"Buy the Suica before you exit the gate – saves so much time vs buying individual tickets.\"}" >/dev/null
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a11\",\"content\":\"You can use it at 7-Eleven too. Super handy.\"}" >/dev/null
+
     api_post "$PRIYA_JWT" "/comments/$c1/reactions" '{"emoji":"⏰"}'  >/dev/null
     api_post "$JAMES_JWT" "/comments/$c1/reactions" '{"emoji":"😱"}' >/dev/null
     ok "Comments + reactions seeded"
@@ -808,16 +938,12 @@ seed_trip_nyc() {
     add_member_sql "$JAMES_ID" "$trip_id" false 600 1500
     ok "Members added (Priya + James)"
 
-    # Custom categories
-    api_post "$my_jwt" "/trips/$trip_id/categories" \
-        '{"name":"art","label":"Art & Culture","icon":"🎨"}' >/dev/null
+    # Categories
     api_post "$my_jwt" "/trips/$trip_id/categories" \
         '{"name":"food","label":"Food & Drinks","icon":"🍕"}' >/dev/null
-    api_post "$my_jwt" "/trips/$trip_id/categories" \
-        '{"name":"sightseeing","label":"Sightseeing","icon":"🗽"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5 a6 a7 a8
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Central Park Morning Walk",
         "description": "Start the day with a walk through the park – Bethesda Fountain, the Mall, and the Lake.",
@@ -928,41 +1054,93 @@ seed_trip_nyc() {
     }')
     check_resp "$resp" "Activity: Russ & Daughters"
     a8=$(echo "$resp" | jq -r '.id')
-    ok "8 activities created"
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "Arlo Midtown",
+        "description": "Stylish hotel in the heart of Midtown, walking distance to Times Square, MoMA, and Central Park.",
+        "location_name": "Arlo Midtown, W 38th St, Manhattan",
+        "location_lat": 40.7549,
+        "location_lng": -73.9840,
+        "estimated_price": 220,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-hotel/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-03-02"}]
+    }')
+    check_resp "$resp" "Activity: Hotel"
+    a9=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "NYC Subway & AirTrain",
+        "description": "Get an unlimited MetroCard for the weekend + AirTrain from JFK. Easiest way to get around the city.",
+        "location_name": "JFK Airport AirTrain Station",
+        "location_lat": 40.6413,
+        "location_lng": -73.7781,
+        "estimated_price": 35,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-subway/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-02-28"},{"start":"2026-03-02","end":"2026-03-02"}]
+    }')
+    check_resp "$resp" "Activity: Subway"
+    a10=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$PRIYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Ace Hotel New York",
+        "description": "Iconic Ace Hotel in NoMad with a buzzing lobby café. Book a standard double – great location and solid value.",
+        "location_name": "Ace Hotel, W 29th St, Manhattan",
+        "location_lat": 40.7458,
+        "location_lng": -73.9896,
+        "estimated_price": 195,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-acehotel/400/400",
+        "dates": [{"start":"2026-02-28","end":"2026-03-02"}]
+    }')
+    check_resp "$resp" "Activity: Hotel 2"
+    a11=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$JAMES_JWT" "/trips/$trip_id/activities" '{
+        "name": "Citi Bike Day Pass",
+        "description": "Unlimited 30-min rides for 24 hours. Great for getting between Brooklyn Bridge, the High Line, and Chelsea Market.",
+        "location_name": "Citi Bike Station, Manhattan",
+        "location_lat": 40.7484,
+        "location_lng": -73.9967,
+        "estimated_price": 20,
+        "thumbnail_url": "https://picsum.photos/seed/nyc-citibike/400/400",
+        "dates": [{"start":"2026-03-01","end":"2026-03-01"}]
+    }')
+    check_resp "$resp" "Activity: Citi Bike"
+    a12=$(echo "$resp" | jq -r '.id')
+    ok "12 activities created"
 
     # Category assignments
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a1/categories/sightseeing" '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a2/categories/art"         '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a3/categories/sightseeing" '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a4/categories/art"         '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a6/categories/sightseeing" '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a7/categories/art"         '{}' >/dev/null
-    api_put "$my_jwt" "/trips/$trip_id/activities/$a8/categories/food"        '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a1/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a2/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a3/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a4/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a5/categories/food"             '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a6/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a7/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a8/categories/food"             '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a9/categories/housing"          '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a10/categories/transportation"  '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a11/categories/housing"         '{}' >/dev/null
+    api_put "$my_jwt" "/trips/$trip_id/activities/$a12/categories/transportation"  '{}' >/dev/null
 
     # RSVPs
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a2/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a2/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$PRIYA_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a1/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a3/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a4/rsvps" '{"status":"yes"}'   >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a5/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a6/rsvps" '{"status":"maybe"}' >/dev/null
     api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a7/rsvps" '{"status":"yes"}'   >/dev/null
-    api_put "$JAMES_JWT" "/trips/$trip_id/activities/$a8/rsvps" '{"status":"yes"}'   >/dev/null
+    # a4 (High Line), a8 (Russ & Daughters), a9/a10/a11/a12 intentionally have no RSVPs
     ok "RSVPs recorded"
 
     # Polls
@@ -1053,6 +1231,19 @@ seed_trip_nyc() {
     api_post "$JAMES_JWT"  "/comments/$c1/reactions" '{"emoji":"👍"}' >/dev/null
     api_post "$PRIYA_JWT"  "/comments/$c1/reactions" '{"emoji":"❤️"}' >/dev/null
     api_post "$my_jwt"     "/comments/$c2/reactions" '{"emoji":"🍕"}' >/dev/null
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a9\",\"content\":\"Midtown is so central. I'd try to grab a room on a high floor for the city views.\"}" >/dev/null
+
+    api_post "$JAMES_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a9\",\"content\":\"The rooftop bar here is worth it just for the Empire State Building view.\"}" >/dev/null
+
+    api_post "$my_jwt" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a12\",\"content\":\"Citi Bike is perfect for the High Line + Meatpacking loop. Beats the subway for that stretch.\"}" >/dev/null
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a12\",\"content\":\"Helmets are optional but bring one if you're not used to NYC traffic!\"}" >/dev/null
+
     ok "Comments + reactions seeded"
 
     create_invite_sql "$trip_id" "$my_id" "NYC25WEEKEND" >/dev/null
@@ -1090,18 +1281,12 @@ seed_trip_bali() {
     add_member_sql "$JAMES_ID"  "$trip_id" false 1800 3200
     ok "Members added (Maya, Carlos, Priya, James)"
 
-    # Custom categories
-    api_post "$my_jwt" "/trips/$trip_id/categories" \
-        '{"name":"wellness","label":"Wellness & Spa","icon":"🧘"}' >/dev/null
-    api_post "$my_jwt" "/trips/$trip_id/categories" \
-        '{"name":"culture","label":"Culture & Temples","icon":"🛕"}' >/dev/null
-    api_post "$my_jwt" "/trips/$trip_id/categories" \
-        '{"name":"adventure","label":"Adventure","icon":"🌊"}' >/dev/null
+    # Categories
     api_post "$my_jwt" "/trips/$trip_id/categories" \
         '{"name":"food","label":"Food & Cooking","icon":"🍛"}' >/dev/null
 
     # Activities
-    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10
+    local a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14
     resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
         "name": "Tanah Lot Temple at Sunset",
         "description": "Watch the sunset from the iconic sea temple perched on a rocky outcrop. Arrive 1 hr before sunset for best views.",
@@ -1240,19 +1425,75 @@ seed_trip_bali() {
     }')
     check_resp "$resp" "Activity: Nusa Penida"
     a10=$(echo "$resp" | jq -r '.id')
-    ok "10 activities created"
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "Alaya Resort Ubud",
+        "description": "Boutique resort surrounded by rice fields in Ubud. Private pool villas, jungle views, and daily breakfast included.",
+        "location_name": "Alaya Resort, Ubud",
+        "location_lat": -8.5069,
+        "location_lng": 115.2623,
+        "estimated_price": 130,
+        "thumbnail_url": "https://picsum.photos/seed/bali-resort/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-15"}]
+    }')
+    check_resp "$resp" "Activity: Resort"
+    a11=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$my_jwt" "/trips/$trip_id/activities" '{
+        "name": "Airport Transfer & Scooter Rental",
+        "description": "Private car from Ngurah Rai Airport to Ubud (1.5 hrs) + scooter rental for the week. Book transfers in advance.",
+        "location_name": "Ngurah Rai International Airport, Bali",
+        "location_lat": -8.7467,
+        "location_lng": 115.1671,
+        "estimated_price": 25,
+        "thumbnail_url": "https://picsum.photos/seed/bali-scooter/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-05"},{"start":"2026-12-15","end":"2026-12-15"}]
+    }')
+    check_resp "$resp" "Activity: Airport Transfer"
+    a12=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$MAYA_JWT" "/trips/$trip_id/activities" '{
+        "name": "Canggu Beach House",
+        "description": "Shared villa with private rooms in Canggu surf town. Pool, open-air kitchen, and 5 min walk to Echo Beach.",
+        "location_name": "Canggu, Badung",
+        "location_lat": -8.6478,
+        "location_lng": 115.1385,
+        "estimated_price": 65,
+        "thumbnail_url": "https://picsum.photos/seed/bali-villa/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-15"}]
+    }')
+    check_resp "$resp" "Activity: Villa"
+    a13=$(echo "$resp" | jq -r '.id')
+
+    resp=$(api_post "$CARLOS_JWT" "/trips/$trip_id/activities" '{
+        "name": "Gojek Rides App",
+        "description": "Download Gojek and use GoRide (motorbike) or GoCar for everything. Far cheaper than tourist taxis and works island-wide.",
+        "location_name": "Bali, Indonesia",
+        "location_lat": -8.6705,
+        "location_lng": 115.2126,
+        "estimated_price": 5,
+        "thumbnail_url": "https://picsum.photos/seed/bali-gojek/400/400",
+        "dates": [{"start":"2026-12-05","end":"2026-12-15"}]
+    }')
+    check_resp "$resp" "Activity: Gojek"
+    a14=$(echo "$resp" | jq -r '.id')
+    ok "14 activities created"
 
     # Category assignments
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/categories/culture"     '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a2/categories/adventure"   '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/categories/wellness"    '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/categories/adventure"   '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/categories/food"        '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/categories/culture"     '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/categories/culture"     '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/categories/adventure"   '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a9/categories/food"        '{}' >/dev/null
-    api_put "$my_jwt"    "/trips/$trip_id/activities/$a10/categories/adventure"  '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a2/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a3/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a4/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a5/categories/food"             '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a6/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a7/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a8/categories/activities"       '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a9/categories/food"             '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a10/categories/activities"      '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a11/categories/housing"         '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a12/categories/transportation"  '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a13/categories/housing"         '{}' >/dev/null
+    api_put "$my_jwt"    "/trips/$trip_id/activities/$a14/categories/transportation"  '{}' >/dev/null
 
     # RSVPs – all members respond to core activities
     for actor_jwt in "$my_jwt" "$MAYA_JWT" "$CARLOS_JWT" "$PRIYA_JWT" "$JAMES_JWT"; do
@@ -1273,10 +1514,7 @@ seed_trip_bali() {
     api_put "$my_jwt"     "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a7/rsvps"  '{"status":"yes"}'   >/dev/null
-    api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
-    api_put "$JAMES_JWT"  "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
-    api_put "$my_jwt"     "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"yes"}'   >/dev/null
-    api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a8/rsvps"  '{"status":"maybe"}' >/dev/null
+    # a8 (Sekumpul Waterfall) intentionally has no RSVPs
     api_put "$PRIYA_JWT"  "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
     api_put "$MAYA_JWT"   "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
     api_put "$my_jwt"     "/trips/$trip_id/activities/$a9/rsvps"  '{"status":"yes"}'   >/dev/null
@@ -1474,6 +1712,19 @@ seed_trip_bali() {
     api_post "$PRIYA_JWT"  "/comments/$c3/reactions" '{"emoji":"🔥"}' >/dev/null
     api_post "$JAMES_JWT"  "/comments/$c3/reactions" '{"emoji":"❤️"}' >/dev/null
     api_post "$JAMES_JWT"  "/comments/$c4/reactions" '{"emoji":"👍"}' >/dev/null
+
+    api_post "$CARLOS_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a11\",\"content\":\"Pool villas with rice field views and breakfast – this is the one. Let's book it.\"}" >/dev/null
+
+    api_post "$PRIYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a11\",\"content\":\"Does the rate change if we take the whole villa for 10 nights? Worth asking them directly.\"}" >/dev/null
+
+    api_post "$MAYA_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a14\",\"content\":\"Gojek is non-negotiable in Bali. Way better than tourist taxis. Get verified before you land.\"}" >/dev/null
+
+    api_post "$JAMES_JWT" "/comments" \
+        "{\"trip_id\":\"$trip_id\",\"entity_type\":\"activity\",\"entity_id\":\"$a14\",\"content\":\"Top up your Indonesian number with data too so the app works everywhere.\"}" >/dev/null
+
     ok "Comments + reactions seeded"
 
     create_invite_sql "$trip_id" "$my_id" "BALI25" >/dev/null

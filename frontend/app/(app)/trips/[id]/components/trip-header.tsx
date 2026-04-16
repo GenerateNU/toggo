@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 
 type TripHeaderProps = {
   coverImageUrl?: string;
+  absolute?: boolean;
 };
 
 export function TripHeader({ coverImageUrl }: TripHeaderProps) {

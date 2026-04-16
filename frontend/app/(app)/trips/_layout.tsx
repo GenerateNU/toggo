@@ -20,15 +20,6 @@ const Layout = () => {
       }}
     >
       <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-          headerTitle: "",
-          headerTransparent: true,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
         name="[id]"
         options={{
           headerShown: false,

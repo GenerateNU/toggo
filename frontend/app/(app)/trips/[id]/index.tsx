@@ -397,9 +397,9 @@ export default function Trip() {
           >
             {isLoading ? (
               <Box gap="sm">
-                <SkeletonRect width="full" style={{ height: 120 }} />
-                <SkeletonRect width="full" style={{ height: 120 }} />
-                <SkeletonRect width="threeQuarter" style={{ height: 90 }} />
+                <SkeletonRect width="full" borderRadius="md" style={{ height: 120 }} />
+                <SkeletonRect width="full" borderRadius="md" style={{ height: 120 }} />
+                <SkeletonRect width="threeQuarter" borderRadius="md" style={{ height: 90 }} />
               </Box>
             ) : null}
             {!isLoading && isError ? (
@@ -440,23 +440,19 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-            {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "settings" && (
-                <Box
-                  flex={1}
-                  alignItems="flex-start"
-                  justifyContent="flex-start"
-                >
-                  <Text variant="bodySmDefault" color="gray400">
-                    Post notes, photos, videos, and links
-                  </Text>
-                </Box>
-              )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
+            {activeTab !== "new" &&
+              activeTab !== "itinerary" &&
+              activeTab !== "polls" &&
+              activeTab !== "activities" &&
+              activeTab !== "settings" && (
+                <EmptyState
+                  title="Nothing here yet"
+                  description="Post notes, photos, videos, and links."
+                />
+              )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -466,6 +462,7 @@ export default function Trip() {
       {!trip?.cover_image_url && (
         <View style={styles.hiddenPicker}>
           <ImagePicker
+            
             ref={coverPickerRef}
             variant="rectangular"
             width="100%"
