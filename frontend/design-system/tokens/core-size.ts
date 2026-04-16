@@ -5,6 +5,7 @@ export const CoreSize = {
   sm: 24,
   md: 32,
   lg: 40,
+  tap: 44,
   xl: 48,
   xxl: 56,
   xxxl: 64,

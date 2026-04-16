@@ -11,10 +11,10 @@ var DefaultCategoryNames = []string{"itinerary", "polls", "housing", "activities
 
 // DefaultCategoryLabels maps default category names to their display labels
 var DefaultCategoryLabels = map[string]string{
-	"itinerary":      "Itinerary",
-	"polls":          "Polls",
-	"housing":        "Housing",
-	"activities":     "Activities",
+	"itinerary":  "Itinerary",
+	"polls":      "Polls",
+	"housing":    "Housing",
+	"activities": "Activities",
 }
 
 // Category represents a category within a trip, identified by the combination of TripID and Name.
