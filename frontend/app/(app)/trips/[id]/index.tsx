@@ -529,7 +529,7 @@ export default function Trip() {
           >
             <Map size={16} color={ColorPalette.gray950} />
             <Text
-              variant="bodySmMedium"
+              variant="bodyMedium"
               color="gray950"
               style={{ marginLeft: 4 }}
             >
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.xxs,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: 12,
-    paddingVertical: Layout.spacing.xs,
+    height: "100%",
     borderRadius: CornerRadius.full,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
