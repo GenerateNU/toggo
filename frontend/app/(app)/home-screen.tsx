@@ -24,13 +24,13 @@ import { useHomeUIStore } from "@/app/(app)/store/home-ui-store";
 import { useUserStore } from "@/auth/store";
 import { useUser } from "@/contexts/user";
 import {
-  AnimatedBox,
   Box,
   ErrorState,
   Icon,
   ProfileAvatarButton,
   SkeletonRect,
   Text,
+  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -39,10 +39,9 @@ import { useCreateTrip } from "@/index";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import { Check, PlusIcon, X } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PlusIcon } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
-  Animated,
   FlatList,
   Pressable,
   RefreshControl,
@@ -69,14 +68,7 @@ export default function HomeScreen() {
     (s) => s.clearCreateTripSheetRequest,
   );
 
-  const [showToast, setShowToast] = useState(false);
-  const [toastPrefix, setToastPrefix] = useState("");
-  const [toastBold, setToastBold] = useState<string | null>(null);
-  const [toastSuffix, setToastSuffix] = useState("");
-  const [toastVariant, setToastVariant] = useState<"success" | "error">(
-    "success",
-  );
-  const [toastOpacity] = useState(() => new Animated.Value(0));
+  const toast = useToast();
 
   const { joinedTripName, joinError } = useLocalSearchParams<{
     joinedTripName?: string;
@@ -142,62 +134,17 @@ export default function HomeScreen() {
     }
   }, [createTripSheetRequested, clearCreateTripSheetRequest]);
 
-  const triggerToast = (
-    message: string,
-    variant: "success" | "error" = "success",
-    boldText?: string,
-  ) => {
-    if (boldText) {
-      const idx = message.indexOf(boldText);
-      if (idx >= 0) {
-        setToastPrefix(message.slice(0, idx));
-        setToastBold(boldText);
-        setToastSuffix(message.slice(idx + boldText.length));
-      } else {
-        setToastPrefix(message);
-        setToastBold(null);
-        setToastSuffix("");
-      }
-    } else {
-      setToastPrefix(message);
-      setToastBold(null);
-      setToastSuffix("");
-    }
-    setToastVariant(variant);
-    setShowToast(true);
-    toastOpacity.setValue(0);
-    Animated.sequence([
-      Animated.timing(toastOpacity, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.delay(2500),
-      Animated.timing(toastOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setShowToast(false));
-  };
-
   useEffect(() => {
     if (joinedTripName) {
-      triggerToast(
-        `You've been added to ${joinedTripName}!`,
-        "success",
-        joinedTripName,
-      );
+      toast.show({ message: `You've been added to ${joinedTripName}!` });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinedTripName]);
+  }, [joinedTripName, toast]);
 
   useEffect(() => {
     if (joinError) {
-      triggerToast(joinError, "error");
+      toast.show({ message: joinError, variant: "neutral" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [joinError]);
+  }, [joinError, toast]);
 
   const handleProfileCreated = async () => {
     bottomSheetRef.current?.close();
@@ -214,17 +161,13 @@ export default function HomeScreen() {
             // ignore — fallback to generic name
           }
         }
-        triggerToast(
-          `Profile created & added to ${tripName}!`,
-          "success",
-          tripName,
-        );
+        toast.show({ message: `Profile created & added to ${tripName}!` });
       } catch {
         setPendingTripCode(null);
-        triggerToast("Profile created!");
+        toast.show({ message: "Profile created!" });
       }
     } else {
-      triggerToast("Profile created!");
+      toast.show({ message: "Profile created!" });
     }
   };
 
@@ -258,12 +201,12 @@ export default function HomeScreen() {
 
       router.push(`/trips/${result.id}`);
     } catch {
-      triggerToast("Couldn't create trip. Please try again.", "error");
+      toast.show({
+        message: "Couldn't create trip. Please try again.",
+        variant: "neutral",
+      });
     }
   };
-
-  const toastIconColor =
-    toastVariant === "error" ? "statusError" : "statusSuccess";
 
   const requestCreateTripSheet = useHomeUIStore(
     (s) => s.requestCreateTripSheet,
@@ -495,60 +438,6 @@ export default function HomeScreen() {
         bottomSheetRef={createTripSheetRef}
         onCreate={handleTripCreated}
       />
-
-      {showToast && (
-        <AnimatedBox
-          style={{ opacity: toastOpacity }}
-          position="absolute"
-          bottom={40}
-          left={20}
-          right={20}
-          borderRadius="sm"
-          paddingHorizontal="md"
-          paddingVertical="md"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-between"
-          backgroundColor="white"
-          shadowColor="gray900"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.12}
-          shadowRadius={8}
-          elevation={4}
-        >
-          <Box flexDirection="row" alignItems="center" gap="sm" flex={1}>
-            <Icon icon={Check} size="xs" color={toastIconColor} />
-            <Text
-              variant="bodySmDefault"
-              color="gray900"
-              style={{ flexShrink: 1 }}
-            >
-              {toastPrefix}
-              {toastBold && (
-                <Text
-                  variant="bodySmMedium"
-                  color="gray900"
-                  style={{ fontWeight: "700" }}
-                >
-                  {toastBold}
-                </Text>
-              )}
-              {toastSuffix}
-            </Text>
-          </Box>
-          <Pressable
-            onPress={() => {
-              Animated.timing(toastOpacity, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-              }).start(() => setShowToast(false));
-            }}
-          >
-            <X size={24} />
-          </Pressable>
-        </AnimatedBox>
-      )}
     </Box>
   );
 }

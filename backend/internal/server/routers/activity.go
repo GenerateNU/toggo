@@ -45,7 +45,7 @@ func ActivityRoutes(apiGroup fiber.Router, routeParams types.RouteParams) fiber.
 	// /api/v1/trips/:tripID/activities/:activityID/rsvps
 	activityRSVPGroup := tripActivityIDGroup.Group("/rsvps")
 	activityRSVPGroup.Get("", activityController.GetActivityRSVPs)
-	activityRSVPGroup.Put("", activityController.RSVPActivity)
+	activityRSVPGroup.Post("", activityController.RSVPActivity)
 
 	return tripActivityGroup
 }

@@ -5,7 +5,14 @@ import {
 import { getUnreadActivityCountQueryKey } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { useMarkActivityEventRead } from "@/api/activity-feed/useMarkActivityEventRead";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
-import { Box, EmptyState, ErrorState, Spinner, Text, useToast } from "@/design-system";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Spinner,
+  Text,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useTripRealtime } from "@/hooks/useTripRealtime";
@@ -55,7 +62,12 @@ export default function ActivityFeedTabContent({
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: events, isLoading, isError, refetch } = useGetTripActivityFeed(tripId);
+  const {
+    data: events,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetTripActivityFeed(tripId);
 
   const markRead = useMarkActivityEventRead();
 

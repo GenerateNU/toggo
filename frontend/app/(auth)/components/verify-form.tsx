@@ -77,15 +77,15 @@ function OTPInput({ value, onChange, onBlur, hasError }: OTPInputProps) {
   };
 
   return (
-    <Box flexDirection="row" justifyContent="space-between" gap="sm">
+    <Box flexDirection="row" justifyContent="space-between" gap="xs">
       {digits.slice(0, OTP_LENGTH).map((digit, index) => (
         <Box
           key={index}
           flex={1}
           aspectRatio={0.8}
-          borderWidth={2}
+          borderWidth={1}
           borderColor={hasError ? "statusError" : "gray300"}
-          borderRadius="sm"
+          borderRadius="md"
           backgroundColor="white"
           justifyContent="center"
           alignItems="center"
@@ -269,11 +269,11 @@ export default function OTPVerificationForm() {
 
             <Box alignItems="center">
               {canResend ? (
-                <Text variant="bodySmDefault" color="gray500">
+                <Text variant="bodySmStrong" color="black">
                   Didn't receive a code?{" "}
                   <Text
-                    variant="bodySmMedium"
-                    color="white"
+                    variant="bodySmStrong"
+                    color="black"
                     onPress={!isPending ? handleResendOTP : undefined}
                     style={{ fontWeight: "600" }}
                   >
@@ -281,7 +281,7 @@ export default function OTPVerificationForm() {
                   </Text>
                 </Text>
               ) : (
-                <Text variant="bodySmDefault" color="gray500">
+                <Text variant="bodySmStrong" color="black">
                   Didn't receive a code? Resend in {timer}s
                 </Text>
               )}

@@ -397,9 +397,21 @@ export default function Trip() {
           >
             {isLoading ? (
               <Box gap="sm">
-                <SkeletonRect width="full" borderRadius="md" style={{ height: 120 }} />
-                <SkeletonRect width="full" borderRadius="md" style={{ height: 120 }} />
-                <SkeletonRect width="threeQuarter" borderRadius="md" style={{ height: 90 }} />
+                <SkeletonRect
+                  width="full"
+                  borderRadius="md"
+                  style={{ height: 120 }}
+                />
+                <SkeletonRect
+                  width="full"
+                  borderRadius="md"
+                  style={{ height: 120 }}
+                />
+                <SkeletonRect
+                  width="threeQuarter"
+                  borderRadius="md"
+                  style={{ height: 90 }}
+                />
               </Box>
             ) : null}
             {!isLoading && isError ? (
@@ -462,7 +474,6 @@ export default function Trip() {
       {!trip?.cover_image_url && (
         <View style={styles.hiddenPicker}>
           <ImagePicker
-            
             ref={coverPickerRef}
             variant="rectangular"
             width="100%"
@@ -479,10 +490,7 @@ export default function Trip() {
           Matches the hero scale transform so the icon parallaxes on pull-down. */}
       {!trip?.cover_image_url && (
         <Animated.View
-          style={[
-            styles.heroPicker,
-            { transform: [{ scale: heroScale }] },
-          ]}
+          style={[styles.heroPicker, { transform: [{ scale: heroScale }] }]}
           pointerEvents={headerVisible ? "none" : "auto"}
         >
           <Pressable

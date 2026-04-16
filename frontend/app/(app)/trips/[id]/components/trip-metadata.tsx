@@ -62,7 +62,9 @@ export function TripMetadata({
         gap="xxs"
       >
         {isLoading ? (
-          <SkeletonRect style={{ width: SKELETON_WIDTH, height: SKELETON_HEIGHT }} />
+          <SkeletonRect
+            style={{ width: SKELETON_WIDTH, height: SKELETON_HEIGHT }}
+          />
         ) : (
           <Pressable
             onPress={() => setIsTitleExpanded((previous) => !previous)}
@@ -124,8 +126,8 @@ export function TripMetadata({
         )}
       </Box>
 
-      {!isCollapsed && (
-        isLoading ? (
+      {!isCollapsed &&
+        (isLoading ? (
           <SkeletonRect style={{ width: 200, height: 16 }} />
         ) : (
           <Box flexDirection="row" alignItems="center" gap="xs">
@@ -143,7 +145,9 @@ export function TripMetadata({
                 <Text
                   variant="bodySmDefault"
                   style={{
-                    color: tripDate ? ColorPalette.gray500 : ColorPalette.blue500,
+                    color: tripDate
+                      ? ColorPalette.gray500
+                      : ColorPalette.blue500,
                   }}
                 >
                   {tripDate ?? "Add dates"}
@@ -179,8 +183,7 @@ export function TripMetadata({
               </Box>
             </Pressable>
           </Box>
-        )
-      )}
+        ))}
     </Box>
   );
 }

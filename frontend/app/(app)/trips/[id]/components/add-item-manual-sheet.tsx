@@ -4,6 +4,7 @@ import BottomSheet from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
+import { FontFamily } from "@/design-system/tokens/typography";
 import { getImageURL } from "@/services/imageService";
 import * as ExpoImagePicker from "expo-image-picker";
 import { ImagePlus, X } from "lucide-react-native";
@@ -335,14 +336,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   nameInput: {
-    fontFamily: "Figtree-SemiBold",
+    fontFamily: FontFamily.medium,
     fontSize: 20,
     lineHeight: 24,
     color: ColorPalette.gray900,
     paddingVertical: 2,
   },
   descriptionInput: {
-    fontFamily: "Figtree-Regular",
+    fontFamily: FontFamily.regular,
     fontSize: 16,
     lineHeight: 20,
     color: ColorPalette.gray500,
