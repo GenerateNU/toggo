@@ -195,7 +195,7 @@ export const HousingTabContent = forwardRef<
             title="No housing options yet"
             description="Tap + to add the first one!"
           />
-          <Box style={styles.addButton}>
+          <Box style={styles.addButton} width="100%">
             <Button
               layout="textOnly"
               label="Add a housing option"
