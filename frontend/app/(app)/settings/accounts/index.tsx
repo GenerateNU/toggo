@@ -166,7 +166,7 @@ export default function AccountScreen() {
         >
           {isEditing ? (
             // ─── Edit mode ───────────────────────────────────────────────
-            <Box paddingHorizontal="sm" gap="lg">
+            <Box gap="lg">
               <TextField
                 label="Name"
                 value={name}
@@ -191,7 +191,6 @@ export default function AccountScreen() {
             <Box
               backgroundColor="white"
               borderRadius="md"
-              marginHorizontal="sm"
             >
               <FieldRow label="Name" value={name} />
               <RowDivider />
@@ -221,6 +220,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: Layout.spacing.sm,
     paddingBottom: Layout.spacing.xxl,
+    paddingHorizontal: Layout.spacing.sm,
   },
   rowLabel: {
     marginBottom: 4,
