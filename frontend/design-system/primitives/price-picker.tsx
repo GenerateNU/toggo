@@ -1,17 +1,15 @@
-import { Box, Button, Text } from "@/design-system";
+import { BottomSheet, Box, Button, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { X } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   KeyboardAvoidingView,
-  Modal,
-  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
   TextInput,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { FontFamily, FontSize } from "../tokens/typography";
@@ -83,6 +81,7 @@ export function PricePicker({
     value != null && value > 0 ? String(value) : "",
   );
 
+  const sheetRef = useRef<BottomSheetMethods>(null);
   const translateX = useRef(
     new Animated.Value(priceToOffset(value ?? 0)),
   ).current;
@@ -90,7 +89,6 @@ export function PricePicker({
   const baseOffset = useRef(priceToOffset(value ?? 0));
   const inputRef = useRef<TextInput>(null);
 
-  // Reset state when modal opens
   useEffect(() => {
     if (visible) {
       const initial = value ?? 0;
@@ -99,6 +97,9 @@ export function PricePicker({
       translateX.setValue(offset);
       currentOffset.current = offset;
       baseOffset.current = offset;
+      sheetRef.current?.snapToIndex(0);
+    } else {
+      sheetRef.current?.close();
     }
   }, [visible, value, translateX]);
 
@@ -121,14 +122,14 @@ export function PricePicker({
 
   const panResponder = useMemo(
     () =>
-      PanResponder.create({
+      require("react-native").PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderGrant: () => {
           inputRef.current?.blur();
           baseOffset.current = currentOffset.current;
         },
-        onPanResponderMove: (_, gesture) => {
+        onPanResponderMove: (_: any, gesture: any) => {
           const newOffset = baseOffset.current + gesture.dx;
           const clamped = Math.max(
             priceToOffset(MAX_PRICE),
@@ -168,78 +169,62 @@ export function PricePicker({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <BottomSheet
+      ref={sheetRef}
+      snapPoints={[270]}
+      initialIndex={-1}
+      onChange={(index) => {
+        if (index < 0) onClose();
+      }}
     >
-      {/*
-       * Backdrop and sheet are SIBLINGS (not nested) so the sheet's
-       * TextInput receives touches without a parent Pressable intercepting them.
-       */}
-      <View style={styles.container} pointerEvents="box-none">
-        {/* Backdrop — closes on tap */}
-        <TouchableWithoutFeedback onPress={onClose}>
-          <View style={StyleSheet.absoluteFillObject} />
-        </TouchableWithoutFeedback>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.sheet}
+      >
+        {/* Header */}
+        <Box style={styles.header}>
+          <Text variant="bodyMedium" color="gray950">
+            Price
+          </Text>
+          <Pressable style={styles.closeButton} onPress={onClose} hitSlop={12}>
+            <X size={20} color={ColorPalette.gray900} />
+          </Pressable>
+        </Box>
 
-        {/* Sheet — floats above backdrop */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={styles.sheetWrapper}
-        >
-          <View style={styles.sheet}>
-            {/* Header */}
-            <Box style={styles.header}>
-              <Text variant="bodyMedium" color="gray950">
-                Price
-              </Text>
-              <Pressable
-                style={styles.closeButton}
-                onPress={onClose}
-                hitSlop={12}
-              >
-                <X size={20} color={ColorPalette.gray900} />
-              </Pressable>
-            </Box>
+        {/* Editable price */}
+        <View style={styles.priceRow}>
+          <Text style={styles.dollarSign}>$</Text>
+          <TextInput
+            ref={inputRef}
+            value={rawText}
+            onChangeText={handleTextChange}
+            keyboardType="decimal-pad"
+            placeholder="0"
+            placeholderTextColor={ColorPalette.gray300}
+            style={styles.priceInput}
+            maxLength={7}
+            selectTextOnFocus
+            autoFocus
+          />
+        </View>
 
-            {/* Editable price — keyboard opens automatically via onShow */}
-            <View style={styles.priceRow}>
-              <Text style={styles.dollarSign}>$</Text>
-              <TextInput
-                ref={inputRef}
-                value={rawText}
-                onChangeText={handleTextChange}
-                keyboardType="decimal-pad"
-                placeholder="0"
-                placeholderTextColor={ColorPalette.gray300}
-                style={styles.priceInput}
-                maxLength={7}
-                selectTextOnFocus
-                autoFocus
-              />
-            </View>
+        {/* Draggable ruler */}
+        <View style={styles.rulerContainer} {...panResponder.panHandlers}>
+          <Ruler translateX={translateX} />
+          <View style={styles.cursor} pointerEvents="none" />
+        </View>
 
-            {/* Draggable ruler */}
-            <View style={styles.rulerContainer} {...panResponder.panHandlers}>
-              <Ruler translateX={translateX} />
-              <View style={styles.cursor} pointerEvents="none" />
-            </View>
-
-            {/* Confirm */}
-            <Box style={styles.buttonContainer}>
-              <Button
-                layout="textOnly"
-                label="Set price"
-                variant="Primary"
-                onPress={handleConfirm}
-              />
-            </Box>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
+        {/* Confirm */}
+        <Box style={styles.buttonContainer}>
+          <Button
+            layout="textOnly"
+            label="Set price"
+            variant="Primary"
+            onPress={handleConfirm}
+          />
+        </Box>
+      </KeyboardAvoidingView>
+    </BottomSheet>
   );
 }
 
@@ -248,18 +233,7 @@ export function PricePicker({
 const RULER_VISIBLE_HEIGHT = TICK_HEIGHT_MAJOR + 8;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  sheetWrapper: {
-    justifyContent: "flex-end",
-  },
   sheet: {
-    backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 32,
