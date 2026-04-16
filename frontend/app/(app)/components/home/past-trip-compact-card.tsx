@@ -7,6 +7,7 @@ import { Pressable } from "react-native";
 import { Elevation } from "@/design-system/tokens/elevation";
 import { HOME_PAST_TRIP_IMAGE_SIZE } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
+import { tripMemberPreviews } from "./types";
 
 type PastTripCompactCardProps = {
   trip: ModelsTripAPIResponse;
@@ -65,7 +66,7 @@ export function PastTripCompactCard({
             </Text>
           ) : null}
           <TripMemberPreviewRow
-            tripId={tripId}
+            members={tripMemberPreviews(trip)}
             currentUserId={currentUserId}
             textSize="small"
           />

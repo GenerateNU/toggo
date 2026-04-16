@@ -2,7 +2,16 @@ import { useCreateActivity } from "@/api/activities";
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useUser } from "@/contexts/user";
-import { Box, Screen, Spinner, Text } from "@/design-system";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Screen,
+  SkeletonRect,
+  Spinner,
+  Text,
+  useToast,
+} from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import type { ModelsActivity } from "@/types/types.gen";
@@ -21,11 +30,19 @@ import { FlatList, Pressable, StyleSheet } from "react-native";
 export default function Activities() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
   const { currentUser } = useUser();
+  const toast = useToast();
 
   const [activeActivityId, setActiveActivityId] = useState<string | null>(null);
 
-  const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
-    useActivitiesList(tripID);
+  const {
+    activities,
+    isLoading,
+    isError,
+    isLoadingMore,
+    fetchMore,
+    refetch,
+    prependActivity,
+  } = useActivitiesList(tripID);
 
   const activitiesWithLocation = useMemo(
     () => activities.filter((a) => activityHasMapLocation(a)),
@@ -36,6 +53,10 @@ export default function Activities() {
     mutation: {
       onSuccess: (data) => {
         if (data) prependActivity(data);
+        refetch();
+      },
+      onError: () => {
+        toast.show({ message: "Couldn't create activity. Please try again." });
       },
     },
   });
@@ -182,17 +203,26 @@ export default function Activities() {
               </Pressable>
 
               {isLoading && (
-                <Box alignItems="center" paddingVertical="md">
-                  <Spinner />
+                <Box paddingHorizontal="sm" paddingVertical="sm" gap="xs">
+                  <SkeletonRect width="full" style={{ height: 84 }} />
+                  <SkeletonRect width="full" style={{ height: 84 }} />
+                  <SkeletonRect width="full" style={{ height: 84 }} />
                 </Box>
               )}
 
-              {!isLoading && activities.length === 0 && (
-                <Box alignItems="center" paddingVertical="md">
-                  <Text variant="bodySmDefault" color="gray500">
-                    No activities yet
-                  </Text>
-                </Box>
+              {isError && (
+                <ErrorState
+                  title="Couldn't load activities"
+                  description="Pull to refresh or try again in a moment."
+                  refresh={() => refetch()}
+                />
+              )}
+
+              {!isLoading && !isError && activities.length === 0 && (
+                <EmptyState
+                  title="No activities yet"
+                  description="Create your first activity to start planning together."
+                />
               )}
             </Box>
           }

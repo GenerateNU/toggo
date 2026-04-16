@@ -1,7 +1,4 @@
 import { BottomSheet, Box, Button, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { X } from "lucide-react-native";
-import { TouchableOpacity } from "react-native";
 
 type LogoutSheetProps = {
   bottomSheetRef: React.RefObject<any>;
@@ -20,21 +17,10 @@ export function LogoutSheet({
   };
 
   return (
-    <BottomSheet ref={bottomSheetRef} onClose={onDismiss}>
-      <Box paddingHorizontal="sm" paddingBottom="lg" gap="lg">
-        <Box flexDirection="row" justifyContent="flex-end">
-          <TouchableOpacity
-            onPress={handleNevermind}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-          >
-            <X size={24} color={ColorPalette.gray950} />
-          </TouchableOpacity>
-        </Box>
-
+    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss}>
+      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="lg">
         <Box gap="xxs">
-          <Text variant="headingMd" color="gray950">
+          <Text variant="bodyLargeStrong" color="gray950">
             Logout?
           </Text>
           <Text variant="bodyDefault" color="gray500">

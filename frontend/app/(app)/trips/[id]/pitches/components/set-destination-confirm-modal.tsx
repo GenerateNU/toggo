@@ -35,6 +35,7 @@ export function SetDestinationConfirmModal({
       snapPoints={["28%"]}
       initialIndex={-1}
       onClose={onCancel}
+      disableScrollView
     >
       <Box
         backgroundColor="white"

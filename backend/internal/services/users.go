@@ -38,11 +38,13 @@ func (u *UserService) CreateUser(ctx context.Context, userBody models.CreateUser
 	name := userBody.Name
 
 	user, err := u.User.Create(ctx, &models.User{
-		Name:        name,
-		Username:    username,
-		PhoneNumber: phone,
-		Timezone:    "UTC",
-		ID:          userID,
+		Name:              name,
+		Username:          username,
+		PhoneNumber:       phone,
+		Timezone:          "UTC",
+		AppleMapsEnabled:  true,
+		GoogleMapsEnabled: true,
+		ID:                userID,
 	})
 
 	if err != nil {

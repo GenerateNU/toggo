@@ -12,6 +12,7 @@ import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { useUser } from "@/contexts/user";
+import { ConfirmSheet } from "@/app/(app)/components/confirm-sheet";
 import {
   AvatarStack,
   Box,
@@ -311,8 +312,11 @@ export default function TripSettings() {
             height={200}
             value={trip?.cover_image_url}
             onChange={handleCoverImageChange}
-            placeholder={isCoverUploading ? "Uploading..." : "Add cover image"}
+            placeholder=""
+            showPlaceholderText={false}
             disabled={isCoverUploading || isLoadingTrip}
+            title="Change cover photo"
+            showRemoveAction={false}
           />
         </Box>
 
@@ -435,18 +439,15 @@ export default function TripSettings() {
         </Box>
       </ScrollView>
 
-      <Dialog
+      <ConfirmSheet
         visible={leaveDialog === "confirm"}
-        onClose={() => setLeaveDialog(null)}
         title="Leave Trip?"
-        actions={[
-          { label: "Cancel", onPress: () => setLeaveDialog(null) },
-          {
-            label: "Leave this trip",
-            style: "destructive",
-            onPress: confirmLeaveTrip,
-          },
-        ]}
+        subtitle="You will no longer have access to this trip."
+        confirmLabel="Leave this trip"
+        cancelLabel="Cancel"
+        onConfirm={confirmLeaveTrip}
+        onCancel={() => setLeaveDialog(null)}
+        isLoading={removeMemberMutation.isPending}
       />
 
       <Dialog
@@ -467,19 +468,15 @@ export default function TripSettings() {
         ]}
       />
 
-      <Dialog
+      <ConfirmSheet
         visible={deleteDialog}
-        onClose={() => setDeleteDialog(false)}
         title="Delete Trip?"
-        message="This cannot be undone."
-        actions={[
-          { label: "Cancel", onPress: () => setDeleteDialog(false) },
-          {
-            label: "Delete this trip",
-            style: "destructive",
-            onPress: confirmDeleteTrip,
-          },
-        ]}
+        subtitle="This cannot be undone."
+        confirmLabel="Delete this trip"
+        cancelLabel="Cancel"
+        onConfirm={confirmDeleteTrip}
+        onCancel={() => setDeleteDialog(false)}
+        isLoading={deleteTripMutation.isPending}
       />
     </>
   );

@@ -84,6 +84,16 @@ func (r *userRepository) Update(ctx context.Context, id uuid.UUID, req *models.U
 		updateQuery = updateQuery.Set("timezone = ?", *req.Timezone)
 	}
 
+	if req.AppleMaps != nil {
+		updates["apple_maps_enabled"] = *req.AppleMaps
+		updateQuery = updateQuery.Set("apple_maps_enabled = ?", *req.AppleMaps)
+	}
+
+	if req.GoogleMaps != nil {
+		updates["google_maps_enabled"] = *req.GoogleMaps
+		updateQuery = updateQuery.Set("google_maps_enabled = ?", *req.GoogleMaps)
+	}
+
 	if req.ProfilePicture != nil {
 		updates["profile_picture"] = *req.ProfilePicture
 		updateQuery = updateQuery.Set("profile_picture = ?", *req.ProfilePicture)

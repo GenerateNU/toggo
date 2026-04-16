@@ -1,3 +1,4 @@
+import { useUser } from "@/contexts/user";
 import {
   BottomSheet,
   Box,
@@ -6,6 +7,7 @@ import {
   Icon,
   Screen,
   Text,
+  useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -25,6 +27,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { mapProviderLabel, openInMaps, resolveMapProvider } from "@/utils/maps";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -58,16 +61,26 @@ function activityAnnotationId(item: MapViewActivityForMap, index: number) {
   return `activity-pin-${index}-${item.location_lat}-${item.location_lng}`;
 }
 
+function formatActivityLocationLine(activity: MapViewActivityForMap): string {
+  const name = activity.location_name?.trim();
+  if (name) return name;
+  return `${activity.location_lat.toFixed(4)}, ${activity.location_lng.toFixed(4)}`;
+}
+
 function ActivityDetailSheetBody({
   activity,
+  providerLabel,
+  onOpenDirections,
 }: {
   activity: MapViewActivityForMap;
+  providerLabel: string;
+  onOpenDirections: () => void;
 }) {
   const imageUri = activity.thumbnail_url ?? activity.media_url;
   const scheduleLine = formatMapViewActivityScheduleLine(activity);
 
   return (
-    <Box padding="sm" gap="md">
+    <Box padding="lg" gap="md">
       <Box flexDirection="row" gap="md" alignItems="flex-start">
         {imageUri ? (
           <Image
@@ -92,10 +105,8 @@ function ActivityDetailSheetBody({
           <Text variant="headingSm" color="gray900" numberOfLines={2}>
             {activity.name}
           </Text>
-          <Text variant="bodyDefault" color="gray600">
-            {activity.description?.trim()
-              ? activity.description.trim()
-              : "No description for this activity yet."}
+          <Text variant="bodySmDefault" color="gray500" numberOfLines={3}>
+            {formatActivityLocationLine(activity)}
           </Text>
           {scheduleLine ? (
             <Box flexDirection="row" alignItems="center" gap="xs">
@@ -111,12 +122,25 @@ function ActivityDetailSheetBody({
           ) : null}
         </Box>
       </Box>
+      <Text variant="bodyDefault" color="gray600">
+        {activity.description?.trim()
+          ? activity.description.trim()
+          : "No description for this activity yet."}
+      </Text>
+      <Button
+        layout="textOnly"
+        variant="Primary"
+        label={`Open in ${providerLabel}`}
+        onPress={onOpenDirections}
+      />
       <SafeAreaView edges={["bottom"]} />
     </Box>
   );
 }
 
 export default function MapViewScreen() {
+  const { currentUser } = useUser();
+  const toast = useToast();
   const { activities: activitiesParam } = useLocalSearchParams<{
     activities?: string;
   }>();
@@ -239,6 +263,26 @@ export default function MapViewScreen() {
     setSelectedActivity(activity);
   };
 
+  const mapProvider = resolveMapProvider(
+    currentUser?.apple_maps_enabled,
+    currentUser?.google_maps_enabled,
+  );
+
+  const providerLabel = mapProviderLabel(mapProvider);
+
+  const openDirections = async (activity: MapViewActivityForMap) => {
+    try {
+      await openInMaps({
+        lat: activity.location_lat,
+        lng: activity.location_lng,
+        label: activity.location_name?.trim() || activity.name,
+        provider: mapProvider,
+      });
+    } catch {
+      toast.show({ message: "Couldn't open maps. Please try again." });
+    }
+  };
+
   return (
     <Screen edges={[]}>
       <Box flex={1} backgroundColor="gray50">
@@ -302,6 +346,8 @@ export default function MapViewScreen() {
               <ActivityDetailSheetBody
                 key={selectedActivity.id}
                 activity={selectedActivity}
+                providerLabel={providerLabel}
+                onOpenDirections={() => openDirections(selectedActivity)}
               />
             ) : (
               <Box padding="lg" minHeight={Layout.spacing.xxl} />

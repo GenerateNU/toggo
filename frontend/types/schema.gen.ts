@@ -1920,7 +1920,9 @@ export const modelsUpdateUserNotificationPreferencesRequestSchema = z.object({
 }) as unknown as z.ZodType<ModelsUpdateUserNotificationPreferencesRequest>;
 
 export const modelsUpdateUserRequestSchema = z.object({
+  apple_maps_enabled: z.optional(z.boolean()),
   device_token: z.optional(z.string().max(200)),
+  google_maps_enabled: z.optional(z.boolean()),
   name: z.optional(z.string().min(1)),
   phone_number: z.optional(z.string()),
   profile_picture: z.optional(z.string()),
@@ -1946,9 +1948,11 @@ export const modelsUploadURLResponseSchema = z.object({
 }) as unknown as z.ZodType<ModelsUploadURLResponse>;
 
 export const modelsUserSchema = z.object({
+  apple_maps_enabled: z.optional(z.boolean()),
   created_at: z.optional(z.string()),
   device_token: z.optional(z.string()),
   device_token_updated_at: z.optional(z.string()),
+  google_maps_enabled: z.optional(z.boolean()),
   id: z.optional(z.string()),
   name: z.optional(z.string()),
   phone_number: z.optional(z.string()),
@@ -2981,6 +2985,13 @@ export const getAllTripsQueryParamsSchema = z
         .string()
         .describe(
           "Opaque cursor from previous response next_cursor for next page",
+        ),
+    ),
+    end_date_before: z.optional(
+      z
+        .string()
+        .describe(
+          "Only include trips where end_date is before this RFC3339 timestamp",
         ),
     ),
   })

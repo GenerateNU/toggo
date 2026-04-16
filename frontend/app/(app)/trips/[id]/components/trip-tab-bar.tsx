@@ -1,7 +1,4 @@
-import {
-  getTripTabsQueryKey,
-  useGetTripTabs,
-} from "@/api/categories/useGetTripTabs";
+import { getTripTabsQueryKey, useGetTripTabs } from "@/api";
 import { useHideCategory } from "@/api/categories/useHideCategory";
 import { useGetMembership } from "@/api/memberships/useGetMembership";
 import { useUser } from "@/contexts/user";
@@ -131,6 +128,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
                 <Chip
                   label={label}
                   icon={Icon}
+                  iconSize={18}
                   selected={activeTab === name}
                   onPress={() => onTabPress(name)}
                   variant="filled"

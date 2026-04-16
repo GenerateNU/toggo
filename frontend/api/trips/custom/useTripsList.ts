@@ -19,27 +19,35 @@ export function useTripsList() {
   const queryClient = useQueryClient();
   const isFetchingNextRef = useRef(false);
 
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useInfiniteQuery<
-      TripsPage,
-      Error,
-      InfiniteData<TripsPage>,
-      typeof TRIPS_QUERY_KEY,
-      string | undefined
-    >({
-      queryKey: TRIPS_QUERY_KEY,
-      queryFn: ({ pageParam }) =>
-        getAllTrips({
-          limit: PAGE_SIZE,
-          cursor: pageParam as string | undefined,
-        }),
-      initialPageParam: undefined,
-      getNextPageParam: (lastPage) =>
-        lastPage?.items?.length && lastPage.next_cursor
-          ? lastPage.next_cursor
-          : undefined,
-      refetchOnWindowFocus: false,
-    });
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+  } = useInfiniteQuery<
+    TripsPage,
+    Error,
+    InfiniteData<TripsPage>,
+    typeof TRIPS_QUERY_KEY,
+    string | undefined
+  >({
+    queryKey: TRIPS_QUERY_KEY,
+    queryFn: ({ pageParam }) =>
+      getAllTrips({
+        limit: PAGE_SIZE,
+        cursor: pageParam as string | undefined,
+      }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.items?.length && lastPage.next_cursor
+        ? lastPage.next_cursor
+        : undefined,
+    refetchOnWindowFocus: false,
+  });
 
   const trips = useMemo(() => {
     const seen = new Set<string>();
@@ -85,8 +93,11 @@ export function useTripsList() {
   return {
     trips,
     isLoading,
+    isError,
     isLoadingMore: isFetchingNextPage,
+    isRefetching: isFetching && !isLoading && !isFetchingNextPage,
     fetchMore,
+    refetch,
     prependTrip,
   };
 }

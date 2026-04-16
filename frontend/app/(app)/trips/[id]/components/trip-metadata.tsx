@@ -1,6 +1,7 @@
-import { Avatar, AvatarStack, Box, Text } from "@/design-system";
+import { Avatar, AvatarStack, Box, SkeletonRect, Text } from "@/design-system";
 import type { AvatarStackMember } from "@/design-system/components/avatars/avatar-stack";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { Calendar, MapPin, Plus, Settings } from "lucide-react-native";
@@ -44,7 +45,6 @@ export function TripMetadata({
 }: TripMetadataProps) {
   const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   const title = tripName?.trim() || "Trip";
-  const showLocationAction = !tripLocation;
   const isSoloTrip = members.length <= 1;
   const primaryMember = members[0];
 
@@ -62,11 +62,8 @@ export function TripMetadata({
         gap="xxs"
       >
         {isLoading ? (
-          <Box
-            width={SKELETON_WIDTH}
-            height={SKELETON_HEIGHT}
-            backgroundColor="gray100"
-            borderRadius="xs"
+          <SkeletonRect
+            style={{ width: SKELETON_WIDTH, height: SKELETON_HEIGHT }}
           />
         ) : (
           <Pressable
@@ -91,7 +88,7 @@ export function TripMetadata({
           </Pressable>
         )}
 
-        {!isCollapsed && (
+        {!isCollapsed && !isLoading && (
           <Box flexDirection="row" alignItems="center" gap="xs" flexShrink={0}>
             {isSoloTrip ? (
               <Box flexDirection="row" alignItems="center">
@@ -123,56 +120,70 @@ export function TripMetadata({
               accessibilityRole="button"
               accessibilityLabel="Trip settings"
             >
-              <Settings size={20} color={ColorPalette.gray950} />
+              <Settings size={CoreSize.iconSm} color={ColorPalette.gray950} />
             </Pressable>
           </Box>
         )}
       </Box>
 
-      {!isCollapsed && (
-        <Box flexDirection="row" alignItems="center" gap="xs">
-          <Pressable
-            onPress={onDatePress}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            accessibilityRole="button"
-            accessibilityLabel="Set trip dates"
-          >
-            <Box flexDirection="row" alignItems="center" gap="xxs">
-              <Calendar size={16} color={ColorPalette.gray500} />
-              <Text variant="bodySmDefault" color="gray500">
-                {tripDate ?? "Add dates"}
-              </Text>
-            </Box>
-          </Pressable>
-          <Text variant="bodySmDefault" color="gray500">
-            •
-          </Text>
-          <Pressable
-            onPress={onLocationPress}
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            accessibilityRole="button"
-            accessibilityLabel="Set trip location"
-          >
-            <Box flexDirection="row" alignItems="center" gap="xxs">
-              <MapPin
-                size={16}
-                color={
-                  showLocationAction
-                    ? ColorPalette.blue500
-                    : ColorPalette.gray500
-                }
-              />
-              <Text
-                variant={showLocationAction ? "bodySmMedium" : "bodySmDefault"}
-                color="gray500"
-                style={showLocationAction ? styles.setLocationText : undefined}
-              >
-                {tripLocation ?? "Set location"}
-              </Text>
-            </Box>
-          </Pressable>
-        </Box>
-      )}
+      {!isCollapsed &&
+        (isLoading ? (
+          <SkeletonRect style={{ width: 200, height: 16 }} />
+        ) : (
+          <Box flexDirection="row" alignItems="center" gap="xs">
+            <Pressable
+              onPress={onDatePress}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              accessibilityRole="button"
+              accessibilityLabel="Set trip dates"
+            >
+              <Box flexDirection="row" alignItems="center" gap="xxs">
+                <Calendar
+                  size={CoreSize.xs}
+                  color={tripDate ? ColorPalette.gray500 : ColorPalette.blue500}
+                />
+                <Text
+                  variant="bodySmDefault"
+                  style={{
+                    color: tripDate
+                      ? ColorPalette.gray500
+                      : ColorPalette.blue500,
+                  }}
+                >
+                  {tripDate ?? "Add dates"}
+                </Text>
+              </Box>
+            </Pressable>
+            <Text variant="bodySmDefault" color="gray500">
+              •
+            </Text>
+            <Pressable
+              onPress={onLocationPress}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              accessibilityRole="button"
+              accessibilityLabel="Set trip location"
+            >
+              <Box flexDirection="row" alignItems="center" gap="xxs">
+                <MapPin
+                  size={CoreSize.xs}
+                  color={
+                    tripLocation ? ColorPalette.gray500 : ColorPalette.blue500
+                  }
+                />
+                <Text
+                  variant="bodySmDefault"
+                  style={{
+                    color: tripLocation
+                      ? ColorPalette.gray500
+                      : ColorPalette.blue500,
+                  }}
+                >
+                  {tripLocation ?? "Add location"}
+                </Text>
+              </Box>
+            </Pressable>
+          </Box>
+        ))}
     </Box>
   );
 }

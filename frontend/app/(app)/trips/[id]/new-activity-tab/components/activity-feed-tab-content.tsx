@@ -5,7 +5,14 @@ import {
 import { getUnreadActivityCountQueryKey } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { useMarkActivityEventRead } from "@/api/activity-feed/useMarkActivityEventRead";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
-import { Box, Spinner, Text, useToast } from "@/design-system";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Spinner,
+  Text,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useTripRealtime } from "@/hooks/useTripRealtime";
@@ -55,7 +62,12 @@ export default function ActivityFeedTabContent({
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: events, isLoading, isError } = useGetTripActivityFeed(tripId);
+  const {
+    data: events,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetTripActivityFeed(tripId);
 
   const markRead = useMarkActivityEventRead();
 
@@ -170,27 +182,17 @@ export default function ActivityFeedTabContent({
   }
 
   if (isError) {
-    return (
-      <Box padding="lg" alignItems="center">
-        <Text variant="bodySmDefault" color="gray500">
-          Couldn't load activity feed.
-        </Text>
-      </Box>
-    );
+    return <ErrorState title="Couldn't load activity feed" refresh={refetch} />;
   }
 
   const hasEvents = (events?.length ?? 0) > 0;
 
   if (!hasEvents) {
     return (
-      <Box padding="lg" alignItems="center" gap="xs">
-        <Text variant="bodyMedium" color="gray500">
-          No new activity
-        </Text>
-        <Text variant="bodySmDefault" color="gray400">
-          Activity from your trip will show up here.
-        </Text>
-      </Box>
+      <EmptyState
+        title="No new activity"
+        description="Activity from your trip will show up here."
+      />
     );
   }
 

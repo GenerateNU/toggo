@@ -134,7 +134,7 @@ describe("image-service", () => {
         expect(fetch).toHaveBeenCalledWith(
           expect.objectContaining({
             method: "POST",
-            url: "/api/v0/files/upload",
+            url: "/api/v1/files/upload",
             data: {
               fileKey: "uploads/1704067200000-test-uuid-1234",
               sizes: ["large", "medium", "small"],
@@ -163,7 +163,7 @@ describe("image-service", () => {
         expect(fetch).toHaveBeenCalledWith(
           expect.objectContaining({
             method: "POST",
-            url: "/api/v0/files/confirm",
+            url: "/api/v1/files/confirm",
             data: { imageId: "img-123" },
           }),
         );
@@ -405,7 +405,7 @@ describe("image-service", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({
           method: "GET",
-          url: "/api/v0/files/img-123/large",
+          url: "/api/v1/files/img-123/large",
         }),
       );
       expect(result).toEqual(mockResponse);
@@ -418,7 +418,7 @@ describe("image-service", () => {
 
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: "/api/v0/files/img-123/small",
+          url: "/api/v1/files/img-123/small",
         }),
       );
     });
@@ -480,7 +480,7 @@ describe("image-service", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.objectContaining({
           method: "GET",
-          url: "/api/v0/files/img-123",
+          url: "/api/v1/files/img-123",
         }),
       );
       expect(result).toEqual(mockResponse);

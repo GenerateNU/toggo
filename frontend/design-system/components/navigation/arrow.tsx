@@ -7,11 +7,13 @@ import { Icon } from "../icons/icon";
 interface BackButtonProps {
   onPress?: () => void;
   hasBackground?: boolean;
+  color?: "black" | "white";
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
   onPress,
   hasBackground = false,
+  color = "gray500",
 }) => {
   const router = useRouter();
 
@@ -25,7 +27,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       borderRadius={hasBackground ? "md" : undefined}
       backgroundColor={hasBackground ? "white" : undefined}
     >
-      <Icon icon={ArrowLeft} size="sm" color="gray500" />
+      <Icon icon={ArrowLeft} size="sm" color={color} />
     </Box>
   );
 };

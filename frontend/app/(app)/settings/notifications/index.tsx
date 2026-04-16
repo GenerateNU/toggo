@@ -4,7 +4,16 @@ import {
 } from "@/api/notification-preferences/useGetNotificationPreferences";
 import { useGetOrCreateDefaultNotificationPreferences } from "@/api/notification-preferences/useGetOrCreateDefaultNotificationPreferences";
 import { useUpdateNotificationPreferences } from "@/api/notification-preferences/useUpdateNotificationPreferences";
-import { BackButton, Box, Text, Toggle } from "@/design-system";
+import {
+  BackButton,
+  Box,
+  EmptyState,
+  ErrorState,
+  SkeletonRect,
+  Text,
+  Toggle,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsNotificationPreferences } from "@/types/types.gen";
@@ -66,31 +75,39 @@ function NotificationRow({
   description,
   value,
   onChange,
+  isLast = false,
 }: {
   title: string;
   description: string;
   value: boolean;
   onChange: (value: boolean) => void;
+  isLast?: boolean;
 }) {
   return (
-    <Box
-      flexDirection="row"
-      alignItems="center"
-      justifyContent="space-between"
-      backgroundColor="gray50"
-      borderRadius="md"
-      paddingHorizontal="sm"
-      paddingVertical="sm"
-    >
-      <Box flex={1} gap="xxs" paddingRight="md">
-        <Text variant="bodyDefault" color="gray950">
-          {title}
-        </Text>
-        <Text variant="bodySmDefault" color="gray500">
-          {description}
-        </Text>
+    <Box>
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="space-between"
+        paddingVertical="sm"
+      >
+        <Box flex={1} gap="xxs" paddingRight="md">
+          <Text variant="bodyMedium" color="gray950">
+            {title}
+          </Text>
+          <Text variant="bodySmDefault" color="gray400">
+            {description}
+          </Text>
+        </Box>
+        <Toggle
+          onColor={ColorPalette.blue500}
+          value={value}
+          onChange={onChange}
+        />
       </Box>
-      <Toggle value={value} onChange={onChange} />
+      {!isLast && (
+        <Box height={StyleSheet.hairlineWidth} backgroundColor="gray200" />
+      )}
     </Box>
   );
 }
@@ -99,7 +116,13 @@ function NotificationRow({
 
 export default function NotificationsScreen() {
   const queryClient = useQueryClient();
-  const { data: prefs } = useGetNotificationPreferences();
+  const toast = useToast();
+  const {
+    data: prefs,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetNotificationPreferences();
   const { mutate: ensureDefaults } =
     useGetOrCreateDefaultNotificationPreferences({
       mutation: {
@@ -129,9 +152,13 @@ export default function NotificationsScreen() {
     updatePrefs(
       { data: { [field]: value } },
       {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey });
+        },
         onError: () => {
           // Revert on error
           queryClient.invalidateQueries({ queryKey });
+          toast.show({ message: "Couldn't update notifications. Try again." });
         },
       },
     );
@@ -166,17 +193,44 @@ export default function NotificationsScreen() {
           Customize your notifications to best match your needs.
         </Text>
 
-        <Box gap="md" paddingHorizontal="sm">
-          {NOTIFICATION_ITEMS.map((item) => (
-            <NotificationRow
-              key={item.field}
-              title={item.title}
-              description={item.description}
-              value={prefs?.[item.field] ?? false}
-              onChange={(val) => handleToggle(item.field, val)}
-            />
-          ))}
-        </Box>
+        {isLoading ? (
+          <Box gap="md" paddingHorizontal="sm">
+            <SkeletonRect width="full" style={{ height: 72 }} />
+            <SkeletonRect width="full" style={{ height: 72 }} />
+            <SkeletonRect width="full" style={{ height: 72 }} />
+            <SkeletonRect width="full" style={{ height: 72 }} />
+          </Box>
+        ) : null}
+
+        {!isLoading && isError ? (
+          <ErrorState
+            title="Couldn't load notifications"
+            description="Please try again in a moment."
+            refresh={() => refetch()}
+          />
+        ) : null}
+
+        {!isLoading && !isError && !prefs ? (
+          <EmptyState
+            title="No notification settings"
+            description="Your preferences are not available right now."
+          />
+        ) : null}
+
+        {!isLoading && !isError && prefs ? (
+          <Box paddingHorizontal="sm">
+            {NOTIFICATION_ITEMS.map((item, index) => (
+              <NotificationRow
+                key={item.field}
+                title={item.title}
+                description={item.description}
+                value={prefs[item.field] ?? false}
+                onChange={(val) => handleToggle(item.field, val)}
+                isLast={index === NOTIFICATION_ITEMS.length - 1}
+              />
+            ))}
+          </Box>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -196,6 +250,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: Layout.spacing.md,
     paddingTop: Layout.spacing.xs,
-    paddingBottom: Layout.spacing.lg,
+    paddingBottom: Layout.spacing.sm,
   },
 });
