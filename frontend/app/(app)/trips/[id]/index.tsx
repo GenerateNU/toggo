@@ -486,7 +486,11 @@ export default function Trip() {
             disabled={isOpeningMap}
           >
             <Map size={16} color={ColorPalette.gray950} />
-            <Text variant="bodySmMedium" color="gray950" style={{ marginLeft: 4 }}>
+            <Text
+              variant="bodySmMedium"
+              color="gray950"
+              style={{ marginLeft: 4 }}
+            >
               Map
             </Text>
           </Pressable>
