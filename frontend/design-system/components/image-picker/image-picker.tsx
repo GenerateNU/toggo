@@ -15,7 +15,7 @@ import {
   Upload,
   X,
 } from "lucide-react-native";
-import React, { useCallback, useRef } from "react";
+import React, { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import {
   Alert,
   Pressable,
@@ -86,22 +86,34 @@ const ActionRow: React.FC<ActionRowProps> = ({
   </Pressable>
 );
 
-export const ImagePicker: React.FC<ImagePickerProps> = ({
-  value,
-  onChange,
-  variant = "circular",
-  size = 88,
-  width = "100%",
-  height = 200,
-  placeholder = "Add photo",
-  disabled = false,
-  title = "Add media",
-  subtitle,
-  showPlaceholderText = true,
-  showRemoveAction = true,
-  showUploadFromFilesAction = true,
-}) => {
+export interface ImagePickerHandle {
+  openSheet: () => void;
+}
+
+export const ImagePicker = forwardRef<ImagePickerHandle, ImagePickerProps>(
+  (
+    {
+      value,
+      onChange,
+      variant = "circular",
+      size = 88,
+      width = "100%",
+      height = 200,
+      placeholder = "Add photo",
+      disabled = false,
+      title = "Add media",
+      subtitle,
+      showPlaceholderText = true,
+      showRemoveAction = true,
+      showUploadFromFilesAction = true,
+    },
+    ref,
+  ) => {
   const sheetRef = useRef<BottomSheetMethods>(null);
+
+  useImperativeHandle(ref, () => ({
+    openSheet: () => sheetRef.current?.expand(),
+  }));
 
   const closeSheet = useCallback(() => sheetRef.current?.close(), []);
 
@@ -287,6 +299,9 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
       </BottomSheetModal>
     </>
   );
-};
+},
+);
+
+ImagePicker.displayName = "ImagePicker";
 
 export default ImagePicker;

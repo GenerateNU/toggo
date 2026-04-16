@@ -30,10 +30,13 @@ import {
   Box,
   EmptyState,
   ErrorState,
+  Icon,
+  ImagePicker,
   SkeletonRect,
   Text,
   useToast,
 } from "@/design-system";
+import type { ImagePickerHandle } from "@/design-system/components/image-picker/image-picker";
 import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -47,7 +50,7 @@ import {
 } from "@/utils/map-view-activities";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Map } from "lucide-react-native";
+import { ImagePlus, Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
@@ -92,6 +95,7 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
   const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
+  const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
 
   const {
@@ -333,14 +337,11 @@ export default function Trip() {
     <View style={styles.container}>
       {/* Hero image — absolutely positioned behind scroll, scales from top on pull-down */}
       <Animated.View
+        pointerEvents="none"
         style={[styles.heroContainer, { transform: [{ scale: heroScale }] }]}
       >
         <View style={styles.heroClip}>
-          <TripHeader
-            coverImageUrl={trip?.cover_image_url}
-            onChangeCoverImage={handleCoverImageChange}
-            isCoverUploading={isCoverUploading}
-          />
+          <TripHeader coverImageUrl={trip?.cover_image_url} />
         </View>
       </Animated.View>
 
@@ -459,6 +460,45 @@ export default function Trip() {
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
+
+      {/* Hidden ImagePicker provides the bottom sheet for cover image selection.
+          The visual (camera icon) lives in TripHeader, behind the card. */}
+      {!trip?.cover_image_url && (
+        <View style={styles.hiddenPicker}>
+          <ImagePicker
+            ref={coverPickerRef}
+            variant="rectangular"
+            width="100%"
+            height={1}
+            onChange={handleCoverImageChange}
+            showRemoveAction={false}
+            showPlaceholderText={false}
+            title="Add cover photo"
+          />
+        </View>
+      )}
+
+      {/* Pressable sits above the scroll view so the hero area is tappable.
+          Matches the hero scale transform so the icon parallaxes on pull-down. */}
+      {!trip?.cover_image_url && (
+        <Animated.View
+          style={[
+            styles.heroPicker,
+            { transform: [{ scale: heroScale }] },
+          ]}
+          pointerEvents={headerVisible ? "none" : "auto"}
+        >
+          <Pressable
+            style={styles.heroPickerPressable}
+            onPress={() => coverPickerRef.current?.openSheet()}
+            disabled={isCoverUploading || isLoading}
+          >
+            <Box flex={1} justifyContent="center" alignItems="center">
+              <Icon icon={ImagePlus} size="md" color="blue500" />
+            </Box>
+          </Pressable>
+        </Animated.View>
+      )}
 
       {/* Nav buttons — absolute over hero, fade out when fixed header appears */}
       <Animated.View
@@ -608,6 +648,21 @@ const styles = StyleSheet.create({
   heroClip: {
     height: HERO_HEIGHT,
     overflow: "hidden",
+  },
+  hiddenPicker: {
+    height: 0,
+    overflow: "hidden",
+  },
+  heroPicker: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: CONTENT_CARD_TOP,
+    transformOrigin: "top",
+  },
+  heroPickerPressable: {
+    ...StyleSheet.absoluteFillObject,
   },
   scrollContent: {
     flexGrow: 1,

@@ -128,6 +128,7 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
                 <Chip
                   label={label}
                   icon={Icon}
+                  iconSize={18}
                   selected={activeTab === name}
                   onPress={() => onTabPress(name)}
                   variant="filled"

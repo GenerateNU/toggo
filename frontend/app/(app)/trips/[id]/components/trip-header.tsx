@@ -1,69 +1,28 @@
-import { Box, ImagePicker } from "@/design-system";
+import { Box } from "@/design-system";
 import { Image } from "expo-image";
 import { StyleSheet } from "react-native";
 
-const TRIP_HEADER_IMAGE_HEIGHT = 300;
-
 type TripHeaderProps = {
   coverImageUrl?: string;
-  onChangeCoverImage?: (uri: string | null) => void;
-  isCoverUploading?: boolean;
-  disabled?: boolean;
-  absolute?: boolean;
 };
 
-export function TripHeader({
-  coverImageUrl,
-  onChangeCoverImage,
-  isCoverUploading,
-  disabled,
-  absolute = false,
-}: TripHeaderProps) {
-  const containerStyle = [
-    styles.coverImage,
-    absolute ? styles.absoluteCoverImage : undefined,
-  ];
-
+export function TripHeader({ coverImageUrl }: TripHeaderProps) {
   return (
-    <Box style={containerStyle}>
+    <Box style={styles.container} backgroundColor="blue25">
       {coverImageUrl ? (
         <Image
           source={{ uri: coverImageUrl }}
-          style={styles.coverImageFill}
+          style={StyleSheet.absoluteFillObject}
           contentFit="cover"
         />
-      ) : (
-        <ImagePicker
-          variant="rectangular"
-          width="100%"
-          height={TRIP_HEADER_IMAGE_HEIGHT}
-          value={coverImageUrl}
-          onChange={onChangeCoverImage}
-          placeholder=""
-          showPlaceholderText={false}
-          disabled={disabled || isCoverUploading}
-          title="Add cover photo"
-          showRemoveAction={false}
-        />
-      )}
+      ) : null}
     </Box>
   );
 }
 
 const styles = StyleSheet.create({
-  coverImage: {
-    height: TRIP_HEADER_IMAGE_HEIGHT,
-    width: "100%",
-  },
-  absoluteCoverImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-  coverImageFill: {
-    width: "100%",
-    height: "100%",
+  container: {
+    flex: 1,
   },
 });
 
