@@ -1,19 +1,28 @@
-import { useGetActivity, useUpdateActivity } from "@/api/activities";
+import { useUpdateActivity } from "@/api/activities";
 import { useUploadImage } from "@/api/files/custom";
 import { BackButton, Screen, Text, useToast } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily, FontSize } from "@/design-system/tokens/typography";
 import * as ExpoImagePicker from "expo-image-picker";
-import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { router } from "expo-router";
+import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Share, StyleSheet, View } from "react-native";
+import { ImageViewer } from "../media/image-viewer";
+import { MediaPopover } from "../media/media-popover";
+import { MediaTile, TILE_SIZE } from "../media/media-tile";
+import type { MediaItem } from "../media/types";
 
-// ─── Shared media components ──────────────────────────────────────────────────
-import { ImageViewer } from "../../media/image-viewer";
-import { MediaPopover } from "../../media/media-popover";
-import { MediaTile, TILE_SIZE } from "../../media/media-tile";
-import type { MediaItem } from "../../media/types";
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type AllMediaScreenProps = {
+  tripID: string;
+  entityID: string;
+  entityName?: string;
+  mediaItems: MediaItem[];
+  existingImageIds: string[];
+  onRefetch: () => void;
+};
 
 // ─── Add Tile ─────────────────────────────────────────────────────────────────
 
@@ -25,35 +34,19 @@ function AddTile({ onPress }: { onPress: () => void }) {
   );
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── Component ───────────────────────────────────────────────────────────────
 
-export default function AllMediaScreen() {
-  const { id: activityID, tripID } = useLocalSearchParams<{
-    id: string;
-    tripID: string;
-  }>();
+export function AllMediaScreen({
+  tripID,
+  entityID,
+  entityName,
+  mediaItems,
+  existingImageIds,
+  onRefetch,
+}: AllMediaScreenProps) {
   const toast = useToast();
   const uploadImage = useUploadImage();
   const updateActivity = useUpdateActivity();
-
-  const { data: activity, refetch } = useGetActivity(tripID ?? "", activityID, {
-    query: { enabled: !!(tripID && activityID) },
-  });
-
-  const mediaItems: MediaItem[] = useMemo(() => {
-    const items: MediaItem[] = [];
-    if (activity?.thumbnail_url) {
-      items.push({ imageId: "thumbnail", url: activity.thumbnail_url });
-    }
-    (activity?.image_ids ?? [])
-      .filter(
-        (img) => !!img.image_url && img.image_url !== activity?.thumbnail_url,
-      )
-      .forEach((img) =>
-        items.push({ imageId: img.image_id!, url: img.image_url! }),
-      );
-    return items;
-  }, [activity]);
 
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [popoverX, setPopoverX] = useState(0);
@@ -94,31 +87,22 @@ export default function AllMediaScreen() {
 
   const handleDelete = useCallback(async () => {
     setPopoverVisible(false);
-    if (!selectedItem || !tripID || !activityID || !activity) return;
-    const remainingIds = (activity.image_ids ?? [])
-      .filter((img) => img.image_id !== selectedItem.imageId)
-      .map((img) => img.image_id!)
-      .filter(Boolean);
+    if (!selectedItem) return;
+    const remainingIds = existingImageIds.filter(
+      (id) => id !== selectedItem.imageId,
+    );
     try {
       await updateActivity.mutateAsync({
         tripID,
-        activityID,
+        activityID: entityID,
         data: { image_ids: remainingIds },
       });
-      refetch();
+      onRefetch();
       toast.show({ message: "Image removed." });
     } catch {
       toast.show({ message: "Couldn't remove image. Try again." });
     }
-  }, [
-    selectedItem,
-    tripID,
-    activityID,
-    activity,
-    updateActivity,
-    refetch,
-    toast,
-  ]);
+  }, [selectedItem, tripID, entityID, existingImageIds, updateActivity, onRefetch, toast]);
 
   const handleAddImage = useCallback(async () => {
     const { status } =
@@ -136,29 +120,18 @@ export default function AllMediaScreen() {
         uri: result.assets[0].uri,
         sizes: ["medium", "large"],
       });
-      const existingIds = (activity?.image_ids ?? [])
-        .map((img) => img.image_id!)
-        .filter(Boolean);
       await updateActivity.mutateAsync({
-        tripID: tripID!,
-        activityID: activityID!,
-        data: { image_ids: [...existingIds, res.imageId] },
+        tripID,
+        activityID: entityID,
+        data: { image_ids: [...existingImageIds, res.imageId] },
       });
-      refetch();
+      onRefetch();
     } catch {
       toast.show({ message: "Couldn't upload image. Try again." });
     } finally {
       setIsUploading(false);
     }
-  }, [
-    activity,
-    tripID,
-    activityID,
-    uploadImage,
-    updateActivity,
-    refetch,
-    toast,
-  ]);
+  }, [tripID, entityID, existingImageIds, uploadImage, updateActivity, onRefetch, toast]);
 
   return (
     <Screen>
@@ -167,7 +140,7 @@ export default function AllMediaScreen() {
           <BackButton onPress={() => router.back()} />
         </View>
         <Text style={styles.navTitle} numberOfLines={1}>
-          {activity?.name ?? "Media"}
+          {entityName ?? "Media"}
         </Text>
         <View style={styles.navSideButton} />
       </View>

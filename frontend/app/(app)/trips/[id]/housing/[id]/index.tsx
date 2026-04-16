@@ -1,9 +1,8 @@
 import {
-  useDeleteActivity,
-  useGetActivity,
-  useUpdateActivity,
+    useDeleteActivity,
+    useGetActivity,
+    useUpdateActivity,
 } from "@/api/activities";
-import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activities/usePostApiV1TripsTripidActivitiesActivityidRsvp";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { getPlaceDetailsCustom } from "@/api/places/custom";
@@ -11,15 +10,13 @@ import { useUser } from "@/contexts/user";
 import { Box, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
-import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
+import { modelsEntityType } from "@/types/types.gen";
 import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { router, useLocalSearchParams } from "expo-router";
 import { Trash2 } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EntityDetailScreen } from "../../components/entity-detail-screen";
-import { MembersGoingSection } from "../../components/members-going-section";
-import { RsvpButton } from "../components/rsvp-button";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -34,9 +31,9 @@ function parseActivityDates(activity: ModelsActivityAPIResponse): DateRange {
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
-export default function ActivityDetail() {
+export default function HousingDetail() {
   const {
-    id: activityID,
+    id: housingID,
     tripID,
     openComments,
   } = useLocalSearchParams<{
@@ -54,15 +51,14 @@ export default function ActivityDetail() {
 
   // ─── Remote data ─────────────────────────────────────────────────────────
 
-  const { data: activity, isLoading, refetch } = useGetActivity(
+  const { data: housing, isLoading, refetch } = useGetActivity(
     tripID ?? "",
-    activityID,
-    { query: { enabled: !!(tripID && activityID) } },
+    housingID,
+    { query: { enabled: !!(tripID && housingID) } },
   );
 
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
-  const rsvpMutation = usePostApiV1TripsTripidActivitiesActivityidRsvp();
 
   const {
     comments,
@@ -74,8 +70,8 @@ export default function ActivityDetail() {
   } = useEntityComments({
     tripID: tripID ?? "",
     entityType: modelsEntityType.ActivityEntity,
-    entityID: activityID ?? "",
-    enabled: !!(tripID && activityID),
+    entityID: housingID ?? "",
+    enabled: !!(tripID && housingID),
   });
 
   // ─── Local state ─────────────────────────────────────────────────────────
@@ -93,70 +89,46 @@ export default function ActivityDetail() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!activity) return;
-    setName(activity.name ?? "");
-    setDescription(activity.description ?? "");
-    setPrice(activity.estimated_price ?? null);
-    setDateRange(parseActivityDates(activity));
-    setLocationName(activity.location_name ?? null);
-    setLocationLat(activity.location_lat ?? null);
-    setLocationLng(activity.location_lng ?? null);
-    setLink(activity.media_url ?? "");
-  }, [activity]);
+    if (!housing) return;
+    setName(housing.name ?? "");
+    setDescription(housing.description ?? "");
+    setPrice(housing.estimated_price ?? null);
+    setDateRange(parseActivityDates(housing));
+    setLocationName(housing.location_name ?? null);
+    setLocationLat(housing.location_lat ?? null);
+    setLocationLng(housing.location_lng ?? null);
+    setLink(housing.media_url ?? "");
+  }, [housing]);
 
   // ─── Derived ─────────────────────────────────────────────────────────────
 
   const heroImages = useMemo(() => {
     const images: string[] = [];
-    if (activity?.thumbnail_url) images.push(activity.thumbnail_url);
-    activity?.image_ids?.forEach((img) => {
-      if (img.image_url && img.image_url !== activity.thumbnail_url)
+    if (housing?.thumbnail_url) images.push(housing.thumbnail_url);
+    housing?.image_ids?.forEach((img) => {
+      if (img.image_url && img.image_url !== housing.thumbnail_url)
         images.push(img.image_url);
     });
     return images;
-  }, [activity]);
-
-  const isGoing = useMemo(() => {
-    if (!userId || !activity?.going_users) return false;
-    return activity.going_users.some((u) => u.user_id === userId);
-  }, [userId, activity]);
+  }, [housing]);
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
   const saveField = useCallback(
     async (patch: Parameters<typeof updateMutation.mutateAsync>[0]["data"]) => {
-      if (!tripID || !activityID) return;
+      if (!tripID || !housingID) return;
       setIsSaving(true);
       try {
-        await updateMutation.mutateAsync({ tripID, activityID, data: patch });
+        await updateMutation.mutateAsync({ tripID, activityID: housingID, data: patch });
         refetch();
       } catch {
-        // no-op — callers show their own toasts if needed
+        // toast handled by caller if needed
       } finally {
         setIsSaving(false);
       }
     },
-    [tripID, activityID, updateMutation, refetch],
+    [tripID, housingID, updateMutation, refetch],
   );
-
-  const handleRsvp = useCallback(async () => {
-    if (!tripID || !activityID) return;
-    try {
-      await rsvpMutation.mutateAsync({
-        tripID,
-        activityID,
-        data: {
-          status: isGoing
-            ? modelsRSVPStatus.RSVPStatusNotGoing
-            : modelsRSVPStatus.RSVPStatusGoing,
-        },
-      });
-    } catch {
-      // no-op
-      return;
-    }
-    refetch();
-  }, [tripID, activityID, isGoing, rsvpMutation, refetch]);
 
   const handleEditLocation = useCallback(() => {
     locationSelectStore.set(async (prediction) => {
@@ -180,22 +152,15 @@ export default function ActivityDetail() {
   }, [tripID, saveField]);
 
   const handleDelete = useCallback(async () => {
-    if (!tripID || !activityID) return;
+    if (!tripID || !housingID) return;
     setIsDeleting(true);
     try {
-      await deleteMutation.mutateAsync({ tripID, activityID });
+      await deleteMutation.mutateAsync({ tripID, activityID: housingID });
       router.replace(`/trips/${tripID}` as any);
     } catch {
       setIsDeleting(false);
     }
-  }, [tripID, activityID, deleteMutation]);
-
-  const handleRemoveMember = useCallback(
-    (_memberId: string) => {
-      // coming soon
-    },
-    [],
-  );
+  }, [tripID, housingID, deleteMutation]);
 
   // ─── Loading / not found ─────────────────────────────────────────────────
 
@@ -209,11 +174,11 @@ export default function ActivityDetail() {
     );
   }
 
-  if (!activity) {
+  if (!housing) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">Activity not found.</Text>
+          <Text variant="bodyDefault" color="gray500">Housing option not found.</Text>
         </Box>
       </SafeAreaView>
     );
@@ -233,11 +198,11 @@ export default function ActivityDetail() {
       locationLng={locationLng}
       link={link}
       tripID={tripID ?? ""}
-      entityID={activityID ?? ""}
-      allMediaPath={`/trips/${tripID}/activities/${activityID}/activity-all-media`}
+      entityID={housingID ?? ""}
+      allMediaPath={`/trips/${tripID}/housing/${housingID}/housing-all-media`}
       menuActions={[
         {
-          label: "Delete activity",
+          label: "Delete housing option",
           icon: Trash2,
           isDanger: true,
           onPress: () => setIsDeleteVisible(true),
@@ -272,20 +237,7 @@ export default function ActivityDetail() {
         setLocationLng(lng);
       }}
       onLinkChange={setLink}
-      actionButton={
-        <RsvpButton
-          isGoing={isGoing}
-          onPress={handleRsvp}
-          disabled={rsvpMutation.isPending}
-          variant="detail"
-        />
-      }
-      extraSection={
-        <MembersGoingSection
-          goingUsers={activity.going_users ?? []}
-          onRemoveMember={handleRemoveMember}
-        />
-      }
+      // No actionButton or extraSection for housing
       comments={comments}
       isLoadingComments={isLoadingComments}
       isLoadingMoreComments={isLoadingMoreComments}
