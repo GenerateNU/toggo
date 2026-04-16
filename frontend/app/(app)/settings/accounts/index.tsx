@@ -188,10 +188,7 @@ export default function AccountScreen() {
             </Box>
           ) : (
             // ─── View mode ───────────────────────────────────────────────
-            <Box
-              backgroundColor="white"
-              borderRadius="md"
-            >
+            <Box backgroundColor="white" borderRadius="md">
               <FieldRow label="Name" value={name} />
               <RowDivider />
               <FieldRow label="Username" value={username} />
