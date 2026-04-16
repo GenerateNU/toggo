@@ -2,12 +2,9 @@ import { Box, Button } from "@/design-system";
 import { router } from "expo-router";
 import {
   BarChart2,
-  Image as ImageIcon,
   Lightbulb,
-  Link2,
   MapPin,
   Plus,
-  StickyNote,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable } from "react-native";
@@ -21,18 +18,12 @@ import Animated, {
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
-export type MoodBoardFabActions = {
-  onAddNote: () => void;
-  onAddImage: () => void;
-  onAddLink: () => void;
-};
-
 interface CreateFABProps {
   tripID: string;
   onCreatePoll: () => void;
   onCreateActivity: () => void;
-  /** When set, replaces Activity / Pitch / Poll with mood-board entry points. */
-  moodBoardActions?: MoodBoardFabActions | null;
+  /** Opens the mood board “Add to …” bottom sheet (no radial sub-menu). */
+  onOpenMoodBoardAdd?: () => void;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
@@ -49,7 +40,7 @@ export default function CreateFAB({
   tripID,
   onCreatePoll,
   onCreateActivity,
-  moodBoardActions,
+  onOpenMoodBoardAdd,
 }: CreateFABProps) {
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -92,27 +83,8 @@ export default function CreateFAB({
     ],
   }));
 
-  const actions = useMemo(() => {
-    if (moodBoardActions) {
-      return [
-        {
-          label: "Note",
-          icon: StickyNote,
-          onPress: moodBoardActions.onAddNote,
-        },
-        {
-          label: "Photo",
-          icon: ImageIcon,
-          onPress: moodBoardActions.onAddImage,
-        },
-        {
-          label: "Link",
-          icon: Link2,
-          onPress: moodBoardActions.onAddLink,
-        },
-      ];
-    }
-    return [
+  const actions = useMemo(
+    () => [
       {
         label: "Activity",
         icon: MapPin,
@@ -128,8 +100,32 @@ export default function CreateFAB({
         icon: BarChart2,
         onPress: onCreatePoll,
       },
-    ];
-  }, [moodBoardActions, onCreateActivity, onCreatePoll, tripID]);
+    ],
+    [onCreateActivity, onCreatePoll, tripID],
+  );
+
+  if (onOpenMoodBoardAdd) {
+    return (
+      <Box style={ABSOLUTE_FILL} pointerEvents="box-none">
+        <Box
+          position="absolute"
+          bottom={32}
+          right={24}
+          alignItems="flex-end"
+          pointerEvents="box-none"
+        >
+          <Button
+            layout="iconOnly"
+            icon={Plus}
+            accessibilityLabel="Add mood board item"
+            variant="IconCircular"
+            size="large"
+            onPress={onOpenMoodBoardAdd}
+          />
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box style={ABSOLUTE_FILL} pointerEvents="box-none">

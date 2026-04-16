@@ -88,6 +88,7 @@ export function useActivitiesList(
     isLoading,
     isError,
     isLoadingMore: isFetchingNextPage,
+    hasNextPage: hasNextPage ?? false,
     fetchMore,
     prependActivity,
   };

@@ -11,10 +11,11 @@ import { ImagePlus } from "lucide-react-native";
 import {
   forwardRef,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { assertMoodBoardActivityXor } from "./mood-board-utils";
 
 export type MoodBoardImageSheetHandle = {
@@ -36,13 +37,29 @@ export const MoodBoardImageSheet = forwardRef<
 >(({ tripID, categoryName, onSaved }, ref) => {
   const sheetRef = useRef<BottomSheetMethods>(null);
   const [localUri, setLocalUri] = useState<string | null>(null);
+  /** Width / height from the picker asset (native dimensions). */
+  const [pickedAspect, setPickedAspect] = useState<number | null>(null);
   const [caption, setCaption] = useState("");
   const createActivity = useCreateActivity();
   const toast = useToast();
+  const { width: windowWidth } = useWindowDimensions();
+
+  const maxPreviewWidth = useMemo(
+    () => windowWidth - Layout.spacing.sm * 2,
+    [windowWidth],
+  );
+
+  const previewHeight = useMemo(() => {
+    if (!pickedAspect || pickedAspect <= 0) {
+      return maxPreviewWidth;
+    }
+    return maxPreviewWidth / pickedAspect;
+  }, [maxPreviewWidth, pickedAspect]);
 
   useImperativeHandle(ref, () => ({
     open: () => {
       setLocalUri(null);
+      setPickedAspect(null);
       setCaption("");
       sheetRef.current?.snapToIndex(0);
     },
@@ -58,12 +75,19 @@ export const MoodBoardImageSheet = forwardRef<
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 5],
-      quality: 0.85,
+      allowsEditing: false,
+      quality: 1,
     });
     if (!result.canceled && result.assets[0]?.uri) {
-      setLocalUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      setLocalUri(asset.uri);
+      const w = asset.width ?? 0;
+      const h = asset.height ?? 0;
+      if (w > 0 && h > 0) {
+        setPickedAspect(w / h);
+      } else {
+        setPickedAspect(null);
+      }
     }
   };
 
@@ -144,8 +168,11 @@ export const MoodBoardImageSheet = forwardRef<
             {localUri ? (
               <Image
                 source={{ uri: localUri }}
-                style={styles.previewImage}
-                resizeMode="cover"
+                style={{
+                  width: maxPreviewWidth,
+                  height: previewHeight,
+                }}
+                resizeMode="contain"
               />
             ) : (
               <View style={styles.placeholderInner}>
@@ -181,16 +208,13 @@ const styles = StyleSheet.create({
     borderBottomColor: ColorPalette.gray100,
   },
   preview: {
-    minHeight: 200,
     overflow: "hidden",
-  },
-  previewImage: {
-    width: "100%",
-    height: 220,
   },
   placeholderInner: {
     paddingVertical: Layout.spacing.xl,
     alignItems: "center",
     gap: Layout.spacing.xs,
+    minHeight: 200,
+    width: "100%",
   },
 });

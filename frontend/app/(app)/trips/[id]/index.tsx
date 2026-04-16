@@ -15,6 +15,10 @@ import {
 } from "@/app/(app)/trips/[id]/activities/components/activities-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
 import {
+  MoodBoardAddOptionsSheet,
+  type MoodBoardAddOptionsSheetHandle,
+} from "@/app/(app)/trips/[id]/components/mood-board-add-options-sheet";
+import {
   MoodBoardTabContent,
   type MoodBoardTabContentHandle,
 } from "@/app/(app)/trips/[id]/components/mood-board-tab-content";
@@ -108,6 +112,10 @@ export default function Trip() {
   const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
   const moodBoardRef = useRef<MoodBoardTabContentHandle>(null);
+  const moodBoardAddSheetRef = useRef<MoodBoardAddOptionsSheetHandle>(null);
+  const moodBoardOnParentScrollRef = useRef<
+    ((scrollY: number) => void) | undefined
+  >(undefined);
 
   const {
     data: trip,
@@ -270,6 +278,16 @@ export default function Trip() {
     router.push(`/trips/${tripID}/pitches` as any);
   };
 
+  const registerMoodBoardParentScroll = useCallback(
+    (handler: (scrollY: number) => void) => {
+      moodBoardOnParentScrollRef.current = handler;
+      return () => {
+        moodBoardOnParentScrollRef.current = undefined;
+      };
+    },
+    [],
+  );
+
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
 
   const handleOpenMapView = useCallback(async () => {
@@ -327,6 +345,7 @@ export default function Trip() {
       listener: (e: any) => {
         const nextOffset = e.nativeEvent.contentOffset.y;
         parentScrollOffsetRef.current = nextOffset;
+        moodBoardOnParentScrollRef.current?.(nextOffset);
 
         const shouldShow = nextOffset > titleScrollThreshold;
         if (shouldShow !== headerVisibleRef.current) {
@@ -493,6 +512,7 @@ export default function Trip() {
                     ref={moodBoardRef}
                     tripID={tripID}
                     categoryName={activeTab}
+                    onParentScroll={registerMoodBoardParentScroll}
                   />
                 ) : (
                   <ActivitiesTabContent
@@ -600,19 +620,23 @@ export default function Trip() {
           tripID={tripID}
           onCreatePoll={handleOpenCreatePoll}
           onCreateActivity={handleOpenCreateActivity}
-          moodBoardActions={
+          onOpenMoodBoardAdd={
             !isRoutedTripTab(activeTab) &&
             activeTab !== "settings" &&
             isMoodboardTab(activeTabMeta)
-              ? {
-                  onAddNote: () => moodBoardRef.current?.openAddNote(),
-                  onAddImage: () => moodBoardRef.current?.openAddImage(),
-                  onAddLink: () => moodBoardRef.current?.openAddLink(),
-                }
-              : null
+              ? () => moodBoardAddSheetRef.current?.open()
+              : undefined
           }
         />
       )}
+
+      <MoodBoardAddOptionsSheet
+        ref={moodBoardAddSheetRef}
+        categoryLabel={activeTabMeta?.label?.trim() || activeTab}
+        onAddNote={() => moodBoardRef.current?.openAddNote()}
+        onAddImage={() => moodBoardRef.current?.openAddImage()}
+        onAddLink={() => moodBoardRef.current?.openAddLink()}
+      />
 
       <CreatePollSheet
         ref={createPollSheetRef}

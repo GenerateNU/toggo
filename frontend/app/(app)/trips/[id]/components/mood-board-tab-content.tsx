@@ -1,21 +1,25 @@
 import { useActivitiesListByCategory } from "@/api/activities/custom/useActivitiesListByCategory";
-import { useEntityComments } from "@/api/comments/custom/useEntityComments";
-import { useUser } from "@/contexts/user";
 import { Box, EmptyState, Spinner, Text } from "@/design-system";
-import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
-import { modelsEntityType } from "@/types/types.gen";
+import { FlashList, type ListRenderItemInfo } from "@shopify/flash-list";
+import { useRouter } from "expo-router";
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
-import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  StyleSheet,
+  View,
+} from "react-native";
 import { MoodBoardCard } from "./mood-board-card";
 import {
   MoodBoardImageSheet,
@@ -39,23 +43,32 @@ export type MoodBoardTabContentHandle = {
 type MoodBoardTabContentProps = {
   tripID: string;
   categoryName: string;
+  /**
+   * Subscribe to the trip screen’s outer `ScrollView` scroll position so we can
+   * paginate while this list is nested with `scrollEnabled={false}`.
+   */
+  onParentScroll?: (handler: (scrollY: number) => void) => () => void;
 };
 
 export const MoodBoardTabContent = forwardRef<
   MoodBoardTabContentHandle,
   MoodBoardTabContentProps
->(({ tripID, categoryName }, ref) => {
-  const { currentUser } = useUser();
-  const [activeActivityId, setActiveActivityId] = useState<string | null>(
-    null,
-  );
-
+>(({ tripID, categoryName, onParentScroll }, ref) => {
+  const router = useRouter();
   const noteRef = useRef<MoodBoardNoteSheetHandle>(null);
   const imageRef = useRef<MoodBoardImageSheetHandle>(null);
   const linkRef = useRef<MoodBoardLinkEntrySheetHandle>(null);
+  const loadMoreSentinelRef = useRef<View>(null);
+  const loadMoreThrottleRef = useRef(0);
 
-  const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
-    useActivitiesListByCategory(tripID, categoryName);
+  const {
+    activities,
+    isLoading,
+    isLoadingMore,
+    hasNextPage,
+    fetchMore,
+    prependActivity,
+  } = useActivitiesListByCategory(tripID, categoryName);
 
   const sortedActivities = useMemo(() => {
     return [...activities].sort((a, b) => {
@@ -78,39 +91,75 @@ export const MoodBoardTabContent = forwardRef<
     [prependActivity],
   );
 
-  const {
-    comments,
-    isLoading: isLoadingComments,
-    isLoadingMore: isLoadingMoreComments,
-    fetchNextPage,
-    onSubmitComment,
-    onReact,
-  } = useEntityComments({
-    tripID,
-    entityType: modelsEntityType.ActivityEntity,
-    entityID: activeActivityId ?? "",
-    enabled: !!activeActivityId,
-  });
+  const navigateToActivity = useCallback(
+    (item: ModelsActivityAPIResponse) => {
+      if (!item.id) return;
+      router.push({
+        pathname: `/trips/${tripID}/activities/${item.id}` as any,
+        params: { tripID },
+      });
+    },
+    [router, tripID],
+  );
 
   const renderItem = useCallback(
-    ({ item }: { item: ModelsActivityAPIResponse }) => (
-      <MoodBoardCard
-        activity={item}
-        onPress={() => setActiveActivityId(item.id ?? null)}
-      />
+    ({ item }: ListRenderItemInfo<ModelsActivityAPIResponse>) => (
+      <View style={styles.masonryCell} collapsable={false}>
+        <MoodBoardCard
+          tripID={tripID}
+          activity={item}
+          onPress={() => navigateToActivity(item)}
+        />
+      </View>
     ),
-    [],
+    [tripID, navigateToActivity],
   );
 
-  const renderFooter = useCallback(
-    () =>
-      isLoadingMore ? (
-        <Box paddingVertical="sm" alignItems="center" width="100%">
-          <ActivityIndicator size="small" color={ColorPalette.gray500} />
-        </Box>
-      ) : null,
+  const renderListFooter = useCallback(
+    () => (
+      <>
+        <View
+          ref={loadMoreSentinelRef}
+          collapsable={false}
+          style={styles.loadMoreSentinel}
+        />
+        {isLoadingMore ? (
+          <Box paddingVertical="sm" alignItems="center" width="100%">
+            <ActivityIndicator size="small" color={ColorPalette.gray500} />
+          </Box>
+        ) : null}
+      </>
+    ),
     [isLoadingMore],
   );
+
+  const tryFetchMoreIfNearBottom = useCallback(() => {
+    if (!hasNextPage || isLoadingMore) return;
+    const now = Date.now();
+    if (now - loadMoreThrottleRef.current < 320) return;
+    loadMoreThrottleRef.current = now;
+    loadMoreSentinelRef.current?.measureInWindow((_x, y, _w, h) => {
+      const windowHeight = Dimensions.get("window").height;
+      const nearBottom = y < windowHeight + 200;
+      const notScrolledPast = y + h > -80;
+      if (nearBottom && notScrolledPast) {
+        fetchMore();
+      }
+    });
+  }, [hasNextPage, isLoadingMore, fetchMore]);
+
+  useEffect(() => {
+    if (!onParentScroll) return;
+    return onParentScroll(() => {
+      tryFetchMoreIfNearBottom();
+    });
+  }, [onParentScroll, tryFetchMoreIfNearBottom]);
+
+  useLayoutEffect(() => {
+    if (sortedActivities.length === 0) return;
+    const id = requestAnimationFrame(() => tryFetchMoreIfNearBottom());
+    return () => cancelAnimationFrame(id);
+  }, [sortedActivities.length, tryFetchMoreIfNearBottom]);
 
   if (isLoading) {
     return (
@@ -144,17 +193,20 @@ export const MoodBoardTabContent = forwardRef<
             </Text>
           </Box>
 
-          <FlatList
+          <FlashList
             data={sortedActivities}
-            keyExtractor={(item) => item.id ?? ""}
+            masonry
             numColumns={2}
-            renderItem={renderItem}
-            onEndReached={fetchMore}
-            onEndReachedThreshold={0.35}
-            ListFooterComponent={renderFooter}
+            optimizeItemArrangement={false}
             scrollEnabled={false}
-            columnWrapperStyle={styles.column}
-            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item) => item.id ?? ""}
+            renderItem={renderItem}
+            ListFooterComponent={renderListFooter}
+            onEndReached={hasNextPage ? fetchMore : undefined}
+            onEndReachedThreshold={0.35}
+            style={styles.flashList}
+            contentContainerStyle={styles.flashListContent}
           />
         </>
       )}
@@ -178,21 +230,6 @@ export const MoodBoardTabContent = forwardRef<
         onSaved={handleSaved}
         onClose={() => {}}
       />
-
-      <CommentSection
-        visible={!!activeActivityId}
-        onClose={() => setActiveActivityId(null)}
-        comments={comments}
-        isLoading={isLoadingComments}
-        isLoadingMore={isLoadingMoreComments}
-        onLoadMore={fetchNextPage}
-        currentUserId={currentUser?.id ?? ""}
-        currentUserName={currentUser?.name ?? ""}
-        currentUserAvatar={currentUser?.profile_picture}
-        currentUserSeed={currentUser?.id}
-        onSubmitComment={onSubmitComment}
-        onReact={onReact}
-      />
     </Box>
   );
 });
@@ -200,10 +237,20 @@ export const MoodBoardTabContent = forwardRef<
 MoodBoardTabContent.displayName = "MoodBoardTabContent";
 
 const styles = StyleSheet.create({
-  column: {
-    gap: Layout.spacing.sm,
+  /** Centers cards that use a fixed column width slightly narrower than FlashList’s half-row. */
+  masonryCell: {
+    width: "100%",
+    alignItems: "center",
   },
-  listContent: {
+  flashList: {
+    width: "100%",
+  },
+  flashListContent: {
     paddingBottom: Layout.spacing.md,
+  },
+  loadMoreSentinel: {
+    height: 1,
+    width: "100%",
+    marginTop: Layout.spacing.xs,
   },
 });
