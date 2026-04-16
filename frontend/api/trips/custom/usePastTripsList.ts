@@ -50,7 +50,7 @@ export function usePastTripsList(endDateBefore: string) {
     return (
       data?.pages.flatMap((page) =>
         (page.items ?? []).filter((item) => {
-          if (!item.id || seen.has(item.id)) return false;
+          if (!item.id || !item.end_date || seen.has(item.id)) return false;
           seen.add(item.id);
           return true;
         }),
