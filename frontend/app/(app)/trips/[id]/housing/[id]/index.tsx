@@ -1,7 +1,7 @@
 import {
-    useDeleteActivity,
-    useGetActivity,
-    useUpdateActivity,
+  useDeleteActivity,
+  useGetActivity,
+  useUpdateActivity,
 } from "@/api/activities";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
@@ -51,11 +51,13 @@ export default function HousingDetail() {
 
   // ─── Remote data ─────────────────────────────────────────────────────────
 
-  const { data: housing, isLoading, refetch } = useGetActivity(
-    tripID ?? "",
-    housingID,
-    { query: { enabled: !!(tripID && housingID) } },
-  );
+  const {
+    data: housing,
+    isLoading,
+    refetch,
+  } = useGetActivity(tripID ?? "", housingID, {
+    query: { enabled: !!(tripID && housingID) },
+  });
 
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
@@ -79,7 +81,10 @@ export default function HousingDetail() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
   const [locationName, setLocationName] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
@@ -119,7 +124,11 @@ export default function HousingDetail() {
       if (!tripID || !housingID) return;
       setIsSaving(true);
       try {
-        await updateMutation.mutateAsync({ tripID, activityID: housingID, data: patch });
+        await updateMutation.mutateAsync({
+          tripID,
+          activityID: housingID,
+          data: patch,
+        });
         refetch();
       } catch {
         // toast handled by caller if needed
@@ -133,7 +142,9 @@ export default function HousingDetail() {
   const handleEditLocation = useCallback(() => {
     locationSelectStore.set(async (prediction) => {
       try {
-        const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
+        const res = await getPlaceDetailsCustom({
+          place_id: prediction.place_id,
+        });
         const newName =
           res.data.formatted_address || prediction.description || res.data.name;
         setLocationName(newName);
@@ -168,7 +179,9 @@ export default function HousingDetail() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">Loading...</Text>
+          <Text variant="bodyDefault" color="gray500">
+            Loading...
+          </Text>
         </Box>
       </SafeAreaView>
     );
@@ -178,7 +191,9 @@ export default function HousingDetail() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">Housing option not found.</Text>
+          <Text variant="bodyDefault" color="gray500">
+            Housing option not found.
+          </Text>
         </Box>
       </SafeAreaView>
     );

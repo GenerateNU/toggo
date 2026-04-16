@@ -54,11 +54,13 @@ export default function ActivityDetail() {
 
   // ─── Remote data ─────────────────────────────────────────────────────────
 
-  const { data: activity, isLoading, refetch } = useGetActivity(
-    tripID ?? "",
-    activityID,
-    { query: { enabled: !!(tripID && activityID) } },
-  );
+  const {
+    data: activity,
+    isLoading,
+    refetch,
+  } = useGetActivity(tripID ?? "", activityID, {
+    query: { enabled: !!(tripID && activityID) },
+  });
 
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
@@ -83,7 +85,10 @@ export default function ActivityDetail() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    start: null,
+    end: null,
+  });
   const [locationName, setLocationName] = useState<string | null>(null);
   const [locationLat, setLocationLat] = useState<number | null>(null);
   const [locationLng, setLocationLng] = useState<number | null>(null);
@@ -161,7 +166,9 @@ export default function ActivityDetail() {
   const handleEditLocation = useCallback(() => {
     locationSelectStore.set(async (prediction) => {
       try {
-        const res = await getPlaceDetailsCustom({ place_id: prediction.place_id });
+        const res = await getPlaceDetailsCustom({
+          place_id: prediction.place_id,
+        });
         const newName =
           res.data.formatted_address || prediction.description || res.data.name;
         setLocationName(newName);
@@ -190,12 +197,9 @@ export default function ActivityDetail() {
     }
   }, [tripID, activityID, deleteMutation]);
 
-  const handleRemoveMember = useCallback(
-    (_memberId: string) => {
-      // coming soon
-    },
-    [],
-  );
+  const handleRemoveMember = useCallback((_memberId: string) => {
+    // coming soon
+  }, []);
 
   // ─── Loading / not found ─────────────────────────────────────────────────
 
@@ -203,7 +207,9 @@ export default function ActivityDetail() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">Loading...</Text>
+          <Text variant="bodyDefault" color="gray500">
+            Loading...
+          </Text>
         </Box>
       </SafeAreaView>
     );
@@ -213,7 +219,9 @@ export default function ActivityDetail() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">Activity not found.</Text>
+          <Text variant="bodyDefault" color="gray500">
+            Activity not found.
+          </Text>
         </Box>
       </SafeAreaView>
     );

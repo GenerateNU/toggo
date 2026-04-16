@@ -1,5 +1,11 @@
 import { ConfirmSheet } from "@/app/(app)/components/confirm-sheet";
-import { BottomSheet, Box, DateRangePicker, Text, useToast } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  DateRangePicker,
+  Text,
+  useToast,
+} from "@/design-system";
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -10,20 +16,25 @@ import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily, FontSize } from "@/design-system/tokens/typography";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import {
-    Camera,
-    MapView,
-    PointAnnotation,
+  Camera,
+  MapView,
+  PointAnnotation,
 } from "@maplibre/maplibre-react-native";
 import { router } from "expo-router";
-import { Calendar, DollarSign, MapPin, type LucideIcon } from "lucide-react-native";
+import {
+  Calendar,
+  DollarSign,
+  MapPin,
+  type LucideIcon,
+} from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DetailHeader } from "./detail-header";
@@ -70,7 +81,11 @@ export type EntityDetailScreenProps = {
   // Setters for local state (controlled from parent)
   onPriceChange: (price: number) => void;
   onDateRangeChange: (range: DateRange) => void;
-  onLocationChange: (name: string | null, lat: number | null, lng: number | null) => void;
+  onLocationChange: (
+    name: string | null,
+    lat: number | null,
+    lng: number | null,
+  ) => void;
   onLinkChange: (link: string) => void;
 
   // Slots
@@ -174,26 +189,25 @@ export function EntityDetailScreen({
   const formattedDate = formatDateRange(dateRange);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={["bottom"]}>
-      <DetailHeader
-        title={name}
-        onBack={onBack}
-        menuActions={menuActions}
-      />
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      edges={["bottom"]}
+    >
+      <DetailHeader title={name} onBack={onBack} menuActions={menuActions} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <HeroCarousel
-  images={heroImages}
-  onViewAll={() =>
-    router.push({
-      pathname: allMediaPath as any,
-      params: { tripID },
-    })
-  }
-/>
+          images={heroImages}
+          onViewAll={() =>
+            router.push({
+              pathname: allMediaPath as any,
+              params: { tripID },
+            })
+          }
+        />
 
         <Box style={styles.body}>
           {/* Title + action button slot */}
@@ -229,7 +243,10 @@ export function EntityDetailScreen({
               <Text style={styles.priceText}>
                 {price != null ? `${price} USD` : "No price set"}
               </Text>
-              <Pressable onPress={() => setIsPricePickerVisible(true)} hitSlop={8}>
+              <Pressable
+                onPress={() => setIsPricePickerVisible(true)}
+                hitSlop={8}
+              >
                 <Text style={styles.editButton}>Edit</Text>
               </Pressable>
             </Box>
@@ -237,12 +254,18 @@ export function EntityDetailScreen({
               <Box style={styles.priceRow}>
                 <Calendar size={16} color={ColorPalette.gray950} />
                 <Text style={styles.priceText}>{formattedDate}</Text>
-                <Pressable onPress={() => setIsDatePickerVisible(true)} hitSlop={8}>
+                <Pressable
+                  onPress={() => setIsDatePickerVisible(true)}
+                  hitSlop={8}
+                >
                   <Text style={styles.editButton}>Edit</Text>
                 </Pressable>
               </Box>
             ) : (
-              <Pressable style={styles.priceRow} onPress={() => setIsDatePickerVisible(true)}>
+              <Pressable
+                style={styles.priceRow}
+                onPress={() => setIsDatePickerVisible(true)}
+              >
                 <Calendar size={16} color={ColorPalette.blue500} />
                 <Text style={styles.addText}>Add date</Text>
               </Pressable>
@@ -257,7 +280,9 @@ export function EntityDetailScreen({
             {locationName && (
               <Box style={styles.locationRow}>
                 <MapPin size={14} color={ColorPalette.gray950} />
-                <Text variant="bodyMedium" color="gray950">{locationName}</Text>
+                <Text variant="bodyMedium" color="gray950">
+                  {locationName}
+                </Text>
               </Box>
             )}
             {coordinate && (
@@ -304,7 +329,12 @@ export function EntityDetailScreen({
                 }}
               />
             ) : (
-              <Pressable onPress={() => { setLinkDraft(""); setIsEditingLink(true); }}>
+              <Pressable
+                onPress={() => {
+                  setLinkDraft("");
+                  setIsEditingLink(true);
+                }}
+              >
                 <Text style={styles.addText}>Add link</Text>
               </Pressable>
             )}
@@ -322,15 +352,15 @@ export function EntityDetailScreen({
       {/* ─── Overlays ─────────────────────────────────────────────────── */}
 
       <PricePicker
-  visible={isPricePickerVisible}
-  value={price ?? undefined}
-  onConfirm={async (p) => {
-    onPriceChange(p);
-    setIsPricePickerVisible(false);
-    await onSavePrice(p);
-  }}
-  onClose={() => setIsPricePickerVisible(false)}
-/>
+        visible={isPricePickerVisible}
+        value={price ?? undefined}
+        onConfirm={async (p) => {
+          onPriceChange(p);
+          setIsPricePickerVisible(false);
+          await onSavePrice(p);
+        }}
+        onClose={() => setIsPricePickerVisible(false)}
+      />
 
       <DateRangePicker
         visible={isDatePickerVisible}
@@ -358,7 +388,9 @@ export function EntityDetailScreen({
         ref={linkEditSheetRef}
         snapPoints={["35%"]}
         initialIndex={-1}
-        onChange={(index) => { if (index < 0) setIsEditingLink(false); }}
+        onChange={(index) => {
+          if (index < 0) setIsEditingLink(false);
+        }}
       >
         <Box style={styles.linkEditSheet}>
           <Text style={styles.linkEditTitle}>Edit link</Text>
@@ -386,9 +418,14 @@ export function EntityDetailScreen({
       </BottomSheet>
 
       {!isCommentsVisible && (
-        <Pressable onPress={() => setIsCommentsVisible(true)} style={styles.commentsPeek}>
+        <Pressable
+          onPress={() => setIsCommentsVisible(true)}
+          style={styles.commentsPeek}
+        >
           <Box style={styles.commentsPeekHandle} />
-          <Text variant="bodySmStrong" color="gray900">Comments</Text>
+          <Text variant="bodySmStrong" color="gray900">
+            Comments
+          </Text>
         </Pressable>
       )}
 

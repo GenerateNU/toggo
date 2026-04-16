@@ -31,9 +31,7 @@ export default function HousingAllMedia() {
 
   const existingImageIds = useMemo(
     () =>
-      (housing?.image_ids ?? [])
-        .map((img) => img.image_id!)
-        .filter(Boolean),
+      (housing?.image_ids ?? []).map((img) => img.image_id!).filter(Boolean),
     [housing],
   );
 

@@ -31,9 +31,7 @@ export default function ActivityAllMedia() {
 
   const existingImageIds = useMemo(
     () =>
-      (activity?.image_ids ?? [])
-        .map((img) => img.image_id!)
-        .filter(Boolean),
+      (activity?.image_ids ?? []).map((img) => img.image_id!).filter(Boolean),
     [activity],
   );
 

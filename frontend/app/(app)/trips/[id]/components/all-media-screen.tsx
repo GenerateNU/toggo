@@ -102,7 +102,15 @@ export function AllMediaScreen({
     } catch {
       toast.show({ message: "Couldn't remove image. Try again." });
     }
-  }, [selectedItem, tripID, entityID, existingImageIds, updateActivity, onRefetch, toast]);
+  }, [
+    selectedItem,
+    tripID,
+    entityID,
+    existingImageIds,
+    updateActivity,
+    onRefetch,
+    toast,
+  ]);
 
   const handleAddImage = useCallback(async () => {
     const { status } =
@@ -131,7 +139,15 @@ export function AllMediaScreen({
     } finally {
       setIsUploading(false);
     }
-  }, [tripID, entityID, existingImageIds, uploadImage, updateActivity, onRefetch, toast]);
+  }, [
+    tripID,
+    entityID,
+    existingImageIds,
+    uploadImage,
+    updateActivity,
+    onRefetch,
+    toast,
+  ]);
 
   return (
     <Screen>
