@@ -40,7 +40,7 @@ const HERO_IMAGE_HEIGHT = 220;
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const MAP_HEIGHT = 220;
 const CONTENT_CARD_TOP = HERO_IMAGE_HEIGHT - 24;
-const FIXED_HEADER_HEIGHT = 48;
+const FIXED_HEADER_HEIGHT = 54;
 const HEADER_FADE_DURATION = 200;
 
 function toActivityAPIResponse(
