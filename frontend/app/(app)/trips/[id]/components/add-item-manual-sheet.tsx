@@ -1,5 +1,6 @@
 import { useUploadImage } from "@/api/files/custom";
-import { Box, Button, Dialog, Text, useToast } from "@/design-system";
+import { ConfirmSheet } from "@/app/(app)/components/confirm-sheet";
+import { Box, Button, Text, useToast } from "@/design-system";
 import BottomSheet from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -31,11 +32,9 @@ export type ItemManualSheetBasePrefill = {
   thumbnailUri?: string | undefined;
 };
 
-/** Data the generic sheet resolves before calling onSave */
 export type ItemManualSheetBaseData = {
   name: string;
   description: string;
-  /** Already uploaded/resolved URL, or undefined if no thumbnail */
   thumbnailURL: string | undefined;
 };
 
@@ -45,20 +44,11 @@ export type AddItemManualSheetHandle = {
 };
 
 type AddItemManualSheetProps<T> = {
-  /** Sheet header title */
   title: string;
-  /** Placeholder for the name input (default: "New Item") */
   namePlaceholder?: string;
-  /** Label for the save button (default: "Save") */
   saveLabel?: string;
-  /** Success toast message (default: "Saved") */
   successMessage?: string;
-  /** Item-specific form rows rendered between description and the footer */
   formRows?: ReactNode;
-  /**
-   * Called with the resolved base data when the user taps save.
-   * Should throw on failure. Return value is passed to onSaved.
-   */
   onSave: (baseData: ItemManualSheetBaseData) => Promise<T>;
   onSaved: (result: T) => void;
   onClose: () => void;
@@ -92,7 +82,6 @@ function AddItemManualSheetInner<T>(
 
   useImperativeHandle(ref, () => ({
     open: (prefill) => {
-      // Always reset first so stale values from the last session don't linger
       setName(prefill?.name ?? "");
       setDescription(prefill?.description ?? "");
       setThumbnailUri(prefill?.thumbnailUri ?? null);
@@ -126,7 +115,6 @@ function AddItemManualSheetInner<T>(
     if (!name.trim()) return;
     setIsSaving(true);
     try {
-      // Resolve thumbnail URL
       let thumbnailURL: string | undefined;
       if (thumbnailUri?.startsWith("http")) {
         thumbnailURL = thumbnailUri;
@@ -139,7 +127,7 @@ function AddItemManualSheetInner<T>(
           const urlRes = await getImageURL(res.imageId, "medium");
           thumbnailURL = urlRes.url;
         } catch {
-          // Non-blocking — save without thumbnail
+          // non-blocking
         }
       }
 
@@ -163,6 +151,7 @@ function AddItemManualSheetInner<T>(
     }
   };
 
+  // Called when user taps X or dismisses the sheet
   const handleCancel = () => {
     if (savedRef.current) {
       savedRef.current = false;
@@ -257,32 +246,23 @@ function AddItemManualSheetInner<T>(
             />
           </Box>
 
-          {/* Item-specific form rows slot */}
           {formRows}
         </Box>
       </BottomSheet>
 
-      <Dialog
+      {/* Cancel confirmation — only shown once, replaces the Dialog */}
+      <ConfirmSheet
         visible={showCancelConfirm}
-        onClose={() => setShowCancelConfirm(false)}
         title={`Cancel adding "${itemLabel}"?`}
-        message="You'll lose any additions you made"
-        actions={[
-          {
-            label: `Delete "${itemLabel}"`,
-            style: "destructive",
-            onPress: () => {
-              setShowCancelConfirm(false);
-              resetForm();
-              onClose();
-            },
-          },
-          {
-            label: `Keep "${itemLabel}"`,
-            style: "default",
-            onPress: () => setShowCancelConfirm(false),
-          },
-        ]}
+        subtitle="You'll lose any additions you made"
+        confirmLabel={`Delete "${itemLabel}"`}
+        cancelLabel={`Keep "${itemLabel}"`}
+        onConfirm={() => {
+          setShowCancelConfirm(false);
+          resetForm();
+          onClose();
+        }}
+        onCancel={() => setShowCancelConfirm(false)}
       />
     </>
   );

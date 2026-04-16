@@ -7,6 +7,7 @@ import {
   Button,
   EmptyState,
   SkeletonRect,
+  Spinner,
   Text,
   useToast,
 } from "@/design-system";
@@ -180,13 +181,28 @@ export const HousingTabContent = forwardRef<
   return (
     <Box flex={1}>
       {isLoading ? (
-        <HousingSkeleton />
+        <Box
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          paddingVertical="xl"
+        >
+          <Spinner />
+        </Box>
       ) : housingOptions.length === 0 ? (
         <Box alignItems="center" justifyContent="center" paddingVertical="xl">
           <EmptyState
             title="No housing options yet"
             description="Tap + to add the first one!"
           />
+          <Box style={styles.addButton} width="100%">
+            <Button
+              layout="textOnly"
+              label="Add a housing option"
+              variant="Secondary"
+              onPress={() => entrySheetRef.current?.open()}
+            />
+          </Box>
         </Box>
       ) : (
         <>
@@ -223,17 +239,16 @@ export const HousingTabContent = forwardRef<
             style={styles.flatList}
             scrollEnabled={false}
           />
+          <Box style={styles.addButton}>
+            <Button
+              layout="textOnly"
+              label="Add a housing option"
+              variant="Secondary"
+              onPress={() => entrySheetRef.current?.open()}
+            />
+          </Box>
         </>
       )}
-
-      <Box style={styles.addButton}>
-        <Button
-          layout="textOnly"
-          label="Add a housing option"
-          variant="Secondary"
-          onPress={() => entrySheetRef.current?.open()}
-        />
-      </Box>
 
       <AddHousingEntrySheet
         ref={entrySheetRef}

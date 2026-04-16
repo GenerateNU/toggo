@@ -453,17 +453,6 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-            {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "settings" &&
-              activeTab !== "activities" &&
-              activeTab !== "housing" && (
-                <EmptyState
-                  title="Nothing here yet"
-                  description="Post notes, photos, videos, and links."
-                />
-              )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
