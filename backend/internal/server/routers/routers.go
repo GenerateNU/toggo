@@ -19,10 +19,6 @@ func SetUpRoutes(app *fiber.App, routeParams types.RouteParams, middlewares ...f
 	apiGroup := app.Group("/api")
 
 	// uncomment this until login/jwt is set up properly
-	apiV0Group := apiGroup.Group("/v0")
-	FileRoutes(apiV0Group, routeParams)
-	// ^^^ is to skip auth for now, comment out later
-
 	// Test routes without auth for realtime testing
 	TestRoutes(apiGroup, routeParams)
 

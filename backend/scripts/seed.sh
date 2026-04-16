@@ -14,6 +14,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 API_BASE_URL="${API_BASE_URL:-http://localhost:8000/api/v1}"
+LOCALSTACK_HOST_ENDPOINT="${LOCALSTACK_HOST_ENDPOINT:-http://localhost:4566}"
+S3_UPLOADS_ENABLED=true
+SAMPLE_AUDIO_FILE=""
 
 # ─── colors ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +111,10 @@ trip_id_of() { echo "$1" | jq -r '.id'; }
 clear_all_except_user() {
     local keep_user_id="$1"
     log "Clearing database (keeping user $keep_user_id)..."
+
+    # Null out profile_picture before wiping images so the kept user row
+    # does not retain a stale reference after the images table is truncated.
+    db_quiet "UPDATE users SET profile_picture = NULL WHERE id = '$keep_user_id';"
 
     db_quiet "UPDATE trips SET rank_poll_id = NULL WHERE rank_poll_id IS NOT NULL;"
 
@@ -241,6 +248,13 @@ seed_fake_users() {
     JAMES_JWT=$(make_jwt "$JAMES_ID")
 
     ok "Fake users: Maya ($MAYA_ID), Carlos ($CARLOS_ID), Priya ($PRIYA_ID), James ($JAMES_ID)"
+
+    info "Uploading profile pictures..."
+    seed_user_profile_picture "$MAYA_JWT"   "$MAYA_ID"   "face-maya"
+    seed_user_profile_picture "$CARLOS_JWT" "$CARLOS_ID" "face-carlos"
+    seed_user_profile_picture "$PRIYA_JWT"  "$PRIYA_ID"  "face-priya"
+    seed_user_profile_picture "$JAMES_JWT"  "$JAMES_ID"  "face-james"
+    ok "Profile pictures uploaded"
 }
 
 # ─── membership helper ────────────────────────────────────────────────────────
@@ -259,14 +273,17 @@ insert_pitch_sql() {
     local pitch_id trip_id user_id title description duration
     pitch_id=$(new_uuid)
     trip_id="$1"; user_id="$2"; title="$3"; description="$4"; duration="${5:-90}"
-    local fake_key="demo/pitches/${trip_id}/${pitch_id}.m4a"
+    local audio_key="demo/pitches/${trip_id}/${pitch_id}.wav"
     db_quiet "
         INSERT INTO trip_pitches (id, trip_id, user_id, title, description, audio_s3_key, duration)
         VALUES ('$pitch_id', '$trip_id', '$user_id',
                 $(echo "$title" | sed "s/'/''/g; s/.*/'&'/"),
                 $(echo "$description" | sed "s/'/''/g; s/.*/'&'/"),
-                '$fake_key', $duration);
+                '$audio_key', $duration);
     "
+    if [ -n "$SAMPLE_AUDIO_FILE" ]; then
+        s3_put "$audio_key" "$SAMPLE_AUDIO_FILE" "audio/wav"
+    fi
     echo "$pitch_id"
 }
 
@@ -285,6 +302,178 @@ create_invite_sql() {
                 NOW() + INTERVAL '30 days');
     "
     echo "$invite_id"
+}
+
+# ─── S3 / file helpers ───────────────────────────────────────────────────────
+# Image uploads go through the real API flow:
+#   POST /files/upload  → get presigned PUT URLs + create pending DB records
+#   PUT  <presigned>    → upload bytes to S3
+#   POST /files/confirm → HeadObject check + mark all sizes confirmed
+#
+# This keeps DB and S3 in sync exactly like the frontend does.
+# Pitch audio still uses the aws CLI directly (inserted via SQL, not the API).
+# All helpers are silent no-ops when S3_UPLOADS_ENABLED=false.
+
+check_s3_available() {
+    if ! command -v aws &>/dev/null; then
+        warn "aws CLI not found – S3 uploads disabled (brew install awscli)"
+        S3_UPLOADS_ENABLED=false
+        return
+    fi
+    if ! curl -sf --max-time 5 "$LOCALSTACK_HOST_ENDPOINT/_localstack/health" >/dev/null 2>&1; then
+        warn "LocalStack not reachable at $LOCALSTACK_HOST_ENDPOINT – S3 uploads disabled"
+        warn "  Start it with: ./scripts/start-localstack.sh"
+        S3_UPLOADS_ENABLED=false
+        return
+    fi
+    ok "LocalStack reachable – files will be uploaded to S3"
+}
+
+# Empty and recreate the S3 bucket. Skips if LocalStack or aws CLI unavailable.
+reset_s3() {
+    if ! command -v aws &>/dev/null; then
+        warn "aws CLI not found – skipping S3 reset"
+        return
+    fi
+    if ! curl -sf --max-time 5 "$LOCALSTACK_HOST_ENDPOINT/_localstack/health" >/dev/null 2>&1; then
+        warn "LocalStack not reachable – skipping S3 reset"
+        return
+    fi
+    log "Resetting S3 bucket..."
+    cd "$BACKEND_DIR" && doppler run --project backend --config dev -- \
+        bash -c 'aws --endpoint-url="$1" s3 rb "s3://$S3_BUCKET_NAME" --force 2>/dev/null || true; aws --endpoint-url="$1" s3 mb "s3://$S3_BUCKET_NAME"' \
+        _ "$LOCALSTACK_HOST_ENDPOINT" 2>/dev/null || true
+    ok "S3 bucket reset"
+}
+
+# Upload a local file to S3 at the given key (used only for pitch audio).
+s3_put() {
+    local key="$1" src_file="$2" content_type="${3:-application/octet-stream}"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    cd "$BACKEND_DIR" && doppler run --project backend --config dev -- \
+        bash -c 'aws --endpoint-url="$1" s3 cp "$2" "s3://$S3_BUCKET_NAME/$3" --content-type "$4" --no-progress --quiet' \
+        _ "$LOCALSTACK_HOST_ENDPOINT" "$src_file" "$key" "$content_type" 2>/dev/null || true
+}
+
+# Generate a 2-second silent WAV into SAMPLE_AUDIO_FILE (pitch placeholder).
+generate_sample_audio() {
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    SAMPLE_AUDIO_FILE=$(mktemp /tmp/seed_audio_XXXXXX.wav)
+    python3 << PYEOF 2>/dev/null
+import wave, struct
+frames = struct.pack('<' + 'h' * 16000, *([0] * 16000))
+with wave.open('$SAMPLE_AUDIO_FILE', 'w') as w:
+    w.setnchannels(1)
+    w.setsampwidth(2)
+    w.setframerate(8000)
+    w.writeframes(frames)
+PYEOF
+    if [ ! -s "$SAMPLE_AUDIO_FILE" ]; then
+        warn "python3 WAV generation failed – pitch audio will not be uploaded"
+        rm -f "$SAMPLE_AUDIO_FILE"
+        SAMPLE_AUDIO_FILE=""
+    fi
+}
+
+# Download a JPEG from picsum.photos and upload it through the API flow
+# (upload → S3 PUT → confirm). Prints the confirmed image_id on success.
+upload_image() {
+    local jwt="$1" file_key_base="$2" picsum_seed="$3"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+
+    local tmp_file; tmp_file=$(mktemp /tmp/seed_img_XXXXXX.jpg)
+
+    if ! curl -sL --max-time 15 \
+            "https://picsum.photos/seed/${picsum_seed}/800/800" \
+            -o "$tmp_file" 2>/dev/null || [ ! -s "$tmp_file" ]; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    # Step 1: request presigned PUT URLs (also creates pending DB records)
+    local upload_resp
+    upload_resp=$(curl -s --max-time 20 -X POST "$API_BASE_URL/files/upload" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $jwt" \
+        -d "{\"fileKey\":\"$file_key_base\",\"sizes\":[\"large\",\"medium\",\"small\"],\"contentType\":\"image/jpeg\"}")
+
+    local image_id
+    image_id=$(echo "$upload_resp" | jq -r '.imageId // empty')
+    if [ -z "$image_id" ]; then
+        rm -f "$tmp_file"
+        return 0
+    fi
+
+    # Step 2: PUT the same JPEG to every presigned URL (large/medium/small)
+    local presigned_url
+    while IFS= read -r presigned_url; do
+        [ -z "$presigned_url" ] && continue
+        curl -s --max-time 30 -X PUT "$presigned_url" \
+            -H "Content-Type: image/jpeg" \
+            --data-binary "@$tmp_file" >/dev/null 2>&1 || true
+    done < <(echo "$upload_resp" | jq -r '.uploadUrls[].url')
+
+    rm -f "$tmp_file"
+
+    # Step 3: confirm (HeadObject check + marks all sizes confirmed in DB).
+    # Only echo image_id when at least one size was confirmed — a missing or
+    # zero confirmed count means the S3 upload silently failed and the image
+    # would 404 when the frontend tries to fetch it.
+    local confirm_resp
+    confirm_resp=$(curl -s --max-time 20 -X POST "$API_BASE_URL/files/confirm" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $jwt" \
+        -d "{\"imageId\":\"$image_id\"}")
+
+    local confirmed
+    confirmed=$(echo "$confirm_resp" | jq -r '.confirmed // 0' 2>/dev/null)
+    if [ "${confirmed:-0}" -gt 0 ] 2>/dev/null; then
+        echo "$image_id"
+    fi
+}
+
+# Upload a picsum image and attach it to an activity (replaces existing images).
+attach_image_to_activity() {
+    local jwt="$1" trip_id="$2" activity_id="$3" picsum_seed="$4"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    local img_id
+    img_id=$(upload_image "$jwt" "activities/${activity_id}/photo" "$picsum_seed")
+    [ -z "$img_id" ] && return 0
+    api_put "$jwt" "/trips/$trip_id/activities/$activity_id" \
+        "{\"image_ids\":[\"$img_id\"]}" >/dev/null || true
+}
+
+# Upload a picsum image and add it to a pitch's image collection.
+attach_image_to_pitch() {
+    local jwt="$1" trip_id="$2" pitch_id="$3" picsum_seed="$4"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    local img_id
+    img_id=$(upload_image "$jwt" "pitches/${pitch_id}/photo" "$picsum_seed")
+    [ -z "$img_id" ] && return 0
+    api_patch "$jwt" "/trips/$trip_id/pitches/$pitch_id" \
+        "{\"image_ids\":[\"$img_id\"]}" >/dev/null || true
+}
+
+# Upload a picsum image as a user's profile picture.
+seed_user_profile_picture() {
+    local jwt="$1" user_id="$2" picsum_seed="$3"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    local img_id
+    img_id=$(upload_image "$jwt" "users/${user_id}/profile" "$picsum_seed")
+    [ -z "$img_id" ] && return 0
+    api_patch "$jwt" "/users/$user_id" \
+        "{\"profile_picture\":\"$img_id\"}" >/dev/null || true
+}
+
+# Upload a picsum image and set it as a trip's cover image.
+set_trip_cover_image() {
+    local jwt="$1" trip_id="$2" picsum_seed="$3"
+    [ "$S3_UPLOADS_ENABLED" = false ] && return 0
+    local img_id
+    img_id=$(upload_image "$jwt" "trips/${trip_id}/cover" "$picsum_seed")
+    [ -z "$img_id" ] && return 0
+    api_patch "$jwt" "/trips/$trip_id" \
+        "{\"cover_image_id\":\"$img_id\"}" >/dev/null || true
 }
 
 # ─── Trip 1: Santorini Escape ─────────────────────────────────────────────────
@@ -457,6 +646,19 @@ seed_trip_santorini() {
     a10=$(echo "$resp" | jq -r '.id')
     ok "10 activities created"
 
+    # Cover image + images for every activity
+    set_trip_cover_image     "$MAYA_JWT" "$trip_id" "santorini-cover"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a1"  "santorini-1"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a2"  "santorini-2"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a3"  "santorini-3"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a4"  "santorini-4"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a5"  "santorini-5"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a6"  "santorini-6"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a7"  "santorini-7"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a8"  "santorini-8"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a9"  "santorini-9"
+    attach_image_to_activity "$MAYA_JWT" "$trip_id" "$a10" "santorini-10"
+
     # Assign categories to activities
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a1/categories/activities"     '{}' >/dev/null
     api_put "$MAYA_JWT" "/trips/$trip_id/activities/$a2/categories/activities"     '{}' >/dev/null
@@ -541,6 +743,10 @@ seed_trip_santorini() {
         "Mykonos, Greece" \
         "Better nightlife and beaches than Santorini. We could do beach clubs during the day and party at night. Also closer to Athens if anyone wants a day trip." 60)
     ok "Pitches seeded"
+
+    # Attach images to pitches
+    attach_image_to_pitch "$MAYA_JWT"   "$trip_id" "$p1" "santorini-caldera"
+    attach_image_to_pitch "$CARLOS_JWT" "$trip_id" "$p2" "mykonos-beach"
 
     # Pitch links
     api_post "$MAYA_JWT" "/trips/$trip_id/pitches/$p1/links" \
@@ -768,6 +974,20 @@ seed_trip_tokyo() {
     a11=$(echo "$resp" | jq -r '.id')
     ok "11 activities created"
 
+    # Cover image + images for every activity
+    set_trip_cover_image     "$CARLOS_JWT" "$trip_id" "tokyo-cover"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a1"  "tokyo-1"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a2"  "tokyo-2"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a3"  "tokyo-3"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a4"  "tokyo-4"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a5"  "tokyo-5"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a6"  "tokyo-6"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a7"  "tokyo-7"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a8"  "tokyo-8"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a9"  "tokyo-9"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a10" "tokyo-10"
+    attach_image_to_activity "$CARLOS_JWT" "$trip_id" "$a11" "tokyo-11"
+
     # Category assignments
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a1/categories/activities"      '{}' >/dev/null
     api_put "$CARLOS_JWT" "/trips/$trip_id/activities/$a2/categories/activities"      '{}' >/dev/null
@@ -866,6 +1086,10 @@ seed_trip_tokyo() {
         "Kyoto, Japan" \
         "If we want something more cultural and relaxed, Kyoto is incredible. Thousands of temples, bamboo forests, geisha district, and amazing kaiseki dining. We could do a few days here and a few in Osaka." 75)
     ok "Pitches seeded"
+
+    # Attach images to pitches
+    attach_image_to_pitch "$CARLOS_JWT" "$trip_id" "$p1" "tokyo-skyline"
+    attach_image_to_pitch "$JAMES_JWT"  "$trip_id" "$p2" "kyoto-temples"
 
     # Pitch link
     api_post "$CARLOS_JWT" "/trips/$trip_id/pitches/$p1/links" \
@@ -1108,6 +1332,21 @@ seed_trip_nyc() {
     a12=$(echo "$resp" | jq -r '.id')
     ok "12 activities created"
 
+    # Cover image + images for every activity
+    set_trip_cover_image     "$my_jwt" "$trip_id" "nyc-cover"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a1"  "nyc-1"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a2"  "nyc-2"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a3"  "nyc-3"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a4"  "nyc-4"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a5"  "nyc-5"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a6"  "nyc-6"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a7"  "nyc-7"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a8"  "nyc-8"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a9"  "nyc-9"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a10" "nyc-10"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a11" "nyc-11"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a12" "nyc-12"
+
     # Category assignments
     api_put "$my_jwt" "/trips/$trip_id/activities/$a1/categories/activities"       '{}' >/dev/null
     api_put "$my_jwt" "/trips/$trip_id/activities/$a2/categories/activities"       '{}' >/dev/null
@@ -1208,6 +1447,10 @@ seed_trip_nyc() {
         "Brooklyn, New York" \
         "Skip the tourist traps in Midtown. Brooklyn has the best food scene, Williamsburg for vintage shopping, DUMBO for views, and Prospect Park. Way more authentic NYC experience." 55)
     ok "Pitches seeded"
+
+    # Attach images to pitches
+    attach_image_to_pitch "$my_jwt"    "$trip_id" "$p1" "nyc-manhattan"
+    attach_image_to_pitch "$PRIYA_JWT" "$trip_id" "$p2" "nyc-brooklyn"
 
     api_post "$PRIYA_JWT" "/trips/$trip_id/pitches/$p2/links" \
         '{"url":"https://www.earthtrekkers.com/one-day-in-brooklyn-new-york-itinerary/","title":"One Perfect Day in Brooklyn, New York","description":"Walk the Brooklyn Bridge, explore DUMBO, and visit Williamsburg in one day","domain":"earthtrekkers.com"}' >/dev/null
@@ -1479,6 +1722,23 @@ seed_trip_bali() {
     a14=$(echo "$resp" | jq -r '.id')
     ok "14 activities created"
 
+    # Cover image + images for every activity
+    set_trip_cover_image     "$my_jwt" "$trip_id" "bali-cover"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a1"  "bali-1"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a2"  "bali-2"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a3"  "bali-3"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a4"  "bali-4"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a5"  "bali-5"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a6"  "bali-6"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a7"  "bali-7"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a8"  "bali-8"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a9"  "bali-9"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a10" "bali-10"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a11" "bali-11"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a12" "bali-12"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a13" "bali-13"
+    attach_image_to_activity "$my_jwt" "$trip_id" "$a14" "bali-14"
+
     # Category assignments
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a1/categories/activities"       '{}' >/dev/null
     api_put "$my_jwt"    "/trips/$trip_id/activities/$a2/categories/activities"       '{}' >/dev/null
@@ -1661,6 +1921,11 @@ seed_trip_bali() {
         "Canggu, Bali" \
         "Best surf in Bali, laid-back digital nomad vibe, amazing cafes and nightlife. We could do a few days here then move to Ubud for the cultural side. Way more affordable than Seminyak." 85)
     ok "Pitches seeded"
+
+    # Attach images to pitches
+    attach_image_to_pitch "$my_jwt"      "$trip_id" "$p1" "bali-ubud"
+    attach_image_to_pitch "$MAYA_JWT"    "$trip_id" "$p2" "bali-seminyak"
+    attach_image_to_pitch "$CARLOS_JWT"  "$trip_id" "$p3" "bali-canggu"
 
     # Pitch links (real URLs)
     api_post "$my_jwt" "/trips/$trip_id/pitches/$p1/links" \
@@ -1933,6 +2198,9 @@ run_seed() {
     local my_jwt;  my_jwt=$(make_jwt "$my_id")
     log "Seeding as: $my_name ($my_id)"
 
+    check_s3_available
+    generate_sample_audio
+
     seed_fake_users
     seed_trip_santorini
     seed_trip_tokyo
@@ -1942,6 +2210,8 @@ run_seed() {
     # Allow subscriber a moment to process, then backfill anything it missed
     sleep 2
     backfill_activity_feed "$my_id"
+
+    [ -n "$SAMPLE_AUDIO_FILE" ] && rm -f "$SAMPLE_AUDIO_FILE"
 
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════╗${NC}"
@@ -1992,6 +2262,7 @@ case "$COMMAND" in
         preflight
         local_row=$(resolve_user "$USER_ARG")
         local_id=$(echo "$local_row" | cut -d'|' -f1)
+        reset_s3
         clear_all_except_user "$local_id"
         run_seed "$USER_ARG"
         ;;
@@ -2000,6 +2271,7 @@ case "$COMMAND" in
         preflight
         local_row=$(resolve_user "$USER_ARG")
         local_id=$(echo "$local_row" | cut -d'|' -f1)
+        reset_s3
         clear_all_except_user "$local_id"
         delete_user_only "$local_id"
         log "All data deleted. Your Supabase auth account still exists."
@@ -2010,6 +2282,7 @@ case "$COMMAND" in
         echo -e "${RED}WARNING: This will delete EVERY user, trip, and piece of data.${NC}"
         read -rp "  Are you sure? Type 'yes' to confirm: " _confirm
         [ "$_confirm" = "yes" ] || { echo "Aborted."; exit 0; }
+        reset_s3
         clear_everything
         log "Database fully wiped."
         ;;
