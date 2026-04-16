@@ -292,6 +292,10 @@ export function EntityDetailScreen({
                   mapStyle={MAP_STYLE_URL}
                   logoEnabled={false}
                   attributionEnabled={false}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
                 >
                   <Camera centerCoordinate={coordinate} zoomLevel={11} />
                   <PointAnnotation id="entity-pin" coordinate={coordinate}>
@@ -300,6 +304,28 @@ export function EntityDetailScreen({
                     </View>
                   </PointAnnotation>
                 </MapView>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/map-view",
+                      params: {
+                        activities: encodeURIComponent(
+                          JSON.stringify([
+                            {
+                              id: entityID,
+                              name,
+                              location_lat: locationLat,
+                              location_lng: locationLng,
+                              location_name: locationName,
+                              description,
+                            },
+                          ]),
+                        ),
+                      },
+                    })
+                  }
+                />
               </Box>
             )}
             {!locationName && (
