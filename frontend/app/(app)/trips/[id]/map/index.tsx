@@ -1,5 +1,5 @@
 import { useGetActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
-import { BottomSheet, Box, Spinner, Text } from "@/design-system";
+import { BottomSheet, Box, ErrorState, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { CoreSize } from "@/design-system/tokens/core-size";
@@ -73,7 +73,7 @@ export default function TripMapScreen() {
   const [selectedFilter, setSelectedFilter] =
     useState<MapCategoryFilter>("all");
 
-  const { data, isLoading } = useGetActivitiesByTripID(
+  const { data, isLoading, isError } = useGetActivitiesByTripID(
     tripID ?? "",
     { limit: ACTIVITIES_FETCH_LIMIT },
     { query: { enabled: !!tripID } },
@@ -155,6 +155,17 @@ export default function TripMapScreen() {
 
   if (!tripID) return null;
 
+  if (isError) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <ErrorState
+          title="Couldn't load map"
+          description="There was a problem loading activities for this trip. Please try again."
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* Map */}
@@ -224,7 +235,7 @@ export default function TripMapScreen() {
         {mapActivities.length === 0 && !isLoading ? (
           <Box padding="md" alignItems="center">
             <Text variant="bodySmDefault" color="gray500">
-              No activities with locations on this trip.
+              No activities with a location on this trip.
             </Text>
           </Box>
         ) : (
@@ -244,6 +255,7 @@ export default function TripMapScreen() {
         snapPoints={DETAIL_SNAP_POINTS}
         initialIndex={-1}
         disableScrollView={true}
+        disableBackdrop={true}
         onChange={handleDetailSheetChange}
       >
         {selectedActivity ? (

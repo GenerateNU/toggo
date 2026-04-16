@@ -1,5 +1,6 @@
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetFooter,
   BottomSheetFooterProps,
   BottomSheetScrollView,
@@ -96,7 +97,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
     }, []);
 
     const renderBackdrop = useCallback(
-      (props: any) =>
+      (props: BottomSheetBackdropProps) =>
         disableBackdrop ? null : (
           <BottomSheetBackdrop
             {...props}

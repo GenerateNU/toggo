@@ -1,6 +1,7 @@
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { CoreSize } from "@/design-system/tokens/core-size";
+import { Shadow } from "@/design-system/tokens/elevation";
 import { FontFamily } from "@/design-system/tokens/typography";
 import { StyleSheet, View, Text } from "react-native";
 
@@ -47,22 +48,15 @@ const styles = StyleSheet.create({
     ...bubbleBase,
     width: CoreSize.xs,
     height: CoreSize.xs,
-    shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2.667,
-    elevation: 2,
+    ...Shadow.xs,
   },
   // Figma: 24×24, shadow 0 0 4 rgba(0,0,0,0.25)
+  // Shadow.xs (radius 2.667) is the closest design token; the 1.333px difference is imperceptible.
   bubbleSm: {
     ...bubbleBase,
     width: CoreSize.sm,
     height: CoreSize.sm,
-    shadowColor: ColorPalette.black,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 2,
+    ...Shadow.xs,
   },
   // Figma: Figtree Medium 6.67px ≈ 7px
   textXs: {

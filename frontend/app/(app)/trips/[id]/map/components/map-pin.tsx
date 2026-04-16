@@ -47,7 +47,26 @@ export function getActivityCategoryIcon(categoryNames?: string[]): LucideIcon {
   return CATEGORY_ICON_MAP[key] ?? MapPin;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Components ──────────────────────────────────────────────────────────────
+
+type CategoryIconRendererProps = {
+  categoryNames?: string[];
+  size: number;
+  color: string;
+};
+
+/**
+ * Stable helper component that resolves the correct Lucide icon for a category
+ * and renders it. Defined at module level to satisfy react/no-unstable-nested-components.
+ */
+export function CategoryIconRenderer({
+  categoryNames,
+  size,
+  color,
+}: CategoryIconRendererProps) {
+  const Icon = getActivityCategoryIcon(categoryNames);
+  return <Icon size={size} color={color} />;
+}
 
 type ActivityMapPinProps = {
   activity: TripMapActivity;
@@ -58,7 +77,6 @@ export function ActivityMapPin({
   activity,
   isSelected = false,
 }: ActivityMapPinProps) {
-  const IconComponent = getActivityCategoryIcon(activity.category_names);
   const backgroundColor = isSelected
     ? ColorPalette.brand500
     : ColorPalette.brand50;
@@ -68,7 +86,11 @@ export function ActivityMapPin({
   // tap detection, preventing the SVG icon from intercepting the PointAnnotation tap.
   return (
     <View style={[styles.pin, { backgroundColor }]} pointerEvents="none">
-      <IconComponent size={CoreSize.xs} color={iconColor} />
+      <CategoryIconRenderer
+        categoryNames={activity.category_names}
+        size={CoreSize.xs}
+        color={iconColor}
+      />
     </View>
   );
 }

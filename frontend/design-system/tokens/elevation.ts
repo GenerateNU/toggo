@@ -1,4 +1,12 @@
 export const Shadow = {
+  /** Micro ambient shadow for small overlapping elements (e.g. stacked avatar count bubbles) */
+  xs: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 2.667,
+    elevation: 2,
+  },
   sm: {
     shadowColor: "#000000",
     shadowOpacity: 0.1,

@@ -1,5 +1,10 @@
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 
+export type TripMapActivityDateRange = {
+  start?: string;
+  end?: string;
+};
+
 export type TripMapActivity = {
   id: string;
   name: string;
@@ -10,6 +15,7 @@ export type TripMapActivity = {
   thumbnail_url?: string;
   media_url?: string;
   estimated_price?: number;
+  dates?: TripMapActivityDateRange[];
   comment_count?: number;
   /** Avatars of recent commenters — used in the Style A (housing/transport) comment pill. */
   comment_previews?: Array<{
@@ -26,18 +32,26 @@ export type TripMapActivity = {
 
 export type MapCategoryFilter = "all" | string;
 
+const HOUSING_CATEGORIES = new Set([
+  "housing",
+  "accommodation",
+  "hotel",
+  "lodging",
+]);
+
+const TRANSPORTATION_CATEGORIES = new Set([
+  "transportation",
+  "transport",
+  "transit",
+]);
+
 /**
  * Category slugs that use the housing/transport card style (Style A).
  * Add synonyms here as needed — the card and pin both reference this.
  */
 export const HOUSING_TRANSPORT_CATEGORIES = new Set([
-  "housing",
-  "accommodation",
-  "hotel",
-  "lodging",
-  "transportation",
-  "transport",
-  "transit",
+  ...HOUSING_CATEGORIES,
+  ...TRANSPORTATION_CATEGORIES,
 ]);
 
 /** Returns true when the first category name belongs to housing or transportation. */
@@ -47,6 +61,32 @@ export function isHousingOrTransportType(categoryNames?: string[]): boolean {
       HOUSING_TRANSPORT_CATEGORIES.has(name.toLowerCase().trim()),
     ) ?? false
   );
+}
+
+/** Returns true when the first category name belongs to housing specifically. */
+export function isHousingType(categoryNames?: string[]): boolean {
+  return (
+    categoryNames?.some((name) =>
+      HOUSING_CATEGORIES.has(name.toLowerCase().trim()),
+    ) ?? false
+  );
+}
+
+/**
+ * Calculates the number of nights from the first date range.
+ * Returns null if dates are missing or the range is invalid.
+ */
+export function calculateNights(
+  dates?: TripMapActivityDateRange[],
+): number | null {
+  const first = dates?.[0];
+  if (!first?.start || !first?.end) return null;
+  const start = new Date(first.start);
+  const end = new Date(first.end);
+  const nights = Math.round(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return nights > 0 ? nights : null;
 }
 
 /**
@@ -84,6 +124,9 @@ export function toTripMapActivity(
     thumbnail_url: activity.thumbnail_url?.trim() || undefined,
     media_url: activity.media_url?.trim() || undefined,
     estimated_price: activity.estimated_price ?? undefined,
+    dates: activity.dates?.length
+      ? activity.dates.map((d) => ({ start: d.start, end: d.end }))
+      : undefined,
     comment_count: activity.comment_count ?? undefined,
     comment_previews: activity.comment_previews ?? undefined,
     going_count: activity.going_count ?? undefined,

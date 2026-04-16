@@ -10,11 +10,13 @@ import { MapPin, MessageCircle } from "lucide-react-native";
 import { Pressable, StyleSheet, View } from "react-native";
 import { MapSize, MapSpacing } from "../tokens";
 import {
+  calculateNights,
   formatCategoryLabel,
   isHousingOrTransportType,
+  isHousingType,
   type TripMapActivity,
 } from "../types";
-import { getActivityCategoryIcon } from "./map-pin";
+import { CategoryIconRenderer } from "./map-pin";
 import { PfpCountBubble } from "./pfp-count-bubble";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -33,7 +35,6 @@ type MapLocationCardProps = {
 
 export function MapLocationCard({ activity, onPress }: MapLocationCardProps) {
   const imageUri = activity.thumbnail_url ?? activity.media_url;
-  const CategoryIcon = getActivityCategoryIcon(activity.category_names);
   const categoryLabel = formatCategoryLabel(
     activity.category_names?.[0] ?? "activity",
   );
@@ -42,6 +43,8 @@ export function MapLocationCard({ activity, onPress }: MapLocationCardProps) {
   const goingCount = activity.going_count ?? 0;
   const commentCount = activity.comment_count ?? 0;
   const isHousingTransport = isHousingOrTransportType(activity.category_names);
+  const isHousing = isHousingType(activity.category_names);
+  const nights = isHousing ? calculateNights(activity.dates) : null;
 
   return (
     <Pressable
@@ -60,7 +63,11 @@ export function MapLocationCard({ activity, onPress }: MapLocationCardProps) {
             />
           ) : (
             <View style={styles.imageFallback}>
-              <CategoryIcon size={CoreSize.sm} color={ColorPalette.gray400} />
+              <CategoryIconRenderer
+                categoryNames={activity.category_names}
+                size={CoreSize.sm}
+                color={ColorPalette.gray400}
+              />
             </View>
           )}
         </View>
@@ -81,13 +88,15 @@ export function MapLocationCard({ activity, onPress }: MapLocationCardProps) {
 
               {isHousingTransport ? (
                 activity.estimated_price != null ? (
-                  // Style A: price
+                  // Housing: "$X for N nights" | Transportation: "$X per person"
                   <View style={styles.priceRow}>
                     <Text variant="bodySmStrong" color="gray500">
                       ${activity.estimated_price}
                     </Text>
                     <Text variant="bodySmDefault" color="gray500">
-                      per person
+                      {isHousing && nights != null
+                        ? `for ${nights} ${nights === 1 ? "night" : "nights"}`
+                        : "per person"}
                     </Text>
                   </View>
                 ) : activity.location_name ? (

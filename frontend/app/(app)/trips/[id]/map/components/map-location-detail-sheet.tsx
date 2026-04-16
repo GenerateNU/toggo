@@ -5,11 +5,11 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { Layout } from "@/design-system/tokens/layout";
 import { Image } from "expo-image";
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MapPin, MessageCircle, X } from "lucide-react-native";
 import { MapSize, MapSpacing } from "../tokens";
-import { getActivityCategoryIcon } from "./map-pin";
+import { CategoryIconRenderer } from "./map-pin";
 import type { TripMapActivity } from "../types";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -32,13 +32,24 @@ export function MapLocationDetailSheetContent({
   onViewActivity,
 }: MapLocationDetailSheetProps) {
   const imageUri = activity.thumbnail_url ?? activity.media_url;
-  const CategoryIcon = getActivityCategoryIcon(activity.category_names);
   const commentCount = activity.comment_count ?? 0;
   const commentPreviews = activity.comment_previews ?? [];
 
-  const handleOpenInMaps = () => {
+  const handleOpenInMaps = async () => {
     const url = `https://www.google.com/maps/search/?api=1&query=${activity.location_lat},${activity.location_lng}`;
-    Linking.openURL(url);
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(
+          "Cannot Open Maps",
+          "Unable to open Google Maps on this device.",
+        );
+      }
+    } catch {
+      Alert.alert("Error", "Something went wrong while opening the map.");
+    }
   };
 
   return (
@@ -100,7 +111,11 @@ export function MapLocationDetailSheetContent({
         </View>
       ) : (
         <View style={[styles.imageContainer, styles.imageFallback]}>
-          <CategoryIcon size={CoreSize.lg} color={ColorPalette.gray300} />
+          <CategoryIconRenderer
+            categoryNames={activity.category_names}
+            size={CoreSize.lg}
+            color={ColorPalette.gray300}
+          />
         </View>
       )}
 
