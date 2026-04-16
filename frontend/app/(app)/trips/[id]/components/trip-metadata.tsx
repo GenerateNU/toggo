@@ -53,7 +53,7 @@ export function TripMetadata({
       gap={isCollapsed ? "xs" : "xxs"}
       paddingHorizontal="sm"
       paddingTop="sm"
-      paddingBottom="xs"
+      paddingBottom="sm"
     >
       <Box
         flexDirection="row"
@@ -108,7 +108,7 @@ export function TripMetadata({
                   accessibilityRole="button"
                   accessibilityLabel="Invite friends"
                 >
-                  <Plus size={14} color={ColorPalette.blue500} />
+                  <Plus size={CoreSize.xxs} color={ColorPalette.blue500} />
                 </Pressable>
               </Box>
             ) : (
@@ -120,7 +120,7 @@ export function TripMetadata({
               accessibilityRole="button"
               accessibilityLabel="Trip settings"
             >
-              <Settings size={CoreSize.iconSm} color={ColorPalette.gray950} />
+              <Settings size={CoreSize.iconSm} color={ColorPalette.gray400} />
             </Pressable>
           </Box>
         )}
@@ -143,7 +143,7 @@ export function TripMetadata({
                   color={tripDate ? ColorPalette.gray500 : ColorPalette.blue500}
                 />
                 <Text
-                  variant="bodySmDefault"
+                  variant="bodyDefault"
                   style={{
                     color: tripDate
                       ? ColorPalette.gray500
@@ -154,7 +154,7 @@ export function TripMetadata({
                 </Text>
               </Box>
             </Pressable>
-            <Text variant="bodySmDefault" color="gray500">
+            <Text variant="bodyDefault" color="gray500">
               •
             </Text>
             <Pressable
@@ -171,7 +171,7 @@ export function TripMetadata({
                   }
                 />
                 <Text
-                  variant="bodySmDefault"
+                  variant="bodyDefault"
                   style={{
                     color: tripLocation
                       ? ColorPalette.gray500
