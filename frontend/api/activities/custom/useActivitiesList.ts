@@ -4,25 +4,36 @@ import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
-export const activitiesQueryKey = (tripID: string) =>
-  ["activities", tripID] as const;
+type UseActivitiesListOptions = {
+  category?: string;
+};
 
-export function useActivitiesList(tripID: string | undefined) {
+export const activitiesQueryKey = (tripID: string, category?: string) =>
+  ["activities", tripID, ...(category ? [category] : [])] as const;
+
+export function useActivitiesList(
+  tripID: string | undefined,
+  options?: UseActivitiesListOptions,
+) {
   const queryClient = useQueryClient();
   const isFetchingNextRef = useRef(false);
+  const category = options?.category;
 
   const {
     data,
     isLoading,
-    isError,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-    refetch,
+    isError,
   } = useInfiniteQuery({
-    queryKey: activitiesQueryKey(tripID ?? ""),
+    queryKey: activitiesQueryKey(tripID ?? "", category),
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-      getActivitiesByTripID(tripID!, { limit: PAGE_SIZE, cursor: pageParam }),
+      getActivitiesByTripID(tripID!, {
+        limit: PAGE_SIZE,
+        cursor: pageParam,
+        category,
+      }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
       lastPage?.items?.length && lastPage.next_cursor
@@ -57,7 +68,7 @@ export function useActivitiesList(tripID: string | undefined) {
     (activity: ModelsActivityAPIResponse) => {
       if (!tripID) return;
       queryClient.setQueryData(
-        activitiesQueryKey(tripID),
+        activitiesQueryKey(tripID, category),
         (old: typeof data) => {
           if (!old?.pages.length) return old;
           const [first, ...rest] = old.pages;
@@ -71,7 +82,7 @@ export function useActivitiesList(tripID: string | undefined) {
         },
       );
     },
-    [queryClient, tripID],
+    [queryClient, tripID, category],
   );
 
   return {
@@ -80,7 +91,6 @@ export function useActivitiesList(tripID: string | undefined) {
     isError,
     isLoadingMore: isFetchingNextPage,
     fetchMore,
-    refetch,
     prependActivity,
   };
 }

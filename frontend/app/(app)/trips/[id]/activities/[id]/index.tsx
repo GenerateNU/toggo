@@ -536,7 +536,7 @@ export default function ActivityDetail() {
 
       <BottomSheet
         ref={linkEditSheetRef}
-        snapPoints={[230]}
+        snapPoints={[300]}
         initialIndex={-1}
         onChange={(index) => {
           if (index < 0) setIsEditingLink(false);
