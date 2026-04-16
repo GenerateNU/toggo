@@ -30,6 +30,7 @@
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",
+    "expo-dev-client": "^55.0.27",
     "expo-device": "^8.0.10",
     "expo-document-picker": "^55.0.13",
     "expo-image": "^3.0.11",
