@@ -1,11 +1,25 @@
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
-import { Box, Button, EmptyState, SkeletonRect, Text } from "@/design-system";
+import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activities/usePostApiV1TripsTripidActivitiesActivityidRsvp";
+import { useEntityComments } from "@/api/comments/custom/useEntityComments";
+import { useGetImage } from "@/api/files/custom/useGetImage";
+import { useUser } from "@/contexts/user";
+import {
+  Box,
+  Button,
+  EmptyState,
+  SkeletonRect,
+  Text,
+  useToast,
+} from "@/design-system";
+import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import type {
   ModelsActivityAPIResponse,
   ModelsParsedActivityData,
 } from "@/types/types.gen";
+import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import {
   forwardRef,
@@ -64,8 +78,35 @@ export const ActivitiesTabContent = forwardRef<
 >(({ tripID }, ref) => {
   const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
   const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
+  const toast = useToast();
 
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [activeCommentActivityId, setActiveCommentActivityId] = useState<
+    string | null
+  >(null);
+
+  const rsvpMutation = usePostApiV1TripsTripidActivitiesActivityidRsvp();
+
+  const { currentUser } = useUser();
+  const { data: currentUserProfileImages } = useGetImage(
+    [currentUser?.profile_picture],
+    "small",
+  );
+  const currentUserProfilePhotoUrl = currentUserProfileImages?.[0]?.url;
+
+  const {
+    comments,
+    isLoading: isLoadingComments,
+    isLoadingMore: isLoadingMoreComments,
+    fetchNextPage,
+    onSubmitComment,
+    onReact,
+  } = useEntityComments({
+    tripID: tripID ?? "",
+    entityType: modelsEntityType.ActivityEntity,
+    entityID: activeCommentActivityId ?? "",
+    enabled: !!activeCommentActivityId && !!tripID,
+  });
 
   const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
     useActivitiesList(tripID);
@@ -76,6 +117,8 @@ export const ActivitiesTabContent = forwardRef<
     if (sortOrder === "newest") return activities;
     return [...activities].reverse();
   }, [activities, sortOrder]);
+
+  // ─── Expose open method for CreateFAB ────────────────────────────────────
 
   useImperativeHandle(ref, () => ({
     openAddActivity: () => entrySheetRef.current?.open(),
@@ -105,6 +148,36 @@ export const ActivitiesTabContent = forwardRef<
     setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
   }, []);
 
+  const queryClient = useQueryClient();
+
+  const handleRsvp = useCallback(
+    async (item: ModelsActivityAPIResponse) => {
+      if (!tripID || !item.id) return;
+      const isGoing = (item.going_users ?? []).some(
+        (u) => u.user_id === currentUser?.id,
+      );
+      try {
+        await rsvpMutation.mutateAsync({
+          tripID,
+          activityID: item.id,
+          data: {
+            status: isGoing
+              ? modelsRSVPStatus.RSVPStatusNotGoing
+              : modelsRSVPStatus.RSVPStatusGoing,
+          },
+        });
+        // Invalidate the activities list so going_users refreshes
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            JSON.stringify(query.queryKey).includes("activities"),
+        });
+      } catch {
+        toast.show({ message: "Couldn't update RSVP. Try again." });
+      }
+    },
+    [tripID, currentUser?.id, rsvpMutation, toast, queryClient],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: ModelsActivityAPIResponse }) => (
       <ActivityCard
@@ -115,9 +188,14 @@ export const ActivitiesTabContent = forwardRef<
             params: { tripID },
           })
         }
+        onOpenComments={() => setActiveCommentActivityId(item.id ?? null)}
+        isGoing={(item.going_users ?? []).some(
+          (u) => u.user_id === currentUser?.id,
+        )}
+        onRsvp={() => handleRsvp(item)}
       />
     ),
-    [tripID],
+    [tripID, currentUser?.id, handleRsvp],
   );
 
   const renderFooter = useCallback(
@@ -205,6 +283,21 @@ export const ActivitiesTabContent = forwardRef<
         tripID={tripID}
         onSaved={handleSaved}
         onClose={() => manualSheetRef.current?.close()}
+      />
+
+      <CommentSection
+        visible={!!activeCommentActivityId}
+        onClose={() => setActiveCommentActivityId(null)}
+        comments={comments}
+        isLoading={isLoadingComments}
+        isLoadingMore={isLoadingMoreComments}
+        onLoadMore={fetchNextPage}
+        currentUserId={currentUser?.id ?? ""}
+        currentUserName={currentUser?.name ?? ""}
+        currentUserAvatar={currentUserProfilePhotoUrl}
+        currentUserSeed={currentUser?.id}
+        onSubmitComment={onSubmitComment}
+        onReact={onReact}
       />
     </Box>
   );
