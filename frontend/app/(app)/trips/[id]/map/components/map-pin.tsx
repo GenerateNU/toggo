@@ -56,16 +56,38 @@ type CategoryIconRendererProps = {
 };
 
 /**
- * Stable helper component that resolves the correct Lucide icon for a category
- * and renders it. Defined at module level to satisfy react/no-unstable-nested-components.
+ * Renders the correct category icon using stable module-level JSX branches.
+ *
+ * Avoids assigning `getActivityCategoryIcon()`'s return value to a variable
+ * and using it as JSX — that pattern triggers react-hooks/static-components
+ * because the linter treats a function-call result used as a component as an
+ * inline component definition. Each branch here references a stable,
+ * module-level Lucide component directly.
  */
 export function CategoryIconRenderer({
   categoryNames,
   size,
   color,
 }: CategoryIconRendererProps) {
-  const Icon = getActivityCategoryIcon(categoryNames);
-  return <Icon size={size} color={color} />;
+  const key = categoryNames?.[0]?.toLowerCase().trim() ?? "";
+  const props = { size, color };
+
+  if (key === "activities" || key === "sightseeing")
+    return <Binoculars {...props} />;
+  if (
+    key === "housing" ||
+    key === "accommodation" ||
+    key === "hotel" ||
+    key === "lodging"
+  )
+    return <Home {...props} />;
+  if (key === "transportation" || key === "transport" || key === "transit")
+    return <Bus {...props} />;
+  if (key === "food" || key === "restaurant" || key === "dining")
+    return <UtensilsCrossed {...props} />;
+  if (key === "entertainment" || key === "show") return <Ticket {...props} />;
+  if (key === "concert" || key === "nightlife") return <Music {...props} />;
+  return <MapPin {...props} />;
 }
 
 type ActivityMapPinProps = {

@@ -18,15 +18,15 @@ export type TripMapActivity = {
   dates?: TripMapActivityDateRange[];
   comment_count?: number;
   /** Avatars of recent commenters — used in the Style A (housing/transport) comment pill. */
-  comment_previews?: Array<{
+  comment_previews?: {
     user_id?: string;
     profile_picture_url?: string;
-  }>;
+  }[];
   going_count?: number;
-  going_users?: Array<{
+  going_users?: {
     user_id?: string;
     profile_picture_url?: string | null;
-  }>;
+  }[];
   category_names?: string[];
 };
 

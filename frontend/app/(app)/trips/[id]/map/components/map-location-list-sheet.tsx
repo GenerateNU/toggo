@@ -10,7 +10,7 @@ import {
   type MapCategoryFilter,
   type TripMapActivity,
 } from "../types";
-import { getActivityCategoryIcon } from "./map-pin";
+import { CategoryIconRenderer } from "./map-pin";
 import { MapLocationCard } from "./map-location-card";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -26,7 +26,6 @@ type CategoryTab = {
   key: MapCategoryFilter;
   label: string;
   count: number;
-  IconComponent?: ReturnType<typeof getActivityCategoryIcon>;
 };
 
 type MapLocationListSheetProps = {
@@ -54,7 +53,6 @@ function buildCategoryTabs(activities: TripMapActivity[]): CategoryTab[] {
       key: category,
       label: formatCategoryLabel(category),
       count,
-      IconComponent: getActivityCategoryIcon([category]),
     });
   }
 
@@ -111,8 +109,9 @@ export function MapLocationListSheetContent({
                   isActive ? styles.tabActive : styles.tabInactive,
                 ]}
               >
-                {tab.IconComponent && (
-                  <tab.IconComponent
+                {tab.key !== "all" && (
+                  <CategoryIconRenderer
+                    categoryNames={[tab.key]}
                     size={CoreSize.xs}
                     color={isActive ? ColorPalette.white : ColorPalette.gray950}
                   />

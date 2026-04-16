@@ -45,7 +45,6 @@ export function TripMetadata({
 }: TripMetadataProps) {
   const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   const title = tripName?.trim() || "Trip";
-  const showLocationAction = !tripLocation;
   const isSoloTrip = members.length <= 1;
   const primaryMember = members[0];
 
