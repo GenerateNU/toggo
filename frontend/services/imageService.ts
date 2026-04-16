@@ -46,7 +46,7 @@ interface ConfirmUploadResponse {
   confirmed: number;
 }
 
-const baseFilePath = "/api/v0/files";
+const baseFilePath = "/api/v1/files";
 
 /**
  * Gets presigned upload URLs for the specified image sizes.
