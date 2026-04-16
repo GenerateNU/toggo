@@ -395,6 +395,16 @@ export type ModelsCastVoteRequest = {
   option_ids?: string[];
 };
 
+export const modelsCategoryViewType = {
+  CategoryViewTypeActivity: "activity",
+  CategoryViewTypeMoodboard: "moodboard",
+} as const;
+
+export type ModelsCategoryViewTypeEnumKey =
+  (typeof modelsCategoryViewType)[keyof typeof modelsCategoryViewType];
+
+export type ModelsCategoryViewType = ModelsCategoryViewTypeEnumKey;
+
 export type ModelsCategoryAPIResponse = {
   /**
    * @type string | undefined
@@ -433,6 +443,10 @@ export type ModelsCategoryAPIResponse = {
    * @type string | undefined
    */
   updated_at?: string;
+  /**
+   * @type string | undefined
+   */
+  view_type?: ModelsCategoryViewType;
 };
 
 export type ModelsCategoryListResponse = {
@@ -751,6 +765,7 @@ export type ModelsCreateCategoryRequest = {
    * @type string
    */
   trip_id: string;
+  view_type?: ModelsCategoryViewType;
 };
 
 export type ModelsCreateCommentReactionRequest = {

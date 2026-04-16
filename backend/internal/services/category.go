@@ -99,12 +99,18 @@ func (s *CategoryService) CreateCategory(ctx context.Context, tripID, userID uui
 		return nil, err
 	}
 
+	viewType := models.CategoryViewTypeActivity
+	if req.ViewType != nil && *req.ViewType == models.CategoryViewTypeMoodboard {
+		viewType = models.CategoryViewTypeMoodboard
+	}
+
 	category := &models.Category{
 		TripID:    tripID,
 		Name:      req.Name,
 		Label:     req.Label,
 		Icon:      req.Icon,
 		IsDefault: false,
+		ViewType:  viewType,
 		Position:  count,
 	}
 
@@ -234,12 +240,17 @@ func (s *CategoryService) ReorderTabs(ctx context.Context, tripID, userID uuid.U
 }
 
 func (s *CategoryService) toAPIResponse(category *models.Category) *models.CategoryAPIResponse {
+	vt := category.ViewType
+	if vt == "" {
+		vt = models.CategoryViewTypeActivity
+	}
 	return &models.CategoryAPIResponse{
 		TripID:    category.TripID,
 		Name:      category.Name,
 		Label:     category.Label,
 		Icon:      category.Icon,
 		IsDefault: category.IsDefault,
+		ViewType:  vt,
 		Position:  category.Position,
 		CreatedAt: category.CreatedAt,
 		UpdatedAt: category.UpdatedAt,

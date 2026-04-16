@@ -1,7 +1,15 @@
 import { Box, Button } from "@/design-system";
 import { router } from "expo-router";
-import { BarChart2, Lightbulb, MapPin, Plus } from "lucide-react-native";
-import { useState } from "react";
+import {
+  BarChart2,
+  Image as ImageIcon,
+  Lightbulb,
+  Link2,
+  MapPin,
+  Plus,
+  StickyNote,
+} from "lucide-react-native";
+import { useMemo, useState } from "react";
 import { Pressable } from "react-native";
 import Animated, {
   interpolate,
@@ -13,10 +21,18 @@ import Animated, {
 
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
+export type MoodBoardFabActions = {
+  onAddNote: () => void;
+  onAddImage: () => void;
+  onAddLink: () => void;
+};
+
 interface CreateFABProps {
   tripID: string;
   onCreatePoll: () => void;
   onCreateActivity: () => void;
+  /** When set, replaces Activity / Pitch / Poll with mood-board entry points. */
+  moodBoardActions?: MoodBoardFabActions | null;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
@@ -33,6 +49,7 @@ export default function CreateFAB({
   tripID,
   onCreatePoll,
   onCreateActivity,
+  moodBoardActions,
 }: CreateFABProps) {
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -75,23 +92,44 @@ export default function CreateFAB({
     ],
   }));
 
-  const actions = [
-    {
-      label: "Activity",
-      icon: MapPin,
-      onPress: onCreateActivity,
-    },
-    {
-      label: "Pitch",
-      icon: Lightbulb,
-      onPress: () => router.push(`/trips/${tripID}/pitches/creation`),
-    },
-    {
-      label: "Poll",
-      icon: BarChart2,
-      onPress: onCreatePoll,
-    },
-  ];
+  const actions = useMemo(() => {
+    if (moodBoardActions) {
+      return [
+        {
+          label: "Note",
+          icon: StickyNote,
+          onPress: moodBoardActions.onAddNote,
+        },
+        {
+          label: "Photo",
+          icon: ImageIcon,
+          onPress: moodBoardActions.onAddImage,
+        },
+        {
+          label: "Link",
+          icon: Link2,
+          onPress: moodBoardActions.onAddLink,
+        },
+      ];
+    }
+    return [
+      {
+        label: "Activity",
+        icon: MapPin,
+        onPress: onCreateActivity,
+      },
+      {
+        label: "Pitch",
+        icon: Lightbulb,
+        onPress: () => router.push(`/trips/${tripID}/pitches/creation`),
+      },
+      {
+        label: "Poll",
+        icon: BarChart2,
+        onPress: onCreatePoll,
+      },
+    ];
+  }, [moodBoardActions, onCreateActivity, onCreatePoll, tripID]);
 
   return (
     <Box style={ABSOLUTE_FILL} pointerEvents="box-none">

@@ -4,20 +4,20 @@ import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
-type UseActivitiesListOptions = {
-  category?: string;
-};
+export const activitiesQueryKey = (tripID: string, categoryName?: string) =>
+  categoryName?.length
+    ? (["activities", tripID, "category", categoryName] as const)
+    : (["activities", tripID] as const);
 
-export const activitiesQueryKey = (tripID: string, category?: string) =>
-  ["activities", tripID, ...(category ? [category] : [])] as const;
-
+/**
+ * Paginated activities for a trip, optionally filtered to a single category tab.
+ */
 export function useActivitiesList(
   tripID: string | undefined,
-  options?: UseActivitiesListOptions,
+  categoryName?: string,
 ) {
   const queryClient = useQueryClient();
   const isFetchingNextRef = useRef(false);
-  const category = options?.category;
 
   const {
     data,
@@ -27,12 +27,12 @@ export function useActivitiesList(
     hasNextPage,
     isError,
   } = useInfiniteQuery({
-    queryKey: activitiesQueryKey(tripID ?? "", category),
+    queryKey: activitiesQueryKey(tripID ?? "", categoryName),
     queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
       getActivitiesByTripID(tripID!, {
         limit: PAGE_SIZE,
         cursor: pageParam,
-        category,
+        ...(categoryName ? { category: categoryName } : {}),
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
@@ -67,22 +67,20 @@ export function useActivitiesList(
   const prependActivity = useCallback(
     (activity: ModelsActivityAPIResponse) => {
       if (!tripID) return;
-      queryClient.setQueryData(
-        activitiesQueryKey(tripID, category),
-        (old: typeof data) => {
-          if (!old?.pages.length) return old;
-          const [first, ...rest] = old.pages;
-          return {
-            ...old,
-            pages: [
-              { ...first, items: [activity, ...(first?.items ?? [])] },
-              ...rest,
-            ],
-          };
-        },
-      );
+      const key = activitiesQueryKey(tripID, categoryName);
+      queryClient.setQueryData(key, (old: typeof data) => {
+        if (!old?.pages.length) return old;
+        const [first, ...rest] = old.pages;
+        return {
+          ...old,
+          pages: [
+            { ...first, items: [activity, ...(first?.items ?? [])] },
+            ...rest,
+          ],
+        };
+      });
     },
-    [queryClient, tripID, category],
+    [queryClient, tripID, categoryName, data],
   );
 
   return {

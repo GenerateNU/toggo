@@ -1,4 +1,5 @@
 import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
+import { useGetTripTabs } from "@/api/categories/useGetTripTabs";
 import { useUploadImage } from "@/api/files/custom/useImageUpload";
 import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
@@ -13,6 +14,15 @@ import {
   type ActivitiesTabContentHandle,
 } from "@/app/(app)/trips/[id]/activities/components/activities-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import {
+  MoodBoardTabContent,
+  type MoodBoardTabContentHandle,
+} from "@/app/(app)/trips/[id]/components/mood-board-tab-content";
+import {
+  findTabMeta,
+  isMoodboardTab,
+  isRoutedTripTab,
+} from "@/app/(app)/trips/[id]/components/trip-custom-tab-utils";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
@@ -51,7 +61,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ImagePlus, Map } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
   SafeAreaView,
@@ -67,15 +77,6 @@ const SHEET_OVERLAP = 36;
 const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
 const HEADER_FADE_DURATION = 100;
 const FIXED_HEADER_HEIGHT = 44;
-const DEFAULT_TABS = [
-  "new",
-  "itinerary",
-  "polls",
-  "activities",
-  "settings",
-  "housing",
-] as TabKey[];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
@@ -106,6 +107,7 @@ export default function Trip() {
   const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
   const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
+  const moodBoardRef = useRef<MoodBoardTabContentHandle>(null);
 
   const {
     data: trip,
@@ -144,6 +146,9 @@ export default function Trip() {
       toast.show({ message: "Couldn't update cover image. Please try again." });
     }
   };
+  const { data: tripTabsData } = useGetTripTabs(tripID ?? "", {
+    query: { enabled: !!tripID, staleTime: 15_000 },
+  });
   const { data: tripMembersData } = useGetTripMembers(
     tripID ?? "",
     { limit: 12 },
@@ -178,10 +183,21 @@ export default function Trip() {
     createPollSheetRef.current?.open();
   }, []);
 
+  const activeTabMeta = useMemo(
+    () => findTabMeta(tripTabsData?.tabs, activeTab),
+    [tripTabsData?.tabs, activeTab],
+  );
+
   const handleOpenCreateActivity = useCallback(() => {
+    const customCategory =
+      !isRoutedTripTab(activeTab) && activeTab !== "settings";
+    if (customCategory && !isMoodboardTab(activeTabMeta)) {
+      setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
+      return;
+    }
     setActiveTab("activities");
     setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
-  }, []);
+  }, [activeTab, activeTabMeta]);
 
   const handlePollCreated = useCallback(() => {
     queryClient.invalidateQueries({
@@ -470,16 +486,27 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+            {!isRoutedTripTab(activeTab) && activeTab !== "settings" && (
+              <>
+                {isMoodboardTab(activeTabMeta) ? (
+                  <MoodBoardTabContent
+                    ref={moodBoardRef}
+                    tripID={tripID}
+                    categoryName={activeTab}
+                  />
+                ) : (
+                  <ActivitiesTabContent
+                    ref={activitiesTabRef}
+                    tripID={tripID}
+                    categoryName={activeTab}
+                  />
+                )}
+              </>
+            )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
             {activeTab === "housing" && <HousingTabContent tripID={tripID} />}
-            {!DEFAULT_TABS.includes(activeTab) && (
-              <EmptyState
-                title="Nothing here yet"
-                description="Post notes, photos, videos, and links."
-              />
-            )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -563,6 +590,7 @@ export default function Trip() {
             tripID={tripID}
             activeTab={activeTab}
             onTabPress={handleTabPress}
+            onCategoryCreated={(name) => setActiveTab(name)}
           />
         </Box>
       </Animated.View>
@@ -572,6 +600,17 @@ export default function Trip() {
           tripID={tripID}
           onCreatePoll={handleOpenCreatePoll}
           onCreateActivity={handleOpenCreateActivity}
+          moodBoardActions={
+            !isRoutedTripTab(activeTab) &&
+            activeTab !== "settings" &&
+            isMoodboardTab(activeTabMeta)
+              ? {
+                  onAddNote: () => moodBoardRef.current?.openAddNote(),
+                  onAddImage: () => moodBoardRef.current?.openAddImage(),
+                  onAddLink: () => moodBoardRef.current?.openAddLink(),
+                }
+              : null
+          }
         />
       )}
 

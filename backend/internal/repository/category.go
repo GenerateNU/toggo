@@ -108,8 +108,8 @@ func (r *categoryRepository) CountByTripID(ctx context.Context, tripID uuid.UUID
 func (r *categoryRepository) EnsureCategoriesExistTx(ctx context.Context, tx bun.Tx, tripID uuid.UUID, names []string) error {
 	for _, name := range names {
 		_, err := tx.NewRaw(`
-			INSERT INTO categories (trip_id, name, label, is_default, position, created_at, updated_at)
-			SELECT ?, ?, ?, false, (SELECT COUNT(*) FROM categories WHERE trip_id = ?), now(), now()
+			INSERT INTO categories (trip_id, name, label, is_default, view_type, position, created_at, updated_at)
+			SELECT ?, ?, ?, false, 'activity', (SELECT COUNT(*) FROM categories WHERE trip_id = ?), now(), now()
 			ON CONFLICT (trip_id, name) DO NOTHING
 		`, tripID, name, name, tripID).Exec(ctx)
 		if err != nil {
@@ -125,8 +125,8 @@ func (r *categoryRepository) EnsureCategoriesExistTx(ctx context.Context, tx bun
 func (r *categoryRepository) EnsureCategoriesExist(ctx context.Context, tripID uuid.UUID, names []string) error {
 	for _, name := range names {
 		_, err := r.db.NewRaw(`
-			INSERT INTO categories (trip_id, name, label, is_default, position, created_at, updated_at)
-			SELECT ?, ?, ?, false, (SELECT COUNT(*) FROM categories WHERE trip_id = ?), now(), now()
+			INSERT INTO categories (trip_id, name, label, is_default, view_type, position, created_at, updated_at)
+			SELECT ?, ?, ?, false, 'activity', (SELECT COUNT(*) FROM categories WHERE trip_id = ?), now(), now()
 			ON CONFLICT (trip_id, name) DO NOTHING
 		`, tripID, name, name, tripID).Exec(ctx)
 		if err != nil {
@@ -154,6 +154,7 @@ func (r *categoryRepository) UpsertBatchTx(ctx context.Context, tx bun.Tx, tripI
 			Name:      name,
 			Label:     label,
 			IsDefault: true,
+			ViewType:  models.CategoryViewTypeActivity,
 			Position:  i,
 			CreatedAt: now,
 			UpdatedAt: now,

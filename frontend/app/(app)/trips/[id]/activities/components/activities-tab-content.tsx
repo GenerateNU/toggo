@@ -55,6 +55,8 @@ export type ActivitiesTabContentHandle = {
 
 type ActivitiesTabContentProps = {
   tripID: string;
+  /** When set, list and new activities are scoped to this category tab. */
+  categoryName?: string;
 };
 
 type SortOrder = "newest" | "oldest";
@@ -76,7 +78,7 @@ function ActivitiesSkeleton() {
 export const ActivitiesTabContent = forwardRef<
   ActivitiesTabContentHandle,
   ActivitiesTabContentProps
->(({ tripID }, ref) => {
+>(({ tripID, categoryName }, ref) => {
   const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
   const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
   const toast = useToast();
@@ -110,7 +112,7 @@ export const ActivitiesTabContent = forwardRef<
   });
 
   const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
-    useActivitiesList(tripID);
+    useActivitiesList(tripID, categoryName);
 
   // ─── Sort activities ─────────────────────────────────────────────────────
 
@@ -300,6 +302,7 @@ export const ActivitiesTabContent = forwardRef<
       <AddActivityManualSheet
         ref={manualSheetRef}
         tripID={tripID}
+        defaultCategoryNames={categoryName ? [categoryName] : undefined}
         onSaved={handleSaved}
         onClose={() => manualSheetRef.current?.close()}
       />
