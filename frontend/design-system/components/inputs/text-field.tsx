@@ -25,6 +25,7 @@ export type TextFieldProps = {
   multiline?: boolean;
   returnKeyType?: TextInputProps["returnKeyType"];
   onSubmitEditing?: TextInputProps["onSubmitEditing"];
+  onBlur?: TextInputProps["onBlur"];
   activeBorderColor?: string;
   highlightWhenFilled?: boolean;
 };
@@ -46,6 +47,7 @@ export default function TextField({
   multiline,
   returnKeyType,
   onSubmitEditing,
+  onBlur: onBlurProp,
   activeBorderColor,
   highlightWhenFilled = false,
 }: TextFieldProps) {
@@ -78,7 +80,10 @@ export default function TextField({
           placeholderTextColor={ColorPalette.gray300}
           editable={!disabled}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlurProp?.(e);
+          }}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           secureTextEntry={secureTextEntry}

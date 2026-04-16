@@ -1,4 +1,3 @@
-import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { Avatar, Box, Text } from "@/design-system";
 import { Shadow } from "@/design-system/tokens/elevation";
 import { getFirstName } from "@/utils/user-display-name";
@@ -55,42 +54,22 @@ function MemberSummaryText({ members, textSize }: MemberSummaryTextProps) {
 }
 
 export function TripMemberPreviewRow({
-  tripId,
+  members,
   currentUserId,
   textSize = "default",
 }: TripMemberPreviewRowProps) {
-  const membersQuery = useGetTripMembers(
-    tripId,
-    { limit: 12 },
-    {
-      query: {
-        staleTime: 30_000,
-      },
-    },
-  );
-
-  const allMembers =
-    membersQuery.data?.items
-      ?.filter((item): item is NonNullable<typeof item> => Boolean(item))
-      .map((member) => ({
-        id: member.user_id ?? "",
-        name: member.name?.trim() || "Traveler",
-        profilePhotoUrl: member.profile_picture_url ?? undefined,
-      }))
-      .filter((member) => member.id) ?? [];
-
   const sortedMembers = currentUserId
-    ? [...allMembers].sort((a, b) => {
+    ? [...members].sort((a, b) => {
         if (a.id === currentUserId) return -1;
         if (b.id === currentUserId) return 1;
         return 0;
       })
-    : allMembers;
+    : members;
 
   const visibleMembers = sortedMembers.slice(0, MAX_VISIBLE_MEMBERS);
   const overflowCount = Math.max(sortedMembers.length - MAX_VISIBLE_MEMBERS, 0);
 
-  if (membersQuery.isError || sortedMembers.length === 0) {
+  if (sortedMembers.length === 0) {
     return null;
   }
 

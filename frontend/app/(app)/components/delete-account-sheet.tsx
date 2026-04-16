@@ -1,11 +1,9 @@
-import { BottomSheet, Box, Button, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { X } from "lucide-react-native";
-import { TouchableOpacity } from "react-native";
+import { BottomSheet, Box, Button, Text, TextField } from "@/design-system";
+import { useState } from "react";
 
 type DeleteAccountSheetProps = {
   bottomSheetRef: React.RefObject<any>;
-  onConfirm: () => void;
+  onConfirm: (usernameInput: string) => void;
   onDismiss?: () => void;
 };
 
@@ -14,45 +12,45 @@ export function DeleteAccountSheet({
   onConfirm,
   onDismiss,
 }: DeleteAccountSheetProps) {
+  const [username, setUsername] = useState("");
+
   const handleNevermind = () => {
+    setUsername("");
     bottomSheetRef.current?.close();
     onDismiss?.();
   };
 
+  const handleConfirm = () => {
+    onConfirm(username.trim());
+  };
+
   return (
-    <BottomSheet ref={bottomSheetRef} onClose={onDismiss}>
-      <Box paddingHorizontal="sm" paddingBottom="lg" gap="lg">
-        <Box flexDirection="row" justifyContent="flex-end">
-          <TouchableOpacity
-            onPress={handleNevermind}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-          >
-            <X size={24} color={ColorPalette.gray950} />
-          </TouchableOpacity>
+    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss}>
+      <Box paddingTop="sm" paddingBottom="lg" paddingHorizontal="sm" gap="lg">
+        <Box gap="xxs">
+          <Text variant="bodyLargeStrong" color="gray950">
+            Input your username to delete your account
+          </Text>
         </Box>
 
-        <Box gap="xxs">
-          <Text variant="headingMd" color="gray950">
-            Delete Account?
-          </Text>
-          <Text variant="bodyDefault" color="gray500">
-            This will permanently delete your account and all your data. This
-            cannot be undone.
-          </Text>
-        </Box>
+        <TextField
+          placeholder="Enter username"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+        />
 
         <Box gap="sm">
           <Button
             layout="textOnly"
             label="Delete Account"
             variant="Destructive"
-            onPress={onConfirm}
+            onPress={handleConfirm}
+            disabled={username.trim().length === 0}
           />
           <Button
             layout="textOnly"
-            label="Nevermind"
+            label="Cancel"
             variant="Secondary"
             onPress={handleNevermind}
           />

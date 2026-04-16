@@ -77,7 +77,7 @@ export default function TimePicker({
       initialIndex={-1}
       onClose={onClose}
       disableClose
-      hideHandle
+      disableScrollView
       footer={
         <Box
           style={[

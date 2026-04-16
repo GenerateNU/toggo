@@ -1343,6 +1343,12 @@ const docTemplate = `{
                         "description": "Opaque cursor from previous response next_cursor for next page",
                         "name": "cursor",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Only include trips where end_date is before this RFC3339 timestamp",
+                        "name": "end_date_before",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -8517,9 +8523,15 @@ const docTemplate = `{
         "models.UpdateUserRequest": {
             "type": "object",
             "properties": {
+                "apple_maps_enabled": {
+                    "type": "boolean"
+                },
                 "device_token": {
                     "type": "string",
                     "maxLength": 200
+                },
+                "google_maps_enabled": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string",
@@ -8588,6 +8600,9 @@ const docTemplate = `{
         "models.User": {
             "type": "object",
             "properties": {
+                "apple_maps_enabled": {
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -8596,6 +8611,9 @@ const docTemplate = `{
                 },
                 "device_token_updated_at": {
                     "type": "string"
+                },
+                "google_maps_enabled": {
+                    "type": "boolean"
                 },
                 "id": {
                     "type": "string"

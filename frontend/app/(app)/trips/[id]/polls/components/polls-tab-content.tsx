@@ -1,8 +1,7 @@
 import { useGetPollsByTripID } from "@/api/polls/useGetPollsByTripID";
-import { Box, ErrorState, Spinner, Text } from "@/design-system";
+import { Box, EmptyState, ErrorState, Spinner } from "@/design-system";
 import { ModelsPollAPIResponse } from "@/types/types.gen";
 import { useCallback, useState } from "react";
-import { StyleSheet } from "react-native";
 import PollDetailSheet from "./poll-detail-sheet";
 import RankPollRow from "./rank-poll-row";
 import VotePollCard from "./vote-poll-card";
@@ -48,17 +47,10 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
 
   if (polls.length === 0) {
     return (
-      <Box borderWidth={1} borderColor="gray200" borderRadius="xl" padding="sm">
-        <Box alignItems="center" paddingVertical="lg">
-          <Text
-            variant="bodyDefault"
-            color="gray950"
-            style={styles.emptyStateText}
-          >
-            No polls yet. Create one!
-          </Text>
-        </Box>
-      </Box>
+      <EmptyState
+        title="No polls yet"
+        description="Create one with the + button."
+      />
     );
   }
 
@@ -95,13 +87,5 @@ export function PollsTabContent({ tripId }: PollsTabContentProps) {
     </>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  emptyStateText: {
-    fontStyle: "italic",
-  },
-});
 
 export default PollsTabContent;

@@ -1,6 +1,14 @@
 import { useUpdateUser } from "@/api/users/useUpdateUser";
 import { useUser } from "@/contexts/user";
-import { BackButton, Box, Spinner, Text, TextField } from "@/design-system";
+import {
+  BackButton,
+  Box,
+  EmptyState,
+  Spinner,
+  Text,
+  TextField,
+  useToast,
+} from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { router, Stack } from "expo-router";
@@ -42,8 +50,9 @@ function RowDivider() {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AccountScreen() {
-  const { currentUser, refreshCurrentUser } = useUser();
+  const { currentUser, refreshCurrentUser, isPending } = useUser();
   const { mutateAsync: updateUser, isPending: isSaving } = useUpdateUser();
+  const toast = useToast();
 
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
@@ -71,7 +80,7 @@ export default function AccountScreen() {
       });
       await refreshCurrentUser();
     } catch {
-      // non-blocking
+      toast.show({ message: "Couldn't update account. Please try again." });
     } finally {
       setIsEditing(false);
     }
@@ -83,6 +92,29 @@ export default function AccountScreen() {
     setPhoneNumber(currentUser?.phone_number ?? "");
     setIsEditing(false);
   };
+
+  if (isPending) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Spinner />
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        <Box flex={1} justifyContent="center">
+          <EmptyState
+            title="Account unavailable"
+            description="Please wait a moment and try again."
+          />
+        </Box>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>

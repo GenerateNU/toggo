@@ -1,9 +1,6 @@
-import { BottomSheet, Box, Text } from "@/design-system";
-import { ColorPalette } from "@/design-system/tokens/color";
-import { FontFamily, FontSize } from "@/design-system/tokens/typography";
+import { BottomSheet, Box, Button, Text } from "@/design-system";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { useEffect, useRef } from "react";
-import { Pressable, StyleSheet } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,74 +46,33 @@ export function ConfirmSheet({
         if (index < 0) onCancel();
       }}
     >
-      <Box style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        <Pressable
-          style={[styles.confirmButton, isLoading && { opacity: 0.6 }]}
-          onPress={onConfirm}
-          disabled={isLoading}
-        >
-          <Text style={styles.confirmText}>
-            {isLoading ? "Loading..." : confirmLabel}
+      <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="xl" gap="sm">
+        <Box gap="xxs">
+          <Text variant="headingMd" color="gray950">
+            {title}
           </Text>
-        </Pressable>
-        <Pressable style={styles.cancelButton} onPress={onCancel}>
-          <Text style={styles.cancelText}>{cancelLabel}</Text>
-        </Pressable>
+          <Text variant="bodyMedium" color="gray500">
+            {subtitle}
+          </Text>
+        </Box>
+        <Box gap="xs">
+          <Button
+            layout="textOnly"
+            label={confirmLabel}
+            variant="Destructive"
+            onPress={onConfirm}
+            loading={isLoading}
+            disabled={isLoading}
+          />
+          <Button
+            layout="textOnly"
+            label={cancelLabel}
+            variant="Secondary"
+            onPress={onCancel}
+            disabled={isLoading}
+          />
+        </Box>
       </Box>
     </BottomSheet>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  title: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 20,
-    lineHeight: 24,
-    color: ColorPalette.gray950,
-  },
-  subtitle: {
-    fontFamily: FontFamily.regular,
-    fontSize: 16,
-    lineHeight: 22,
-    color: ColorPalette.gray500,
-    marginTop: 6,
-  },
-  confirmButton: {
-    backgroundColor: "#D80009",
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 24,
-  },
-  confirmText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: FontSize.md,
-    color: ColorPalette.white,
-    textAlign: "center",
-  },
-  cancelButton: {
-    backgroundColor: ColorPalette.gray50,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-  },
-  cancelText: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.md,
-    color: ColorPalette.gray950,
-    textAlign: "center",
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-});

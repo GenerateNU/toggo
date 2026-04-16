@@ -34,8 +34,8 @@ export function CancelConfirmModal({
       ref={sheetRef}
       snapPoints={["25%"]}
       initialIndex={-1}
-      hideHandle={true}
       onClose={onKeep}
+      disableScrollView
     >
       <Box
         backgroundColor="white"

@@ -31,6 +31,7 @@ type ButtonProps = ButtonLayout & {
   disabled?: boolean;
   loading?: boolean;
   loadingLabel?: string;
+  disabledOpacity?: number;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 };
@@ -163,7 +164,7 @@ export const Button: React.FC<ButtonProps> = ({
                     ? "transparent"
                     : colors[resolved.backgroundColor as keyof typeof colors],
                 width: isIconOnly ? resolved.minHeight : "auto",
-                opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
+                opacity: pressed ? 0.9 : 1,
               },
               style,
             ]}

@@ -18,7 +18,7 @@ export function CreateProfileSheet({
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      snapPoints={["50%", "60%"]}
+      snapPoints={["60%", "70%"]}
       initialIndex={needsProfile ? 0 : -1}
       disableClose={needsProfile}
     >

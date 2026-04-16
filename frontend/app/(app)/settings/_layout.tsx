@@ -50,6 +50,12 @@ const Layout = () => {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="maps"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

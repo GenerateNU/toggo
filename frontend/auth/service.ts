@@ -19,6 +19,8 @@ export type CurrentUser = {
   profile_picture?: string;
   phone_number?: string;
   timezone?: string;
+  apple_maps_enabled?: boolean;
+  google_maps_enabled?: boolean;
 };
 
 export class SupabaseAuth implements AuthService {

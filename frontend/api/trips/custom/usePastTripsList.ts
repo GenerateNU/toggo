@@ -1,22 +1,17 @@
 import { getAllTrips } from "@/api/trips/useGetAllTrips";
 import { PAGE_SIZE } from "@/constants/pagination";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
-export const TRIPS_QUERY_KEY = ["trips"] as const;
+export const PAST_TRIPS_QUERY_KEY = ["trips", "past"] as const;
 
-export type TripsPage = {
+type TripsPage = {
   items: ModelsTripAPIResponse[];
   next_cursor?: string;
 };
 
-export function useTripsList() {
-  const queryClient = useQueryClient();
+export function usePastTripsList(endDateBefore: string) {
   const isFetchingNextRef = useRef(false);
 
   const {
@@ -32,14 +27,15 @@ export function useTripsList() {
     TripsPage,
     Error,
     InfiniteData<TripsPage>,
-    typeof TRIPS_QUERY_KEY,
+    readonly [string, string, string],
     string | undefined
   >({
-    queryKey: TRIPS_QUERY_KEY,
+    queryKey: [...PAST_TRIPS_QUERY_KEY, endDateBefore] as const,
     queryFn: ({ pageParam }) =>
       getAllTrips({
         limit: PAGE_SIZE,
-        cursor: pageParam as string | undefined,
+        cursor: pageParam,
+        end_date_before: endDateBefore,
       }),
     initialPageParam: undefined,
     getNextPageParam: (lastPage) =>
@@ -70,26 +66,6 @@ export function useTripsList() {
     });
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const prependTrip = useCallback(
-    (trip: ModelsTripAPIResponse) => {
-      queryClient.setQueryData<InfiniteData<TripsPage>>(
-        TRIPS_QUERY_KEY,
-        (old) => {
-          if (!old?.pages?.length) return old;
-          const [first, ...rest] = old.pages;
-          return {
-            ...old,
-            pages: [
-              { ...first, items: [trip, ...(first?.items ?? [])] },
-              ...rest,
-            ],
-          };
-        },
-      );
-    },
-    [queryClient],
-  );
-
   return {
     trips,
     isLoading,
@@ -98,6 +74,5 @@ export function useTripsList() {
     isRefetching: isFetching && !isLoading && !isFetchingNextPage,
     fetchMore,
     refetch,
-    prependTrip,
   };
 }

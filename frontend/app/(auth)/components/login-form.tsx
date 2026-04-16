@@ -1,5 +1,5 @@
 import { useUser } from "@/contexts/user";
-import { Box, Button, Icon, Text } from "@/design-system";
+import { Box, Button, Icon, Text, TextField } from "@/design-system";
 import { normalizePhone } from "@/utilities/phone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  TextInput,
   TouchableWithoutFeedback,
 } from "react-native";
 import { CountryCode } from "react-native-country-picker-modal";
@@ -96,74 +95,43 @@ export default function PhoneNumberForm() {
                 </Box>
               )}
 
-              <Box gap="xs">
-                <Box
-                  flexDirection="row"
-                  borderColor={
-                    formState.errors.phone ? "statusError" : "gray300"
-                  }
-                  borderRadius="sm"
-                  overflow="hidden"
-                  backgroundColor="white"
-                  height={48}
-                  gap="xxs"
-                >
-                  <Pressable onPress={() => setPickerVisible(true)}>
-                    <Box
-                      flexDirection="row"
-                      alignItems="center"
-                      justifyContent="center"
-                      paddingHorizontal="xs"
-                      height="100%"
-                      borderWidth={1}
-                      borderColor="gray300"
-                      borderRadius="sm"
-                      gap="xxs"
-                    >
-                      <Text variant="bodyDefault" style={{ lineHeight: 20 }}>
-                        {selectedCountry.flagEmoji}
-                      </Text>
-                      <Text
-                        variant="bodyXsDefault"
-                        color="gray500"
-                        style={{ lineHeight: 20 }}
-                      >
-                        {selectedCountry.callingCode}
-                      </Text>
-                      <Icon icon={ChevronDown} size="xs" color="gray500" />
-                    </Box>
-                  </Pressable>
-
+              <Box flexDirection="row" gap="xs" alignItems="flex-start">
+                <Pressable onPress={() => setPickerVisible(true)}>
                   <Box
-                    flex={1}
+                    flexDirection="row"
+                    alignItems="center"
                     justifyContent="center"
-                    paddingHorizontal="sm"
+                    paddingHorizontal="xs"
                     borderWidth={1}
                     borderColor="gray300"
-                    borderRadius="sm"
+                    borderRadius="md"
+                    backgroundColor="white"
+                    gap="xxs"
+                    style={{ height: 48 }}
                   >
-                    <Controller
-                      name="phone"
-                      control={control}
-                      render={({ field: { onChange, value, onBlur } }) => (
-                        <TextInput
-                          placeholder="Phone Number"
-                          value={value}
-                          onChangeText={onChange}
-                          onBlur={onBlur}
-                          keyboardType="phone-pad"
-                          style={{ fontSize: 15, height: "100%" }}
-                        />
-                      )}
-                    />
+                    <Text variant="bodyDefault" style={{ lineHeight: 20 }}>
+                      {selectedCountry.flagEmoji}
+                    </Text>
+                    <Icon icon={ChevronDown} size="xs" color="gray300" />
                   </Box>
-                </Box>
+                </Pressable>
 
-                {formState.errors.phone && (
-                  <Text variant="bodyXsDefault" color="statusError">
-                    {formState.errors.phone.message}
-                  </Text>
-                )}
+                <Box flex={1}>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field: { onChange, value, onBlur } }) => (
+                      <TextField
+                        placeholder="(000) 000-0000"
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        keyboardType="phone-pad"
+                        error={formState.errors.phone?.message}
+                      />
+                    )}
+                  />
+                </Box>
               </Box>
             </Box>
 

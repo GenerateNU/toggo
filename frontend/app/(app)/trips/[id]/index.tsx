@@ -1,5 +1,9 @@
+import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
+import { useUploadImage } from "@/api/files/custom/useImageUpload";
 import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
+import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
+import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
 import { getTripQueryKey, useGetTrip } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { TripReminderDateSheet } from "@/app/(app)/components/trip-reminder-date-sheet";
@@ -21,7 +25,18 @@ import CreatePollSheet, {
   CreatePollSheetMethods,
 } from "@/app/(app)/trips/[id]/polls/components/create-poll-sheet";
 import PollsTabContent from "@/app/(app)/trips/[id]/polls/components/polls-tab-content";
-import { Box, Text } from "@/design-system";
+import { PAGE_SIZE } from "@/constants/pagination";
+import {
+  Box,
+  EmptyState,
+  ErrorState,
+  Icon,
+  ImagePicker,
+  SkeletonRect,
+  Text,
+  useToast,
+} from "@/design-system";
+import type { ImagePickerHandle } from "@/design-system/components/image-picker/image-picker";
 import { BackButton } from "@/design-system/components/navigation/arrow";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -29,9 +44,13 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
 import { formatTripDates } from "@/utils/date-helpers";
+import {
+  activityHasMapLocation,
+  encodeMapViewActivitiesParam,
+} from "@/utils/map-view-activities";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Map } from "lucide-react-native";
+import { ImagePlus, Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
@@ -44,11 +63,9 @@ import {
 const INITIAL_TAB: TabKey = "new";
 const HERO_HEIGHT = 210;
 const SHEET_OVERLAP = 24;
+const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
 const HEADER_FADE_DURATION = 200;
 const FIXED_HEADER_HEIGHT = 44;
-const HERO_PARALLAX_UP_SHIFT = HERO_HEIGHT * 0.35;
-const HERO_PULL_DISTANCE = 120;
-const HERO_PULL_SCALE = 1.08;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -62,12 +79,11 @@ export default function Trip() {
     (tab as TabKey) || INITIAL_TAB,
   );
   const [headerVisible, setHeaderVisible] = useState(false);
-  const [sheetTopActivationY, setSheetTopActivationY] = useState<number | null>(
-    null,
-  );
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
+  const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
+  const uploadImageMutation = useUploadImage();
   const queryClient = useQueryClient();
   const parentScrollViewRef = useRef<any>(null);
   const parentScrollOffsetRef = useRef(0);
@@ -79,10 +95,46 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
   const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
+  const coverPickerRef = useRef<ImagePickerHandle>(null);
+  const [isOpeningMap, setIsOpeningMap] = useState(false);
 
-  const { data: trip, isLoading } = useGetTrip(tripID ?? "", {
+  const {
+    data: trip,
+    isLoading,
+    isError,
+  } = useGetTrip(tripID ?? "", {
     query: { enabled: !!tripID },
   });
+  const isCoverUploading =
+    uploadImageMutation.isPending || updateTripMutation.isPending;
+
+  const handleCoverImageChange = async (uri: string | null) => {
+    if (!tripID || !uri) return;
+
+    try {
+      const { imageId } = await uploadImageMutation.mutateAsync({
+        uri,
+        sizes: ["large", "medium"],
+      });
+
+      await updateTripMutation.mutateAsync({
+        tripID,
+        data: {
+          cover_image_id: imageId,
+        },
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getTripQueryKey(tripID) }),
+        queryClient.invalidateQueries({ queryKey: getAllTripsQueryKey({}) }),
+        queryClient.invalidateQueries({ queryKey: TRIPS_QUERY_KEY }),
+      ]);
+
+      toast.show({ message: "Cover image updated." });
+    } catch {
+      toast.show({ message: "Couldn't update cover image. Please try again." });
+    }
+  };
   const { data: tripMembersData } = useGetTripMembers(
     tripID ?? "",
     { limit: 12 },
@@ -142,9 +194,13 @@ export default function Trip() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
       });
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey(),
+      });
       dateSheetRef.current?.close();
     } catch {
       setDateSheetError("Could not update trip dates. Please try again.");
+      toast.show({ message: "Couldn't update trip dates. Please try again." });
     }
   };
 
@@ -171,9 +227,14 @@ export default function Trip() {
       await queryClient.invalidateQueries({
         queryKey: getTripQueryKey(tripID),
       });
+      await queryClient.invalidateQueries({
+        queryKey: getAllTripsQueryKey(),
+      });
     } catch (error) {
       console.error("Failed to update trip location:", error);
-      // TODO: Show error toast to user
+      toast.show({
+        message: "Couldn't update trip location. Please try again.",
+      });
     } finally {
       locationSheetRef.current?.close();
     }
@@ -186,14 +247,53 @@ export default function Trip() {
 
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
 
+  const handleOpenMapView = useCallback(async () => {
+    if (!tripID || isOpeningMap) return;
+
+    setIsOpeningMap(true);
+    try {
+      const allActivities: any[] = [];
+      let cursor: string | undefined;
+
+      for (let i = 0; i < 50; i += 1) {
+        const page = await getActivitiesByTripID(tripID, {
+          limit: PAGE_SIZE,
+          ...(cursor ? { cursor } : {}),
+        });
+
+        const items = page?.items ?? [];
+        allActivities.push(...items);
+
+        if (!page?.next_cursor || items.length === 0) {
+          break;
+        }
+        cursor = page.next_cursor;
+      }
+
+      const locationActivities = allActivities.filter((activity) =>
+        activityHasMapLocation(activity),
+      );
+
+      router.push({
+        pathname: "/map-view",
+        params: {
+          activities: encodeMapViewActivitiesParam(locationActivities),
+        },
+      });
+    } catch {
+      toast.show({
+        message: "Couldn't load map activities. Please try again.",
+      });
+    } finally {
+      setIsOpeningMap(false);
+    }
+  }, [tripID, isOpeningMap, toast]);
+
   if (!tripID) {
     return null;
   }
 
-  const titleScrollThreshold =
-    sheetTopActivationY == null
-      ? Number.POSITIVE_INFINITY
-      : sheetTopActivationY - insets.top;
+  const titleScrollThreshold = CONTENT_CARD_TOP - insets.top;
 
   const handleParentScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: headerScrollY } } }],
@@ -227,19 +327,24 @@ export default function Trip() {
     outputRange: [1, 0],
   });
   const safeAreaOverlayOpacity = headerAnim;
-  const heroParallaxTranslateY = headerScrollY.interpolate({
-    inputRange: [-HERO_PULL_DISTANCE, 0, HERO_HEIGHT],
-    outputRange: [HERO_PULL_DISTANCE * 0.2, 0, -HERO_PARALLAX_UP_SHIFT],
-    extrapolate: "clamp",
-  });
-  const heroParallaxScale = headerScrollY.interpolate({
-    inputRange: [-HERO_PULL_DISTANCE, 0],
-    outputRange: [HERO_PULL_SCALE, 1],
-    extrapolate: "clamp",
+  const heroScale = headerScrollY.interpolate({
+    inputRange: [-HERO_HEIGHT, 0],
+    outputRange: [2, 1],
+    extrapolateRight: "clamp",
   });
 
   return (
     <View style={styles.container}>
+      {/* Hero image — absolutely positioned behind scroll, scales from top on pull-down */}
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.heroContainer, { transform: [{ scale: heroScale }] }]}
+      >
+        <View style={styles.heroClip}>
+          <TripHeader coverImageUrl={trip?.cover_image_url} />
+        </View>
+      </Animated.View>
+
       <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
         <Animated.View
           pointerEvents="none"
@@ -256,65 +361,9 @@ export default function Trip() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           onScroll={handleParentScroll}
-          stickyHeaderIndices={[2]}
           scrollEventThrottle={16}
         >
-          <View style={styles.heroSection}>
-            <Animated.View
-              style={[
-                styles.heroImageLayer,
-                {
-                  transform: [
-                    { translateY: heroParallaxTranslateY },
-                    { scale: heroParallaxScale },
-                  ],
-                },
-              ]}
-            >
-              <TripHeader coverImageUrl={trip?.cover_image_url} />
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.topNavigation,
-                {
-                  top: insets.top + Layout.spacing.xs,
-                  opacity: navOverlayOpacity,
-                },
-              ]}
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                paddingHorizontal="sm"
-                paddingVertical="xs"
-              >
-                <BackButton hasBackground />
-
-                <Pressable
-                  onPress={() => router.push(`/trips/${tripID}/map` as any)}
-                  style={styles.mapButton}
-                  accessibilityRole="button"
-                  accessibilityLabel="View map"
-                >
-                  <Map size={16} color={ColorPalette.gray950} />
-                  <Text variant="bodySmMedium" color="gray950">
-                    Map
-                  </Text>
-                </Pressable>
-              </Box>
-            </Animated.View>
-          </View>
-
-          <Animated.View
-            onLayout={(event) => {
-              const nextY = event.nativeEvent.layout.y;
-              setSheetTopActivationY((previous) =>
-                previous === nextY ? previous : nextY,
-              );
-            }}
-            style={{ opacity: inFlowHeaderOpacity }}
-          >
+          <Animated.View style={{ opacity: inFlowHeaderOpacity }}>
             <Box style={styles.sheetTop} backgroundColor="white">
               <TripMetadata
                 tripName={trip?.name}
@@ -330,31 +379,54 @@ export default function Trip() {
                 onDatePress={() => dateSheetRef.current?.snapToIndex(0)}
                 onLocationPress={handleLocationPress}
               />
+              <Box paddingVertical="sm">
+                <TripTabBar
+                  tripID={tripID}
+                  activeTab={activeTab}
+                  onTabPress={handleTabPress}
+                />
+              </Box>
             </Box>
           </Animated.View>
-
-          <Animated.View
-            pointerEvents={headerVisible ? "none" : "auto"}
-            style={[styles.stickyHeader, { opacity: inFlowHeaderOpacity }]}
-          >
-            <Box paddingBottom="xs" backgroundColor="white">
-              <TripTabBar
-                tripID={tripID}
-                activeTab={activeTab}
-                onTabPress={handleTabPress}
-              />
-            </Box>
-          </Animated.View>
-
           <Box
-            ref={cardContainerRef}
+            flex={1}
             paddingHorizontal="sm"
             paddingTop="sm"
             paddingBottom="xl"
-            backgroundColor="gray50"
-            style={styles.sheetContent}
+            backgroundColor="gray25"
           >
-            {activeTab === "new" && (
+            {isLoading ? (
+              <Box gap="sm">
+                <SkeletonRect
+                  width="full"
+                  borderRadius="md"
+                  style={{ height: 120 }}
+                />
+                <SkeletonRect
+                  width="full"
+                  borderRadius="md"
+                  style={{ height: 120 }}
+                />
+                <SkeletonRect
+                  width="threeQuarter"
+                  borderRadius="md"
+                  style={{ height: 90 }}
+                />
+              </Box>
+            ) : null}
+            {!isLoading && isError ? (
+              <ErrorState
+                title="Couldn't load trip"
+                description="Pull to refresh or try again in a moment."
+              />
+            ) : null}
+            {!isLoading && !isError && !trip ? (
+              <EmptyState
+                title="Trip not found"
+                description="This trip may have been removed or you may not have access to it."
+              />
+            ) : null}
+            {!isLoading && !isError && trip && activeTab === "new" && (
               <Box gap="sm">
                 {trip?.pitch_deadline &&
                   new Date(trip.pitch_deadline) > new Date() && (
@@ -369,38 +441,106 @@ export default function Trip() {
                 <ActivityFeedTabContent tripId={tripID} />
               </Box>
             )}
-            {activeTab === "itinerary" && (
+            {!isLoading && !isError && trip && activeTab === "itinerary" && (
               <ItineraryTabContent
                 tripID={tripID}
                 startDate={trip?.start_date}
                 endDate={trip?.end_date}
-                parentScrollViewRef={parentScrollViewRef as any}
+                parentScrollViewRef={parentScrollViewRef}
                 parentScrollOffset={parentScrollOffsetRef}
                 parentContainerRef={cardContainerRef}
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-            {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "settings" &&
-              activeTab !== "activities" && (
-                <Box
-                  flex={1}
-                  alignItems="flex-start"
-                  justifyContent="flex-start"
-                >
-                  <Text variant="bodySmDefault" color="gray400">
-                    Post notes, photos, videos, and links
-                  </Text>
-                </Box>
-              )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
+            {activeTab !== "new" &&
+              activeTab !== "itinerary" &&
+              activeTab !== "polls" &&
+              activeTab !== "activities" &&
+              activeTab !== "settings" && (
+                <EmptyState
+                  title="Nothing here yet"
+                  description="Post notes, photos, videos, and links."
+                />
+              )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
+
+      {/* Hidden ImagePicker provides the bottom sheet for cover image selection.
+          The visual (camera icon) lives in TripHeader, behind the card. */}
+      {!trip?.cover_image_url && (
+        <View style={styles.hiddenPicker}>
+          <ImagePicker
+            ref={coverPickerRef}
+            variant="rectangular"
+            width="100%"
+            height={1}
+            onChange={handleCoverImageChange}
+            showRemoveAction={false}
+            showPlaceholderText={false}
+            title="Add cover photo"
+          />
+        </View>
+      )}
+
+      {/* Pressable sits above the scroll view so the hero area is tappable.
+          Matches the hero scale transform so the icon parallaxes on pull-down. */}
+      {!trip?.cover_image_url && (
+        <Animated.View
+          style={[styles.heroPicker, { transform: [{ scale: heroScale }] }]}
+          pointerEvents={headerVisible ? "none" : "auto"}
+        >
+          <Pressable
+            style={styles.heroPickerPressable}
+            onPress={() => coverPickerRef.current?.openSheet()}
+            disabled={isCoverUploading || isLoading}
+          >
+            <Box flex={1} justifyContent="center" alignItems="center">
+              <Icon icon={ImagePlus} size="md" color="blue500" />
+            </Box>
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {/* Nav buttons — absolute over hero, fade out when fixed header appears */}
+      <Animated.View
+        style={[
+          styles.topNavigation,
+          {
+            top: insets.top + Layout.spacing.xs,
+            opacity: navOverlayOpacity,
+          },
+        ]}
+      >
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="sm"
+          paddingVertical="xs"
+        >
+          <BackButton hasBackground />
+          <Pressable
+            onPress={handleOpenMapView}
+            style={styles.mapButton}
+            accessibilityRole="button"
+            accessibilityLabel="View map"
+            disabled={isOpeningMap}
+          >
+            <Map size={16} color={ColorPalette.gray950} />
+            <Text
+              variant="bodySmMedium"
+              color="gray950"
+              style={{ marginLeft: 4 }}
+            >
+              Map
+            </Text>
+          </Pressable>
+        </Box>
+      </Animated.View>
 
       <Animated.View
         pointerEvents={headerVisible ? "auto" : "none"}
@@ -472,7 +612,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    backgroundColor: ColorPalette.white,
+    backgroundColor: "transparent",
   },
   safeAreaTopOverlay: {
     position: "absolute",
@@ -502,27 +642,42 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 2,
   },
-  heroSection: {
+  heroContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT,
+    transformOrigin: "top",
+  },
+  heroClip: {
     height: HERO_HEIGHT,
     overflow: "hidden",
   },
-  heroImageLayer: {
+  hiddenPicker: {
+    height: 0,
+    overflow: "hidden",
+  },
+  heroPicker: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: CONTENT_CARD_TOP,
+    transformOrigin: "top",
+  },
+  heroPickerPressable: {
     ...StyleSheet.absoluteFillObject,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: Layout.spacing.xl,
+    paddingTop: CONTENT_CARD_TOP,
   },
   sheetTop: {
     backgroundColor: ColorPalette.white,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
-    marginTop: -SHEET_OVERLAP,
-  },
-  stickyHeader: {
-    backgroundColor: ColorPalette.white,
-    zIndex: 2,
   },
   fixedHeaderTitle: {
     position: "absolute",
@@ -536,8 +691,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
-  },
-  sheetContent: {
-    flexGrow: 1,
   },
 });

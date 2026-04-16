@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"time"
 	"toggo/internal/errs"
 	"toggo/internal/models"
 	"toggo/internal/services"
@@ -103,6 +104,7 @@ func (ctrl *TripController) GetTrip(c *fiber.Ctx) error {
 // @Produce      json
 // @Param        limit  query int false "Max items per page (default 20, max 100)"
 // @Param        cursor query string false "Opaque cursor from previous response next_cursor for next page"
+// @Param        end_date_before query string false "Only include trips where end_date is before this RFC3339 timestamp"
 // @Success      200 {object} models.TripCursorPageResult
 // @Failure      400 {object} errs.APIError "Invalid cursor"
 // @Failure      401 {object} errs.APIError
@@ -125,14 +127,25 @@ func (ctrl *TripController) GetAllTrips(c *fiber.Ctx) error {
 		return errs.Unauthorized()
 	}
 
-	var params models.CursorPaginationParams
+	var params models.TripsCursorPaginationParams
 	if err := utilities.ParseAndValidateQueryParams(c, ctrl.validator, &params); err != nil {
 		return err
 	}
 
-	limit, cursorToken := utilities.ExtractLimitAndCursor(&params)
+	limit, cursorToken := utilities.ExtractLimitAndCursor(&params.CursorPaginationParams)
 
-	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), userID, limit, cursorToken)
+	var endDateBefore *time.Time
+	if params.EndDateBefore != "" {
+		parsed, err := time.Parse(time.RFC3339, params.EndDateBefore)
+		if err != nil {
+			return errs.InvalidRequestData(map[string]string{
+				"end_date_before": "must be a valid RFC3339 timestamp",
+			})
+		}
+		endDateBefore = &parsed
+	}
+
+	result, err := ctrl.tripService.GetTripsWithCursor(c.Context(), userID, limit, cursorToken, endDateBefore)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCursor) {
 			return errs.BadRequest(err)
