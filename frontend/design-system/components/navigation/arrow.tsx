@@ -7,13 +7,13 @@ import { Icon } from "../icons/icon";
 interface BackButtonProps {
   onPress?: () => void;
   hasBackground?: boolean;
-  color?: "black" | "white";
+  color?: "black" | "white" | "gray500";
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
   onPress,
   hasBackground = false,
-  color = "black",
+  color = "gray500",
 }) => {
   const router = useRouter();
 
@@ -22,8 +22,8 @@ export const BackButton: React.FC<BackButtonProps> = ({
       onTouchEnd={onPress ?? router.back}
       alignItems="center"
       justifyContent="center"
-      width={36}
-      height={36}
+      paddingVertical="xs"
+      paddingHorizontal="xs"
       borderRadius={hasBackground ? "md" : undefined}
       backgroundColor={hasBackground ? "white" : undefined}
     >

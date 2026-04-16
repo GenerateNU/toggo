@@ -62,10 +62,18 @@ import {
 
 const INITIAL_TAB: TabKey = "new";
 const HERO_HEIGHT = 210;
-const SHEET_OVERLAP = 24;
+const SHEET_OVERLAP = 36;
 const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
-const HEADER_FADE_DURATION = 200;
+const HEADER_FADE_DURATION = 100;
 const FIXED_HEADER_HEIGHT = 44;
+const DEFAULT_TABS = [
+  "new",
+  "itinerary",
+  "polls",
+  "activities",
+  "settings",
+  "housing",
+] as TabKey[];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -293,7 +301,7 @@ export default function Trip() {
     return null;
   }
 
-  const titleScrollThreshold = CONTENT_CARD_TOP - insets.top;
+  const titleScrollThreshold = CONTENT_CARD_TOP - 12;
 
   const handleParentScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: headerScrollY } } }],
@@ -318,14 +326,6 @@ export default function Trip() {
   );
 
   const headerOpacity = headerAnim;
-  const navOverlayOpacity = headerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
-  const inFlowHeaderOpacity = headerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
   const safeAreaOverlayOpacity = headerAnim;
   const heroScale = headerScrollY.interpolate({
     inputRange: [-HERO_HEIGHT, 0],
@@ -363,7 +363,7 @@ export default function Trip() {
           onScroll={handleParentScroll}
           scrollEventThrottle={16}
         >
-          <Animated.View style={{ opacity: inFlowHeaderOpacity }}>
+          <View>
             <Box style={styles.sheetTop} backgroundColor="white">
               <TripMetadata
                 tripName={trip?.name}
@@ -387,7 +387,7 @@ export default function Trip() {
                 />
               </Box>
             </Box>
-          </Animated.View>
+          </View>
           <Box
             flex={1}
             paddingHorizontal="sm"
@@ -455,16 +455,12 @@ export default function Trip() {
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
-            {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "activities" &&
-              activeTab !== "settings" && (
-                <EmptyState
-                  title="Nothing here yet"
-                  description="Post notes, photos, videos, and links."
-                />
-              )}
+            {!DEFAULT_TABS.includes(activeTab) && (
+              <EmptyState
+                title="Nothing here yet"
+                description="Post notes, photos, videos, and links."
+              />
+            )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
@@ -505,13 +501,12 @@ export default function Trip() {
         </Animated.View>
       )}
 
-      {/* Nav buttons — absolute over hero, fade out when fixed header appears */}
+      {/* Nav buttons — absolute over hero, always visible behind the fixed header */}
       <Animated.View
         style={[
           styles.topNavigation,
           {
             top: insets.top + Layout.spacing.xs,
-            opacity: navOverlayOpacity,
           },
         ]}
       >
@@ -558,7 +553,7 @@ export default function Trip() {
           justifyContent="center"
           paddingHorizontal="sm"
         >
-          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
+          <Text variant="headingMd" color="gray950" numberOfLines={1}>
             {trip?.name?.trim() || "Trip"}
           </Text>
         </Box>
@@ -627,8 +622,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: Layout.spacing.xxs,
     backgroundColor: ColorPalette.white,
-    paddingHorizontal: Layout.spacing.sm,
-    paddingVertical: Layout.spacing.xxs,
+    paddingHorizontal: 12,
+    paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.full,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
