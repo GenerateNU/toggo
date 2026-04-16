@@ -7,7 +7,7 @@ import { Icon } from "../icons/icon";
 interface BackButtonProps {
   onPress?: () => void;
   hasBackground?: boolean;
-  color?: "black" | "white";
+  color?: "black" | "white" | "gray500";
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
