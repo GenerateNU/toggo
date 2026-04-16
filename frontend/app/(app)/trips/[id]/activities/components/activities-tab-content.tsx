@@ -8,6 +8,7 @@ import {
   Button,
   EmptyState,
   SkeletonRect,
+  Spinner,
   Text,
   useToast,
 } from "@/design-system";
@@ -216,14 +217,31 @@ export const ActivitiesTabContent = forwardRef<
   return (
     <Box flex={1}>
       {isLoading ? (
-        <ActivitiesSkeleton />
-      ) : activities.length === 0 ? (
-        <Box alignItems="center" justifyContent="center" paddingVertical="xl">
-          <EmptyState
-            title="No activities yet"
-            description="Tap + to add the first one!"
-          />
+        <Box
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          paddingVertical="xl"
+        >
+          <Spinner />
         </Box>
+      ) : activities.length === 0 ? (
+        <>
+          <Box alignItems="center" justifyContent="center" paddingVertical="xl">
+            <EmptyState
+              title="No activities yet"
+              description="Tap + to add the first one!"
+            />
+          </Box>
+          <Box style={styles.addButton}>
+            <Button
+              layout="textOnly"
+              label="Add an activity"
+              variant="Secondary"
+              onPress={() => entrySheetRef.current?.open()}
+            />
+          </Box>
+        </>
       ) : (
         <>
           {/* Header row: count + sort toggle */}
@@ -260,18 +278,16 @@ export const ActivitiesTabContent = forwardRef<
             style={styles.flatList}
             scrollEnabled={false}
           />
+          <Box style={styles.addButton}>
+            <Button
+              layout="textOnly"
+              label="Add an activity"
+              variant="Secondary"
+              onPress={() => entrySheetRef.current?.open()}
+            />
+          </Box>
         </>
       )}
-
-      {/* Add an activity button */}
-      <Box style={styles.addButton}>
-        <Button
-          layout="textOnly"
-          label="Add an activity"
-          variant="Secondary"
-          onPress={() => entrySheetRef.current?.open()}
-        />
-      </Box>
 
       <AddActivityEntrySheet
         ref={entrySheetRef}
