@@ -54,7 +54,7 @@ export const HOUSING_TRANSPORT_CATEGORIES = new Set([
   ...TRANSPORTATION_CATEGORIES,
 ]);
 
-/** Returns true when the first category name belongs to housing or transportation. */
+/** Returns true when any category name belongs to housing or transportation. */
 export function isHousingOrTransportType(categoryNames?: string[]): boolean {
   return (
     categoryNames?.some((name) =>
@@ -63,7 +63,7 @@ export function isHousingOrTransportType(categoryNames?: string[]): boolean {
   );
 }
 
-/** Returns true when the first category name belongs to housing specifically. */
+/** Returns true when any category name belongs to housing specifically. */
 export function isHousingType(categoryNames?: string[]): boolean {
   return (
     categoryNames?.some((name) =>

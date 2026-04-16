@@ -11,41 +11,9 @@ import {
   Music,
   Ticket,
   UtensilsCrossed,
-  type LucideIcon,
 } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 import type { TripMapActivity } from "../types";
-
-// ─── Category icon map ────────────────────────────────────────────────────────
-
-// Placeholder category-to-icon mapping.
-// To swap an icon for a specific category, update the value for its key here.
-const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  activities: Binoculars,
-  sightseeing: Binoculars,
-  housing: Home,
-  accommodation: Home,
-  hotel: Home,
-  lodging: Home,
-  transportation: Bus,
-  transport: Bus,
-  transit: Bus,
-  food: UtensilsCrossed,
-  restaurant: UtensilsCrossed,
-  dining: UtensilsCrossed,
-  entertainment: Ticket,
-  show: Ticket,
-  concert: Music,
-  nightlife: Music,
-};
-
-export function getActivityCategoryIcon(categoryNames?: string[]): LucideIcon {
-  if (!categoryNames?.length) return MapPin;
-  const first = categoryNames[0];
-  if (!first) return MapPin;
-  const key = first.toLowerCase().trim();
-  return CATEGORY_ICON_MAP[key] ?? MapPin;
-}
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
