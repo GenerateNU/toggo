@@ -1,7 +1,7 @@
 import { getUnreadActivityCountQueryOptions } from "@/api/activity-feed/useGetUnreadActivityCount";
 import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
 import { useGetAllTrips } from "@/api/trips/useGetAllTrips";
-import { getTrip } from "@/api/trips/useGetTrip";
+import { getTrip, getTripQueryKey } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
@@ -35,7 +35,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { useProfileAvatar } from "@/hooks/use-profile-avatar";
 import { useCreateTrip } from "@/index";
-import { useQueries } from "@tanstack/react-query";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check, PlusIcon, X } from "lucide-react-native";
@@ -53,6 +53,7 @@ export default function HomeScreen() {
   const { currentUser, userId } = useUser();
   const { width: viewportWidth } = useWindowDimensions();
   const profile = useProfileAvatar();
+  const queryClient = useQueryClient();
   const createTripMutation = useCreateTrip();
   const updateTripMutation = useUpdateTrip();
   const bottomSheetRef = useRef<any>(null);
@@ -220,14 +221,16 @@ export default function HomeScreen() {
       });
       if (!result?.id) return;
 
-      if (params.startDate) {
-        await updateTripMutation.mutateAsync({
+      if (params.startDate || params.locationName) {
+        const updatedTrip = await updateTripMutation.mutateAsync({
           tripID: result.id,
           data: {
-            start_date: params.startDate,
+            ...(params.startDate ? { start_date: params.startDate } : {}),
             ...(params.endDate ? { end_date: params.endDate } : {}),
+            ...(params.locationName ? { location: params.locationName } : {}),
           },
         });
+        queryClient.setQueryData(getTripQueryKey(result.id), updatedTrip);
       }
 
       router.push(`/trips/${result.id}`);
