@@ -6,7 +6,7 @@ import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily } from "@/design-system/tokens/typography";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "lucide-react-native";
+import { Link, X } from "lucide-react-native";
 import {
   forwardRef,
   useEffect,
@@ -20,8 +20,8 @@ import {
   Image,
   ImageSourcePropType,
   Pressable,
-  StyleSheet,
   Text as RNText,
+  StyleSheet,
 } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -87,7 +87,11 @@ function AutofillButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={[styles.autofillButton, disabled && styles.autofillButtonDisabled]}
+      style={[
+        styles.autofillButton,
+        disabled && !loading && styles.autofillButtonDisabled,
+        loading && styles.autofillButtonLoading,
+      ]}
     >
       {loading && (
         <Animated.View
@@ -108,7 +112,7 @@ function AutofillButton({
       <RNText
         style={[
           styles.autofillButtonText,
-          disabled && styles.autofillButtonTextDisabled,
+          disabled && !loading && styles.autofillButtonTextDisabled,
         ]}
       >
         {label}
@@ -196,6 +200,9 @@ function AddItemEntrySheetInner<T>(
     >
       <Box style={styles.content}>
         {/* Illustration */}
+        <Pressable onPress={onClose} hitSlop={12} style={styles.closeButton}>
+          <X size={20} color={ColorPalette.gray950} />
+        </Pressable>
         <Box alignItems="center">
           <Image
             source={illustration}
@@ -293,6 +300,9 @@ const styles = StyleSheet.create({
   autofillButtonDisabled: {
     backgroundColor: ColorPalette.gray300,
   },
+  autofillButtonLoading: {
+    backgroundColor: ColorPalette.brand300,
+  },
   autofillButtonText: {
     fontFamily: FontFamily.medium,
     fontSize: 14,
@@ -319,5 +329,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: 14,
     color: ColorPalette.gray900,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    zIndex: 10,
+    padding: 4,
   },
 });

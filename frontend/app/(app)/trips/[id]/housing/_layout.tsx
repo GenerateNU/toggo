@@ -23,11 +23,13 @@ const Layout = () => {
         name="index"
         options={{
           headerShown: false,
-          gestureEnabled: true,
+          headerTitle: "",
+          headerTransparent: true,
+          gestureEnabled: false,
         }}
       />
       <Stack.Screen
-        name="activities"
+        name="[id]"
         options={{
           headerShown: false,
           headerTitle: "",
@@ -36,51 +38,9 @@ const Layout = () => {
         }}
       />
       <Stack.Screen
-        name="housing"
+        name="creation"
         options={{
-          headerShown: false,
-          headerTitle: "",
-          headerTransparent: true,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="pitches"
-        options={{
-          headerShown: false,
-          headerTitle: "",
-          headerTransparent: true,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="polls"
-        options={{
-          headerShown: false,
-          headerTitle: "",
-          headerTransparent: true,
-          gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="map"
-        options={{
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      />
-      <Stack.Screen
-        name="search-location"
-        options={{
-          headerShown: false,
-          presentation: "modal",
-          gestureEnabled: true,
-        }}
-      />
-      <Stack.Screen
-        name="settings"
-        options={{
-          headerShown: false,
+          headerShown: true,
           headerTitle: "",
           headerTransparent: true,
           gestureEnabled: false,

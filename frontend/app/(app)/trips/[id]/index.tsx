@@ -57,6 +57,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { HousingTabContent } from "./housing/components/housing-tab-content";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -452,9 +453,21 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+            {activeTab !== "new" &&
+              activeTab !== "itinerary" &&
+              activeTab !== "polls" &&
+              activeTab !== "settings" &&
+              activeTab !== "activities" &&
+              activeTab !== "housing" && (
+                <EmptyState
+                  title="Nothing here yet"
+                  description="Post notes, photos, videos, and links."
+                />
+              )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
+            {activeTab === "housing" && <HousingTabContent tripID={tripID} />}
             {!DEFAULT_TABS.includes(activeTab) && (
               <EmptyState
                 title="Nothing here yet"

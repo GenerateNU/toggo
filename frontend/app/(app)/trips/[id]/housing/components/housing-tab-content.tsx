@@ -1,5 +1,4 @@
 import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
-import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activities/usePostApiV1TripsTripidActivitiesActivityidRsvp";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
@@ -18,8 +17,7 @@ import type {
   ModelsActivityAPIResponse,
   ModelsParsedActivityData,
 } from "@/types/types.gen";
-import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
-import { useQueryClient } from "@tanstack/react-query";
+import { modelsEntityType } from "@/types/types.gen";
 import { router } from "expo-router";
 import {
   forwardRef,
@@ -36,23 +34,23 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { ActivityCard } from "./activity-card";
 import {
-  AddActivityEntrySheet,
-  type AddActivityEntrySheetHandle,
-} from "./add-activity-entry-sheet";
+  AddHousingEntrySheet,
+  type AddHousingEntrySheetHandle,
+} from "./add-housing-entry-sheet";
 import {
-  AddActivityManualSheet,
-  type AddActivityManualSheetHandle,
-} from "./add-activity-manual-sheet";
+  AddHousingManualSheet,
+  type AddHousingManualSheetHandle,
+} from "./add-housing-manual-sheet";
+import { HousingCard } from "./housing-card";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type ActivitiesTabContentHandle = {
-  openAddActivity: () => void;
+export type HousingTabContentHandle = {
+  openAddHousing: () => void;
 };
 
-type ActivitiesTabContentProps = {
+type HousingTabContentProps = {
   tripID: string;
 };
 
@@ -60,7 +58,7 @@ type SortOrder = "newest" | "oldest";
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 
-function ActivitiesSkeleton() {
+function HousingSkeleton() {
   return (
     <Box gap="xs" paddingTop="sm">
       {[1, 2, 3].map((i) => (
@@ -72,20 +70,18 @@ function ActivitiesSkeleton() {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export const ActivitiesTabContent = forwardRef<
-  ActivitiesTabContentHandle,
-  ActivitiesTabContentProps
+export const HousingTabContent = forwardRef<
+  HousingTabContentHandle,
+  HousingTabContentProps
 >(({ tripID }, ref) => {
-  const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
-  const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
+  const entrySheetRef = useRef<AddHousingEntrySheetHandle>(null);
+  const manualSheetRef = useRef<AddHousingManualSheetHandle>(null);
   const toast = useToast();
 
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-  const [activeCommentActivityId, setActiveCommentActivityId] = useState<
+  const [activeCommentHousingId, setActiveCommentHousingId] = useState<
     string | null
   >(null);
-
-  const rsvpMutation = usePostApiV1TripsTripidActivitiesActivityidRsvp();
 
   const { currentUser } = useUser();
   const { data: currentUserProfileImages } = useGetImage(
@@ -104,27 +100,29 @@ export const ActivitiesTabContent = forwardRef<
   } = useEntityComments({
     tripID: tripID ?? "",
     entityType: modelsEntityType.ActivityEntity,
-    entityID: activeCommentActivityId ?? "",
-    enabled: !!activeCommentActivityId && !!tripID,
+    entityID: activeCommentHousingId ?? "",
+    enabled: !!activeCommentHousingId && !!tripID,
   });
 
-  const { activities, isLoading, isLoadingMore, fetchMore, prependActivity } =
-    useActivitiesList(tripID);
+  const {
+    activities: housingOptions,
+    isLoading,
+    isLoadingMore,
+    fetchMore,
+    prependActivity: prependHousing,
+  } = useActivitiesList(tripID, { category: "housing" });
 
-  // ─── Sort activities ─────────────────────────────────────────────────────
+  // ─── Sort ─────────────────────────────────────────────────────────────────
 
-  const sortedActivities = useMemo(() => {
-    const nonHousing = activities.filter(
-      (a) => !a.category_names?.includes("housing"),
-    );
-    if (sortOrder === "newest") return nonHousing;
-    return [...nonHousing].reverse();
-  }, [activities, sortOrder]);
+  const sortedOptions = useMemo(() => {
+    if (sortOrder === "newest") return housingOptions;
+    return [...housingOptions].reverse();
+  }, [housingOptions, sortOrder]);
 
   // ─── Expose open method for CreateFAB ────────────────────────────────────
 
   useImperativeHandle(ref, () => ({
-    openAddActivity: () => entrySheetRef.current?.open(),
+    openAddHousing: () => entrySheetRef.current?.open(),
   }));
 
   // ─── Handlers ────────────────────────────────────────────────────────────
@@ -140,65 +138,31 @@ export const ActivitiesTabContent = forwardRef<
   }, []);
 
   const handleSaved = useCallback(
-    (activity: ModelsActivityAPIResponse) => {
+    (housing: ModelsActivityAPIResponse) => {
       manualSheetRef.current?.close();
-      prependActivity(activity);
+      prependHousing(housing);
     },
-    [prependActivity],
+    [prependHousing],
   );
 
   const toggleSort = useCallback(() => {
     setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
   }, []);
 
-  const queryClient = useQueryClient();
-
-  const handleRsvp = useCallback(
-    async (item: ModelsActivityAPIResponse) => {
-      if (!tripID || !item.id) return;
-      const isGoing = (item.going_users ?? []).some(
-        (u) => u.user_id === currentUser?.id,
-      );
-      try {
-        await rsvpMutation.mutateAsync({
-          tripID,
-          activityID: item.id,
-          data: {
-            status: isGoing
-              ? modelsRSVPStatus.RSVPStatusNotGoing
-              : modelsRSVPStatus.RSVPStatusGoing,
-          },
-        });
-        // Invalidate the activities list so going_users refreshes
-        queryClient.invalidateQueries({
-          predicate: (query) =>
-            JSON.stringify(query.queryKey).includes("activities"),
-        });
-      } catch {
-        toast.show({ message: "Couldn't update RSVP. Try again." });
-      }
-    },
-    [tripID, currentUser?.id, rsvpMutation, toast, queryClient],
-  );
-
   const renderItem = useCallback(
     ({ item }: { item: ModelsActivityAPIResponse }) => (
-      <ActivityCard
-        activity={item}
+      <HousingCard
+        housing={item}
         onPress={() =>
           router.push({
-            pathname: `/trips/${tripID}/activities/${item.id}` as any,
+            pathname: `/trips/${tripID}/housing/${item.id}` as any,
             params: { tripID },
           })
         }
-        onOpenComments={() => setActiveCommentActivityId(item.id ?? null)}
-        isGoing={(item.going_users ?? []).some(
-          (u) => u.user_id === currentUser?.id,
-        )}
-        onRsvp={() => handleRsvp(item)}
+        onOpenComments={() => setActiveCommentHousingId(item.id ?? null)}
       />
     ),
-    [tripID, currentUser?.id, handleRsvp],
+    [tripID],
   );
 
   const renderFooter = useCallback(
@@ -216,17 +180,16 @@ export const ActivitiesTabContent = forwardRef<
   return (
     <Box flex={1}>
       {isLoading ? (
-        <ActivitiesSkeleton />
-      ) : activities.length === 0 ? (
+        <HousingSkeleton />
+      ) : housingOptions.length === 0 ? (
         <Box alignItems="center" justifyContent="center" paddingVertical="xl">
           <EmptyState
-            title="No activities yet"
+            title="No housing options yet"
             description="Tap + to add the first one!"
           />
         </Box>
       ) : (
         <>
-          {/* Header row: count + sort toggle */}
           <Box
             flexDirection="row"
             justifyContent="space-between"
@@ -234,8 +197,8 @@ export const ActivitiesTabContent = forwardRef<
             style={styles.headerRow}
           >
             <Text variant="bodyDefault" color="gray500">
-              {activities.length}{" "}
-              {activities.length === 1 ? "option" : "options"} added
+              {housingOptions.length}{" "}
+              {housingOptions.length === 1 ? "option" : "options"} added
             </Text>
             <Pressable
               onPress={toggleSort}
@@ -249,7 +212,7 @@ export const ActivitiesTabContent = forwardRef<
           </Box>
 
           <FlatList
-            data={sortedActivities}
+            data={sortedOptions}
             keyExtractor={(item) => item.id ?? ""}
             renderItem={renderItem}
             onEndReached={fetchMore}
@@ -263,17 +226,16 @@ export const ActivitiesTabContent = forwardRef<
         </>
       )}
 
-      {/* Add an activity button */}
       <Box style={styles.addButton}>
         <Button
           layout="textOnly"
-          label="Add an activity"
+          label="Add a housing option"
           variant="Secondary"
           onPress={() => entrySheetRef.current?.open()}
         />
       </Box>
 
-      <AddActivityEntrySheet
+      <AddHousingEntrySheet
         ref={entrySheetRef}
         tripID={tripID}
         onManual={handleManual}
@@ -281,7 +243,7 @@ export const ActivitiesTabContent = forwardRef<
         onClose={() => entrySheetRef.current?.close()}
       />
 
-      <AddActivityManualSheet
+      <AddHousingManualSheet
         ref={manualSheetRef}
         tripID={tripID}
         onSaved={handleSaved}
@@ -289,8 +251,8 @@ export const ActivitiesTabContent = forwardRef<
       />
 
       <CommentSection
-        visible={!!activeCommentActivityId}
-        onClose={() => setActiveCommentActivityId(null)}
+        visible={!!activeCommentHousingId}
+        onClose={() => setActiveCommentHousingId(null)}
         comments={comments}
         isLoading={isLoadingComments}
         isLoadingMore={isLoadingMoreComments}
@@ -306,7 +268,7 @@ export const ActivitiesTabContent = forwardRef<
   );
 });
 
-ActivitiesTabContent.displayName = "ActivitiesTabContent";
+HousingTabContent.displayName = "HousingTabContent";
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
