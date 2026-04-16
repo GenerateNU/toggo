@@ -5,12 +5,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import {
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import { assertMoodBoardActivityXor } from "./mood-board-utils";
 

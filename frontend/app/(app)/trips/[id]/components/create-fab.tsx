@@ -1,11 +1,6 @@
 import { Box, Button } from "@/design-system";
 import { router } from "expo-router";
-import {
-  BarChart2,
-  Lightbulb,
-  MapPin,
-  Plus,
-} from "lucide-react-native";
+import { BarChart2, Lightbulb, MapPin, Plus } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable } from "react-native";
 import Animated, {

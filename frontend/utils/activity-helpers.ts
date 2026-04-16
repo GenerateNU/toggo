@@ -41,14 +41,14 @@ export function getActivityProposerProfilePictureUrl(
   const proposerId = activity.proposed_by?.trim();
   if (!proposerId) return undefined;
 
-  const fromGoing = activity.going_users?.find(
-    (u) => u.user_id && activityUserIdsMatch(u.user_id, proposerId),
-  )?.profile_picture_url?.trim();
+  const fromGoing = activity.going_users
+    ?.find((u) => u.user_id && activityUserIdsMatch(u.user_id, proposerId))
+    ?.profile_picture_url?.trim();
   if (fromGoing) return fromGoing;
 
-  const fromCommentPreview = activity.comment_previews?.find(
-    (c) => c.user_id && activityUserIdsMatch(c.user_id, proposerId),
-  )?.profile_picture_url?.trim();
+  const fromCommentPreview = activity.comment_previews
+    ?.find((c) => c.user_id && activityUserIdsMatch(c.user_id, proposerId))
+    ?.profile_picture_url?.trim();
   if (fromCommentPreview) return fromCommentPreview;
 
   return undefined;

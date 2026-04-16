@@ -159,8 +159,7 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
                 <Text
                   variant="bodySmMedium"
                   color={
-                    viewType ===
-                    modelsCategoryViewType.CategoryViewTypeActivity
+                    viewType === modelsCategoryViewType.CategoryViewTypeActivity
                       ? "gray950"
                       : "gray600"
                   }
@@ -170,9 +169,7 @@ const CreateTabSheet = forwardRef<CreateTabSheetMethods, CreateTabSheetProps>(
               </Pressable>
               <Pressable
                 onPress={() =>
-                  setViewType(
-                    modelsCategoryViewType.CategoryViewTypeMoodboard,
-                  )
+                  setViewType(modelsCategoryViewType.CategoryViewTypeMoodboard)
                 }
                 style={[
                   styles.typeChip,

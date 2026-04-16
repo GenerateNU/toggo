@@ -39,8 +39,7 @@ export const MoodBoardLinkEntrySheet = forwardRef<
   }));
 
   const handleAutofilled = async (data: ModelsParsedActivityData) => {
-    const mediaUrl =
-      data.media_url?.trim() || data.source_url?.trim() || "";
+    const mediaUrl = data.media_url?.trim() || data.source_url?.trim() || "";
     if (!mediaUrl) {
       toast.show({ message: "Could not read a URL from this link." });
       return;

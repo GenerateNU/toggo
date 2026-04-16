@@ -14,12 +14,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ActivityIndicator, Dimensions, StyleSheet, View } from "react-native";
 import { MoodBoardCard } from "./mood-board-card";
 import {
   MoodBoardImageSheet,

@@ -29,10 +29,7 @@ import { getMoodBoardVariant } from "./mood-board-utils";
 /** Matches parent horizontal padding + column gap so each card is exactly one column wide. */
 function useMoodBoardColumnWidth(): number {
   const { width: screenWidth } = useWindowDimensions();
-  return useMemo(
-    () => getMoodBoardColumnWidth(screenWidth),
-    [screenWidth],
-  );
+  return useMemo(() => getMoodBoardColumnWidth(screenWidth), [screenWidth]);
 }
 
 type MoodBoardCardProps = {
@@ -96,7 +93,9 @@ export function MoodBoardCard({
       >
         {variant === "text" && (
           <MoodBoardTextCard
-            proposerProfilePhoto={getActivityProposerProfilePictureUrl(activity)}
+            proposerProfilePhoto={getActivityProposerProfilePictureUrl(
+              activity,
+            )}
             activity={activity}
             body={body}
             title={title}
@@ -120,7 +119,9 @@ export function MoodBoardCard({
 
         {variant === "image" && (
           <MoodBoardImageOuter
-            proposerProfilePhoto={getActivityProposerProfilePictureUrl(activity)}
+            proposerProfilePhoto={getActivityProposerProfilePictureUrl(
+              activity,
+            )}
             activity={activity}
             columnWidth={columnWidth}
             thumbnailUrl={resolvedThumbnailUrl}
@@ -239,12 +240,7 @@ function MoodBoardTextCard({
         {body || title}
       </Text>
 
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        gap="md"
-        marginTop="xxs"
-      >
+      <Box flexDirection="row" alignItems="center" gap="md" marginTop="xxs">
         <Pressable
           onPress={onPressRsvp}
           disabled={rsvpPending || !activity.id}
@@ -332,10 +328,7 @@ function MoodBoardImageOuter({
 
   return (
     <View
-      style={[
-        styles.imageShell,
-        { width: columnWidth, height: imageHeight },
-      ]}
+      style={[styles.imageShell, { width: columnWidth, height: imageHeight }]}
     >
       <Image
         source={{ uri: thumbnailUrl }}
@@ -435,7 +428,12 @@ function MoodBoardLinkPreview({
   const thumbHeight = columnWidth / ar;
 
   return (
-    <View style={[styles.linkImageShell, { width: columnWidth, height: thumbHeight }]}>
+    <View
+      style={[
+        styles.linkImageShell,
+        { width: columnWidth, height: thumbHeight },
+      ]}
+    >
       <Image
         source={{ uri: thumbnailUrl }}
         style={StyleSheet.absoluteFillObject}

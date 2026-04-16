@@ -16,8 +16,7 @@ export function getMoodBoardVariant(
     return "link";
   }
   const hasImage =
-    !!activity.thumbnail_url?.trim() ||
-    (activity.image_ids?.length ?? 0) > 0;
+    !!activity.thumbnail_url?.trim() || (activity.image_ids?.length ?? 0) > 0;
   if (hasImage) {
     return "image";
   }

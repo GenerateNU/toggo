@@ -15,7 +15,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { assertMoodBoardActivityXor } from "./mood-board-utils";
 
 export type MoodBoardImageSheetHandle = {
@@ -67,8 +73,7 @@ export const MoodBoardImageSheet = forwardRef<
   }));
 
   const pickImage = async () => {
-    const { status } =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       toast.show({ message: "Photo access is required." });
       return;
