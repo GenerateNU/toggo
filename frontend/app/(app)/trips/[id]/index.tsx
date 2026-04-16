@@ -49,6 +49,7 @@ const FIXED_HEADER_HEIGHT = 44;
 const HERO_PARALLAX_UP_SHIFT = HERO_HEIGHT * 0.35;
 const HERO_PULL_DISTANCE = 120;
 const HERO_PULL_SCALE = 1.08;
+const DEFAULT_TABS = ["new", "itinerary", "polls", "activities"] as TabKey[];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -300,9 +301,7 @@ export default function Trip() {
                   accessibilityLabel="View map"
                 >
                   <Map size={20} color={ColorPalette.gray950} />
-                  <Text variant="bodyMedium">
-                    Map
-                  </Text>
+                  <Text variant="bodyMedium">Map</Text>
                 </Pressable>
               </Box>
             </Animated.View>
@@ -382,21 +381,13 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-            {activeTab !== "new" &&
-              activeTab !== "itinerary" &&
-              activeTab !== "polls" &&
-              activeTab !== "settings" &&
-              activeTab !== "activities" && (
-                <Box
-                  flex={1}
-                  alignItems="flex-start"
-                  justifyContent="flex-start"
-                >
-                  <Text variant="bodySmDefault" color="gray400">
-                    Post notes, photos, videos, and links
-                  </Text>
-                </Box>
-              )}
+            {!DEFAULT_TABS.includes(activeTab) && (
+              <Box flex={1} alignItems="flex-start" justifyContent="flex-start">
+                <Text variant="bodySmDefault" color="gray400">
+                  Post notes, photos, videos, and links
+                </Text>
+              </Box>
+            )}
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
@@ -420,7 +411,7 @@ export default function Trip() {
           justifyContent="center"
           paddingHorizontal="sm"
         >
-          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
+          <Text variant="headingMd" color="gray950" numberOfLines={1}>
             {trip?.name?.trim() || "Trip"}
           </Text>
         </Box>
