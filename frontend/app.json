@@ -16,7 +16,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.generateneutoggo.frontend",
-      "associatedDomains": ["applinks:dolphin-app-vemv9.ondigitalocean.app"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": ["remote-notification"],
