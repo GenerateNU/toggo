@@ -2,66 +2,64 @@ import { Box, ImagePicker } from "@/design-system";
 import { Image } from "expo-image";
 import { StyleSheet } from "react-native";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const TRIP_HEADER_IMAGE_HEIGHT = 300;
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type TripHeaderProps = {
   coverImageUrl?: string;
   onChangeCoverImage?: (uri: string | null) => void;
   isCoverUploading?: boolean;
   disabled?: boolean;
+  absolute?: boolean;
 };
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function TripHeader({
   coverImageUrl,
   onChangeCoverImage,
   isCoverUploading,
   disabled,
+  absolute = false,
 }: TripHeaderProps) {
-  if (coverImageUrl) {
-    return (
-      <Box style={styles.coverImage}>
+  const containerStyle = [
+    styles.coverImage,
+    absolute ? styles.absoluteCoverImage : undefined,
+  ];
+
+  return (
+    <Box style={containerStyle}>
+      {coverImageUrl ? (
         <Image
           source={{ uri: coverImageUrl }}
           style={styles.coverImageFill}
           contentFit="cover"
         />
-      </Box>
-    );
-  }
-
-  return (
-    <Box style={styles.coverImage}>
-      <ImagePicker
-        variant="rectangular"
-        width="100%"
-        height={TRIP_HEADER_IMAGE_HEIGHT}
-        value={coverImageUrl}
-        onChange={onChangeCoverImage}
-        placeholder=""
-        showPlaceholderText={false}
-        disabled={disabled || isCoverUploading}
-        title="Change cover photo"
-        showRemoveAction={false}
-      />
+      ) : (
+        <ImagePicker
+          variant="rectangular"
+          width="100%"
+          height={TRIP_HEADER_IMAGE_HEIGHT}
+          value={coverImageUrl}
+          onChange={onChangeCoverImage}
+          placeholder=""
+          showPlaceholderText={false}
+          disabled={disabled || isCoverUploading}
+          title="Add cover photo"
+          showRemoveAction={false}
+        />
+      )}
     </Box>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   coverImage: {
+    height: TRIP_HEADER_IMAGE_HEIGHT,
+    width: "100%",
+  },
+  absoluteCoverImage: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: TRIP_HEADER_IMAGE_HEIGHT,
   },
   coverImageFill: {
     width: "100%",

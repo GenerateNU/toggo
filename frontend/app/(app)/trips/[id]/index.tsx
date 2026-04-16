@@ -1,5 +1,6 @@
 import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
 import { useUploadImage } from "@/api/files/custom/useImageUpload";
+import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
 import { TRIPS_QUERY_KEY } from "@/api/trips/custom/useTripsList";
 import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
@@ -48,7 +49,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Map } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -57,7 +58,11 @@ import {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const INITIAL_TAB: TabKey = "new";
-const CARD_TOP_OFFSET = 120;
+const HERO_HEIGHT = 210;
+const SHEET_OVERLAP = 24;
+const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
+const HEADER_FADE_DURATION = 200;
+const FIXED_HEADER_HEIGHT = 44;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -67,15 +72,21 @@ export default function Trip() {
     id: string;
     tab?: string;
   }>();
-  const [activeTab, setActiveTab] = useState<string>(tab || INITIAL_TAB);
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    (tab as TabKey) || INITIAL_TAB,
+  );
+  const [headerVisible, setHeaderVisible] = useState(false);
   const [dateSheetError, setDateSheetError] = useState<string | null>(null);
   const toast = useToast();
   const { shareInvite } = useShareTripInvite(tripID ?? "");
   const updateTripMutation = useUpdateTrip();
   const uploadImageMutation = useUploadImage();
   const queryClient = useQueryClient();
-  const parentScrollViewRef = useRef<ScrollView>(null);
+  const parentScrollViewRef = useRef<any>(null);
   const parentScrollOffsetRef = useRef(0);
+  const headerScrollY = useRef(new Animated.Value(0)).current;
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const headerVisibleRef = useRef(false);
   const cardContainerRef = useRef<View>(null);
   const dateSheetRef = useRef<any>(null);
   const locationSheetRef = useRef<any>(null);
@@ -120,6 +131,27 @@ export default function Trip() {
       toast.show({ message: "Couldn't update cover image. Please try again." });
     }
   };
+  const { data: tripMembersData } = useGetTripMembers(
+    tripID ?? "",
+    { limit: 12 },
+    {
+      query: {
+        enabled: !!tripID,
+        staleTime: 30_000,
+      },
+    },
+  );
+  const tripMembers =
+    tripMembersData?.items
+      ?.filter((member): member is NonNullable<typeof member> =>
+        Boolean(member),
+      )
+      .map((member) => ({
+        userId: member.user_id ?? "",
+        name: member.name ?? member.username ?? "Traveler",
+        profilePhotoUrl: member.profile_picture_url ?? undefined,
+      }))
+      .filter((member) => member.userId) ?? [];
 
   const handleTabPress = (tab: string) => {
     if (tab === "settings") {
@@ -257,54 +289,88 @@ export default function Trip() {
     return null;
   }
 
+  const titleScrollThreshold = CONTENT_CARD_TOP - insets.top;
+
+  const handleParentScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: headerScrollY } } }],
+    {
+      useNativeDriver: true,
+      listener: (e: any) => {
+        const nextOffset = e.nativeEvent.contentOffset.y;
+        parentScrollOffsetRef.current = nextOffset;
+
+        const shouldShow = nextOffset > titleScrollThreshold;
+        if (shouldShow !== headerVisibleRef.current) {
+          headerVisibleRef.current = shouldShow;
+          setHeaderVisible(shouldShow);
+          Animated.timing(headerAnim, {
+            toValue: shouldShow ? 1 : 0,
+            duration: HEADER_FADE_DURATION,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    },
+  );
+
+  const headerOpacity = headerAnim;
+  const navOverlayOpacity = headerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+  const inFlowHeaderOpacity = headerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+  const safeAreaOverlayOpacity = headerAnim;
+  const heroScale = headerScrollY.interpolate({
+    inputRange: [-HERO_HEIGHT, 0],
+    outputRange: [2, 1],
+    extrapolateRight: "clamp",
+  });
+
   return (
     <View style={styles.container}>
-      <TripHeader
-        coverImageUrl={trip?.cover_image_url}
-        onChangeCoverImage={handleCoverImageChange}
-        isCoverUploading={isCoverUploading}
-        disabled={isLoading}
-      />
-
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="sm"
-        paddingBottom="xs"
-        style={{ position: "relative", zIndex: 10, paddingTop: insets.top }}
+      {/* Hero image — absolutely positioned behind scroll, scales from top on pull-down */}
+      <Animated.View
+        style={[styles.heroContainer, { transform: [{ scale: heroScale }] }]}
       >
-        <BackButton hasBackground />
-        <Pressable
-          onPress={handleOpenMapView}
-          style={styles.mapButton}
-          accessibilityRole="button"
-          accessibilityLabel="View map"
-        >
-          <Map size={16} color={ColorPalette.gray950} />
-          <Text variant="bodySmMedium" color="gray950">
-            {isOpeningMap ? "Loading..." : "Map"}
-          </Text>
-        </Pressable>
-      </Box>
+        <View style={styles.heroClip}>
+          <TripHeader
+            coverImageUrl={trip?.cover_image_url}
+            onChangeCoverImage={handleCoverImageChange}
+            isCoverUploading={isCoverUploading}
+          />
+        </View>
+      </Animated.View>
 
-      <SafeAreaView style={styles.safeArea} edges={[]} pointerEvents="box-none">
-        <View ref={cardContainerRef} style={styles.card}>
-          <ScrollView
-            ref={parentScrollViewRef}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            onScroll={(e) => {
-              parentScrollOffsetRef.current = e.nativeEvent.contentOffset.y;
-            }}
-            scrollEventThrottle={16}
-          >
-            <Box backgroundColor="white">
+      <SafeAreaView style={styles.safeArea} edges={["left", "right"]}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.safeAreaTopOverlay,
+            {
+              height: insets.top,
+              opacity: safeAreaOverlayOpacity,
+            },
+          ]}
+        />
+        <Animated.ScrollView
+          ref={parentScrollViewRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          onScroll={handleParentScroll}
+          scrollEventThrottle={16}
+        >
+          <Animated.View style={{ opacity: inFlowHeaderOpacity }}>
+            <Box style={styles.sheetTop} backgroundColor="white">
               <TripMetadata
                 tripName={trip?.name}
                 tripDate={tripDate}
                 tripLocation={(trip as any)?.location}
+                members={tripMembers}
                 isLoading={isLoading}
+                isCollapsed={false}
                 onInviteFriends={shareInvite}
                 onSettingsPress={() =>
                   router.push(`/trips/${tripID}/settings` as any)
@@ -320,79 +386,141 @@ export default function Trip() {
                 />
               </Box>
             </Box>
-            <Box
-              paddingHorizontal="sm"
-              paddingTop="sm"
-              paddingBottom="xl"
-              backgroundColor="gray25"
-              style={styles.tabContent}
-            >
-              {isLoading ? (
-                <Box gap="sm">
-                  <SkeletonRect width="full" style={{ height: 120 }} />
-                  <SkeletonRect width="full" style={{ height: 120 }} />
-                  <SkeletonRect width="threeQuarter" style={{ height: 90 }} />
+          </Animated.View>
+          <Box
+            flex={1}
+            paddingHorizontal="sm"
+            paddingTop="sm"
+            paddingBottom="xl"
+            backgroundColor="gray25"
+          >
+            {isLoading ? (
+              <Box gap="sm">
+                <SkeletonRect width="full" style={{ height: 120 }} />
+                <SkeletonRect width="full" style={{ height: 120 }} />
+                <SkeletonRect width="threeQuarter" style={{ height: 90 }} />
+              </Box>
+            ) : null}
+            {!isLoading && isError ? (
+              <ErrorState
+                title="Couldn't load trip"
+                description="Pull to refresh or try again in a moment."
+              />
+            ) : null}
+            {!isLoading && !isError && !trip ? (
+              <EmptyState
+                title="Trip not found"
+                description="This trip may have been removed or you may not have access to it."
+              />
+            ) : null}
+            {!isLoading && !isError && trip && activeTab === "new" && (
+              <Box gap="sm">
+                {trip?.pitch_deadline &&
+                  new Date(trip.pitch_deadline) > new Date() && (
+                    <PitchingActiveCard
+                      tripID={tripID}
+                      deadline={new Date(trip.pitch_deadline)}
+                      onViewPitches={() =>
+                        router.push(`/trips/${tripID}/pitches` as any)
+                      }
+                    />
+                  )}
+                <ActivityFeedTabContent tripId={tripID} />
+              </Box>
+            )}
+            {!isLoading && !isError && trip && activeTab === "itinerary" && (
+              <ItineraryTabContent
+                tripID={tripID}
+                startDate={trip?.start_date}
+                endDate={trip?.end_date}
+                parentScrollViewRef={parentScrollViewRef}
+                parentScrollOffset={parentScrollOffsetRef}
+                parentContainerRef={cardContainerRef}
+              />
+            )}
+            {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
+            {activeTab !== "new" &&
+              activeTab !== "itinerary" &&
+              activeTab !== "polls" &&
+              activeTab !== "settings" && (
+                <Box
+                  flex={1}
+                  alignItems="flex-start"
+                  justifyContent="flex-start"
+                >
+                  <Text variant="bodySmDefault" color="gray400">
+                    Post notes, photos, videos, and links
+                  </Text>
                 </Box>
-              ) : null}
-              {!isLoading && isError ? (
-                <ErrorState
-                  title="Couldn't load trip"
-                  description="Pull to refresh or try again in a moment."
-                />
-              ) : null}
-              {!isLoading && !isError && !trip ? (
-                <EmptyState
-                  title="Trip not found"
-                  description="This trip may have been removed or you may not have access to it."
-                />
-              ) : null}
-              {!isLoading && !isError && trip && activeTab === "new" && (
-                <Box gap="sm">
-                  {trip?.pitch_deadline &&
-                    new Date(trip.pitch_deadline) > new Date() && (
-                      <PitchingActiveCard
-                        tripID={tripID}
-                        deadline={new Date(trip.pitch_deadline)}
-                        onViewPitches={() =>
-                          router.push(`/trips/${tripID}/pitches` as any)
-                        }
-                      />
-                    )}
-                  <ActivityFeedTabContent tripId={tripID} />
-                </Box>
               )}
-              {!isLoading && !isError && trip && activeTab === "itinerary" && (
-                <ItineraryTabContent
-                  tripID={tripID}
-                  startDate={trip?.start_date}
-                  endDate={trip?.end_date}
-                  parentScrollViewRef={parentScrollViewRef}
-                  parentScrollOffset={parentScrollOffsetRef}
-                  parentContainerRef={cardContainerRef}
-                />
-              )}
-              {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-              {activeTab !== "new" &&
-                activeTab !== "itinerary" &&
-                activeTab !== "polls" &&
-                activeTab !== "settings" && (
-                  <Box
-                    flex={1}
-                    alignItems="flex-start"
-                    justifyContent="flex-start"
-                  >
-                    <Text variant="bodySmDefault" color="gray400">
-                      Post notes, photos, videos, and links
-                    </Text>
-                  </Box>
-                )}
-              {activeTab === "activities" && (
-                <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
-              )}
-            </Box>
-          </ScrollView>
-        </View>
+            {activeTab === "activities" && (
+              <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
+            )}
+          </Box>
+        </Animated.ScrollView>
       </SafeAreaView>
+
+      {/* Nav buttons — absolute over hero, fade out when fixed header appears */}
+      <Animated.View
+        style={[
+          styles.topNavigation,
+          {
+            top: insets.top + Layout.spacing.xs,
+            opacity: navOverlayOpacity,
+          },
+        ]}
+      >
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="sm"
+          paddingVertical="xs"
+        >
+          <BackButton hasBackground />
+          <Pressable
+            onPress={handleOpenMapView}
+            style={styles.mapButton}
+            accessibilityRole="button"
+            accessibilityLabel="View map"
+            disabled={isOpeningMap}
+          >
+            <Map size={16} color={ColorPalette.gray950} />
+            <Text variant="bodySmMedium" color="gray950" style={{ marginLeft: 4 }}>
+              Map
+            </Text>
+          </Pressable>
+        </Box>
+      </Animated.View>
+
+      <Animated.View
+        pointerEvents={headerVisible ? "auto" : "none"}
+        style={[
+          styles.fixedHeaderTitle,
+          {
+            paddingTop: insets.top,
+            opacity: headerOpacity,
+          },
+        ]}
+      >
+        <Box
+          height={FIXED_HEADER_HEIGHT}
+          alignItems="center"
+          justifyContent="center"
+          paddingHorizontal="sm"
+        >
+          <Text variant="bodyMedium" color="gray950" numberOfLines={1}>
+            {trip?.name?.trim() || "Trip"}
+          </Text>
+        </Box>
+        <Box paddingBottom="xs" backgroundColor="white">
+          <TripTabBar
+            tripID={tripID}
+            activeTab={activeTab}
+            onTabPress={handleTabPress}
+          />
+        </Box>
+      </Animated.View>
 
       {activeTab !== "itinerary" && (
         <CreateFAB
@@ -431,11 +559,19 @@ export default function Trip() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ColorPalette.gray950,
+    backgroundColor: ColorPalette.white,
   },
   safeArea: {
     flex: 1,
     backgroundColor: "transparent",
+  },
+  safeAreaTopOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: ColorPalette.white,
+    zIndex: 3,
   },
   mapButton: {
     flexDirection: "row",
@@ -451,19 +587,45 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  card: {
-    flex: 1,
-    backgroundColor: ColorPalette.gray25,
-    borderTopLeftRadius: CornerRadius.xxxl,
-    borderTopRightRadius: CornerRadius.xxxl,
+  topNavigation: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 2,
+  },
+  heroContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT,
+    transformOrigin: "top",
+  },
+  heroClip: {
+    height: HERO_HEIGHT,
     overflow: "hidden",
-    marginTop: CARD_TOP_OFFSET,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: Layout.spacing.xl,
+    paddingTop: CONTENT_CARD_TOP,
   },
-  tabContent: {
-    flexGrow: 1,
+  sheetTop: {
+    backgroundColor: ColorPalette.white,
+    borderTopLeftRadius: CornerRadius.xxxl,
+    borderTopRightRadius: CornerRadius.xxxl,
+    overflow: "hidden",
+  },
+  fixedHeaderTitle: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 4,
+    backgroundColor: ColorPalette.white,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
 });

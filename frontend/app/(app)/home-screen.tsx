@@ -3,7 +3,7 @@ import { joinTripByInvite } from "@/api/memberships/useJoinTripByInvite";
 import { usePastTripsList } from "@/api/trips/custom/usePastTripsList";
 import { useTripsList } from "@/api/trips/custom/useTripsList";
 import { getAllTripsQueryKey } from "@/api/trips/useGetAllTrips";
-import { getTrip } from "@/api/trips/useGetTrip";
+import { getTrip, getTripQueryKey } from "@/api/trips/useGetTrip";
 import { useUpdateTrip } from "@/api/trips/useUpdateTrip";
 import { CreateProfileSheet } from "@/app/(app)/components/create-profile-sheet";
 import type { CreateTripParams } from "@/app/(app)/components/create-trip-sheet";
@@ -54,8 +54,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const { currentUser, userId } = useUser();
   const { width: viewportWidth } = useWindowDimensions();
-  const queryClient = useQueryClient();
   const profile = useProfileAvatar();
+  const queryClient = useQueryClient();
   const createTripMutation = useCreateTrip();
   const updateTripMutation = useUpdateTrip();
   const bottomSheetRef = useRef<any>(null);
@@ -240,12 +240,8 @@ export default function HomeScreen() {
       });
       if (!result?.id) return;
 
-      const hasTripDetailsToUpdate = Boolean(
-        params.startDate || params.endDate || params.locationName,
-      );
-
-      if (hasTripDetailsToUpdate) {
-        await updateTripMutation.mutateAsync({
+      if (params.startDate || params.locationName) {
+        const updatedTrip = await updateTripMutation.mutateAsync({
           tripID: result.id,
           data: {
             ...(params.startDate ? { start_date: params.startDate } : {}),
@@ -253,6 +249,7 @@ export default function HomeScreen() {
             ...(params.locationName ? { location: params.locationName } : {}),
           },
         });
+        queryClient.setQueryData(getTripQueryKey(result.id), updatedTrip);
       }
 
       await queryClient.invalidateQueries({
