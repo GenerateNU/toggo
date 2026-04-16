@@ -4,8 +4,10 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { Layout } from "@/design-system/tokens/layout";
+import { useUser } from "@/contexts/user";
+import { mapProviderLabel, openInMaps, resolveMapProvider } from "@/utils/maps";
 import { Image } from "expo-image";
-import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MapPin, MessageCircle, X } from "lucide-react-native";
 import { MapSize, MapSpacing } from "../tokens";
@@ -31,22 +33,24 @@ export function MapLocationDetailSheetContent({
   onClose,
   onViewActivity,
 }: MapLocationDetailSheetProps) {
+  const { currentUser } = useUser();
   const imageUri = activity.thumbnail_url ?? activity.media_url;
   const commentCount = activity.comment_count ?? 0;
   const commentPreviews = activity.comment_previews ?? [];
 
+  const mapProvider = resolveMapProvider(
+    currentUser?.apple_maps_enabled,
+    currentUser?.google_maps_enabled,
+  );
+
   const handleOpenInMaps = async () => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${activity.location_lat},${activity.location_lng}`;
     try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert(
-          "Cannot Open Maps",
-          "Unable to open Google Maps on this device.",
-        );
-      }
+      await openInMaps({
+        lat: activity.location_lat,
+        lng: activity.location_lng,
+        label: activity.location_name?.trim() || activity.name,
+        provider: mapProvider,
+      });
     } catch {
       Alert.alert("Error", "Something went wrong while opening the map.");
     }
@@ -94,7 +98,7 @@ export function MapLocationDetailSheetContent({
         <Button
           variant="Primary"
           layout="textOnly"
-          label="Open in Google Maps"
+          label={`Open in ${mapProviderLabel(mapProvider)}`}
           onPress={handleOpenInMaps}
         />
       </View>

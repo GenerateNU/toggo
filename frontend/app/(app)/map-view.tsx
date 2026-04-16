@@ -27,7 +27,8 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Linking, Platform, StyleSheet, View } from "react-native";
+import { mapProviderLabel, openInMaps, resolveMapProvider } from "@/utils/maps";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -135,20 +136,6 @@ function ActivityDetailSheetBody({
       <SafeAreaView edges={["bottom"]} />
     </Box>
   );
-}
-
-type MapProvider = "apple" | "google";
-
-function resolveProvider(
-  appleEnabled?: boolean,
-  googleEnabled?: boolean,
-): MapProvider {
-  if (appleEnabled && googleEnabled) {
-    return Platform.OS === "ios" ? "apple" : "google";
-  }
-  if (appleEnabled) return "apple";
-  if (googleEnabled) return "google";
-  return Platform.OS === "ios" ? "apple" : "google";
 }
 
 export default function MapViewScreen() {
@@ -276,32 +263,21 @@ export default function MapViewScreen() {
     setSelectedActivity(activity);
   };
 
-  const mapProvider = resolveProvider(
+  const mapProvider = resolveMapProvider(
     currentUser?.apple_maps_enabled,
     currentUser?.google_maps_enabled,
   );
 
-  const providerLabel = mapProvider === "apple" ? "Apple Maps" : "Google Maps";
+  const providerLabel = mapProviderLabel(mapProvider);
 
   const openDirections = async (activity: MapViewActivityForMap) => {
-    const lat = activity.location_lat;
-    const lng = activity.location_lng;
-    const label = encodeURIComponent(
-      activity.location_name?.trim() || activity.name,
-    );
-
     try {
-      if (mapProvider === "apple") {
-        await Linking.openURL(
-          `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
-        );
-        return;
-      }
-
-      const nativeGoogleURL = `comgooglemaps://?q=${lat},${lng}`;
-      const webGoogleURL = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      const canOpenNative = await Linking.canOpenURL(nativeGoogleURL);
-      await Linking.openURL(canOpenNative ? nativeGoogleURL : webGoogleURL);
+      await openInMaps({
+        lat: activity.location_lat,
+        lng: activity.location_lng,
+        label: activity.location_name?.trim() || activity.name,
+        provider: mapProvider,
+      });
     } catch {
       toast.show({ message: "Couldn't open maps. Please try again." });
     }
