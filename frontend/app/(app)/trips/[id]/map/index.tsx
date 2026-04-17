@@ -1,9 +1,8 @@
 import { useGetActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
 import { BottomSheet, Box, ErrorState, Spinner, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { CoreSize } from "@/design-system/tokens/core-size";
-import { Elevation, Shadow } from "@/design-system/tokens/elevation";
+import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
 import { computeMapCameraForActivities } from "@/utils/map-view-activities";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
@@ -12,10 +11,10 @@ import {
   MapView,
   PointAnnotation,
 } from "@maplibre/maplibre-react-native";
+import { BackButton } from "@/design-system/components/navigation/arrow";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -192,17 +191,15 @@ export default function TripMapScreen() {
       </MapView>
 
       {/* Floating back button */}
-      <Pressable
-        onPress={() => router.back()}
-        style={[
-          styles.backButton,
-          { top: insets.top + BACK_BUTTON_TOP_OFFSET },
-        ]}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
+      <View
+        style={{
+          position: "absolute",
+          left: Layout.screen.horizontalPadding,
+          top: insets.top + BACK_BUTTON_TOP_OFFSET,
+        }}
       >
-        <ArrowLeft size={CoreSize.iconSm} color={ColorPalette.gray950} />
-      </Pressable>
+        <BackButton hasBackground />
+      </View>
 
       {/* Loading indicator */}
       {isLoading && (
@@ -281,17 +278,6 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
-  },
-  backButton: {
-    position: "absolute",
-    left: Layout.screen.horizontalPadding,
-    width: CoreSize.tap,
-    height: CoreSize.tap,
-    borderRadius: CornerRadius.md,
-    backgroundColor: ColorPalette.white,
-    alignItems: "center",
-    justifyContent: "center",
-    ...Shadow.lg,
   },
   loadingOverlay: {
     position: "absolute",

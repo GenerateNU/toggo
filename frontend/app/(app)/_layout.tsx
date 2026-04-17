@@ -31,7 +31,7 @@ const Layout = () => {
             headerShown: true,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: () => <BackButton hasBackground />,
           }}
         />
         <Stack.Screen
@@ -41,7 +41,7 @@ const Layout = () => {
             headerShown: true,
             headerTitle: "Map",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: () => <BackButton hasBackground />,
           }}
         />
         <Stack.Screen
@@ -57,7 +57,7 @@ const Layout = () => {
             headerShown: false,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
+            headerLeft: () => <BackButton hasBackground/>,
           }}
         />
       </Stack>
