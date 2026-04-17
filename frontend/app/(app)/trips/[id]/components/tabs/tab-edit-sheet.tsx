@@ -131,15 +131,15 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
         >
           <Box style={styles.header}>
             <Pressable onPress={handleClose} style={styles.headerButton}>
-              <Text variant="bodySmDefault" color="gray600">
+              <Text variant="bodyDefault" color="gray600">
                 Cancel
               </Text>
             </Pressable>
-            <Text variant="bodySmStrong" color="gray950">
+            <Text variant="bodyStrong" color="gray950">
               Edit Tabs
             </Text>
             <Pressable onPress={handleClose} style={styles.headerButton}>
-              <Text variant="bodySmStrong" style={styles.doneText}>
+              <Text variant="bodyStrong" style={styles.doneText}>
                 Done
               </Text>
             </Pressable>
