@@ -1,27 +1,26 @@
 import {
   useDeleteActivity,
+  useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid,
   useGetActivity,
   useUpdateActivity,
 } from "@/api/activities";
 import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activities/usePostApiV1TripsTripidActivitiesActivityidRsvp";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
+import { useGetMembership } from "@/api/memberships/useGetMembership";
+import { getPlaceDetailsCustom } from "@/api/places/custom";
 import { useUser } from "@/contexts/user";
-import {
-  DestinationPickerSheet,
-  type SelectedLocation,
-} from "@/app/(app)/components/destination-picker-sheet";
-import { Box, Spinner, Text } from "@/design-system";
+import { Box, Text, useToast } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
+import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { router, useLocalSearchParams } from "expo-router";
 import { Trash2 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EntityDetailScreen } from "../../components/entity-detail-screen";
 import { MembersGoingSection } from "../../components/members-going-section";
-import { PostDetailView } from "../components/post-detail-view";
 import { RsvpButton } from "../components/rsvp-button";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -42,15 +41,13 @@ export default function ActivityDetail() {
     id: activityID,
     tripID,
     openComments,
-    source,
   } = useLocalSearchParams<{
     id: string;
     tripID: string;
     openComments?: string;
-    source?: string;
   }>();
   const { currentUser, userId } = useUser();
-  const isMoodboardSource = source === "moodboard";
+  const toast = useToast();
 
   const { data: currentUserProfileImages } = useGetImage(
     [currentUser?.profile_picture],
@@ -68,86 +65,12 @@ export default function ActivityDetail() {
     query: { enabled: !!(tripID && activityID) },
   });
 
-  // ─── Loading / not found ─────────────────────────────────────────────────
+  // Fetch current user's membership to check admin status
+  const { data: myMembership } = useGetMembership(tripID ?? "", userId ?? "");
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <Spinner />
-        </Box>
-      </SafeAreaView>
-    );
-  }
-
-  if (!activity) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">
-            Activity not found.
-          </Text>
-        </Box>
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Moodboard post view ────────────────────────────────────────────────
-
-  if (isMoodboardSource) {
-    return (
-      <PostDetailView
-        activity={activity}
-        tripID={tripID ?? ""}
-        activityID={activityID ?? ""}
-        openComments={openComments === "true"}
-      />
-    );
-  }
-
-  // ─── Standard activity detail ───────────────────────────────────────────
-
-  return (
-    <StandardActivityDetail
-      activity={activity}
-      tripID={tripID ?? ""}
-      activityID={activityID ?? ""}
-      userId={userId}
-      currentUser={currentUser}
-      currentUserProfilePhotoUrl={currentUserProfilePhotoUrl}
-      openComments={openComments === "true"}
-      refetch={refetch}
-    />
-  );
-}
-
-// ─── Standard Detail (EntityDetailScreen) ─────────────────────────────────────
-
-type StandardActivityDetailProps = {
-  activity: ModelsActivityAPIResponse;
-  tripID: string;
-  activityID: string;
-  userId: string | null | undefined;
-  currentUser: any;
-  currentUserProfilePhotoUrl: string | undefined;
-  openComments: boolean;
-  refetch: () => void;
-};
-
-function StandardActivityDetail({
-  activity,
-  tripID,
-  activityID,
-  userId,
-  currentUser,
-  currentUserProfilePhotoUrl,
-  openComments,
-  refetch,
-}: StandardActivityDetailProps) {
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
   const rsvpMutation = usePostApiV1TripsTripidActivitiesActivityidRsvp();
-  const destinationSheetRef = useRef<any>(null);
 
   const {
     comments,
@@ -157,11 +80,13 @@ function StandardActivityDetail({
     onSubmitComment,
     onReact,
   } = useEntityComments({
-    tripID,
+    tripID: tripID ?? "",
     entityType: modelsEntityType.ActivityEntity,
-    entityID: activityID,
+    entityID: activityID ?? "",
     enabled: !!(tripID && activityID),
   });
+
+  // ─── Local state ─────────────────────────────────────────────────────────
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -176,7 +101,7 @@ function StandardActivityDetail({
   const [link, setLink] = useState("");
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [_isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!activity) return;
@@ -189,6 +114,8 @@ function StandardActivityDetail({
     setLocationLng(activity.location_lng ?? null);
     setLink(activity.media_url ?? "");
   }, [activity]);
+
+  // ─── Derived ─────────────────────────────────────────────────────────────
 
   const heroImages = useMemo(() => {
     const images: string[] = [];
@@ -204,6 +131,15 @@ function StandardActivityDetail({
     if (!userId || !activity?.going_users) return false;
     return activity.going_users.some((u) => u.user_id === userId);
   }, [userId, activity]);
+
+  const isAdmin = myMembership?.is_admin ?? false;
+  const isProposer = !!(
+    activity?.proposed_by && activity.proposed_by === userId
+  );
+  const canEdit = isAdmin || isProposer;
+  const canManageMembers = isAdmin || isProposer;
+
+  // ─── Handlers ────────────────────────────────────────────────────────────
 
   const saveField = useCallback(
     async (patch: Parameters<typeof updateMutation.mutateAsync>[0]["data"]) => {
@@ -240,22 +176,27 @@ function StandardActivityDetail({
   }, [tripID, activityID, isGoing, rsvpMutation, refetch]);
 
   const handleEditLocation = useCallback(() => {
-    destinationSheetRef.current?.snapToIndex(0);
-  }, []);
-
-  const handleLocationSelected = useCallback(
-    async (location: SelectedLocation) => {
-      setLocationName(location.name);
-      setLocationLat(location.lat ?? null);
-      setLocationLng(location.lng ?? null);
-      await saveField({
-        location_name: location.name,
-        location_lat: location.lat,
-        location_lng: location.lng,
-      });
-    },
-    [saveField],
-  );
+    locationSelectStore.set(async (prediction) => {
+      try {
+        const res = await getPlaceDetailsCustom({
+          place_id: prediction.place_id,
+        });
+        const newName =
+          res.data.formatted_address || prediction.description || res.data.name;
+        setLocationName(newName);
+        setLocationLat(res.data.geometry.location.lat);
+        setLocationLng(res.data.geometry.location.lng);
+        await saveField({
+          location_name: newName,
+          location_lat: res.data.geometry.location.lat,
+          location_lng: res.data.geometry.location.lng,
+        });
+      } catch {
+        setLocationName(prediction.description ?? null);
+      }
+    });
+    router.push(`/trips/${tripID}/search-location?mode=select`);
+  }, [tripID, saveField]);
 
   const handleDelete = useCallback(async () => {
     if (!tripID || !activityID) return;
@@ -268,100 +209,145 @@ function StandardActivityDetail({
     }
   }, [tripID, activityID, deleteMutation]);
 
-  const handleRemoveMember = useCallback((_memberId: string) => {
-    // coming soon
-  }, []);
+  const removeRsvpMutation =
+    useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid();
+
+  const handleRemoveMember = useCallback(
+    async (memberUserId: string) => {
+      if (!tripID || !activityID) return;
+      try {
+        await removeRsvpMutation.mutateAsync({
+          tripID,
+          activityID,
+          userID: memberUserId,
+        });
+        refetch();
+        toast.show({ message: "Member removed." });
+      } catch {
+        toast.show({ message: "Couldn't remove member. Try again." });
+      }
+    },
+    [tripID, activityID, removeRsvpMutation, refetch, toast],
+  );
+
+  // ─── Loading / not found ─────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Text variant="bodyDefault" color="gray500">
+            Loading...
+          </Text>
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  if (!activity) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Text variant="bodyDefault" color="gray500">
+            Activity not found.
+          </Text>
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <>
-      <EntityDetailScreen
-        name={name}
-        description={description}
-        heroImages={heroImages}
-        price={price}
-        dateRange={dateRange}
-        locationName={locationName}
-        locationLat={locationLat}
-        locationLng={locationLng}
-        link={link}
-        tripID={tripID}
-        entityID={activityID}
-        allMediaPath={`/trips/${tripID}/activities/${activityID}/activity-all-media`}
-        menuActions={[
-          {
-            label: "Delete activity",
-            icon: Trash2,
-            isDanger: true,
-            onPress: () => setIsDeleteVisible(true),
-          },
-        ]}
-        onBack={() => router.back()}
-        onSavePrice={async (p) => {
-          setPrice(p);
-          await saveField({ estimated_price: p });
-        }}
-        onSaveDateRange={async (range) => {
-          if (range.start && range.end) {
-            await saveField({
-              dates: [
-                {
-                  start: range.start.toISOString().split("T")[0]!,
-                  end: range.end.toISOString().split("T")[0]!,
-                },
-              ],
-            });
-          }
-        }}
-        onEditLocation={handleEditLocation}
-        onSaveLink={async (l) => {
-          await saveField({ media_url: l || undefined });
-        }}
-        onPriceChange={setPrice}
-        onDateRangeChange={setDateRange}
-        onLocationChange={(n, lat, lng) => {
-          setLocationName(n);
-          setLocationLat(lat);
-          setLocationLng(lng);
-        }}
-        onLinkChange={setLink}
-        actionButton={
-          <RsvpButton
-            isGoing={isGoing}
-            onPress={handleRsvp}
-            disabled={rsvpMutation.isPending}
-            variant="detail"
-          />
+    <EntityDetailScreen
+      name={name}
+      description={description}
+      heroImages={heroImages}
+      price={price}
+      dateRange={dateRange}
+      locationName={locationName}
+      locationLat={locationLat}
+      locationLng={locationLng}
+      link={link}
+      tripID={tripID ?? ""}
+      entityID={activityID ?? ""}
+      allMediaPath={`/trips/${tripID}/activities/${activityID}/all-media`}
+      canEdit={canEdit}
+      menuActions={
+        canEdit
+          ? [
+              {
+                label: "Delete activity",
+                icon: Trash2,
+                isDanger: true,
+                onPress: () => setIsDeleteVisible(true),
+              },
+            ]
+          : []
+      }
+      onBack={() => router.back()}
+      onSavePrice={async (p) => {
+        setPrice(p);
+        await saveField({ estimated_price: p });
+      }}
+      onSaveDateRange={async (range) => {
+        if (range.start && range.end) {
+          await saveField({
+            dates: [
+              {
+                start: range.start.toISOString().split("T")[0]!,
+                end: range.end.toISOString().split("T")[0]!,
+              },
+            ],
+          });
         }
-        extraSection={
-          <MembersGoingSection
-            goingUsers={activity.going_users ?? []}
-            onRemoveMember={handleRemoveMember}
-          />
-        }
-        comments={comments}
-        isLoadingComments={isLoadingComments}
-        isLoadingMoreComments={isLoadingMoreComments}
-        onLoadMoreComments={fetchNextPage}
-        onSubmitComment={onSubmitComment}
-        onReact={onReact}
-        currentUserId={userId ?? ""}
-        currentUserName={currentUser?.name ?? ""}
-        currentUserAvatar={currentUserProfilePhotoUrl}
-        currentUserSeed={currentUser?.id}
-        openComments={openComments}
-        isDeleteVisible={isDeleteVisible}
-        isDeleting={isDeleting}
-        deleteTitle={`Delete "${name}"`}
-        deleteSubtitle={`Deleting "${name}" will permanently remove it from your trip.`}
-        deleteConfirmLabel={`Delete "${name}"`}
-        deleteCancelLabel={`Keep "${name}"`}
-        onDeleteConfirm={handleDelete}
-        onDeleteCancel={() => setIsDeleteVisible(false)}
-      />
-      <DestinationPickerSheet
-        sheetRef={destinationSheetRef}
-        onSelect={handleLocationSelected}
-      />
-    </>
+      }}
+      onEditLocation={handleEditLocation}
+      onSaveLink={async (l) => {
+        await saveField({ media_url: l || undefined });
+      }}
+      onPriceChange={setPrice}
+      onDateRangeChange={setDateRange}
+      onLocationChange={(n, lat, lng) => {
+        setLocationName(n);
+        setLocationLat(lat);
+        setLocationLng(lng);
+      }}
+      onLinkChange={setLink}
+      actionButton={
+        <RsvpButton
+          isGoing={isGoing}
+          onPress={handleRsvp}
+          disabled={rsvpMutation.isPending}
+          variant="detail"
+        />
+      }
+      extraSection={
+        <MembersGoingSection
+          goingUsers={activity.going_users ?? []}
+          canManageMembers={canManageMembers}
+          onRemoveMember={handleRemoveMember}
+        />
+      }
+      comments={comments}
+      isLoadingComments={isLoadingComments}
+      isLoadingMoreComments={isLoadingMoreComments}
+      onLoadMoreComments={fetchNextPage}
+      onSubmitComment={onSubmitComment}
+      onReact={onReact}
+      currentUserId={userId ?? ""}
+      currentUserName={currentUser?.name ?? ""}
+      currentUserAvatar={currentUserProfilePhotoUrl}
+      currentUserSeed={currentUser?.id}
+      openComments={openComments === "true"}
+      isDeleteVisible={isDeleteVisible}
+      isDeleting={isDeleting}
+      deleteTitle={`Delete "${name}"`}
+      deleteSubtitle={`Deleting "${name}" will permanently remove it from your trip.`}
+      deleteConfirmLabel={`Delete "${name}"`}
+      deleteCancelLabel={`Keep "${name}"`}
+      onDeleteConfirm={handleDelete}
+      onDeleteCancel={() => setIsDeleteVisible(false)}
+    />
   );
 }

@@ -3,28 +3,28 @@
  * Do not edit manually.
  */
 
+import fetch from "../client";
+import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
 import type {
-  QueryClient,
-  UseMutationOptions,
-  UseMutationResult,
-} from "@tanstack/react-query";
-import { mutationOptions, useMutation } from "@tanstack/react-query";
-import type {
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
+  PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse,
+  PostApiV1TripsTripidActivitiesActivityidRsvpPathParams,
   PostApiV1TripsTripidActivitiesActivityidRsvp400,
   PostApiV1TripsTripidActivitiesActivityidRsvp401,
   PostApiV1TripsTripidActivitiesActivityidRsvp403,
   PostApiV1TripsTripidActivitiesActivityidRsvp404,
   PostApiV1TripsTripidActivitiesActivityidRsvp422,
   PostApiV1TripsTripidActivitiesActivityidRsvp500,
-  PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest,
-  PostApiV1TripsTripidActivitiesActivityidRsvpMutationResponse,
-  PostApiV1TripsTripidActivitiesActivityidRsvpPathParams,
 } from "../../types/types.gen.ts";
-import type { Client, RequestConfig, ResponseErrorConfig } from "../client";
-import fetch from "../client";
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+  QueryClient,
+} from "@tanstack/react-query";
+import { mutationOptions, useMutation } from "@tanstack/react-query";
 
 export const postApiV1TripsTripidActivitiesActivityidRsvpMutationKey = () =>
-  [{ url: "/api/v1/trips/:tripID/activities/:activityID/rsvps" }] as const;
+  [{ url: "/api/v1/trips/:tripID/activities/:activityID/rsvp" }] as const;
 
 export type PostApiV1TripsTripidActivitiesActivityidRsvpMutationKey =
   ReturnType<typeof postApiV1TripsTripidActivitiesActivityidRsvpMutationKey>;
@@ -59,7 +59,7 @@ export async function postApiV1TripsTripidActivitiesActivityidRsvp(
     PostApiV1TripsTripidActivitiesActivityidRsvpMutationRequest
   >({
     method: "POST",
-    url: `/api/v1/trips/${tripID}/activities/${activityID}/rsvps`,
+    url: `/api/v1/trips/${tripID}/activities/${activityID}/rsvp`,
     data: requestData,
     ...requestConfig,
   });

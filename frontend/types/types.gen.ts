@@ -4663,6 +4663,73 @@ export type GetApiV1TripsTripidActivitiesActivityidRsvpsQuery = {
     | GetApiV1TripsTripidActivitiesActivityidRsvps500;
 };
 
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridPathParams = {
+  /**
+   * @description Trip ID
+   * @type string
+   */
+  tripID: string;
+  /**
+   * @description Activity ID
+   * @type string
+   */
+  activityID: string;
+  /**
+   * @description User ID of the RSVP to remove
+   * @type string
+   */
+  userID: string;
+};
+
+/**
+ * @description No Content
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204 = any;
+
+/**
+ * @description Bad Request
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid400 =
+  ErrsAPIError;
+
+/**
+ * @description Unauthorized
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid401 =
+  ErrsAPIError;
+
+/**
+ * @description Forbidden
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid403 =
+  ErrsAPIError;
+
+/**
+ * @description Not Found
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid404 =
+  ErrsAPIError;
+
+/**
+ * @description Internal Server Error
+ */
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid500 =
+  ErrsAPIError;
+
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationResponse =
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204;
+
+export type DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutation = {
+  Response: DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204;
+  PathParams: DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridPathParams;
+  Errors:
+    | DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid400
+    | DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid401
+    | DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid403
+    | DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid404
+    | DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid500;
+};
+
 export type GetTripActivityFeedPathParams = {
   /**
    * @description Trip ID (UUID)
@@ -5265,6 +5332,11 @@ export type RemoveMember400 = ErrsAPIError;
 export type RemoveMember401 = ErrsAPIError;
 
 /**
+ * @description Forbidden
+ */
+export type RemoveMember403 = ErrsAPIError;
+
+/**
  * @description Not Found
  */
 export type RemoveMember404 = ErrsAPIError;
@@ -5279,7 +5351,12 @@ export type RemoveMemberMutationResponse = RemoveMember204;
 export type RemoveMemberMutation = {
   Response: RemoveMember204;
   PathParams: RemoveMemberPathParams;
-  Errors: RemoveMember400 | RemoveMember401 | RemoveMember404 | RemoveMember500;
+  Errors:
+    | RemoveMember400
+    | RemoveMember401
+    | RemoveMember403
+    | RemoveMember404
+    | RemoveMember500;
 };
 
 export type UpdateMembershipPathParams = {

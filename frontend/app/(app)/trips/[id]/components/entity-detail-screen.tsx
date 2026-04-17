@@ -65,6 +65,9 @@ export type EntityDetailScreenProps = {
   entityID: string;
   allMediaPath: string;
 
+  // Permissions
+  canEdit: boolean;
+
   // Actions
   menuActions: EntityDetailMenuAction[];
   onBack: () => void;
@@ -126,6 +129,7 @@ export function EntityDetailScreen({
   tripID,
   entityID,
   allMediaPath,
+  canEdit,
   menuActions,
   onBack,
   onSavePrice,
@@ -239,25 +243,29 @@ export function EntityDetailScreen({
               <Text style={styles.priceText}>
                 {price != null ? `${price} USD` : "No price set"}
               </Text>
-              <Pressable
-                onPress={() => setIsPricePickerVisible(true)}
-                hitSlop={8}
-              >
-                <Text style={styles.editButton}>Edit</Text>
-              </Pressable>
+              {canEdit && (
+                <Pressable
+                  onPress={() => setIsPricePickerVisible(true)}
+                  hitSlop={8}
+                >
+                  <Text style={styles.editButton}>Edit</Text>
+                </Pressable>
+              )}
             </Box>
             {formattedDate ? (
               <Box style={styles.priceRow}>
                 <Calendar size={16} color={ColorPalette.gray950} />
                 <Text style={styles.priceText}>{formattedDate}</Text>
-                <Pressable
-                  onPress={() => setIsDatePickerVisible(true)}
-                  hitSlop={8}
-                >
-                  <Text style={styles.editButton}>Edit</Text>
-                </Pressable>
+                {canEdit && (
+                  <Pressable
+                    onPress={() => setIsDatePickerVisible(true)}
+                    hitSlop={8}
+                  >
+                    <Text style={styles.editButton}>Edit</Text>
+                  </Pressable>
+                )}
               </Box>
-            ) : (
+            ) : canEdit ? (
               <Pressable
                 style={styles.priceRow}
                 onPress={() => setIsDatePickerVisible(true)}
@@ -265,14 +273,17 @@ export function EntityDetailScreen({
                 <Calendar size={16} color={ColorPalette.blue500} />
                 <Text style={styles.addText}>Add date</Text>
               </Pressable>
-            )}
+            ) : null}
           </Box>
 
           <Divider />
 
           {/* Location */}
           <Box style={styles.section}>
-            <SectionHeader label="Location" onEdit={onEditLocation} />
+            <SectionHeader
+              label="Location"
+              onEdit={canEdit ? onEditLocation : undefined}
+            />
             {locationName && (
               <Box style={styles.locationRow}>
                 <MapPin size={14} color={ColorPalette.gray950} />
@@ -324,7 +335,7 @@ export function EntityDetailScreen({
                 />
               </Box>
             )}
-            {!locationName && (
+            {!locationName && canEdit && (
               <Pressable onPress={onEditLocation}>
                 <Text style={styles.addText}>Add location</Text>
               </Pressable>
@@ -337,20 +348,28 @@ export function EntityDetailScreen({
           <Box style={styles.section}>
             <SectionHeader
               label="Link"
-              onEdit={() => {
-                setLinkDraft(link);
-                setIsEditingLink(true);
-              }}
+              onEdit={
+                canEdit
+                  ? () => {
+                      setLinkDraft(link);
+                      setIsEditingLink(true);
+                    }
+                  : undefined
+              }
             />
             {link ? (
               <LinkPill
                 url={link}
-                onEdit={() => {
-                  setLinkDraft(link);
-                  setIsEditingLink(true);
-                }}
+                onEdit={
+                  canEdit
+                    ? () => {
+                        setLinkDraft(link);
+                        setIsEditingLink(true);
+                      }
+                    : undefined
+                }
               />
-            ) : (
+            ) : canEdit ? (
               <Pressable
                 onPress={() => {
                   setLinkDraft("");
@@ -359,7 +378,7 @@ export function EntityDetailScreen({
               >
                 <Text style={styles.addText}>Add link</Text>
               </Pressable>
-            )}
+            ) : null}
           </Box>
 
           <Divider />
