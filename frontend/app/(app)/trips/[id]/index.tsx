@@ -582,7 +582,6 @@ export default function Trip() {
               ref={addActivityManualSheetRef}
               tripID={tripID}
               onSaved={() => {
-                // Only close the sheet and clear prefill, do NOT navigate
                 addActivityManualSheetRef.current?.close();
                 setActivityPrefill(null);
               }}
