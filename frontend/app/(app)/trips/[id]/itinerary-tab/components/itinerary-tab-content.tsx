@@ -16,7 +16,8 @@ export function ItineraryTabContent({
   parentScrollViewRef,
   parentScrollOffset,
   parentContainerRef,
-}: ItineraryTabContentProps) {
+  onAddActivity,
+}: ItineraryTabContentProps & { onAddActivity?: (date: string, timeOfDay?: string) => void }) {
   const {
     startDateKey,
     endDateKey,
@@ -96,7 +97,13 @@ export function ItineraryTabContent({
                 title={section.title}
                 activities={sectionActivities}
                 onActivityPress={handleActivityPress}
-                onAddActivity={() => handleAddActivity(section.key)}
+                onAddActivity={() => {
+                  if (onAddActivity) {
+                    onAddActivity(selectedDate, section.key);
+                  } else {
+                    handleAddActivity(section.key);
+                  }
+                }}
                 hideAddButton={
                   isSelectedDatePast || section.key === "unscheduled"
                 }

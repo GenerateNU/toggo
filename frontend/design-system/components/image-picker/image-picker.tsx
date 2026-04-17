@@ -258,7 +258,7 @@ export const ImagePicker = forwardRef<ImagePickerHandle, ImagePickerProps>(
         {variant === "circular" ? renderCircular() : renderRectangular()}
 
         <BottomSheetModal ref={sheetRef} snapPoints={["38%"]} initialIndex={-1}>
-          <Box flex={1} padding="sm" gap="md">
+          <Box flex={1} padding="sm" gap="md" marginRight="sm">
             <Box
               flexDirection="row"
               justifyContent="space-between"
@@ -273,7 +273,7 @@ export const ImagePicker = forwardRef<ImagePickerHandle, ImagePickerProps>(
                 ) : null}
               </Box>
 
-              <TouchableOpacity onPress={closeSheet} hitSlop={12}>
+              <TouchableOpacity onPress={closeSheet} hitSlop={12} >
                 <X size={24} />
               </TouchableOpacity>
             </Box>
