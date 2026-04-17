@@ -200,6 +200,15 @@ export default function Trip() {
     [tripTabsData?.tabs, activeTab],
   );
 
+  const moodboardCategoryNames = useMemo(
+    () =>
+      (tripTabsData?.tabs ?? [])
+        .filter((t) => isMoodboardTab(t))
+        .map((t) => t.name ?? "")
+        .filter(Boolean),
+    [tripTabsData?.tabs],
+  );
+
   const handleOpenCreateActivity = useCallback(() => {
     const customCategory =
       !isRoutedTripTab(activeTab) && activeTab !== "settings";
@@ -513,7 +522,17 @@ export default function Trip() {
               />
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
-            {!isRoutedTripTab(activeTab) && activeTab !== "settings" && (
+            {activeTab === "activities" && (
+              <ActivitiesTabContent
+                ref={activitiesTabRef}
+                tripID={tripID}
+                excludeCategories={moodboardCategoryNames}
+              />
+            )}
+            {activeTab === "housing" && (
+              <HousingTabContent ref={housingTabRef} tripID={tripID} />
+            )}
+            {!isRoutedTripTab(activeTab) && (
               <>
                 {isMoodboardTab(activeTabMeta) ? (
                   <MoodBoardTabContent
@@ -530,12 +549,6 @@ export default function Trip() {
                   />
                 )}
               </>
-            )}
-            {activeTab === "activities" && (
-              <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
-            )}
-            {activeTab === "housing" && (
-              <HousingTabContent ref={housingTabRef} tripID={tripID} />
             )}
           </Box>
         </Animated.ScrollView>

@@ -43,6 +43,8 @@ type ActivitiesTabContentProps = {
   tripID: string;
   /** When set, list and new activities are scoped to this category tab. */
   categoryName?: string;
+  /** Category names to exclude from the unscoped (all-activities) view. */
+  excludeCategories?: string[];
 };
 
 type SortOrder = "newest" | "oldest";
@@ -52,7 +54,7 @@ type SortOrder = "newest" | "oldest";
 export const ActivitiesTabContent = forwardRef<
   ActivitiesTabContentHandle,
   ActivitiesTabContentProps
->(({ tripID, categoryName }, ref) => {
+>(({ tripID, categoryName, excludeCategories }, ref) => {
   const entrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
   const manualSheetRef = useRef<AddActivityManualSheetHandle>(null);
   const toast = useToast();
@@ -91,12 +93,13 @@ export const ActivitiesTabContent = forwardRef<
   // ─── Sort activities ─────────────────────────────────────────────────────
 
   const sortedActivities = useMemo(() => {
-    const nonHousing = activities.filter(
-      (a) => !a.category_names?.includes("housing"),
+    const excluded = new Set(["housing", ...(excludeCategories ?? [])]);
+    const filtered = activities.filter(
+      (a) => !a.category_names?.some((c) => excluded.has(c)),
     );
-    if (sortOrder === "newest") return nonHousing;
-    return [...nonHousing].reverse();
-  }, [activities, sortOrder]);
+    if (sortOrder === "newest") return filtered;
+    return [...filtered].reverse();
+  }, [activities, sortOrder, excludeCategories]);
 
   // ─── Expose open method for CreateFAB ────────────────────────────────────
 

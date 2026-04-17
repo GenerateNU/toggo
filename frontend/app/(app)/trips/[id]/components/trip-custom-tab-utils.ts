@@ -7,7 +7,8 @@ export const TRIP_ROUTED_TAB_KEYS = new Set([
   "itinerary",
   "polls",
   "activities",
-  "settings", // navigates away; never a category content pane
+  "housing",
+  "settings",
 ]);
 
 export function isRoutedTripTab(activeTab: string): boolean {

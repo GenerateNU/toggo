@@ -104,7 +104,7 @@ export const HousingTabContent = forwardRef<
     isLoadingMore,
     fetchMore,
     prependActivity: prependHousing,
-  } = useActivitiesList(tripID, { category: "housing" });
+  } = useActivitiesList(tripID, 'housing');
 
   // ─── Sort ─────────────────────────────────────────────────────────────────
 
