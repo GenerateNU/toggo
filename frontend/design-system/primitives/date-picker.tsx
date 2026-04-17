@@ -374,7 +374,9 @@ export default function DateRangePicker({
           <Pressable onPress={onClose} hitSlop={16} style={styles.closeButton}>
             <X size={24} />
           </Pressable>
-          <Text variant="headingSm">{singleDate ? "Select date" : "Select dates"}</Text>
+          <Text variant="headingSm">
+            {singleDate ? "Select date" : "Select dates"}
+          </Text>
         </Box>
 
         {/* Selection summary pill */}
@@ -400,12 +402,17 @@ export default function DateRangePicker({
           ) : (
             <>
               <Box
-                style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
+                style={[
+                  styles.summaryPill,
+                  hasRange && styles.summaryPillActive,
+                ]}
               >
                 <Text
                   variant="bodySmMedium"
                   style={{
-                    color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
+                    color: hasRange
+                      ? ColorPalette.gray900
+                      : ColorPalette.gray500,
                   }}
                 >
                   {formatShortDate(range.start)}
@@ -427,7 +434,9 @@ export default function DateRangePicker({
                 <Text
                   variant="bodySmMedium"
                   style={{
-                    color: range.end ? ColorPalette.gray900 : ColorPalette.gray500,
+                    color: range.end
+                      ? ColorPalette.gray900
+                      : ColorPalette.gray500,
                   }}
                 >
                   {formatShortDate(range.end)}
