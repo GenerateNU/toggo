@@ -20,7 +20,9 @@ export const CategoriesSheet = forwardRef<
   CategoriesSheetProps
 >(({ tripID, selected, onChange, onDone }, ref) => {
   const { data } = useGetCategoriesByTripID(tripID);
-  const categories = data?.categories ?? [];
+  const categories = (data?.categories ?? []).filter(
+    (cat): cat is typeof cat & { name: string } => !!cat.name,
+  );
 
   const toggle = (name: string) => {
     onChange(
