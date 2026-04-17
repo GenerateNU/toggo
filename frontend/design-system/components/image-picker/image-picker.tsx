@@ -273,7 +273,7 @@ export const ImagePicker = forwardRef<ImagePickerHandle, ImagePickerProps>(
                 ) : null}
               </Box>
 
-              <TouchableOpacity onPress={closeSheet} hitSlop={12} >
+              <TouchableOpacity onPress={closeSheet} hitSlop={12}>
                 <X size={24} />
               </TouchableOpacity>
             </Box>

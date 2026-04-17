@@ -34,8 +34,14 @@ import TripTabBar, {
   type TabKey,
 } from "@/app/(app)/trips/[id]/components/trip-tab-bar";
 import ItineraryTabContent from "@/app/(app)/trips/[id]/itinerary-tab/components/itinerary-tab-content";
-import { AddActivityEntrySheet, type AddActivityEntrySheetHandle } from "@/app/(app)/trips/[id]/activities/components/add-activity-entry-sheet";
-import { AddActivityManualSheet, type AddActivityManualSheetHandle } from "@/app/(app)/trips/[id]/activities/components/add-activity-manual-sheet";
+import {
+  AddActivityEntrySheet,
+  type AddActivityEntrySheetHandle,
+} from "@/app/(app)/trips/[id]/activities/components/add-activity-entry-sheet";
+import {
+  AddActivityManualSheet,
+  type AddActivityManualSheetHandle,
+} from "@/app/(app)/trips/[id]/activities/components/add-activity-manual-sheet";
 import ActivityFeedTabContent from "@/app/(app)/trips/[id]/new-activity-tab/components/activity-feed-tab-content";
 import CreatePollSheet, {
   CreatePollSheetMethods,
@@ -116,7 +122,10 @@ export default function Trip() {
   const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
   const addActivityEntrySheetRef = useRef<AddActivityEntrySheetHandle>(null);
   const addActivityManualSheetRef = useRef<AddActivityManualSheetHandle>(null);
-  const [activityPrefill, setActivityPrefill] = useState<{ date?: string; timeOfDay?: string } | null>(null);
+  const [activityPrefill, setActivityPrefill] = useState<{
+    date?: string;
+    timeOfDay?: string;
+  } | null>(null);
   const housingTabRef = useRef<HousingTabContentHandle>(null);
   const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
@@ -226,12 +235,15 @@ export default function Trip() {
   }, [activeTab, activeTabMeta]);
 
   // Handler for itinerary add-activity button
-  const handleItineraryAddActivity = useCallback((date: string, timeOfDay?: string) => {
-    setActivityPrefill({ date, timeOfDay });
-    setTimeout(() => {
-      addActivityEntrySheetRef.current?.open();
-    }, 100);
-  }, []);
+  const handleItineraryAddActivity = useCallback(
+    (date: string, timeOfDay?: string) => {
+      setActivityPrefill({ date, timeOfDay });
+      setTimeout(() => {
+        addActivityEntrySheetRef.current?.open();
+      }, 100);
+    },
+    [],
+  );
 
   const handleOpenCreateHousing = useCallback(() => {
     setActiveTab("housing");
@@ -535,48 +547,50 @@ export default function Trip() {
                 onAddActivity={handleItineraryAddActivity}
               />
             )}
-                  {/* Activity creation sheets for itinerary quick add */}
-                  <AddActivityEntrySheet
-                    ref={addActivityEntrySheetRef}
-                    tripID={tripID}
-                    onManual={() => {
-                      addActivityEntrySheetRef.current?.close();
-                      setTimeout(() => {
-                        if (activityPrefill?.date) {
-                          addActivityManualSheetRef.current?.open();
-                        } else {
-                          addActivityManualSheetRef.current?.open(undefined);
-                        }
-                      }, 300);
-                    }}
-                    onAutofilled={(data) => {
-                      addActivityEntrySheetRef.current?.close();
-                      setTimeout(() => {
-                        let prefill = { ...data };
-                        if (activityPrefill?.date) {
-                          prefill = {
-                            ...prefill,
-                            ...(activityPrefill.timeOfDay ? { time_of_day: activityPrefill.timeOfDay } : {}),
-                          };
-                        }
-                        addActivityManualSheetRef.current?.open(prefill);
-                      }, 300);
-                    }}
-                    onClose={() => addActivityEntrySheetRef.current?.close()}
-                  />
-                  <AddActivityManualSheet
-                    ref={addActivityManualSheetRef}
-                    tripID={tripID}
-                    onSaved={() => {
-                      // Only close the sheet and clear prefill, do NOT navigate
-                      addActivityManualSheetRef.current?.close();
-                      setActivityPrefill(null);
-                    }}
-                    onClose={() => {
-                      addActivityManualSheetRef.current?.close();
-                      setActivityPrefill(null);
-                    }}
-                  />
+            {/* Activity creation sheets for itinerary quick add */}
+            <AddActivityEntrySheet
+              ref={addActivityEntrySheetRef}
+              tripID={tripID}
+              onManual={() => {
+                addActivityEntrySheetRef.current?.close();
+                setTimeout(() => {
+                  if (activityPrefill?.date) {
+                    addActivityManualSheetRef.current?.open();
+                  } else {
+                    addActivityManualSheetRef.current?.open(undefined);
+                  }
+                }, 300);
+              }}
+              onAutofilled={(data) => {
+                addActivityEntrySheetRef.current?.close();
+                setTimeout(() => {
+                  let prefill = { ...data };
+                  if (activityPrefill?.date) {
+                    prefill = {
+                      ...prefill,
+                      ...(activityPrefill.timeOfDay
+                        ? { time_of_day: activityPrefill.timeOfDay }
+                        : {}),
+                    };
+                  }
+                  addActivityManualSheetRef.current?.open(prefill);
+                }, 300);
+              }}
+              onClose={() => addActivityEntrySheetRef.current?.close()}
+            />
+            <AddActivityManualSheet
+              ref={addActivityManualSheetRef}
+              tripID={tripID}
+              onSaved={() => {
+                // Only close the sheet and clear prefill, do NOT navigate
+                addActivityManualSheetRef.current?.close();
+                setActivityPrefill(null);
+              }}
+              onClose={() => {
+                addActivityManualSheetRef.current?.close();
+                setActivityPrefill(null);
+              }}
+            />
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             {activeTab === "activities" && (
               <ActivitiesTabContent

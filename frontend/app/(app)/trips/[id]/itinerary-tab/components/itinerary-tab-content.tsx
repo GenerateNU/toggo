@@ -17,7 +17,9 @@ export function ItineraryTabContent({
   parentScrollOffset,
   parentContainerRef,
   onAddActivity,
-}: ItineraryTabContentProps & { onAddActivity?: (date: string, timeOfDay?: string) => void }) {
+}: ItineraryTabContentProps & {
+  onAddActivity?: (date: string, timeOfDay?: string) => void;
+}) {
   const {
     startDateKey,
     endDateKey,
