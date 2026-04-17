@@ -7,6 +7,7 @@ import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily } from "@/design-system/tokens/typography";
 import { getImageURL } from "@/services/imageService";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import * as ExpoImagePicker from "expo-image-picker";
 import { ImagePlus, X } from "lucide-react-native";
 import {
@@ -16,13 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import { Image, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -228,14 +223,14 @@ function AddItemManualSheetInner<T>(
 
           {/* Name + description */}
           <Box style={styles.nameSection}>
-            <TextInput
+            <BottomSheetTextInput
               value={name}
               onChangeText={setName}
               placeholder={namePlaceholder}
               placeholderTextColor={ColorPalette.gray400}
               style={styles.nameInput}
             />
-            <TextInput
+            <BottomSheetTextInput
               value={description}
               onChangeText={setDescription}
               placeholder="Add a description"

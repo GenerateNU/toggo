@@ -1,6 +1,7 @@
 import { BottomSheet, Box, Button, Divider, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { X } from "lucide-react-native";
 import { useRef, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity } from "react-native";
@@ -79,9 +80,9 @@ function TripCodeInput({ value, onChange }: TripCodeInputProps) {
           alignItems="center"
           style={styles.codeCell}
         >
-          <TextInput
+          <BottomSheetTextInput
             ref={(ref) => {
-              inputRefs.current[index] = ref;
+              inputRefs.current[index] = (ref as TextInput | null) ?? null;
             }}
             value={char}
             onChangeText={(text) => handleChange(text, index)}

@@ -5,8 +5,10 @@ import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily } from "@/design-system/tokens/typography";
-import React, { useState } from "react";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import React, { useContext, useState } from "react";
 import { StyleSheet, TextInput, TextInputProps } from "react-native";
+import { InsideBottomSheetContext } from "../bottom-sheet/bottom-sheet";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,6 +56,8 @@ export default function TextField({
   const [focused, setFocused] = useState(false);
   const hasValue = value.trim().length > 0;
   const isActive = focused || (highlightWhenFilled && hasValue);
+  const isInsideBottomSheet = useContext(InsideBottomSheetContext);
+  const Input = isInsideBottomSheet ? BottomSheetTextInput : TextInput;
 
   return (
     <Box style={styles.container}>
@@ -72,7 +76,7 @@ export default function TextField({
         ]}
       >
         {leftIcon && <Box style={styles.iconWrapper}>{leftIcon}</Box>}
-        <TextInput
+        <Input
           style={[styles.input, disabled && styles.inputDisabled]}
           value={value}
           onChangeText={onChangeText}
