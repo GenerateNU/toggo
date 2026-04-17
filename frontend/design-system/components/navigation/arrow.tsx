@@ -2,6 +2,7 @@ import { Box } from "@/design-system/primitives/box";
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import React from "react";
+import { Pressable } from "react-native";
 import { Icon } from "../icons/icon";
 
 interface BackButtonProps {
@@ -17,17 +18,27 @@ export const BackButton: React.FC<BackButtonProps> = ({
 }) => {
   const router = useRouter();
 
+  const handlePress = onPress ?? router.back;
+
+  if (hasBackground) {
+    return (
+      <Pressable onPress={handlePress}>
+        <Box
+          alignItems="center"
+          justifyContent="center"
+          padding="xs"
+          borderRadius="md"
+          backgroundColor="white"
+        >
+          <Icon icon={ArrowLeft} size="sm" color={color} />
+        </Box>
+      </Pressable>
+    );
+  }
+
   return (
-    <Box
-      onTouchEnd={onPress ?? router.back}
-      alignItems="center"
-      justifyContent="center"
-      width={44}
-      height={44}
-      borderRadius={hasBackground ? "md" : undefined}
-      backgroundColor={hasBackground ? "white" : undefined}
-    >
+    <Pressable onPress={handlePress} hitSlop={8}>
       <Icon icon={ArrowLeft} size="sm" color={color} />
-    </Box>
+    </Pressable>
   );
 };

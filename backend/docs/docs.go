@@ -6330,6 +6330,9 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "view_type": {
+                    "$ref": "#/definitions/models.CategoryViewType"
                 }
             }
         },
@@ -6359,6 +6362,17 @@ const docTemplate = `{
                     "minimum": 0
                 }
             }
+        },
+        "models.CategoryViewType": {
+            "type": "string",
+            "enum": [
+                "activity",
+                "moodboard"
+            ],
+            "x-enum-varnames": [
+                "CategoryViewTypeActivity",
+                "CategoryViewTypeMoodboard"
+            ]
         },
         "models.Comment": {
             "type": "object",
@@ -6661,6 +6675,17 @@ const docTemplate = `{
                 },
                 "trip_id": {
                     "type": "string"
+                },
+                "view_type": {
+                    "enum": [
+                        "activity",
+                        "moodboard"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.CategoryViewType"
+                        }
+                    ]
                 }
             }
         },

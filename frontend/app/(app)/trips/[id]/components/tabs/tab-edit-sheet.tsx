@@ -33,12 +33,13 @@ export interface TabEditSheetMethods {
 interface TabEditSheetProps {
   tripID: string;
   isAdmin: boolean;
+  onCategoryCreated?: (categoryName: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
-  ({ tripID, isAdmin }, ref) => {
+  ({ tripID, isAdmin, onCategoryCreated }, ref) => {
     const bottomSheetRef = useRef<BottomSheetMethods>(null);
     const createTabSheetRef = useRef<CreateTabSheetMethods>(null);
     const queryClient = useQueryClient();
@@ -175,7 +176,11 @@ const TabEditSheet = forwardRef<TabEditSheetMethods, TabEditSheetProps>(
           </Box>
         </BottomSheetModal>
 
-        <CreateTabSheet ref={createTabSheetRef} tripID={tripID} />
+        <CreateTabSheet
+          ref={createTabSheetRef}
+          tripID={tripID}
+          onCategoryCreated={onCategoryCreated}
+        />
       </>
     );
   },

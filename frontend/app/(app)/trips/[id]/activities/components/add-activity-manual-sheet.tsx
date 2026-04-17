@@ -39,6 +39,8 @@ export type AddActivityManualSheetHandle = {
 
 type AddActivityManualSheetProps = {
   tripID: string;
+  /** When adding from a specific category tab, tag the new activity with these names. */
+  defaultCategoryNames?: string[];
   onSaved: (activity: ModelsActivityAPIResponse) => void;
   onClose: () => void;
 };
@@ -59,7 +61,7 @@ function formatDateRange(range: DateRange): string | null {
 export const AddActivityManualSheet = forwardRef<
   AddActivityManualSheetHandle,
   AddActivityManualSheetProps
->(({ tripID, onSaved, onClose }, ref) => {
+>(({ tripID, defaultCategoryNames, onSaved, onClose }, ref) => {
   const createActivity = useCreateActivity();
   const sheetRef = useRef<AddItemManualSheetHandle>(null);
 
@@ -155,12 +157,17 @@ export const AddActivityManualSheet = forwardRef<
           location_lng: locationLng ?? undefined,
           thumbnail_url: thumbnailURL,
           media_url: link.trim() || undefined,
+          category_names:
+            defaultCategoryNames && defaultCategoryNames.length > 0
+              ? defaultCategoryNames
+              : undefined,
         },
       });
     },
     [
       createActivity,
       tripID,
+      defaultCategoryNames,
       price,
       dateRange,
       locationName,
