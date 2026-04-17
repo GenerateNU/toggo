@@ -211,13 +211,14 @@ func (ctrl *MembershipController) UpdateMembership(c *fiber.Ctx) error {
 }
 
 // @Summary      Remove member from trip
-// @Description  Removes a user from a trip
+// @Description  Removes a user from a trip. Only admins can remove members.
 // @Tags         memberships
 // @Param        tripID path string true "Trip ID"
 // @Param        userID path string true "User ID"
 // @Success      204 "No Content"
 // @Failure      400 {object} errs.APIError
 // @Failure      401 {object} errs.APIError
+// @Failure      403 {object} errs.APIError
 // @Failure      404 {object} errs.APIError
 // @Failure      500 {object} errs.APIError
 // @Router       /api/v1/trips/{tripID}/memberships/{userID} [delete]
@@ -231,6 +232,23 @@ func (ctrl *MembershipController) RemoveMember(c *fiber.Ctx) error {
 	userID, err := validators.ValidateID(c.Params("userID"))
 	if err != nil {
 		return errs.InvalidUUID()
+	}
+
+	// Admins can remove anyone; members can only remove themselves
+	authUserID, ok := c.Locals("userID").(string)
+	if !ok {
+		return errs.Unauthorized()
+	}
+	authUserUUID, err := validators.ValidateID(authUserID)
+	if err != nil {
+		return errs.Unauthorized()
+	}
+	isAdmin, err := ctrl.membershipService.IsAdmin(c.Context(), tripID, authUserUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin && authUserUUID != userID {
+		return errs.Forbidden()
 	}
 
 	if err := ctrl.membershipService.RemoveMember(c.Context(), tripID, userID); err != nil {

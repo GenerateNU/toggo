@@ -2455,6 +2455,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/trips/{tripID}/activities/{activityID}/rsvps/{userID}": {
+            "delete": {
+                "description": "Removes a user's RSVP from an activity. Only the activity proposer or a trip admin can remove another user's RSVP.",
+                "tags": [
+                    "activities"
+                ],
+                "summary": "Remove activity RSVP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Activity ID",
+                        "name": "activityID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID of the RSVP to remove",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/trips/{tripID}/activity": {
             "get": {
                 "description": "Returns all unread events in the caller's trip feed. Events persist until explicitly dismissed via the mark-read endpoint.",
@@ -3121,7 +3188,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Removes a user from a trip",
+                "description": "Removes a user from a trip. Only admins can remove members.",
                 "tags": [
                     "memberships"
                 ],
@@ -3155,6 +3222,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errs.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/errs.APIError"
                         }

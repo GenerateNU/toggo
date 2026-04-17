@@ -254,9 +254,23 @@ func (s *MembershipService) RemoveMember(ctx context.Context, tripID, userID uui
 	if err != nil {
 		return err
 	}
-
 	if !isMember {
 		return errors.New("user is not a member of this trip")
+	}
+
+	// Prevent removing the last admin
+	membership, err := s.Membership.Find(ctx, userID, tripID)
+	if err != nil {
+		return err
+	}
+	if membership.IsAdmin {
+		admins, err := s.Membership.CountAdmins(ctx, tripID)
+		if err != nil {
+			return err
+		}
+		if admins <= 1 {
+			return errs.BadRequest(errors.New("cannot remove the last admin of a trip"))
+		}
 	}
 
 	return s.Membership.Delete(ctx, userID, tripID)
@@ -366,8 +380,6 @@ func (s *MembershipService) toAPIResponse(ctx context.Context, membership *model
 		ProfilePictureURL: profilePictureURL,
 	}, nil
 }
-
-// Helper methods for cleaner code organization
 
 func (s *MembershipService) convertToAPIMemberships(memberships []*models.MembershipDatabaseResponse, fileURLMap map[string]string) []*models.MembershipAPIResponse {
 	apiMemberships := make([]*models.MembershipAPIResponse, 0, len(memberships))

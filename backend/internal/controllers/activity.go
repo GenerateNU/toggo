@@ -359,7 +359,6 @@ func (ctrl *ActivityController) AddCategoryToActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}
@@ -408,7 +407,6 @@ func (ctrl *ActivityController) RemoveCategoryFromActivity(c *fiber.Ctx) error {
 		return errs.InvalidUUID()
 	}
 
-	// Use request model for validation
 	req := models.AddCategoryToActivityRequest{
 		CategoryName: c.Params("categoryName"),
 	}
@@ -504,6 +502,43 @@ func (ctrl *ActivityController) GetActivityRSVPs(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(rsvps)
+}
+
+// RemoveActivityRSVP removes a specific user's RSVP from an activity.
+// @Summary Remove activity RSVP
+// @Description Removes a user's RSVP from an activity. Only the activity proposer or a trip admin can remove another user's RSVP.
+// @Tags activities
+// @Param tripID path string true "Trip ID"
+// @Param activityID path string true "Activity ID"
+// @Param userID path string true "User ID of the RSVP to remove"
+// @Success 204 "No Content"
+// @Failure 400 {object} errs.APIError
+// @Failure 401 {object} errs.APIError
+// @Failure 403 {object} errs.APIError
+// @Failure 404 {object} errs.APIError
+// @Failure 500 {object} errs.APIError
+// @Router /api/v1/trips/{tripID}/activities/{activityID}/rsvps/{userID} [delete]
+func (ctrl *ActivityController) RemoveActivityRSVP(c *fiber.Ctx) error {
+	tripID, activityID, err := ctrl.parseTripAndActivityIDs(c)
+	if err != nil {
+		return err
+	}
+
+	targetUserID, err := validators.ValidateID(c.Params("userID"))
+	if err != nil {
+		return errs.InvalidUUID()
+	}
+
+	callerID, err := validators.ExtractUserID(c)
+	if err != nil {
+		return err
+	}
+
+	if err := ctrl.activityService.RemoveActivityRSVP(c.Context(), tripID, activityID, callerID, targetUserID); err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
 }
 
 // @Summary      Parse link into activity data

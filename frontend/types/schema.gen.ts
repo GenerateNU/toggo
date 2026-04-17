@@ -410,6 +410,14 @@ import type {
   GetApiV1TripsTripidActivitiesActivityidRsvpsPathParams,
   GetApiV1TripsTripidActivitiesActivityidRsvpsQueryParams,
   GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid400,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid401,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid403,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid404,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid500,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationResponse,
+  DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridPathParams,
   GetTripActivityFeed200,
   GetTripActivityFeed400,
   GetTripActivityFeed401,
@@ -497,6 +505,7 @@ import type {
   RemoveMember204,
   RemoveMember400,
   RemoveMember401,
+  RemoveMember403,
   RemoveMember404,
   RemoveMember500,
   RemoveMemberMutationResponse,
@@ -3911,6 +3920,64 @@ export const getApiV1TripsTripidActivitiesActivityidRsvpsQueryResponseSchema =
     () => getApiV1TripsTripidActivitiesActivityidRsvps200Schema,
   ) as unknown as z.ZodType<GetApiV1TripsTripidActivitiesActivityidRsvpsQueryResponse>;
 
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUseridPathParamsSchema =
+  z.object({
+    tripID: z.string().describe("Trip ID"),
+    activityID: z.string().describe("Activity ID"),
+    userID: z.string().describe("User ID of the RSVP to remove"),
+  }) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridPathParams>;
+
+/**
+ * @description No Content
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204Schema =
+  z.any() as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204>;
+
+/**
+ * @description Bad Request
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid400Schema =
+  z.lazy(
+    () => errsAPIErrorSchema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid400>;
+
+/**
+ * @description Unauthorized
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid401Schema =
+  z.lazy(
+    () => errsAPIErrorSchema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid401>;
+
+/**
+ * @description Forbidden
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid403Schema =
+  z.lazy(
+    () => errsAPIErrorSchema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid403>;
+
+/**
+ * @description Not Found
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid404Schema =
+  z.lazy(
+    () => errsAPIErrorSchema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid404>;
+
+/**
+ * @description Internal Server Error
+ */
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid500Schema =
+  z.lazy(
+    () => errsAPIErrorSchema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid500>;
+
+export const deleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationResponseSchema =
+  z.lazy(
+    () => deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid204Schema,
+  ) as unknown as z.ZodType<DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationResponse>;
+
 export const getTripActivityFeedPathParamsSchema = z.object({
   tripID: z.string().describe("Trip ID (UUID)"),
 }) as unknown as z.ZodType<GetTripActivityFeedPathParams>;
@@ -4466,6 +4533,13 @@ export const removeMember400Schema = z.lazy(
 export const removeMember401Schema = z.lazy(
   () => errsAPIErrorSchema,
 ) as unknown as z.ZodType<RemoveMember401>;
+
+/**
+ * @description Forbidden
+ */
+export const removeMember403Schema = z.lazy(
+  () => errsAPIErrorSchema,
+) as unknown as z.ZodType<RemoveMember403>;
 
 /**
  * @description Not Found

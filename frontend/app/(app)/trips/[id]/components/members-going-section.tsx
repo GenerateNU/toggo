@@ -22,6 +22,7 @@ type GoingUser = {
 
 type MembersGoingSectionProps = {
   goingUsers: GoingUser[];
+  canManageMembers: boolean;
   onRemoveMember: (userId: string) => void;
 };
 
@@ -40,6 +41,7 @@ function buildSummaryText(users: GoingUser[]): string {
 
 export function MembersGoingSection({
   goingUsers,
+  canManageMembers,
   onRemoveMember,
 }: MembersGoingSectionProps) {
   const [expanded, setExpanded] = useState(false);
@@ -114,16 +116,18 @@ export function MembersGoingSection({
               >
                 {u.name ?? "Member"}
               </Text>
-              <View
-                ref={(ref) => {
-                  if (ref && u.user_id)
-                    moreBtnRefs.current.set(u.user_id, ref as View);
-                }}
-              >
-                <Pressable hitSlop={8} onPress={() => handleMorePress(u)}>
-                  <MoreHorizontal size={16} color={ColorPalette.gray950} />
-                </Pressable>
-              </View>
+              {canManageMembers && (
+                <View
+                  ref={(ref) => {
+                    if (ref && u.user_id)
+                      moreBtnRefs.current.set(u.user_id, ref as View);
+                  }}
+                >
+                  <Pressable hitSlop={8} onPress={() => handleMorePress(u)}>
+                    <MoreHorizontal size={16} color={ColorPalette.gray950} />
+                  </Pressable>
+                </View>
+              )}
             </Box>
           ))}
         </Box>

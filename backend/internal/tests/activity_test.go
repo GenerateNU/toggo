@@ -1723,3 +1723,106 @@ func TestActivityRSVPPagination(t *testing.T) {
 			AssertStatus(http.StatusBadRequest)
 	})
 }
+
+func TestRemoveActivityRSVP(t *testing.T) {
+	app := fakes.GetSharedTestApp()
+
+	owner := createUser(t, app)
+	proposer := createUser(t, app)
+	member := createUser(t, app)
+	nonMember := createUser(t, app)
+	trip := createTrip(t, app, owner)
+	addMember(t, app, owner, proposer, trip)
+	addMember(t, app, owner, member, trip)
+
+	// proposer creates the activity
+	activityID := createActivity(t, app, proposer, trip, "RSVP Removal Test Activity")
+
+	// helper to RSVP a user
+	rsvpUser := func(t *testing.T, userID string) {
+		t.Helper()
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps", trip, activityID),
+				Method: testkit.POST,
+				UserID: &userID,
+				Body:   models.ActivityRSVPRequestPayload{Status: models.RSVPStatusGoing},
+			}).
+			AssertStatus(http.StatusOK)
+	}
+
+	t.Run("admin can remove another user's RSVP", func(t *testing.T) {
+		rsvpUser(t, member)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/%s", trip, activityID, member),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+	})
+
+	t.Run("proposer can remove another user's RSVP", func(t *testing.T) {
+		rsvpUser(t, member)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/%s", trip, activityID, member),
+				Method: testkit.DELETE,
+				UserID: &proposer,
+			}).
+			AssertStatus(http.StatusNoContent)
+	})
+
+	t.Run("regular member cannot remove another user's RSVP", func(t *testing.T) {
+		rsvpUser(t, owner)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/%s", trip, activityID, owner),
+				Method: testkit.DELETE,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+
+	t.Run("removing an RSVP that does not exist returns 404", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/%s", trip, activityID, uuid.New().String()),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("non-member cannot remove an RSVP", func(t *testing.T) {
+		rsvpUser(t, member)
+
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/%s", trip, activityID, member),
+				Method: testkit.DELETE,
+				UserID: &nonMember,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
+	t.Run("malformed userID returns 400", func(t *testing.T) {
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/not-a-uuid", trip, activityID),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+}

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"time"
 	"toggo/internal/models"
 
@@ -12,6 +13,7 @@ import (
 type ActivityRSVPRepository interface {
 	UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error)
 	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken time.Time, statusFilter string) ([]models.ActivityRSVPDatabaseResponse, time.Time, error)
+	DeleteRSVP(ctx context.Context, tripID, activityID, targetUserID uuid.UUID) error
 }
 
 var _ ActivityRSVPRepository = (*activityRSVPRepository)(nil)
@@ -77,12 +79,12 @@ func (r *activityRSVPRepository) GetActivityRSVPs(
 
 func (r *activityRSVPRepository) UpdateRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, status models.RSVPStatus) (*models.ActivityRSVP, error) {
 	query := `
-			INSERT INTO activity_rsvps (trip_id, activity_id, user_id, status)
-			VALUES (?, ?, ?, ?)
-			ON CONFLICT (trip_id, activity_id, user_id)
-			DO UPDATE SET status = EXCLUDED.status, updated_at = NOW()
-			RETURNING trip_id, activity_id, user_id, status, created_at, updated_at
-		`
+		INSERT INTO activity_rsvps (trip_id, activity_id, user_id, status)
+		VALUES (?, ?, ?, ?)
+		ON CONFLICT (trip_id, activity_id, user_id)
+		DO UPDATE SET status = EXCLUDED.status, updated_at = NOW()
+		RETURNING trip_id, activity_id, user_id, status, created_at, updated_at
+	`
 	rsvp := new(models.ActivityRSVP)
 	err := r.db.QueryRowContext(ctx, query, tripID, activityID, userID, status).Scan(
 		&rsvp.TripID,
@@ -96,4 +98,26 @@ func (r *activityRSVPRepository) UpdateRSVP(ctx context.Context, tripID, activit
 		return nil, err
 	}
 	return rsvp, nil
+}
+
+func (r *activityRSVPRepository) DeleteRSVP(ctx context.Context, tripID, activityID, targetUserID uuid.UUID) error {
+	result, err := r.db.NewDelete().
+		TableExpr("activity_rsvps").
+		Where("trip_id = ?", tripID).
+		Where("activity_id = ?", activityID).
+		Where("user_id = ?", targetUserID).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

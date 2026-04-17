@@ -1,6 +1,7 @@
 export type { AddCategoryToActivityMutationKey } from "./api/activities/useAddCategoryToActivity.ts";
 export type { CreateActivityMutationKey } from "./api/activities/useCreateActivity.ts";
 export type { DeleteActivityMutationKey } from "./api/activities/useDeleteActivity.ts";
+export type { DeleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationKey } from "./api/activities/useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid.ts";
 export type { GetActivitiesByTripIDQueryKey } from "./api/activities/useGetActivitiesByTripID.ts";
 export type { GetActivitiesByTripIDSuspenseQueryKey } from "./api/activities/useGetActivitiesByTripIDSuspense.ts";
 export type { GetActivityQueryKey } from "./api/activities/useGetActivity.ts";
@@ -140,6 +141,10 @@ export { deleteActivity } from "./api/activities/useDeleteActivity.ts";
 export { deleteActivityMutationKey } from "./api/activities/useDeleteActivity.ts";
 export { deleteActivityMutationOptions } from "./api/activities/useDeleteActivity.ts";
 export { useDeleteActivity } from "./api/activities/useDeleteActivity.ts";
+export { deleteApiV1TripsTripidActivitiesActivityidRsvpsUserid } from "./api/activities/useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid.ts";
+export { deleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationKey } from "./api/activities/useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid.ts";
+export { deleteApiV1TripsTripidActivitiesActivityidRsvpsUseridMutationOptions } from "./api/activities/useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid.ts";
+export { useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid } from "./api/activities/useDeleteApiV1TripsTripidActivitiesActivityidRsvpsUserid.ts";
 export { getActivitiesByTripID } from "./api/activities/useGetActivitiesByTripID.ts";
 export { getActivitiesByTripIDQueryKey } from "./api/activities/useGetActivitiesByTripID.ts";
 export { getActivitiesByTripIDQueryOptions } from "./api/activities/useGetActivitiesByTripID.ts";

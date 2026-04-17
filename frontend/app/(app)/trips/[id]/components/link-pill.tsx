@@ -10,7 +10,7 @@ import { Linking, Modal, Pressable, StyleSheet, View } from "react-native";
 
 type LinkPillProps = {
   url: string;
-  onEdit: () => void;
+  onEdit?: () => void;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -62,19 +62,21 @@ export function LinkPill({ url, onEdit }: LinkPillProps) {
               Open link
             </Text>
           </Pressable>
-          <Box style={styles.popoverDivider} />
-          <Pressable
-            style={styles.popoverItem}
-            onPress={() => {
-              setPopoverVisible(false);
-              onEdit();
-            }}
-          >
-            <PenLine size={16} color={ColorPalette.gray900} />
-            <Text variant="bodyDefault" color="gray900">
-              Edit link
-            </Text>
-          </Pressable>
+          {onEdit && <Box style={styles.popoverDivider} />}
+          {onEdit && (
+            <Pressable
+              style={styles.popoverItem}
+              onPress={() => {
+                setPopoverVisible(false);
+                onEdit();
+              }}
+            >
+              <PenLine size={16} color={ColorPalette.gray900} />
+              <Text variant="bodyDefault" color="gray900">
+                Edit link
+              </Text>
+            </Pressable>
+          )}
         </View>
       </Modal>
     </View>
