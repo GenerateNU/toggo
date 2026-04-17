@@ -121,10 +121,10 @@ export default function HomeScreen() {
   const topSectionGradientColors: [string, string] = hasAnyUnreadUpdates
     ? [ColorPalette.white, ColorPalette.blue50]
     : [ColorPalette.white, ColorPalette.brand100];
-  const upcomingCardWidth = Math.max(
-    280,
-    viewportWidth - Layout.spacing.sm * 2,
-  );
+  const upcomingCardWidth =
+    upcoming.length > 1
+      ? viewportWidth - Layout.spacing.sm * 2 - 32
+      : viewportWidth - Layout.spacing.sm * 2;
   const upcomingCardGap = 12;
 
   useEffect(() => {
