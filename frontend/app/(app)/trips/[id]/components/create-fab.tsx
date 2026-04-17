@@ -93,7 +93,7 @@ export default function CreateFAB({
     {
       label: "Pitch",
       icon: Lightbulb,
-      onPress: () => router.push(`/trips/${tripID}/pitches/creation`),
+      onPress: () => router.push(`/trips/${tripID}/pitches`),
     },
     {
       label: "Poll",

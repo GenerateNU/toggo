@@ -1,5 +1,6 @@
 import { useSubmitRanking } from "@/api/polls/useSubmitRanking";
-import { Box, Text, useToast } from "@/design-system";
+import { Box, Text, useToast, Button } from "@/design-system";
+import { router } from "expo-router";
 import { UserAvatar } from "@/design-system/components/avatars/user-avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -27,6 +28,7 @@ type RankedOption = {
 type RankPollCardProps = {
   poll: ModelsRankPollResultsResponse;
   tripId: string;
+  tripPitchDeadline?: string;
   onRanked?: () => void;
   onPress?: () => void;
   previewMode?: boolean;
@@ -123,6 +125,7 @@ const DraggableRow = React.memo(function DraggableRow({
 export default function RankPollCard({
   poll,
   tripId,
+  tripPitchDeadline,
   onRanked,
   onPress,
   previewMode = false,
@@ -309,36 +312,69 @@ export default function RankPollCard({
           </Box>
         </Pressable>
 
-        {/* Rows */}
         <Box style={styles.list}>
-          {options.map((opt, i) => (
-            <DraggableRow
-              key={opt.id}
-              option={opt}
-              rank={i + 1}
-              isDragging={draggingId === opt.id}
-              translateY={translateY}
-              gesture={makeGesture(opt.id, i)}
-              closed={closed}
-            />
-          ))}
-        </Box>
-
-        {/* Submit */}
-        <Box alignItems="flex-end">
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={submitDisabled}
-            activeOpacity={0.8}
-          >
-            <Box
-              style={[styles.submit, submitDisabled && styles.submitDisabled]}
-            >
-              <Text variant="bodyStrong" style={styles.submitLabel}>
-                {submitLabel}
+          {options.length === 0 ? (
+            <Box alignItems="center" paddingVertical="sm">
+              <Text variant="bodySmDefault" color="gray400">
+                No options to rank yet.
               </Text>
             </Box>
-          </TouchableOpacity>
+          ) : (
+            options.map((opt, i) => (
+              <DraggableRow
+                key={opt.id}
+                option={opt}
+                rank={i + 1}
+                isDragging={draggingId === opt.id}
+                translateY={translateY}
+                gesture={makeGesture(opt.id, i)}
+                closed={closed}
+              />
+            ))
+          )}
+        </Box>
+
+        {/* Pitch button or Submit */}
+        <Box
+          alignItems="flex-end"
+          flexDirection="row"
+          justifyContent="flex-end"
+          gap="sm"
+        >
+          {options.length === 0 ? (
+            <Button
+              label="Create pitch"
+              layout="textOnly"
+              variant="Secondary"
+              onPress={() => router.push(`/trips/${tripId}/pitches` as any)}
+              style={{ minWidth: 0, paddingHorizontal: 12 }}
+            />
+          ) : tripPitchDeadline &&
+            poll.deadline &&
+            new Date(tripPitchDeadline).getTime() ===
+              new Date(poll.deadline).getTime() ? (
+            <Button
+              label="View pitches"
+              layout="textOnly"
+              variant="Secondary"
+              onPress={() => router.push(`/trips/${tripId}/pitches` as any)}
+              style={{ minWidth: 0, paddingHorizontal: 12 }}
+            />
+          ) : (
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={submitDisabled}
+              activeOpacity={0.8}
+            >
+              <Box
+                style={[styles.submit, submitDisabled && styles.submitDisabled]}
+              >
+                <Text variant="bodyStrong" style={styles.submitLabel}>
+                  {submitLabel}
+                </Text>
+              </Box>
+            </TouchableOpacity>
+          )}
         </Box>
       </Box>
     </Box>
