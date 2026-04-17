@@ -3,15 +3,7 @@ import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activitie
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
-import {
-  Box,
-  Button,
-  EmptyState,
-  SkeletonRect,
-  Spinner,
-  Text,
-  useToast,
-} from "@/design-system";
+import { Box, EmptyState, Spinner, Text, useToast } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -57,18 +49,6 @@ type ActivitiesTabContentProps = {
 };
 
 type SortOrder = "newest" | "oldest";
-
-// ─── Skeleton ────────────────────────────────────────────────────────────────
-
-function ActivitiesSkeleton() {
-  return (
-    <Box gap="xs" paddingTop="sm">
-      {[1, 2, 3].map((i) => (
-        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
-      ))}
-    </Box>
-  );
-}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -227,14 +207,6 @@ export const ActivitiesTabContent = forwardRef<
               description="Tap + to add the first one!"
             />
           </Box>
-          <Box style={styles.addButton}>
-            <Button
-              layout="textOnly"
-              label="Add an activity"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </>
       ) : (
         <>
@@ -272,14 +244,6 @@ export const ActivitiesTabContent = forwardRef<
             style={styles.flatList}
             scrollEnabled={false}
           />
-          <Box style={styles.addButton}>
-            <Button
-              layout="textOnly"
-              label="Add an activity"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </>
       )}
 
@@ -334,8 +298,5 @@ const styles = StyleSheet.create({
   separator: {
     height: Layout.spacing.sm,
     backgroundColor: ColorPalette.gray50,
-  },
-  addButton: {
-    marginTop: Layout.spacing.xs,
   },
 });
