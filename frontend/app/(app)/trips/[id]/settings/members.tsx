@@ -140,12 +140,16 @@ export default function MembersSettings() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const { members = [], isLoading, isLoadingMore, fetchMore } =
-    useMembersList(tripID);
+  const {
+    members = [],
+    isLoading,
+    isLoadingMore,
+    fetchMore,
+  } = useMembersList(tripID);
 
   const { data: myMembership } = useGetMembership(
     tripID,
-    currentUser?.id ?? ""
+    currentUser?.id ?? "",
   );
 
   const promoteToAdminMutation = usePromoteToAdmin({
@@ -153,10 +157,7 @@ export default function MembersSettings() {
       onMutate: async ({ tripID, userID }) => {
         await queryClient.cancelQueries({ queryKey: ["members", tripID] });
 
-        const previousMembers = queryClient.getQueryData([
-          "members",
-          tripID,
-        ]);
+        const previousMembers = queryClient.getQueryData(["members", tripID]);
 
         queryClient.setQueryData(["members", tripID], (oldData: any) => {
           if (!oldData?.pages) return oldData;
@@ -165,11 +166,8 @@ export default function MembersSettings() {
             ...oldData,
             pages: oldData.pages.map((page: any) => ({
               ...page,
-              items: page.items?.map(
-                (item: ModelsMembershipAPIResponse) =>
-                  item.user_id === userID
-                    ? { ...item, is_admin: true }
-                    : item
+              items: page.items?.map((item: ModelsMembershipAPIResponse) =>
+                item.user_id === userID ? { ...item, is_admin: true } : item,
               ),
             })),
           };
@@ -182,7 +180,7 @@ export default function MembersSettings() {
         if (context?.previousMembers) {
           queryClient.setQueryData(
             ["members", variables.tripID],
-            context.previousMembers
+            context.previousMembers,
           );
         }
       },
@@ -200,10 +198,7 @@ export default function MembersSettings() {
       onMutate: async ({ tripID, userID }) => {
         await queryClient.cancelQueries({ queryKey: ["members", tripID] });
 
-        const previousMembers = queryClient.getQueryData([
-          "members",
-          tripID,
-        ]);
+        const previousMembers = queryClient.getQueryData(["members", tripID]);
 
         queryClient.setQueryData(["members", tripID], (oldData: any) => {
           if (!oldData?.pages) return oldData;
@@ -213,8 +208,7 @@ export default function MembersSettings() {
             pages: oldData.pages.map((page: any) => ({
               ...page,
               items: page.items?.filter(
-                (item: ModelsMembershipAPIResponse) =>
-                  item.user_id !== userID
+                (item: ModelsMembershipAPIResponse) => item.user_id !== userID,
               ),
             })),
           };
@@ -227,7 +221,7 @@ export default function MembersSettings() {
         if (context?.previousMembers) {
           queryClient.setQueryData(
             ["members", variables.tripID],
-            context.previousMembers
+            context.previousMembers,
           );
         }
       },
@@ -240,19 +234,15 @@ export default function MembersSettings() {
     },
   });
 
-  const { shareInvite, isPending: isInvitePending } = useShareTripInvite(
-    tripID
-  );
+  const { shareInvite, isPending: isInvitePending } =
+    useShareTripInvite(tripID);
 
   const myIsAdmin = myMembership?.is_admin ?? false;
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
 
-    if (
-      layoutMeasurement.height + contentOffset.y >=
-      contentSize.height - 80
-    ) {
+    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 80) {
       fetchMore();
     }
   };
@@ -282,7 +272,7 @@ export default function MembersSettings() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -312,7 +302,7 @@ export default function MembersSettings() {
             }
           },
         },
-      ]
+      ],
     );
   };
 

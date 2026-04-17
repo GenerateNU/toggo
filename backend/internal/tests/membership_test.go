@@ -229,15 +229,15 @@ func TestMembershipLifecycle(t *testing.T) {
 	})
 
 	t.Run("non-admin cannot remove another member", func(t *testing.T) {
-			app := fakes.GetSharedTestApp()
- 
+		app := fakes.GetSharedTestApp()
+
 		owner := createUser(t, app)
 		member := createUser(t, app)
 		target := createUser(t, app)
 		trip := createTrip(t, app, owner)
 		addMember(t, app, owner, member, trip)
 		addMember(t, app, owner, target, trip)
- 
+
 		// Regular member tries to remove another member — should be forbidden
 		testkit.New(t).
 			Request(testkit.Request{
@@ -248,15 +248,15 @@ func TestMembershipLifecycle(t *testing.T) {
 			}).
 			AssertStatus(http.StatusForbidden)
 	})
- 
+
 	t.Run("cannot remove the last admin from a trip", func(t *testing.T) {
 		app := fakes.GetSharedTestApp()
- 
+
 		owner := createUser(t, app)
 		member := createUser(t, app)
 		trip := createTrip(t, app, owner)
 		addMember(t, app, owner, member, trip)
- 
+
 		// Owner is the only admin — removing them should fail
 		testkit.New(t).
 			Request(testkit.Request{
@@ -267,15 +267,15 @@ func TestMembershipLifecycle(t *testing.T) {
 			}).
 			AssertStatus(http.StatusBadRequest)
 	})
- 
+
 	t.Run("admin can remove a non-admin member", func(t *testing.T) {
 		app := fakes.GetSharedTestApp()
- 
+
 		owner := createUser(t, app)
 		member := createUser(t, app)
 		trip := createTrip(t, app, owner)
 		addMember(t, app, owner, member, trip)
- 
+
 		testkit.New(t).
 			Request(testkit.Request{
 				App:    app,
@@ -284,7 +284,7 @@ func TestMembershipLifecycle(t *testing.T) {
 				UserID: &owner,
 			}).
 			AssertStatus(http.StatusNoContent)
- 
+
 		// Verify member is gone
 		testkit.New(t).
 			Request(testkit.Request{
