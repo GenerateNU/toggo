@@ -3,13 +3,7 @@ import { usePostApiV1TripsTripidActivitiesActivityidRsvp } from "@/api/activitie
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
-import {
-  Box,
-  EmptyState,
-  Spinner,
-  Text,
-  useToast,
-} from "@/design-system";
+import { Box, EmptyState, Spinner, Text, useToast } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -56,7 +50,6 @@ type ActivitiesTabContentProps = {
 };
 
 type SortOrder = "newest" | "oldest";
-
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
