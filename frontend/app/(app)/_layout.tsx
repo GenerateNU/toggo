@@ -19,16 +19,6 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
-          name="testing"
-          options={{
-            headerTransparent: true,
-            headerShown: false,
-            headerTitle: "",
-            headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
-          }}
-        />
-        <Stack.Screen
           name="settings"
           options={{
             headerShown: false,
