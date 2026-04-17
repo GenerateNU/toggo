@@ -2,13 +2,13 @@ import {
   getPlaceDetailsCustom,
   searchPlacesTypeahead,
 } from "@/api/places/custom";
-import { BottomSheet, Box, Text } from "@/design-system";
+import { BackButton, BottomSheet, Box, Text } from "@/design-system";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { ArrowLeft, MapPin, Search, X } from "lucide-react-native";
+import { MapPin, Search, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -96,14 +96,7 @@ export function DestinationPickerSheet({
       <Box paddingHorizontal="sm" paddingTop="xs" gap="sm">
         {/* Header */}
         <Box flexDirection="row" alignItems="center" gap="sm">
-          <TouchableOpacity
-            onPress={handleClose}
-            hitSlop={styles.hitSlop}
-            accessibilityRole="button"
-            accessibilityLabel="Back"
-          >
-            <ArrowLeft size={CoreSize.iconSm} color={ColorPalette.gray950} />
-          </TouchableOpacity>
+          <BackButton onPress={handleClose} />
           <Box
             flex={1}
             flexDirection="row"
@@ -170,12 +163,6 @@ export function DestinationPickerSheet({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  hitSlop: {
-    top: Layout.spacing.xs,
-    bottom: Layout.spacing.xs,
-    left: Layout.spacing.xs,
-    right: Layout.spacing.xs,
-  },
   clearHitSlop: {
     top: Layout.spacing.xxs,
     bottom: Layout.spacing.xxs,
