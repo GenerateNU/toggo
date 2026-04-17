@@ -295,7 +295,7 @@ function StandardActivityDetail({
             onPress: () => setIsDeleteVisible(true),
           },
         ]}
-        onBack={() => router.replace(`/trips/${tripID}` as any)}
+        onBack={() => router.back()}
         onSavePrice={async (p) => {
           setPrice(p);
           await saveField({ estimated_price: p });
