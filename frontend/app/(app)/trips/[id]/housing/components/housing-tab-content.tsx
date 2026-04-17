@@ -27,13 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import {
   AddHousingEntrySheet,
   type AddHousingEntrySheetHandle,
@@ -169,7 +163,7 @@ export const HousingTabContent = forwardRef<
     () =>
       isLoadingMore ? (
         <Box paddingVertical="sm" alignItems="center">
-          <ActivityIndicator size="small" />
+          <Spinner />
         </Box>
       ) : null,
     [isLoadingMore],
@@ -180,12 +174,7 @@ export const HousingTabContent = forwardRef<
   return (
     <Box flex={1}>
       {isLoading ? (
-        <Box
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          paddingVertical="xl"
-        >
+        <Box alignItems="center" paddingVertical="xl">
           <Spinner />
         </Box>
       ) : housingOptions.length === 0 ? (
