@@ -395,7 +395,8 @@ func (s *ActivityService) RemoveActivityRSVP(ctx context.Context, tripID, activi
 	}
 
 	isProposer := activity.ProposedBy != nil && *activity.ProposedBy == callerID
-	if !isAdmin && !isProposer {
+	isSelf := callerID == targetUserID
+	if !isAdmin && !isProposer && !isSelf {
 		return errs.Forbidden()
 	}
 
