@@ -5,12 +5,13 @@ import type { MediaItem } from "./types";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-export const TILE_SIZE = 181;
+export const TILE_SIZE = 181; // kept for any legacy usage
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 type MediaTileProps = {
   item: MediaItem;
+  size?: number;
   isSelected: boolean;
   onPress: () => void;
   onLongPress: (x: number, y: number, layout: { x: number; y: number }) => void;
@@ -18,6 +19,7 @@ type MediaTileProps = {
 
 export function MediaTile({
   item,
+  size = TILE_SIZE,
   isSelected,
   onPress,
   onLongPress,
@@ -27,12 +29,12 @@ export function MediaTile({
 
   useEffect(() => {
     Animated.spring(scale, {
-      toValue: isSelected ? 200 / TILE_SIZE : 1,
+      toValue: isSelected ? (size + 19) / size : 1,
       useNativeDriver: true,
       friction: 6,
       tension: 100,
     }).start();
-  }, [isSelected, scale]);
+  }, [isSelected, scale, size]);
 
   return (
     <Pressable
@@ -46,7 +48,12 @@ export function MediaTile({
         });
       }}
     >
-      <Animated.View style={[styles.tile, { transform: [{ scale }] }]}>
+      <Animated.View
+        style={[
+          { width: size, height: size, borderRadius: 12 },
+          { transform: [{ scale }] },
+        ]}
+      >
         <Image
           source={{ uri: item.url }}
           style={styles.image}
@@ -60,11 +67,6 @@ export function MediaTile({
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  tile: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: 12,
-  },
   image: {
     width: "100%",
     height: "100%",
