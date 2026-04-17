@@ -56,7 +56,7 @@ export function AllMediaScreen({
     x: number;
     y: number;
   } | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [_isUploading, setIsUploading] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const handleLongPress = useCallback(

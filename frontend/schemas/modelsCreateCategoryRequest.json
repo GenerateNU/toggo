@@ -5,7 +5,21 @@
     "icon": { "type": "string", "maxLength": 255 },
     "label": { "type": "string", "maxLength": 255, "minLength": 1 },
     "name": { "type": "string", "maxLength": 255, "minLength": 1 },
-    "trip_id": { "type": "string" }
+    "trip_id": { "type": "string" },
+    "view_type": {
+      "enum": ["activity", "moodboard"],
+      "allOf": [
+        {
+          "type": "string",
+          "enum": ["activity", "moodboard"],
+          "x-enum-varnames": [
+            "CategoryViewTypeActivity",
+            "CategoryViewTypeMoodboard"
+          ],
+          "x-readme-ref-name": "models.CategoryViewType"
+        }
+      ]
+    }
   },
   "x-readme-ref-name": "models.CreateCategoryRequest"
 }

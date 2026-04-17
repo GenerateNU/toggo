@@ -91,7 +91,7 @@ export default function HousingDetail() {
   const [link, setLink] = useState("");
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [_isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!housing) return;
