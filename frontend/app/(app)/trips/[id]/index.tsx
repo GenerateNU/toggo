@@ -57,7 +57,10 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { HousingTabContent } from "./housing/components/housing-tab-content";
+import {
+  HousingTabContent,
+  type HousingTabContentHandle,
+} from "./housing/components/housing-tab-content";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -104,6 +107,7 @@ export default function Trip() {
   const locationSheetRef = useRef<any>(null);
   const createPollSheetRef = useRef<CreatePollSheetMethods>(null);
   const activitiesTabRef = useRef<ActivitiesTabContentHandle>(null);
+  const housingTabRef = useRef<HousingTabContentHandle>(null);
   const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
 
@@ -181,6 +185,11 @@ export default function Trip() {
   const handleOpenCreateActivity = useCallback(() => {
     setActiveTab("activities");
     setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
+  }, []);
+
+  const handleOpenCreateHousing = useCallback(() => {
+    setActiveTab("housing");
+    setTimeout(() => housingTabRef.current?.openAddHousing(), 100);
   }, []);
 
   const handlePollCreated = useCallback(() => {
@@ -408,10 +417,9 @@ export default function Trip() {
           <Box
             flex={1}
             paddingHorizontal="sm"
-            paddingTop="xxs"
+            paddingTop="sm"
             paddingBottom="xl"
             backgroundColor="gray25"
-            style={styles.sheetContent}
           >
             {isLoading ? (
               <Box gap="sm">
@@ -473,7 +481,9 @@ export default function Trip() {
             {activeTab === "activities" && (
               <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
             )}
-            {activeTab === "housing" && <HousingTabContent tripID={tripID} />}
+            {activeTab === "housing" && (
+              <HousingTabContent ref={housingTabRef} tripID={tripID} />
+            )}
             {!DEFAULT_TABS.includes(activeTab) && (
               <EmptyState
                 title="Nothing here yet"
@@ -567,13 +577,12 @@ export default function Trip() {
         </Box>
       </Animated.View>
 
-      {activeTab !== "itinerary" && (
-        <CreateFAB
-          tripID={tripID}
-          onCreatePoll={handleOpenCreatePoll}
-          onCreateActivity={handleOpenCreateActivity}
-        />
-      )}
+      <CreateFAB
+        tripID={tripID}
+        onCreatePoll={handleOpenCreatePoll}
+        onCreateActivity={handleOpenCreateActivity}
+        onCreateHousing={handleOpenCreateHousing}
+      />
 
       <CreatePollSheet
         ref={createPollSheetRef}

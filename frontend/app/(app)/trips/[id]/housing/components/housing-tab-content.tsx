@@ -4,7 +4,6 @@ import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
 import {
   Box,
-  Button,
   EmptyState,
   SkeletonRect,
   Spinner,
@@ -28,13 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import {
   AddHousingEntrySheet,
   type AddHousingEntrySheetHandle,
@@ -170,7 +163,7 @@ export const HousingTabContent = forwardRef<
     () =>
       isLoadingMore ? (
         <Box paddingVertical="sm" alignItems="center">
-          <ActivityIndicator size="small" />
+          <Spinner />
         </Box>
       ) : null,
     [isLoadingMore],
@@ -181,12 +174,7 @@ export const HousingTabContent = forwardRef<
   return (
     <Box flex={1}>
       {isLoading ? (
-        <Box
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          paddingVertical="xl"
-        >
+        <Box alignItems="center" paddingVertical="xl">
           <Spinner />
         </Box>
       ) : housingOptions.length === 0 ? (
@@ -195,14 +183,6 @@ export const HousingTabContent = forwardRef<
             title="No housing options yet"
             description="Tap + to add the first one!"
           />
-          <Box style={styles.addButton} width="100%">
-            <Button
-              layout="textOnly"
-              label="Add a housing option"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </Box>
       ) : (
         <>
@@ -239,14 +219,6 @@ export const HousingTabContent = forwardRef<
             style={styles.flatList}
             scrollEnabled={false}
           />
-          <Box style={styles.addButton}>
-            <Button
-              layout="textOnly"
-              label="Add a housing option"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </>
       )}
 
@@ -301,8 +273,5 @@ const styles = StyleSheet.create({
   separator: {
     height: Layout.spacing.sm,
     backgroundColor: ColorPalette.gray50,
-  },
-  addButton: {
-    marginTop: Layout.spacing.xs,
   },
 });
