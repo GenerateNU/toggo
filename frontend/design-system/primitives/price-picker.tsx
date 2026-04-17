@@ -4,13 +4,7 @@ import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { X } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Animated, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { FontFamily, FontSize } from "../tokens/typography";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
