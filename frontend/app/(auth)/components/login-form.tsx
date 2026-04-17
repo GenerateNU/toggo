@@ -8,11 +8,11 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   TouchableWithoutFeedback,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { CountryCode } from "react-native-country-picker-modal";
 import { z } from "zod";
 import CountryPickerSheet, { CountryItem } from "./country-picker-sheet";

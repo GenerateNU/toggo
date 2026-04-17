@@ -10,6 +10,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 SplashScreen.preventAutoHideAsync();
@@ -43,22 +44,24 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <ThemeProvider theme={theme}>
-          <QueryClientProvider client={queryClient}>
-            <UserProvider>
-              <NotificationProvider>
-                <ToastProvider>
-                  <PortalProvider>
-                    <StatusBar style="auto" />
-                    <Slot />
-                  </PortalProvider>
-                </ToastProvider>
-              </NotificationProvider>
-            </UserProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <ThemeProvider theme={theme}>
+            <QueryClientProvider client={queryClient}>
+              <UserProvider>
+                <NotificationProvider>
+                  <ToastProvider>
+                    <PortalProvider>
+                      <StatusBar style="auto" />
+                      <Slot />
+                    </PortalProvider>
+                  </ToastProvider>
+                </NotificationProvider>
+              </UserProvider>
+            </QueryClientProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

@@ -7,11 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   TextInput,
   TouchableWithoutFeedback,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { z } from "zod";
 
 const OTP_LENGTH = 6;

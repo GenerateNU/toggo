@@ -14,12 +14,12 @@ import { Layout } from "@/design-system/tokens/layout";
 import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
