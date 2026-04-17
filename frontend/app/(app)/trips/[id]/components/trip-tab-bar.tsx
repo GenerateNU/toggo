@@ -35,11 +35,17 @@ type TripTabBarProps = {
   tripID: string;
   activeTab: string;
   onTabPress: (tab: string) => void;
+  onCategoryCreated?: (categoryName: string) => void;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
+export function TripTabBar({
+  tripID,
+  activeTab,
+  onTabPress,
+  onCategoryCreated,
+}: TripTabBarProps) {
   const editSheetRef = useRef<TabEditSheetMethods>(null);
   const queryClient = useQueryClient();
   const { currentUser } = useUser();
@@ -149,7 +155,12 @@ export function TripTabBar({ tripID, activeTab, onTabPress }: TripTabBarProps) {
         )}
       </ScrollView>
 
-      <TabEditSheet ref={editSheetRef} tripID={tripID} isAdmin={isAdmin} />
+      <TabEditSheet
+        ref={editSheetRef}
+        tripID={tripID}
+        isAdmin={isAdmin}
+        onCategoryCreated={onCategoryCreated}
+      />
 
       <TabContextMenu
         visible={menuVisible}

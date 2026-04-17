@@ -1,4 +1,5 @@
 import { getActivitiesByTripID } from "@/api/activities/useGetActivitiesByTripID";
+import { useGetTripTabs } from "@/api/categories/useGetTripTabs";
 import { useUploadImage } from "@/api/files/custom/useImageUpload";
 import { useGetTripMembers } from "@/api/memberships/useGetTripMembers";
 import { getPollsByTripIDQueryKey } from "@/api/polls/useGetPollsByTripID";
@@ -13,6 +14,19 @@ import {
   type ActivitiesTabContentHandle,
 } from "@/app/(app)/trips/[id]/activities/components/activities-tab-content";
 import CreateFAB from "@/app/(app)/trips/[id]/components/create-fab";
+import {
+  MoodBoardAddOptionsSheet,
+  type MoodBoardAddOptionsSheetHandle,
+} from "@/app/(app)/trips/[id]/components/mood-board-add-options-sheet";
+import {
+  MoodBoardTabContent,
+  type MoodBoardTabContentHandle,
+} from "@/app/(app)/trips/[id]/components/mood-board-tab-content";
+import {
+  findTabMeta,
+  isMoodboardTab,
+  isRoutedTripTab,
+} from "@/app/(app)/trips/[id]/components/trip-custom-tab-utils";
 import { PitchingActiveCard } from "@/app/(app)/trips/[id]/components/pitching-active-card";
 import TripHeader from "@/app/(app)/trips/[id]/components/trip-header";
 import TripMetadata from "@/app/(app)/trips/[id]/components/trip-metadata";
@@ -51,7 +65,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ImagePlus, Map } from "lucide-react-native";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
 import {
   SafeAreaView,
@@ -70,15 +84,6 @@ const SHEET_OVERLAP = 36;
 const CONTENT_CARD_TOP = HERO_HEIGHT - SHEET_OVERLAP;
 const HEADER_FADE_DURATION = 100;
 const FIXED_HEADER_HEIGHT = 44;
-const DEFAULT_TABS = [
-  "new",
-  "itinerary",
-  "polls",
-  "activities",
-  "settings",
-  "housing",
-] as TabKey[];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Trip() {
@@ -110,6 +115,11 @@ export default function Trip() {
   const housingTabRef = useRef<HousingTabContentHandle>(null);
   const coverPickerRef = useRef<ImagePickerHandle>(null);
   const [isOpeningMap, setIsOpeningMap] = useState(false);
+  const moodBoardRef = useRef<MoodBoardTabContentHandle>(null);
+  const moodBoardAddSheetRef = useRef<MoodBoardAddOptionsSheetHandle>(null);
+  const moodBoardOnParentScrollRef = useRef<
+    ((scrollY: number) => void) | undefined
+  >(undefined);
 
   const {
     data: trip,
@@ -148,6 +158,9 @@ export default function Trip() {
       toast.show({ message: "Couldn't update cover image. Please try again." });
     }
   };
+  const { data: tripTabsData } = useGetTripTabs(tripID ?? "", {
+    query: { enabled: !!tripID, staleTime: 15_000 },
+  });
   const { data: tripMembersData } = useGetTripMembers(
     tripID ?? "",
     { limit: 12 },
@@ -182,10 +195,30 @@ export default function Trip() {
     createPollSheetRef.current?.open();
   }, []);
 
+  const activeTabMeta = useMemo(
+    () => findTabMeta(tripTabsData?.tabs, activeTab),
+    [tripTabsData?.tabs, activeTab],
+  );
+
+  const moodboardCategoryNames = useMemo(
+    () =>
+      (tripTabsData?.tabs ?? [])
+        .filter((t) => isMoodboardTab(t))
+        .map((t) => t.name ?? "")
+        .filter(Boolean),
+    [tripTabsData?.tabs],
+  );
+
   const handleOpenCreateActivity = useCallback(() => {
+    const customCategory =
+      !isRoutedTripTab(activeTab) && activeTab !== "settings";
+    if (customCategory && !isMoodboardTab(activeTabMeta)) {
+      setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
+      return;
+    }
     setActiveTab("activities");
     setTimeout(() => activitiesTabRef.current?.openAddActivity(), 100);
-  }, []);
+  }, [activeTab, activeTabMeta]);
 
   const handleOpenCreateHousing = useCallback(() => {
     setActiveTab("housing");
@@ -263,6 +296,16 @@ export default function Trip() {
     router.push(`/trips/${tripID}/pitches` as any);
   };
 
+  const registerMoodBoardParentScroll = useCallback(
+    (handler: (scrollY: number) => void) => {
+      moodBoardOnParentScrollRef.current = handler;
+      return () => {
+        moodBoardOnParentScrollRef.current = undefined;
+      };
+    },
+    [],
+  );
+
   const tripDate = formatTripDates(trip?.start_date, trip?.end_date);
 
   const handleOpenMapView = useCallback(async () => {
@@ -320,6 +363,7 @@ export default function Trip() {
       listener: (e: any) => {
         const nextOffset = e.nativeEvent.contentOffset.y;
         parentScrollOffsetRef.current = nextOffset;
+        moodBoardOnParentScrollRef.current?.(nextOffset);
 
         const shouldShow = nextOffset > titleScrollThreshold;
         if (shouldShow !== headerVisibleRef.current) {
@@ -479,16 +523,32 @@ export default function Trip() {
             )}
             {activeTab === "polls" && <PollsTabContent tripId={tripID} />}
             {activeTab === "activities" && (
-              <ActivitiesTabContent ref={activitiesTabRef} tripID={tripID} />
+              <ActivitiesTabContent
+                ref={activitiesTabRef}
+                tripID={tripID}
+                excludeCategories={moodboardCategoryNames}
+              />
             )}
             {activeTab === "housing" && (
               <HousingTabContent ref={housingTabRef} tripID={tripID} />
             )}
-            {!DEFAULT_TABS.includes(activeTab) && (
-              <EmptyState
-                title="Nothing here yet"
-                description="Post notes, photos, videos, and links."
-              />
+            {!isRoutedTripTab(activeTab) && (
+              <>
+                {isMoodboardTab(activeTabMeta) ? (
+                  <MoodBoardTabContent
+                    ref={moodBoardRef}
+                    tripID={tripID}
+                    categoryName={activeTab}
+                    onParentScroll={registerMoodBoardParentScroll}
+                  />
+                ) : (
+                  <ActivitiesTabContent
+                    ref={activitiesTabRef}
+                    tripID={tripID}
+                    categoryName={activeTab}
+                  />
+                )}
+              </>
             )}
           </Box>
         </Animated.ScrollView>
@@ -573,15 +633,33 @@ export default function Trip() {
             tripID={tripID}
             activeTab={activeTab}
             onTabPress={handleTabPress}
+            onCategoryCreated={(name) => setActiveTab(name)}
           />
         </Box>
       </Animated.View>
 
-      <CreateFAB
-        tripID={tripID}
-        onCreatePoll={handleOpenCreatePoll}
-        onCreateActivity={handleOpenCreateActivity}
-        onCreateHousing={handleOpenCreateHousing}
+      {activeTab !== "itinerary" && (
+        <CreateFAB
+          tripID={tripID}
+          onCreatePoll={handleOpenCreatePoll}
+          onCreateActivity={handleOpenCreateActivity}
+          onCreateHousing={handleOpenCreateHousing}
+          onOpenMoodBoardAdd={
+            !isRoutedTripTab(activeTab) &&
+            activeTab !== "settings" &&
+            isMoodboardTab(activeTabMeta)
+              ? () => moodBoardAddSheetRef.current?.open()
+              : undefined
+          }
+        />
+      )}
+
+      <MoodBoardAddOptionsSheet
+        ref={moodBoardAddSheetRef}
+        categoryLabel={activeTabMeta?.label?.trim() || activeTab}
+        onAddNote={() => moodBoardRef.current?.openAddNote()}
+        onAddImage={() => moodBoardRef.current?.openAddImage()}
+        onAddLink={() => moodBoardRef.current?.openAddLink()}
       />
 
       <CreatePollSheet

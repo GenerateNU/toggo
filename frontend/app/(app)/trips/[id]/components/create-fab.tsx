@@ -1,3 +1,4 @@
+import { Button } from "@/design-system";
 import { Box, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
@@ -26,6 +27,7 @@ interface CreateFABProps {
   onCreatePoll: () => void;
   onCreateActivity: () => void;
   onCreateHousing: () => void;
+  onOpenMoodBoardAdd?: () => void;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
@@ -37,6 +39,7 @@ export default function CreateFAB({
   onCreatePoll,
   onCreateActivity,
   onCreateHousing,
+  onOpenMoodBoardAdd,
 }: CreateFABProps) {
   const [open, setOpen] = useState(false);
   const progress = useSharedValue(0);
@@ -101,6 +104,29 @@ export default function CreateFAB({
       onPress: onCreatePoll,
     },
   ];
+
+  if (onOpenMoodBoardAdd) {
+    return (
+      <Box style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        <Box
+          position="absolute"
+          bottom={32}
+          right={24}
+          alignItems="flex-end"
+          pointerEvents="box-none"
+        >
+          <Button
+            layout="iconOnly"
+            icon={Plus}
+            accessibilityLabel="Add mood board item"
+            variant="IconCircular"
+            size="large"
+            onPress={onOpenMoodBoardAdd}
+          />
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box

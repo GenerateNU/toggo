@@ -12,7 +12,16 @@
     "name": { "type": "string" },
     "position": { "type": "integer" },
     "trip_id": { "type": "string" },
-    "updated_at": { "type": "string" }
+    "updated_at": { "type": "string" },
+    "view_type": {
+      "type": "string",
+      "enum": ["activity", "moodboard"],
+      "x-enum-varnames": [
+        "CategoryViewTypeActivity",
+        "CategoryViewTypeMoodboard"
+      ],
+      "x-readme-ref-name": "models.CategoryViewType"
+    }
   },
   "x-readme-ref-name": "models.CategoryAPIResponse"
 }

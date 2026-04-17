@@ -239,6 +239,8 @@ definitions:
         type: string
       updated_at:
         type: string
+      view_type:
+        $ref: '#/definitions/models.CategoryViewType'
     type: object
   models.CategoryListResponse:
     properties:
@@ -258,6 +260,14 @@ definitions:
     required:
     - name
     type: object
+  models.CategoryViewType:
+    enum:
+    - activity
+    - moodboard
+    type: string
+    x-enum-varnames:
+    - CategoryViewTypeActivity
+    - CategoryViewTypeMoodboard
   models.Comment:
     properties:
       content:
@@ -456,6 +466,12 @@ definitions:
         type: string
       trip_id:
         type: string
+      view_type:
+        allOf:
+        - $ref: '#/definitions/models.CategoryViewType'
+        enum:
+        - activity
+        - moodboard
     required:
     - label
     - name

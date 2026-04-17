@@ -50,6 +50,7 @@ import type {
   ModelsLatLng,
   ModelsBounds,
   ModelsCastVoteRequest,
+  ModelsCategoryViewType,
   ModelsCategoryAPIResponse,
   ModelsCategoryListResponse,
   ModelsCategoryTabOrder,
@@ -1007,6 +1008,11 @@ export const modelsCastVoteRequestSchema = z.object({
   option_ids: z.optional(z.array(z.string())),
 }) as unknown as z.ZodType<ModelsCastVoteRequest>;
 
+export const modelsCategoryViewTypeSchema = z.enum([
+  "activity",
+  "moodboard",
+]) as unknown as z.ZodType<ModelsCategoryViewType>;
+
 export const modelsCategoryAPIResponseSchema = z.object({
   created_at: z.optional(z.string()),
   icon: z.optional(z.string()),
@@ -1017,6 +1023,9 @@ export const modelsCategoryAPIResponseSchema = z.object({
   position: z.optional(z.int()),
   trip_id: z.optional(z.string()),
   updated_at: z.optional(z.string()),
+  get view_type() {
+    return modelsCategoryViewTypeSchema.optional();
+  },
 }) as unknown as z.ZodType<ModelsCategoryAPIResponse>;
 
 export const modelsCategoryListResponseSchema = z.object({
@@ -1148,6 +1157,9 @@ export const modelsCreateCategoryRequestSchema = z.object({
   label: z.string().min(1).max(255),
   name: z.string().min(1).max(255),
   trip_id: z.string(),
+  get view_type() {
+    return modelsCategoryViewTypeSchema.optional();
+  },
 }) as unknown as z.ZodType<ModelsCreateCategoryRequest>;
 
 export const modelsCreateCommentReactionRequestSchema = z.object({
