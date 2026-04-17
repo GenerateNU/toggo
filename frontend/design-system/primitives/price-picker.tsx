@@ -85,13 +85,13 @@ export function PricePicker({
 
   const translateX = useMemo(
     () => new Animated.Value(priceToOffset(value ?? 0)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
   const currentOffset = useRef(priceToOffset(value ?? 0));
   const baseOffset = useRef(priceToOffset(value ?? 0));
   const inputRef = useRef<TextInput>(null);
 
-  // Reset state when modal opens
   useEffect(() => {
     if (visible) {
       const initial = value ?? 0;
@@ -175,23 +175,16 @@ export function PricePicker({
       animationType="slide"
       onRequestClose={onClose}
     >
-      {/*
-       * Backdrop and sheet are SIBLINGS (not nested) so the sheet's
-       * TextInput receives touches without a parent Pressable intercepting them.
-       */}
       <View style={styles.container} pointerEvents="box-none">
-        {/* Backdrop — closes on tap */}
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={StyleSheet.absoluteFillObject} />
         </TouchableWithoutFeedback>
 
-        {/* Sheet — floats above backdrop */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.sheetWrapper}
         >
           <View style={styles.sheet}>
-            {/* Header */}
             <Box style={styles.header}>
               <Text variant="bodyMedium" color="gray950">
                 Price
@@ -205,7 +198,6 @@ export function PricePicker({
               </Pressable>
             </Box>
 
-            {/* Editable price — keyboard opens automatically via onShow */}
             <View style={styles.priceRow}>
               <Text style={styles.dollarSign}>$</Text>
               <TextInput
@@ -222,13 +214,11 @@ export function PricePicker({
               />
             </View>
 
-            {/* Draggable ruler */}
             <View style={styles.rulerContainer} {...panResponder.panHandlers}>
               <Ruler translateX={translateX} />
               <View style={styles.cursor} pointerEvents="none" />
             </View>
 
-            {/* Confirm */}
             <Box style={styles.buttonContainer}>
               <Button
                 layout="textOnly"
@@ -251,7 +241,7 @@ const RULER_VISIBLE_HEIGHT = TICK_HEIGHT_MAJOR + 8;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: ColorPalette.backgroundOverlay,
     justifyContent: "flex-end",
   },
   sheetWrapper: {
