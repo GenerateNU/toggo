@@ -189,6 +189,7 @@ export function PollSettingsPanel({
         }}
         initialRange={{ start: deadline, end: null }}
         minDate={new Date()}
+        singleDate
       />
 
       <TimePicker

@@ -348,7 +348,7 @@ export default function DateRangePicker({
           disabled={!hasRange}
         >
           <Text variant="bodyMedium" style={{ color: ColorPalette.white }}>
-            Save Dates
+            {singleDate ? "Save Date" : "Save Dates"}
           </Text>
         </Pressable>
       </Box>
@@ -374,7 +374,7 @@ export default function DateRangePicker({
           <Pressable onPress={onClose} hitSlop={16} style={styles.closeButton}>
             <X size={24} />
           </Pressable>
-          <Text variant="headingSm">Select dates</Text>
+          <Text variant="headingSm">{singleDate ? "Select date" : "Select dates"}</Text>
         </Box>
 
         {/* Selection summary pill */}
@@ -384,40 +384,57 @@ export default function DateRangePicker({
           justifyContent="center"
           style={styles.summaryRow}
         >
-          <Box
-            style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
-          >
-            <Text
-              variant="bodySmMedium"
-              style={{
-                color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
-              }}
+          {singleDate ? (
+            <Box
+              style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
             >
-              {formatShortDate(range.start)}
-            </Text>
-          </Box>
-          <Text
-            variant="bodyXsMedium"
-            color="gray500"
-            style={styles.summaryArrow}
-          >
-            →
-          </Text>
-          <Box
-            style={[
-              styles.summaryPill,
-              !!range.end && styles.summaryPillActive,
-            ]}
-          >
-            <Text
-              variant="bodySmMedium"
-              style={{
-                color: range.end ? ColorPalette.gray900 : ColorPalette.gray500,
-              }}
-            >
-              {formatShortDate(range.end)}
-            </Text>
-          </Box>
+              <Text
+                variant="bodySmMedium"
+                style={{
+                  color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
+                }}
+              >
+                {formatShortDate(range.start)}
+              </Text>
+            </Box>
+          ) : (
+            <>
+              <Box
+                style={[styles.summaryPill, hasRange && styles.summaryPillActive]}
+              >
+                <Text
+                  variant="bodySmMedium"
+                  style={{
+                    color: hasRange ? ColorPalette.gray900 : ColorPalette.gray500,
+                  }}
+                >
+                  {formatShortDate(range.start)}
+                </Text>
+              </Box>
+              <Text
+                variant="bodyXsMedium"
+                color="gray500"
+                style={styles.summaryArrow}
+              >
+                →
+              </Text>
+              <Box
+                style={[
+                  styles.summaryPill,
+                  !!range.end && styles.summaryPillActive,
+                ]}
+              >
+                <Text
+                  variant="bodySmMedium"
+                  style={{
+                    color: range.end ? ColorPalette.gray900 : ColorPalette.gray500,
+                  }}
+                >
+                  {formatShortDate(range.end)}
+                </Text>
+              </Box>
+            </>
+          )}
         </Box>
       </Box>
 
