@@ -537,12 +537,6 @@ export default function Trip() {
             {activeTab === "housing" && (
               <HousingTabContent ref={housingTabRef} tripID={tripID} />
             )}
-            {!DEFAULT_TABS.includes(activeTab) && (
-              <EmptyState
-                title="Nothing here yet"
-                description="Post notes, photos, videos, and links."
-              />
-            )}
           </Box>
         </Animated.ScrollView>
       </SafeAreaView>
