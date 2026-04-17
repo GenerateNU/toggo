@@ -677,6 +677,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
   },
+  sheetContent: {
+    flexGrow: 1,
+  },
   fixedHeaderTitle: {
     position: "absolute",
     top: 0,
