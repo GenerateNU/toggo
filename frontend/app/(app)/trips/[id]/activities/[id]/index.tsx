@@ -8,7 +8,7 @@ import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { getPlaceDetailsCustom } from "@/api/places/custom";
 import { useUser } from "@/contexts/user";
-import { Box, Text } from "@/design-system";
+import { Box, Spinner, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
@@ -19,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EntityDetailScreen } from "../../components/entity-detail-screen";
 import { MembersGoingSection } from "../../components/members-going-section";
+import { PostDetailView } from "../components/post-detail-view";
 import { RsvpButton } from "../components/rsvp-button";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -39,12 +40,15 @@ export default function ActivityDetail() {
     id: activityID,
     tripID,
     openComments,
+    source,
   } = useLocalSearchParams<{
     id: string;
     tripID: string;
     openComments?: string;
+    source?: string;
   }>();
   const { currentUser, userId } = useUser();
+  const isMoodboardSource = source === "moodboard";
 
   const { data: currentUserProfileImages } = useGetImage(
     [currentUser?.profile_picture],
@@ -62,6 +66,82 @@ export default function ActivityDetail() {
     query: { enabled: !!(tripID && activityID) },
   });
 
+  // ─── Loading / not found ─────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Spinner />
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  if (!activity) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Text variant="bodyDefault" color="gray500">
+            Activity not found.
+          </Text>
+        </Box>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── Moodboard post view ────────────────────────────────────────────────
+
+  if (isMoodboardSource) {
+    return (
+      <PostDetailView
+        activity={activity}
+        tripID={tripID ?? ""}
+        activityID={activityID ?? ""}
+        openComments={openComments === "true"}
+      />
+    );
+  }
+
+  // ─── Standard activity detail ───────────────────────────────────────────
+
+  return (
+    <StandardActivityDetail
+      activity={activity}
+      tripID={tripID ?? ""}
+      activityID={activityID ?? ""}
+      userId={userId}
+      currentUser={currentUser}
+      currentUserProfilePhotoUrl={currentUserProfilePhotoUrl}
+      openComments={openComments === "true"}
+      refetch={refetch}
+    />
+  );
+}
+
+// ─── Standard Detail (EntityDetailScreen) ─────────────────────────────────────
+
+type StandardActivityDetailProps = {
+  activity: ModelsActivityAPIResponse;
+  tripID: string;
+  activityID: string;
+  userId: string | null | undefined;
+  currentUser: any;
+  currentUserProfilePhotoUrl: string | undefined;
+  openComments: boolean;
+  refetch: () => void;
+};
+
+function StandardActivityDetail({
+  activity,
+  tripID,
+  activityID,
+  userId,
+  currentUser,
+  currentUserProfilePhotoUrl,
+  openComments,
+  refetch,
+}: StandardActivityDetailProps) {
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
   const rsvpMutation = usePostApiV1TripsTripidActivitiesActivityidRsvp();
@@ -74,13 +154,11 @@ export default function ActivityDetail() {
     onSubmitComment,
     onReact,
   } = useEntityComments({
-    tripID: tripID ?? "",
+    tripID,
     entityType: modelsEntityType.ActivityEntity,
-    entityID: activityID ?? "",
+    entityID: activityID,
     enabled: !!(tripID && activityID),
   });
-
-  // ─── Local state ─────────────────────────────────────────────────────────
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -95,7 +173,7 @@ export default function ActivityDetail() {
   const [link, setLink] = useState("");
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [_isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!activity) return;
@@ -108,8 +186,6 @@ export default function ActivityDetail() {
     setLocationLng(activity.location_lng ?? null);
     setLink(activity.media_url ?? "");
   }, [activity]);
-
-  // ─── Derived ─────────────────────────────────────────────────────────────
 
   const heroImages = useMemo(() => {
     const images: string[] = [];
@@ -126,8 +202,6 @@ export default function ActivityDetail() {
     return activity.going_users.some((u) => u.user_id === userId);
   }, [userId, activity]);
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
-
   const saveField = useCallback(
     async (patch: Parameters<typeof updateMutation.mutateAsync>[0]["data"]) => {
       if (!tripID || !activityID) return;
@@ -136,7 +210,7 @@ export default function ActivityDetail() {
         await updateMutation.mutateAsync({ tripID, activityID, data: patch });
         refetch();
       } catch {
-        // no-op — callers show their own toasts if needed
+        // no-op
       } finally {
         setIsSaving(false);
       }
@@ -157,7 +231,6 @@ export default function ActivityDetail() {
         },
       });
     } catch {
-      // no-op
       return;
     }
     refetch();
@@ -201,34 +274,6 @@ export default function ActivityDetail() {
     // coming soon
   }, []);
 
-  // ─── Loading / not found ─────────────────────────────────────────────────
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">
-            Loading...
-          </Text>
-        </Box>
-      </SafeAreaView>
-    );
-  }
-
-  if (!activity) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} edges={[]}>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <Text variant="bodyDefault" color="gray500">
-            Activity not found.
-          </Text>
-        </Box>
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Render ──────────────────────────────────────────────────────────────
-
   return (
     <EntityDetailScreen
       name={name}
@@ -240,8 +285,8 @@ export default function ActivityDetail() {
       locationLat={locationLat}
       locationLng={locationLng}
       link={link}
-      tripID={tripID ?? ""}
-      entityID={activityID ?? ""}
+      tripID={tripID}
+      entityID={activityID}
       allMediaPath={`/trips/${tripID}/activities/${activityID}/activity-all-media`}
       menuActions={[
         {
@@ -304,7 +349,7 @@ export default function ActivityDetail() {
       currentUserName={currentUser?.name ?? ""}
       currentUserAvatar={currentUserProfilePhotoUrl}
       currentUserSeed={currentUser?.id}
-      openComments={openComments === "true"}
+      openComments={openComments}
       isDeleteVisible={isDeleteVisible}
       isDeleting={isDeleting}
       deleteTitle={`Delete "${name}"`}

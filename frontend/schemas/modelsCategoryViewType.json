@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "enum": ["activity", "moodboard"],
+  "x-enum-varnames": ["CategoryViewTypeActivity", "CategoryViewTypeMoodboard"],
+  "x-readme-ref-name": "models.CategoryViewType"
+}

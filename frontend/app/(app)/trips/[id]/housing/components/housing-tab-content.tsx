@@ -2,14 +2,7 @@ import { useActivitiesList } from "@/api/activities/custom/useActivitiesList";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
-import {
-  Box,
-  EmptyState,
-  SkeletonRect,
-  Spinner,
-  Text,
-  useToast,
-} from "@/design-system";
+import { Box, EmptyState, Spinner, Text } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
@@ -52,16 +45,6 @@ type SortOrder = "newest" | "oldest";
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 
-function HousingSkeleton() {
-  return (
-    <Box gap="xs" paddingTop="sm">
-      {[1, 2, 3].map((i) => (
-        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
-      ))}
-    </Box>
-  );
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const HousingTabContent = forwardRef<
@@ -70,7 +53,6 @@ export const HousingTabContent = forwardRef<
 >(({ tripID }, ref) => {
   const entrySheetRef = useRef<AddHousingEntrySheetHandle>(null);
   const manualSheetRef = useRef<AddHousingManualSheetHandle>(null);
-  const toast = useToast();
 
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [activeCommentHousingId, setActiveCommentHousingId] = useState<
@@ -104,7 +86,7 @@ export const HousingTabContent = forwardRef<
     isLoadingMore,
     fetchMore,
     prependActivity: prependHousing,
-  } = useActivitiesList(tripID, { category: "housing" });
+  } = useActivitiesList(tripID, "housing");
 
   // ─── Sort ─────────────────────────────────────────────────────────────────
 
