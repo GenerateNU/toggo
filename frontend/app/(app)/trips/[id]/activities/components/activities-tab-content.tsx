@@ -30,12 +30,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { ActivityCard } from "./activity-card";
 import {
   AddActivityEntrySheet,
