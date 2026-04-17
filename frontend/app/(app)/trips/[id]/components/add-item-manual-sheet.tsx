@@ -176,7 +176,6 @@ function AddItemManualSheetInner<T>(
         snapPoints={["90%"]}
         initialIndex={-1}
         onClose={handleCancel}
-        hideHandle
         footer={
           <Box style={styles.footer}>
             <Button

@@ -35,16 +35,6 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
-          name="ui-kit"
-          options={{
-            headerTransparent: true,
-            headerShown: false,
-            headerTitle: "",
-            headerShadowVisible: false,
-            headerLeft: () => <BackButton />,
-          }}
-        />
-        <Stack.Screen
           name="join-trip-code"
           options={{
             headerTransparent: true,
