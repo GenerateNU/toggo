@@ -22,8 +22,8 @@ export const BackButton: React.FC<BackButtonProps> = ({
       onTouchEnd={onPress ?? router.back}
       alignItems="center"
       justifyContent="center"
-      paddingVertical="xs"
-      paddingHorizontal="xs"
+      width={44}
+      height={44}
       borderRadius={hasBackground ? "md" : undefined}
       backgroundColor={hasBackground ? "white" : undefined}
     >
