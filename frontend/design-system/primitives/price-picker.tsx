@@ -14,6 +14,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { CornerRadius } from "../tokens/corner-radius";
+import { Layout } from "../tokens/layout";
 import { FontFamily, FontSize } from "../tokens/typography";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -249,12 +251,12 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: ColorPalette.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 32,
-    gap: 20,
+    borderTopLeftRadius: CornerRadius.xxl,
+    borderTopRightRadius: CornerRadius.xxl,
+    paddingTop: Layout.spacing.sm,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingBottom: Layout.spacing.lg,
+    gap: Layout.spacing.lx,
   },
   header: {
     flexDirection: "row",
