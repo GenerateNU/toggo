@@ -1,4 +1,5 @@
-import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
+import { Keyboard, Platform, View } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Edge, SafeAreaView } from "react-native-safe-area-context";
 
 type ScreenProps = {
@@ -16,7 +17,7 @@ export function Screen({
     <SafeAreaView style={{ flex: 1, backgroundColor }} edges={edges}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View
           style={{ flex: 1 }}

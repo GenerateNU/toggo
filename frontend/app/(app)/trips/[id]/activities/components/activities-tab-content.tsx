@@ -95,7 +95,7 @@ export const ActivitiesTabContent = forwardRef<
   const sortedActivities = useMemo(() => {
     const excluded = new Set(["housing", ...(excludeCategories ?? [])]);
     const filtered = activities.filter(
-      (a) => !a.category_names?.some((c) => excluded.has(c)),
+      (a) => !a.category_names?.some((c: string) => excluded.has(c)),
     );
     if (sortOrder === "newest") return filtered;
     return [...filtered].reverse();

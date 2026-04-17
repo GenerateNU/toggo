@@ -5,10 +5,10 @@ import { useUserStore } from "@/auth/store";
 import { Box, Button, Text } from "@/design-system";
 import { getDeviceTimeZone } from "@/utilities/timezone";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { TextInput } from "react-native";
 import { z } from "zod";
 
 const PROFILE_SCHEMA = z.object({
@@ -138,7 +138,7 @@ export default function CompleteProfileForm({
               padding="sm"
               backgroundColor="white"
             >
-              <TextInput
+              <BottomSheetTextInput
                 placeholder="John Doe"
                 value={value}
                 onChangeText={onChange}
@@ -172,7 +172,7 @@ export default function CompleteProfileForm({
               padding="sm"
               backgroundColor="white"
             >
-              <TextInput
+              <BottomSheetTextInput
                 placeholder="john_doe"
                 value={value}
                 onChangeText={onChange}

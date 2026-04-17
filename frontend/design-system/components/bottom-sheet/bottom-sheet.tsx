@@ -4,7 +4,6 @@ import BottomSheet, {
   BottomSheetFooter,
   BottomSheetFooterProps,
   BottomSheetScrollView,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Portal } from "@gorhom/portal";
@@ -12,11 +11,10 @@ import React, {
   createContext,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
-import { Dimensions, Keyboard, Platform } from "react-native";
+import { Dimensions, Keyboard } from "react-native";
 import { CornerRadius } from "../../tokens/corner-radius";
 import { Layout } from "../../tokens/layout";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -87,17 +85,6 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       [onChange],
     );
 
-    useEffect(() => {
-      const event =
-        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-      const subscription = Keyboard.addListener(event, () => {
-        if (currentIndex.current >= 0) {
-          innerRef.current?.snapToIndex(currentIndex.current);
-        }
-      });
-      return () => subscription.remove();
-    }, []);
-
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) =>
         disableBackdrop ? null : (
@@ -159,12 +146,9 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           }}
         >
           {disableScrollView ? (
-            <BottomSheetView>
-              <InsideBottomSheetContext.Provider value={true}>
-                {children}
-                <SafeAreaView edges={["bottom"]} />
-              </InsideBottomSheetContext.Provider>
-            </BottomSheetView>
+            <InsideBottomSheetContext.Provider value={true}>
+              {children}
+            </InsideBottomSheetContext.Provider>
           ) : (
             <BottomSheetScrollView
               keyboardShouldPersistTaps="handled"
