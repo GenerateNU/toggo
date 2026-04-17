@@ -228,6 +228,74 @@ func TestMembershipLifecycle(t *testing.T) {
 			AssertStatus(http.StatusNoContent)
 	})
 
+	t.Run("non-admin cannot remove another member", func(t *testing.T) {
+			app := fakes.GetSharedTestApp()
+ 
+		owner := createUser(t, app)
+		member := createUser(t, app)
+		target := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, member, trip)
+		addMember(t, app, owner, target, trip)
+ 
+		// Regular member tries to remove another member — should be forbidden
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, target),
+				Method: testkit.DELETE,
+				UserID: &member,
+			}).
+			AssertStatus(http.StatusForbidden)
+	})
+ 
+	t.Run("cannot remove the last admin from a trip", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+ 
+		owner := createUser(t, app)
+		member := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, member, trip)
+ 
+		// Owner is the only admin — removing them should fail
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, owner),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusBadRequest)
+	})
+ 
+	t.Run("admin can remove a non-admin member", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+ 
+		owner := createUser(t, app)
+		member := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, member, trip)
+ 
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, member),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+ 
+		// Verify member is gone
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, member),
+				Method: testkit.GET,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNotFound)
+	})
+
 	t.Run("adding same user to trip twice should work", func(t *testing.T) {
 		app := fakes.GetSharedTestApp()
 

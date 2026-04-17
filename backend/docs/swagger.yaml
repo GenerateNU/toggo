@@ -3517,6 +3517,52 @@ paths:
       summary: Get activity RSVPs
       tags:
       - activities
+  /api/v1/trips/{tripID}/activities/{activityID}/rsvps/{userID}:
+    delete:
+      description: Removes a user's RSVP from an activity. Only the activity proposer
+        or a trip admin can remove another user's RSVP.
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: string
+      - description: Activity ID
+        in: path
+        name: activityID
+        required: true
+        type: string
+      - description: User ID of the RSVP to remove
+        in: path
+        name: userID
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errs.APIError'
+      summary: Remove activity RSVP
+      tags:
+      - activities
   /api/v1/trips/{tripID}/activities/parse-link:
     post:
       consumes:
@@ -3978,7 +4024,7 @@ paths:
       - memberships
   /api/v1/trips/{tripID}/memberships/{userID}:
     delete:
-      description: Removes a user from a trip
+      description: Removes a user from a trip. Only admins can remove members.
       operationId: removeMember
       parameters:
       - description: Trip ID
@@ -4000,6 +4046,10 @@ paths:
             $ref: '#/definitions/errs.APIError'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/errs.APIError'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/errs.APIError'
         "404":

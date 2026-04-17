@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"time"
@@ -32,6 +33,7 @@ type ActivityServiceInterface interface {
 	// RSVP management
 	UpdateActivityRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.ActivityRSVPRequestPayload) (*models.ActivityRSVP, error)
 	GetActivityRSVPs(ctx context.Context, tripID, activityID, userID uuid.UUID, limit int, cursorToken string, statusFilter string) (*models.ActivityRSVPsPageResult, error)
+	RemoveActivityRSVP(ctx context.Context, tripID, activityID, callerID, targetUserID uuid.UUID) error
 }
 
 var _ ActivityServiceInterface = (*ActivityService)(nil)
@@ -307,6 +309,103 @@ func (s *ActivityService) RemoveCategoryFromActivity(ctx context.Context, tripID
 	return s.ActivityCategory.RemoveCategoryFromActivity(ctx, activityID, categoryName)
 }
 
+func (s *ActivityService) UpdateActivityRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.ActivityRSVPRequestPayload) (*models.ActivityRSVP, error) {
+	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
+		return nil, err
+	}
+
+	rsvp, err := s.ActivityRSVP.UpdateRSVP(ctx, tripID, activityID, userID, req.Status)
+	if err != nil {
+		return nil, err
+	}
+	return rsvp, nil
+}
+
+func (s *ActivityService) GetActivityRSVPs(
+	ctx context.Context,
+	tripID uuid.UUID,
+	activityID uuid.UUID,
+	userID uuid.UUID,
+	limit int,
+	cursorToken string,
+	statusFilter string,
+) (*models.ActivityRSVPsPageResult, error) {
+
+	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
+		return nil, err
+	}
+
+	cursor, err := pagination.DecodeTimeCursor(cursorToken)
+	if err != nil {
+		return nil, errs.BadRequest(errors.New("invalid cursor format"))
+	}
+
+	rsvps, lastCreatedAt, err := s.ActivityRSVP.GetActivityRSVPs(
+		ctx,
+		tripID,
+		activityID,
+		userID,
+		limit,
+		cursor,
+		statusFilter,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	fileURLMap := pagination.FetchFileURLs(
+		ctx,
+		s.fileService,
+		rsvps,
+		func(item models.ActivityRSVPDatabaseResponse) *string {
+			return item.ProfilePictureKey
+		},
+		models.ImageSizeSmall,
+	)
+
+	apiRSVPs := make([]models.ActivityRSVPAPIResponse, 0, len(rsvps))
+	for _, rsvp := range rsvps {
+		apiRSVPs = append(apiRSVPs, toRSVPAPIResponse(rsvp, fileURLMap))
+	}
+
+	var nextCursor *string
+	if !lastCreatedAt.IsZero() {
+		token := lastCreatedAt.Format(time.RFC3339Nano)
+		nextCursor = &token
+	}
+
+	return &models.ActivityRSVPsPageResult{
+		RSVPs:      apiRSVPs,
+		Limit:      limit,
+		NextCursor: nextCursor,
+	}, nil
+}
+
+// RemoveActivityRSVP removes a specific user's RSVP from an activity.
+// Only the activity proposer or a trip admin can remove another user's RSVP.
+func (s *ActivityService) RemoveActivityRSVP(ctx context.Context, tripID, activityID, callerID, targetUserID uuid.UUID) error {
+	activity, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID)
+	if err != nil {
+		return err
+	}
+
+	isAdmin, err := s.Membership.IsAdmin(ctx, tripID, callerID)
+	if err != nil {
+		return err
+	}
+
+	isProposer := activity.ProposedBy != nil && *activity.ProposedBy == callerID
+	if !isAdmin && !isProposer {
+		return errs.Forbidden()
+	}
+
+	err = s.ActivityRSVP.DeleteRSVP(ctx, tripID, activityID, targetUserID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return errs.ErrNotFound
+	}
+	return err
+}
+
 // Helper methods
 
 func (s *ActivityService) buildActivityListResponse(ctx context.Context, activities []*models.ActivityDatabaseResponse, nextCursor *models.ActivityCursor, limit int) (*models.ActivityCursorPageResult, error) {
@@ -537,78 +636,6 @@ func (s *ActivityService) buildActivityPageResult(apiActivities []*models.Activi
 	}
 
 	return result, nil
-}
-
-func (s *ActivityService) UpdateActivityRSVP(ctx context.Context, tripID, activityID, userID uuid.UUID, req models.ActivityRSVPRequestPayload) (*models.ActivityRSVP, error) {
-	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
-		return nil, err
-	}
-
-	rsvp, err := s.ActivityRSVP.UpdateRSVP(ctx, tripID, activityID, userID, req.Status)
-	if err != nil {
-		return nil, err
-	}
-	return rsvp, nil
-}
-
-func (s *ActivityService) GetActivityRSVPs(
-	ctx context.Context,
-	tripID uuid.UUID,
-	activityID uuid.UUID,
-	userID uuid.UUID,
-	limit int,
-	cursorToken string,
-	statusFilter string,
-) (*models.ActivityRSVPsPageResult, error) {
-
-	if _, err := s.verifyActivityBelongsToTrip(ctx, tripID, activityID); err != nil {
-		return nil, err
-	}
-
-	cursor, err := pagination.DecodeTimeCursor(cursorToken)
-	if err != nil {
-		return nil, errs.BadRequest(errors.New("invalid cursor format"))
-	}
-
-	rsvps, lastCreatedAt, err := s.ActivityRSVP.GetActivityRSVPs(
-		ctx,
-		tripID,
-		activityID,
-		userID,
-		limit,
-		cursor,
-		statusFilter,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	fileURLMap := pagination.FetchFileURLs(
-		ctx,
-		s.fileService,
-		rsvps,
-		func(item models.ActivityRSVPDatabaseResponse) *string {
-			return item.ProfilePictureKey
-		},
-		models.ImageSizeSmall,
-	)
-
-	apiRSVPs := make([]models.ActivityRSVPAPIResponse, 0, len(rsvps))
-	for _, rsvp := range rsvps {
-		apiRSVPs = append(apiRSVPs, toRSVPAPIResponse(rsvp, fileURLMap))
-	}
-
-	var nextCursor *string
-	if !lastCreatedAt.IsZero() {
-		token := lastCreatedAt.Format(time.RFC3339Nano)
-		nextCursor = &token
-	}
-
-	return &models.ActivityRSVPsPageResult{
-		RSVPs:      apiRSVPs,
-		Limit:      limit,
-		NextCursor: nextCursor,
-	}, nil
 }
 
 func toRSVPAPIResponse(
