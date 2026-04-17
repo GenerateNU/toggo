@@ -5,16 +5,18 @@ import {
 } from "@/api/activities";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useGetImage } from "@/api/files/custom/useGetImage";
-import { getPlaceDetailsCustom } from "@/api/places/custom";
 import { useUser } from "@/contexts/user";
+import {
+  DestinationPickerSheet,
+  type SelectedLocation,
+} from "@/app/(app)/components/destination-picker-sheet";
 import { Box, Text } from "@/design-system";
 import type { DateRange } from "@/design-system/primitives/date-picker";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { modelsEntityType } from "@/types/types.gen";
-import { locationSelectStore } from "@/utilities/locationSelectStore";
 import { router, useLocalSearchParams } from "expo-router";
 import { Trash2 } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EntityDetailScreen } from "../../components/entity-detail-screen";
 
@@ -61,6 +63,7 @@ export default function HousingDetail() {
 
   const updateMutation = useUpdateActivity();
   const deleteMutation = useDeleteActivity();
+  const destinationSheetRef = useRef<any>(null);
 
   const {
     comments,
@@ -140,27 +143,22 @@ export default function HousingDetail() {
   );
 
   const handleEditLocation = useCallback(() => {
-    locationSelectStore.set(async (prediction) => {
-      try {
-        const res = await getPlaceDetailsCustom({
-          place_id: prediction.place_id,
-        });
-        const newName =
-          res.data.formatted_address || prediction.description || res.data.name;
-        setLocationName(newName);
-        setLocationLat(res.data.geometry.location.lat);
-        setLocationLng(res.data.geometry.location.lng);
-        await saveField({
-          location_name: newName,
-          location_lat: res.data.geometry.location.lat,
-          location_lng: res.data.geometry.location.lng,
-        });
-      } catch {
-        setLocationName(prediction.description ?? null);
-      }
-    });
-    router.push(`/trips/${tripID}/search-location?mode=select`);
-  }, [tripID, saveField]);
+    destinationSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleLocationSelected = useCallback(
+    async (location: SelectedLocation) => {
+      setLocationName(location.name);
+      setLocationLat(location.lat ?? null);
+      setLocationLng(location.lng ?? null);
+      await saveField({
+        location_name: location.name,
+        location_lat: location.lat,
+        location_lng: location.lng,
+      });
+    },
+    [saveField],
+  );
 
   const handleDelete = useCallback(async () => {
     if (!tripID || !housingID) return;
@@ -202,76 +200,81 @@ export default function HousingDetail() {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <EntityDetailScreen
-      name={name}
-      description={description}
-      heroImages={heroImages}
-      price={price}
-      dateRange={dateRange}
-      locationName={locationName}
-      locationLat={locationLat}
-      locationLng={locationLng}
-      link={link}
-      tripID={tripID ?? ""}
-      entityID={housingID ?? ""}
-      allMediaPath={`/trips/${tripID}/housing/${housingID}/housing-all-media`}
-      menuActions={[
-        {
-          label: "Delete housing option",
-          icon: Trash2,
-          isDanger: true,
-          onPress: () => setIsDeleteVisible(true),
-        },
-      ]}
-      onBack={() => router.replace(`/trips/${tripID}` as any)}
-      onSavePrice={async (p) => {
-        setPrice(p);
-        await saveField({ estimated_price: p });
-      }}
-      onSaveDateRange={async (range) => {
-        if (range.start && range.end) {
-          await saveField({
-            dates: [
-              {
-                start: range.start.toISOString().split("T")[0]!,
-                end: range.end.toISOString().split("T")[0]!,
-              },
-            ],
-          });
-        }
-      }}
-      onEditLocation={handleEditLocation}
-      onSaveLink={async (l) => {
-        await saveField({ media_url: l || undefined });
-      }}
-      onPriceChange={setPrice}
-      onDateRangeChange={setDateRange}
-      onLocationChange={(n, lat, lng) => {
-        setLocationName(n);
-        setLocationLat(lat);
-        setLocationLng(lng);
-      }}
-      onLinkChange={setLink}
-      // No actionButton or extraSection for housing
-      comments={comments}
-      isLoadingComments={isLoadingComments}
-      isLoadingMoreComments={isLoadingMoreComments}
-      onLoadMoreComments={fetchNextPage}
-      onSubmitComment={onSubmitComment}
-      onReact={onReact}
-      currentUserId={userId ?? ""}
-      currentUserName={currentUser?.name ?? ""}
-      currentUserAvatar={currentUserProfilePhotoUrl}
-      currentUserSeed={currentUser?.id}
-      openComments={openComments === "true"}
-      isDeleteVisible={isDeleteVisible}
-      isDeleting={isDeleting}
-      deleteTitle={`Delete "${name}"`}
-      deleteSubtitle={`Deleting "${name}" will permanently remove it from your trip.`}
-      deleteConfirmLabel={`Delete "${name}"`}
-      deleteCancelLabel={`Keep "${name}"`}
-      onDeleteConfirm={handleDelete}
-      onDeleteCancel={() => setIsDeleteVisible(false)}
-    />
+    <>
+      <EntityDetailScreen
+        name={name}
+        description={description}
+        heroImages={heroImages}
+        price={price}
+        dateRange={dateRange}
+        locationName={locationName}
+        locationLat={locationLat}
+        locationLng={locationLng}
+        link={link}
+        tripID={tripID ?? ""}
+        entityID={housingID ?? ""}
+        allMediaPath={`/trips/${tripID}/housing/${housingID}/housing-all-media`}
+        menuActions={[
+          {
+            label: "Delete housing option",
+            icon: Trash2,
+            isDanger: true,
+            onPress: () => setIsDeleteVisible(true),
+          },
+        ]}
+        onBack={() => router.replace(`/trips/${tripID}` as any)}
+        onSavePrice={async (p) => {
+          setPrice(p);
+          await saveField({ estimated_price: p });
+        }}
+        onSaveDateRange={async (range) => {
+          if (range.start && range.end) {
+            await saveField({
+              dates: [
+                {
+                  start: range.start.toISOString().split("T")[0]!,
+                  end: range.end.toISOString().split("T")[0]!,
+                },
+              ],
+            });
+          }
+        }}
+        onEditLocation={handleEditLocation}
+        onSaveLink={async (l) => {
+          await saveField({ media_url: l || undefined });
+        }}
+        onPriceChange={setPrice}
+        onDateRangeChange={setDateRange}
+        onLocationChange={(n, lat, lng) => {
+          setLocationName(n);
+          setLocationLat(lat);
+          setLocationLng(lng);
+        }}
+        onLinkChange={setLink}
+        comments={comments}
+        isLoadingComments={isLoadingComments}
+        isLoadingMoreComments={isLoadingMoreComments}
+        onLoadMoreComments={fetchNextPage}
+        onSubmitComment={onSubmitComment}
+        onReact={onReact}
+        currentUserId={userId ?? ""}
+        currentUserName={currentUser?.name ?? ""}
+        currentUserAvatar={currentUserProfilePhotoUrl}
+        currentUserSeed={currentUser?.id}
+        openComments={openComments === "true"}
+        isDeleteVisible={isDeleteVisible}
+        isDeleting={isDeleting}
+        deleteTitle={`Delete "${name}"`}
+        deleteSubtitle={`Deleting "${name}" will permanently remove it from your trip.`}
+        deleteConfirmLabel={`Delete "${name}"`}
+        deleteCancelLabel={`Keep "${name}"`}
+        onDeleteConfirm={handleDelete}
+        onDeleteCancel={() => setIsDeleteVisible(false)}
+      />
+      <DestinationPickerSheet
+        sheetRef={destinationSheetRef}
+        onSelect={handleLocationSelected}
+      />
+    </>
   );
 }
