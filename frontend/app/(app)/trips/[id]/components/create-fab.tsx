@@ -1,8 +1,19 @@
-import { Box, Button } from "@/design-system";
+import { Button } from "@/design-system";
+import { Box, Text } from "@/design-system";
+import { ColorPalette } from "@/design-system/tokens/color";
+import { CornerRadius } from "@/design-system/tokens/corner-radius";
+import { Layout } from "@/design-system/tokens/layout";
 import { router } from "expo-router";
-import { BarChart2, Lightbulb, MapPin, Plus } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { Pressable } from "react-native";
+import {
+  BarChart2,
+  BedDouble,
+  Lightbulb,
+  MapPin,
+  Plus,
+  type LucideIcon,
+} from "lucide-react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -11,30 +22,23 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const AnimatedBox = Animated.createAnimatedComponent(Box);
-
 interface CreateFABProps {
   tripID: string;
   onCreatePoll: () => void;
   onCreateActivity: () => void;
-  /** Opens the mood board “Add to …” bottom sheet (no radial sub-menu). */
+  onCreateHousing: () => void;
   onOpenMoodBoardAdd?: () => void;
 }
 
 const SPRING = { damping: 20, stiffness: 400, mass: 0.6 };
 
-const ABSOLUTE_FILL = {
-  position: "absolute" as const,
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-};
+const FAB_ICON_SIZE = 20;
 
 export default function CreateFAB({
   tripID,
   onCreatePoll,
   onCreateActivity,
+  onCreateHousing,
   onOpenMoodBoardAdd,
 }: CreateFABProps) {
   const [open, setOpen] = useState(false);
@@ -78,30 +82,32 @@ export default function CreateFAB({
     ],
   }));
 
-  const actions = useMemo(
-    () => [
-      {
-        label: "Activity",
-        icon: MapPin,
-        onPress: onCreateActivity,
-      },
-      {
-        label: "Pitch",
-        icon: Lightbulb,
-        onPress: () => router.push(`/trips/${tripID}/pitches/creation`),
-      },
-      {
-        label: "Poll",
-        icon: BarChart2,
-        onPress: onCreatePoll,
-      },
-    ],
-    [onCreateActivity, onCreatePoll, tripID],
-  );
+  const actions: { label: string; icon: LucideIcon; onPress: () => void }[] = [
+    {
+      label: "Activity",
+      icon: MapPin,
+      onPress: onCreateActivity,
+    },
+    {
+      label: "Housing",
+      icon: BedDouble,
+      onPress: onCreateHousing,
+    },
+    {
+      label: "Pitch",
+      icon: Lightbulb,
+      onPress: () => router.push(`/trips/${tripID}/pitches/creation`),
+    },
+    {
+      label: "Poll",
+      icon: BarChart2,
+      onPress: onCreatePoll,
+    },
+  ];
 
   if (onOpenMoodBoardAdd) {
     return (
-      <Box style={ABSOLUTE_FILL} pointerEvents="box-none">
+      <Box style={StyleSheet.absoluteFill} pointerEvents="box-none">
         <Box
           position="absolute"
           bottom={32}
@@ -123,14 +129,18 @@ export default function CreateFAB({
   }
 
   return (
-    <Box style={ABSOLUTE_FILL} pointerEvents="box-none">
-      <AnimatedBox
-        style={[ABSOLUTE_FILL, overlayStyle]}
-        backgroundColor="backgroundOverlay"
+    <Box
+      style={[StyleSheet.absoluteFill, styles.root]}
+      pointerEvents="box-none"
+    >
+      <Animated.View
+        style={[StyleSheet.absoluteFill, overlayStyle]}
         pointerEvents={open ? "auto" : "none"}
       >
-        <Pressable style={ABSOLUTE_FILL} onPress={close} />
-      </AnimatedBox>
+        <Pressable style={StyleSheet.absoluteFill} onPress={close}>
+          <View style={styles.overlay} />
+        </Pressable>
+      </Animated.View>
 
       <Box
         position="absolute"
@@ -141,27 +151,64 @@ export default function CreateFAB({
         pointerEvents="box-none"
       >
         {actions.map((action) => (
-          <AnimatedBox key={action.label} style={itemStyle}>
-            <Button
-              layout="leadingIcon"
-              label={action.label}
-              leftIcon={action.icon}
+          <Animated.View key={action.label} style={itemStyle}>
+            <Pressable
               onPress={() => handleAction(action.onPress)}
-            />
-          </AnimatedBox>
+              style={styles.actionButton}
+            >
+              <action.icon size={FAB_ICON_SIZE} color={ColorPalette.gray900} />
+              <Text variant="bodyMedium" color="gray900">
+                {action.label}
+              </Text>
+            </Pressable>
+          </Animated.View>
         ))}
 
-        <AnimatedBox style={fabIconStyle}>
-          <Button
-            layout="iconOnly"
-            icon={Plus}
-            accessibilityLabel="Open create menu"
-            variant="IconCircular"
-            size="large"
-            onPress={toggle}
-          />
-        </AnimatedBox>
+        <Animated.View style={fabIconStyle}>
+          <Pressable onPress={toggle} style={styles.fab}>
+            <Plus size={24} color={ColorPalette.gray900} />
+          </Pressable>
+        </Animated.View>
       </Box>
     </Box>
   );
 }
+
+const FAB_SIZE = 56;
+
+const styles = StyleSheet.create({
+  root: {
+    zIndex: 10,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: ColorPalette.backgroundOverlay,
+  },
+  fab: {
+    width: FAB_SIZE,
+    height: FAB_SIZE,
+    borderRadius: CornerRadius.full,
+    backgroundColor: ColorPalette.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: ColorPalette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Layout.spacing.xs,
+    backgroundColor: ColorPalette.white,
+    paddingHorizontal: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.sm,
+    borderRadius: CornerRadius.xl,
+    shadowColor: ColorPalette.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+});
