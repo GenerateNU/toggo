@@ -1,6 +1,7 @@
 import { useMembersList } from "@/api/memberships/custom/useMembersList";
 import { useGetMembership } from "@/api/memberships/useGetMembership";
 import { usePromoteToAdmin } from "@/api/memberships/usePromoteToAdmin";
+import { useRemoveMember } from "@/api/memberships/useRemoveMember";
 import { useUser } from "@/contexts/user";
 import {
   Avatar,
@@ -15,8 +16,8 @@ import {
   useToast,
 } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
-import type { ModelsMembershipAPIResponse } from "@/types/types.gen";
 import { useShareTripInvite } from "@/hooks/useShareTripInvite";
+import type { ModelsMembershipAPIResponse } from "@/types/types.gen";
 import { useLocalSearchParams } from "expo-router";
 import { Crown } from "lucide-react-native";
 import {
@@ -26,6 +27,8 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
+
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 
 function MemberRowSkeleton() {
   return (
@@ -45,18 +48,22 @@ function MemberRowSkeleton() {
   );
 }
 
+// ─── Member Row ───────────────────────────────────────────────────────────────
+
 type MemberRowProps = {
   member: ModelsMembershipAPIResponse;
   isCurrentUser: boolean;
-  canPromote: boolean;
+  isAdmin: boolean;
   onPromote: () => void;
+  onRemove: () => void;
 };
 
 function MemberRow({
   member,
   isCurrentUser,
-  canPromote,
+  isAdmin,
   onPromote,
+  onRemove,
 }: MemberRowProps) {
   return (
     <Box
@@ -100,19 +107,35 @@ function MemberRow({
           </Text>
         )}
       </Box>
-      {canPromote && !member.is_admin && (
-        <Pressable
-          onPress={onPromote}
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text variant="bodyXsStrong" color="statusInfo">
-            Make Admin
-          </Text>
-        </Pressable>
+
+      {/* Admin actions — only shown to admins, not for themselves */}
+      {isAdmin && !isCurrentUser && (
+        <Box flexDirection="row" alignItems="center" gap="sm">
+          {!member.is_admin && (
+            <Pressable
+              onPress={onPromote}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text variant="bodyXsStrong" color="statusInfo">
+                Make Admin
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={onRemove}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text variant="bodyXsStrong" color="statusError">
+              Remove
+            </Text>
+          </Pressable>
+        </Box>
       )}
     </Box>
   );
 }
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function MembersSettings() {
   const { id: tripID } = useLocalSearchParams<{ id: string }>();
@@ -126,6 +149,7 @@ export default function MembersSettings() {
     currentUser?.id ?? "",
   );
   const promoteToAdminMutation = usePromoteToAdmin();
+  const removeMemberMutation = useRemoveMember();
   const { shareInvite, isPending: isInvitePending } = useShareTripInvite(
     tripID!,
   );
@@ -167,6 +191,37 @@ export default function MembersSettings() {
     );
   };
 
+  const handleRemove = (member: ModelsMembershipAPIResponse) => {
+    Alert.alert(
+      "Remove Member?",
+      `${member.name ?? "This member"} will be removed from the trip.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removeMemberMutation.mutateAsync({
+                tripID: tripID!,
+                userID: member.user_id!,
+              });
+              toast.show({
+                message: `${member.name ?? "Member"} has been removed.`,
+              });
+            } catch {
+              toast.show({
+                message: "Couldn't remove member. Please try again.",
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  // ─── Loading ─────────────────────────────────────────────────────────────
+
   if (isLoading) {
     return (
       <Box
@@ -201,6 +256,8 @@ export default function MembersSettings() {
     );
   }
 
+  // ─── Render ──────────────────────────────────────────────────────────────
+
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: ColorPalette.white }}
@@ -221,8 +278,9 @@ export default function MembersSettings() {
             <MemberRow
               member={member}
               isCurrentUser={member.user_id === currentUser?.id}
-              canPromote={isAdmin}
+              isAdmin={isAdmin}
               onPromote={() => handlePromote(member)}
+              onRemove={() => handleRemove(member)}
             />
             {index < members.length - 1 && <Divider />}
           </Box>
