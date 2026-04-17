@@ -103,7 +103,7 @@ export function PricePicker({
       currentOffset.current = offset;
       baseOffset.current = offset;
     }
-  }, [visible, value]);
+  }, [visible, value, translateX]);
 
   // ─── Text → ruler ──────────────────────────────────────────────────────
 

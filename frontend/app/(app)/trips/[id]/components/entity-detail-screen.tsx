@@ -4,7 +4,6 @@ import {
   Box,
   DateRangePicker,
   Text,
-  useToast,
 } from "@/design-system";
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
@@ -139,7 +138,7 @@ export function EntityDetailScreen({
   onSaveLink,
   onPriceChange,
   onDateRangeChange,
-  onLocationChange,
+  onLocationChange: _onLocationChange,
   onLinkChange,
   actionButton,
   extraSection,
@@ -163,8 +162,6 @@ export function EntityDetailScreen({
   onDeleteConfirm,
   onDeleteCancel,
 }: EntityDetailScreenProps) {
-  const toast = useToast();
-
   const [isPricePickerVisible, setIsPricePickerVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [isCommentsVisible, setIsCommentsVisible] = useState(openComments);

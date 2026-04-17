@@ -1,10 +1,9 @@
 import { useActivityRsvpGoing } from "@/api/activities/custom/useActivityRsvpGoing";
 import { useEntityComments } from "@/api/comments/custom/useEntityComments";
 import { useUser } from "@/contexts/user";
-import { Avatar, Box, Icon, Spinner, Text, useToast } from "@/design-system";
+import { Avatar, Box, Icon, Text, useToast } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
-import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
 import { modelsEntityType, modelsRSVPStatus } from "@/types/types.gen";
@@ -25,8 +24,8 @@ import {
 } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Image as RNImage,
   Pressable,
+  Image as RNImage,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -87,7 +86,7 @@ export function PostDetailView({
   const isGoing = useMemo(() => {
     if (!currentUser?.id || !activity.going_users) return false;
     return activity.going_users.some((u) => u.user_id === currentUser.id);
-  }, [currentUser?.id, activity.going_users]);
+  }, [currentUser, activity.going_users]);
 
   const thumbnailUrl = getActivityThumbnailUrl(activity);
   const externalLinkUrl = useMemo(
@@ -119,10 +118,7 @@ export function PostDetailView({
   }, [activity.comment_count, comments.length]);
 
   useEffect(() => {
-    if (!thumbnailUrl?.trim()) {
-      setHeroAspect(null);
-      return;
-    }
+    if (!thumbnailUrl?.trim()) return;
     let cancelled = false;
     RNImage.getSize(
       thumbnailUrl,

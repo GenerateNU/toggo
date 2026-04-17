@@ -78,7 +78,7 @@ export function MoodBoardCard({
   const isGoing = useMemo(() => {
     if (!currentUser?.id || !activity.going_users) return false;
     return activity.going_users.some((u) => u.user_id === currentUser.id);
-  }, [currentUser?.id, activity.going_users]);
+  }, [currentUser, activity.going_users]);
 
   return (
     <Pressable
@@ -308,10 +308,7 @@ function MoodBoardImageOuter({
   const [aspect, setAspect] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!thumbnailUrl?.trim()) {
-      setAspect(null);
-      return;
-    }
+    if (!thumbnailUrl?.trim()) return;
     let cancelled = false;
     RNImage.getSize(
       thumbnailUrl,

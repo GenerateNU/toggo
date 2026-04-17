@@ -5,10 +5,8 @@ import { useUser } from "@/contexts/user";
 import {
   Box,
   EmptyState,
-  SkeletonRect,
   Spinner,
   Text,
-  useToast,
 } from "@/design-system";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import { ColorPalette } from "@/design-system/tokens/color";
@@ -52,16 +50,6 @@ type SortOrder = "newest" | "oldest";
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 
-function HousingSkeleton() {
-  return (
-    <Box gap="xs" paddingTop="sm">
-      {[1, 2, 3].map((i) => (
-        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
-      ))}
-    </Box>
-  );
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const HousingTabContent = forwardRef<
@@ -70,7 +58,6 @@ export const HousingTabContent = forwardRef<
 >(({ tripID }, ref) => {
   const entrySheetRef = useRef<AddHousingEntrySheetHandle>(null);
   const manualSheetRef = useRef<AddHousingManualSheetHandle>(null);
-  const toast = useToast();
 
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [activeCommentHousingId, setActiveCommentHousingId] = useState<
