@@ -408,10 +408,9 @@ export default function Trip() {
           <Box
             flex={1}
             paddingHorizontal="sm"
-            paddingTop="xxs"
+            paddingTop="sm"
             paddingBottom="xl"
             backgroundColor="gray25"
-            style={styles.sheetContent}
           >
             {isLoading ? (
               <Box gap="sm">
