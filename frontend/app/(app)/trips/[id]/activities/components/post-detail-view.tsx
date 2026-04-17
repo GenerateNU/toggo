@@ -16,7 +16,13 @@ import {
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
 import { Stack, router } from "expo-router";
-import { ChevronLeft, Heart, Link2, MessageCircle, MoreHorizontal } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Heart,
+  Link2,
+  MessageCircle,
+  MoreHorizontal,
+} from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
   Image as RNImage,
@@ -74,7 +80,8 @@ export function PostDetailView({
   const toast = useToast();
   const rsvpMutation = useActivityRsvpGoing(tripID);
 
-  const [commentSectionVisible, setCommentSectionVisible] = useState(openComments);
+  const [commentSectionVisible, setCommentSectionVisible] =
+    useState(openComments);
   const [heroAspect, setHeroAspect] = useState<number | null>(null);
 
   const isGoing = useMemo(() => {
@@ -233,7 +240,9 @@ export function PostDetailView({
                     },
                     {
                       onError: () =>
-                        toast.show({ message: "Could not update going status." }),
+                        toast.show({
+                          message: "Could not update going status.",
+                        }),
                     },
                   );
                 }}
@@ -244,10 +253,15 @@ export function PostDetailView({
                 <Box flexDirection="row" alignItems="center" gap="xxs">
                   <Heart
                     size={20}
-                    color={isGoing ? ColorPalette.brand500 : ColorPalette.gray900}
+                    color={
+                      isGoing ? ColorPalette.brand500 : ColorPalette.gray900
+                    }
                     fill={isGoing ? ColorPalette.brand500 : "none"}
                   />
-                  <Text variant="bodySmDefault" color={isGoing ? "brand500" : "gray900"}>
+                  <Text
+                    variant="bodySmDefault"
+                    color={isGoing ? "brand500" : "gray900"}
+                  >
                     {activity.going_count ?? 0}
                   </Text>
                 </Box>

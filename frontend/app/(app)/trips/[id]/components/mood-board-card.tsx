@@ -269,7 +269,10 @@ function MoodBoardTextCard({
               color={isGoing ? ColorPalette.brand500 : ColorPalette.gray700}
               fill={isGoing ? ColorPalette.brand500 : "none"}
             />
-            <Text variant="bodySmDefault" color={isGoing ? "brand500" : "gray800"}>
+            <Text
+              variant="bodySmDefault"
+              color={isGoing ? "brand500" : "gray800"}
+            >
               {likes}
             </Text>
           </Box>
