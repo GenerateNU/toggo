@@ -19,6 +19,7 @@ import React, {
 import { Dimensions, Keyboard, Platform } from "react-native";
 import { CornerRadius } from "../../tokens/corner-radius";
 import { Layout } from "../../tokens/layout";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const InsideBottomSheetContext = createContext(false);
 
@@ -161,6 +162,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
             <BottomSheetView>
               <InsideBottomSheetContext.Provider value={true}>
                 {children}
+                <SafeAreaView edges={["bottom"]} />
               </InsideBottomSheetContext.Provider>
             </BottomSheetView>
           ) : (
@@ -174,6 +176,7 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
             >
               <InsideBottomSheetContext.Provider value={true}>
                 {children}
+                <SafeAreaView edges={["bottom"]} />
               </InsideBottomSheetContext.Provider>
             </BottomSheetScrollView>
           )}
