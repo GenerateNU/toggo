@@ -4,7 +4,6 @@ import BottomSheet, {
   BottomSheetFooter,
   BottomSheetFooterProps,
   BottomSheetScrollView,
-  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Portal } from "@gorhom/portal";
@@ -159,12 +158,9 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           }}
         >
           {disableScrollView ? (
-            <BottomSheetView>
-              <InsideBottomSheetContext.Provider value={true}>
-                {children}
-                <SafeAreaView edges={["bottom"]} />
-              </InsideBottomSheetContext.Provider>
-            </BottomSheetView>
+            <InsideBottomSheetContext.Provider value={true}>
+              {children}
+            </InsideBottomSheetContext.Provider>
           ) : (
             <BottomSheetScrollView
               keyboardShouldPersistTaps="handled"
