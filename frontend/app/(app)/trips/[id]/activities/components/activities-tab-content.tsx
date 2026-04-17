@@ -6,7 +6,6 @@ import { useUser } from "@/contexts/user";
 import {
   Box,
   EmptyState,
-  SkeletonRect,
   Spinner,
   Text,
   useToast,
@@ -58,17 +57,6 @@ type ActivitiesTabContentProps = {
 
 type SortOrder = "newest" | "oldest";
 
-// ─── Skeleton ────────────────────────────────────────────────────────────────
-
-function ActivitiesSkeleton() {
-  return (
-    <Box gap="xs" paddingTop="sm">
-      {[1, 2, 3].map((i) => (
-        <SkeletonRect key={i} width="full" height="lg" borderRadius="sm" />
-      ))}
-    </Box>
-  );
-}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
