@@ -71,7 +71,8 @@
       ],
       "react-native-localize",
       "@react-native-community/datetimepicker",
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      "expo-document-picker"
     ],
     "extra": {
       "router": {},
