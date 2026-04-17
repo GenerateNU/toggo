@@ -364,6 +364,22 @@ export default function Trip() {
           onScroll={handleParentScroll}
           scrollEventThrottle={16}
         >
+          {/* Hero spacer — tappable to add cover photo when no image exists */}
+          {!trip?.cover_image_url ? (
+            <Pressable
+              style={{
+                height: CONTENT_CARD_TOP,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => coverPickerRef.current?.openSheet()}
+              disabled={isCoverUploading || isLoading}
+            >
+              <Icon icon={ImagePlus} size="md" color="blue500" />
+            </Pressable>
+          ) : (
+            <View style={{ height: CONTENT_CARD_TOP }} />
+          )}
           <View>
             <Box style={styles.sheetTop} backgroundColor="white">
               <TripMetadata
@@ -484,27 +500,9 @@ export default function Trip() {
         </View>
       )}
 
-      {/* Pressable sits above the scroll view so the hero area is tappable.
-          Matches the hero scale transform so the icon parallaxes on pull-down. */}
-      {!trip?.cover_image_url && (
-        <Animated.View
-          style={[styles.heroPicker, { transform: [{ scale: heroScale }] }]}
-          pointerEvents={headerVisible ? "none" : "auto"}
-        >
-          <Pressable
-            style={styles.heroPickerPressable}
-            onPress={() => coverPickerRef.current?.openSheet()}
-            disabled={isCoverUploading || isLoading}
-          >
-            <Box flex={1} justifyContent="center" alignItems="center">
-              <Icon icon={ImagePlus} size="md" color="blue500" />
-            </Box>
-          </Pressable>
-        </Animated.View>
-      )}
-
       {/* Nav buttons — absolute over hero, always visible behind the fixed header */}
       <Animated.View
+        pointerEvents="box-none"
         style={[
           styles.topNavigation,
           {
@@ -529,7 +527,7 @@ export default function Trip() {
           >
             <Map size={16} color={ColorPalette.gray950} />
             <Text
-              variant="bodyMedium"
+              variant="bodySmMedium"
               color="gray950"
               style={{ marginLeft: 4 }}
             >
@@ -625,7 +623,7 @@ const styles = StyleSheet.create({
     gap: Layout.spacing.xxs,
     backgroundColor: ColorPalette.white,
     paddingHorizontal: 12,
-    height: "100%",
+    paddingVertical: Layout.spacing.xs,
     borderRadius: CornerRadius.full,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -655,26 +653,17 @@ const styles = StyleSheet.create({
     height: 0,
     overflow: "hidden",
   },
-  heroPicker: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: CONTENT_CARD_TOP,
-    transformOrigin: "top",
-  },
-  heroPickerPressable: {
-    ...StyleSheet.absoluteFillObject,
-  },
   scrollContent: {
     flexGrow: 1,
-    paddingTop: CONTENT_CARD_TOP,
   },
   sheetTop: {
     backgroundColor: ColorPalette.white,
     borderTopLeftRadius: CornerRadius.xxxl,
     borderTopRightRadius: CornerRadius.xxxl,
     overflow: "hidden",
+  },
+  sheetContent: {
+    flexGrow: 1,
   },
   fixedHeaderTitle: {
     position: "absolute",
