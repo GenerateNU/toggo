@@ -12,7 +12,7 @@ const Layout = () => {
   return (
     <Stack
       screenOptions={{
-        headerLeft: () => <BackButton />,
+        headerLeft: () => <BackButton hasBackground />,
         headerBackVisible: false,
         headerTitleAlign: "center",
         headerTransparent: true,
@@ -53,6 +53,7 @@ const Layout = () => {
           headerTitle: "My ranking",
           headerTransparent: false,
           headerShadowVisible: false,
+          headerLeft: () => <BackButton />,
           gestureEnabled: false,
         }}
       />

@@ -2,7 +2,6 @@ import { BackButton, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily, FontSize } from "@/design-system/tokens/typography";
-import { router } from "expo-router";
 import type { LucideIcon } from "lucide-react-native";
 import { MoreHorizontal } from "lucide-react-native";
 import { useRef, useState } from "react";
@@ -45,12 +44,7 @@ export function DetailHeader({
 
   return (
     <View style={[styles.header, { paddingTop: top + 8 }]}>
-      <Pressable
-        onPress={onBack ?? (() => router.back())}
-        style={styles.sideButton}
-      >
-        <BackButton hasBackground />
-      </Pressable>
+      <BackButton hasBackground onPress={onBack} />
 
       <Text style={styles.title} numberOfLines={1}>
         {title}
