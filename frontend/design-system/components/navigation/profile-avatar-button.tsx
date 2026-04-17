@@ -1,5 +1,6 @@
 import { Pressable } from "react-native";
 import { Box } from "../../primitives/box";
+import { BorderWidth } from "../../tokens/border";
 import { CoreSizeKey } from "../../tokens/core-size";
 import { Avatar } from "../avatars/avatar";
 
@@ -29,7 +30,7 @@ export function ProfileAvatarButton({
     >
       <Box
         borderRadius="full"
-        borderWidth="hairline"
+        borderWidth={BorderWidth.hairline}
         borderColor="gray100"
         backgroundColor="white"
         padding="xxs"

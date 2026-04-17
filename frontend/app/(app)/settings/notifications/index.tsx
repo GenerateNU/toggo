@@ -194,7 +194,7 @@ export default function NotificationsScreen() {
         </Text>
 
         {isLoading ? (
-          <Box gap="md" paddingHorizontal="sm">
+          <Box gap="md">
             <SkeletonRect width="full" style={{ height: 72 }} />
             <SkeletonRect width="full" style={{ height: 72 }} />
             <SkeletonRect width="full" style={{ height: 72 }} />
@@ -218,7 +218,7 @@ export default function NotificationsScreen() {
         ) : null}
 
         {!isLoading && !isError && prefs ? (
-          <Box paddingHorizontal="sm">
+          <Box>
             {NOTIFICATION_ITEMS.map((item, index) => (
               <NotificationRow
                 key={item.field}
@@ -245,10 +245,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: Layout.spacing.xxl,
+    paddingHorizontal: Layout.spacing.sm,
   },
   subtitle: {
     textAlign: "center",
-    paddingHorizontal: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.sm,
     paddingTop: Layout.spacing.xs,
     paddingBottom: Layout.spacing.sm,
   },

@@ -124,7 +124,12 @@ export function TripReminderLocationSheet({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  hitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
+  hitSlop: {
+    top: Layout.spacing.xs,
+    bottom: Layout.spacing.xs,
+    left: Layout.spacing.xs,
+    right: Layout.spacing.xs,
+  },
   fieldRow: {
     borderWidth: 1,
     borderColor: ColorPalette.gray200,

@@ -1,4 +1,5 @@
 import { Avatar, Box, Text } from "@/design-system";
+import { BorderWidth } from "@/design-system/tokens/border";
 import { Shadow } from "@/design-system/tokens/elevation";
 import { getFirstName } from "@/utils/user-display-name";
 import { MAX_VISIBLE_MEMBERS } from "./constants";
@@ -97,7 +98,7 @@ export function TripMemberPreviewRow({
             height={24}
             borderRadius="full"
             backgroundColor="white"
-            borderWidth="hairline"
+            borderWidth={BorderWidth.hairline}
             borderColor="gray300"
             alignItems="center"
             justifyContent="center"

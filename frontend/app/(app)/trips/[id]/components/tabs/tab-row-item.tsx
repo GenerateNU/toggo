@@ -122,7 +122,7 @@ export default function TabRowItem({
       )}
 
       <Box style={styles.labelContainer}>
-        <Text variant="bodySmDefault" color="gray900">
+        <Text variant="bodyDefault" color="gray900">
           {label}
         </Text>
       </Box>

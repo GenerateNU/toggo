@@ -40,7 +40,6 @@ export default function Activities() {
     isError,
     isLoadingMore,
     fetchMore,
-    refetch,
     prependActivity,
   } = useActivitiesList(tripID);
 
@@ -53,7 +52,6 @@ export default function Activities() {
     mutation: {
       onSuccess: (data) => {
         if (data) prependActivity(data);
-        refetch();
       },
       onError: () => {
         toast.show({ message: "Couldn't create activity. Please try again." });
@@ -214,7 +212,6 @@ export default function Activities() {
                 <ErrorState
                   title="Couldn't load activities"
                   description="Pull to refresh or try again in a moment."
-                  refresh={() => refetch()}
                 />
               )}
 

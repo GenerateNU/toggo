@@ -40,9 +40,6 @@ export { BackButton } from "./components/navigation/arrow";
 export { ProfileAvatarButton } from "./components/navigation/profile-avatar-button";
 export type { ProfileAvatarButtonProps } from "./components/navigation/profile-avatar-button";
 
-// ─── UI Kit Display (for testing/showcasing components) ──────────────────────────────
-export { default as UIKitDisplay } from "./components/ui-kit-display/display";
-
 // ─── Bottom Sheet ──────────────────────────────────────────────────────────────────────
 export { default as BottomSheet } from "./components/bottom-sheet/bottom-sheet";
 
