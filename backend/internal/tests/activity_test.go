@@ -1814,4 +1814,15 @@ func TestRemoveActivityRSVP(t *testing.T) {
 			}).
 			AssertStatus(http.StatusNotFound)
 	})
+
+	t.Run("malformed userID returns 400", func(t *testing.T) {
+    testkit.New(t).
+        Request(testkit.Request{
+            App:    app,
+            Route:  fmt.Sprintf("/api/v1/trips/%s/activities/%s/rsvps/not-a-uuid", trip, activityID),
+            Method: testkit.DELETE,
+            UserID: &owner,
+        }).
+        AssertStatus(http.StatusBadRequest)
+	})
 }

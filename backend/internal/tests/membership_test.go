@@ -459,6 +459,64 @@ func TestMembershipLifecycle(t *testing.T) {
 			}).
 			AssertStatus(http.StatusUnprocessableEntity)
 	})
+
+	t.Run("admin can remove themselves when another admin exists", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		secondAdmin := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, secondAdmin, trip)
+
+		// Promote secondAdmin so there are two admins
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/promote", trip, secondAdmin),
+				Method: testkit.POST,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Owner removes themselves — should succeed since secondAdmin remains
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, owner),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+	})
+
+	t.Run("admin can remove another admin when one admin remains", func(t *testing.T) {
+		app := fakes.GetSharedTestApp()
+
+		owner := createUser(t, app)
+		secondAdmin := createUser(t, app)
+		trip := createTrip(t, app, owner)
+		addMember(t, app, owner, secondAdmin, trip)
+
+		// Promote secondAdmin
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s/promote", trip, secondAdmin),
+				Method: testkit.POST,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusOK)
+
+		// Owner removes secondAdmin — should succeed since owner still remains
+		testkit.New(t).
+			Request(testkit.Request{
+				App:    app,
+				Route:  fmt.Sprintf("/api/v1/trips/%s/memberships/%s", trip, secondAdmin),
+				Method: testkit.DELETE,
+				UserID: &owner,
+			}).
+			AssertStatus(http.StatusNoContent)
+	})
 }
 
 func TestMembershipPagination(t *testing.T) {
