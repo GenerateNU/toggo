@@ -13,8 +13,15 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
-import { ActivityIndicator, Dimensions, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 import { MoodBoardCard } from "./mood-board-card";
 import {
   MoodBoardImageSheet,
@@ -28,6 +35,8 @@ import {
   MoodBoardNoteSheet,
   type MoodBoardNoteSheetHandle,
 } from "./mood-board-note-sheet";
+
+type SortOrder = "newest" | "oldest";
 
 export type MoodBoardTabContentHandle = {
   openAddNote: () => void;
@@ -55,6 +64,7 @@ export const MoodBoardTabContent = forwardRef<
   const linkRef = useRef<MoodBoardLinkEntrySheetHandle>(null);
   const loadMoreSentinelRef = useRef<View>(null);
   const loadMoreThrottleRef = useRef(0);
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
   const {
     activities,
@@ -69,9 +79,14 @@ export const MoodBoardTabContent = forwardRef<
     return [...activities].sort((a, b) => {
       const ta = new Date(a.created_at ?? 0).getTime();
       const tb = new Date(b.created_at ?? 0).getTime();
-      return tb - ta;
+      return sortOrder === "newest" ? tb - ta : ta - tb;
     });
-  }, [activities]);
+  }, [activities, sortOrder]);
+
+  const toggleSort = useCallback(
+    () => setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest")),
+    [],
+  );
 
   useImperativeHandle(ref, () => ({
     openAddNote: () => noteRef.current?.open(),
@@ -91,7 +106,7 @@ export const MoodBoardTabContent = forwardRef<
       if (!item.id) return;
       router.push({
         pathname: `/trips/${tripID}/activities/${item.id}` as any,
-        params: { tripID },
+        params: { tripID, source: "moodboard" },
       });
     },
     [router, tripID],
@@ -177,15 +192,21 @@ export const MoodBoardTabContent = forwardRef<
             flexDirection="row"
             justifyContent="space-between"
             alignItems="center"
-            paddingBottom="xs"
+            style={styles.headerRow}
           >
             <Text variant="bodyDefault" color="gray500">
               {sortedActivities.length}{" "}
               {sortedActivities.length === 1 ? "post" : "posts"}
             </Text>
-            <Text variant="bodySmStrong" color="gray700">
-              Newest first
-            </Text>
+            <Pressable
+              onPress={toggleSort}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text variant="bodyStrong" color="gray900">
+                {sortOrder === "newest" ? "Newest first" : "Oldest first"}
+              </Text>
+            </Pressable>
           </Box>
 
           <FlashList
@@ -232,6 +253,10 @@ export const MoodBoardTabContent = forwardRef<
 MoodBoardTabContent.displayName = "MoodBoardTabContent";
 
 const styles = StyleSheet.create({
+  headerRow: {
+    paddingTop: Layout.spacing.xs,
+    paddingBottom: Layout.spacing.xxs,
+  },
   /** Centers cards that use a fixed column width slightly narrower than FlashList’s half-row. */
   masonryCell: {
     width: "100%",

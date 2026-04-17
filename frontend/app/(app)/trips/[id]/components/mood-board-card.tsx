@@ -1,13 +1,12 @@
-import {
-  activityRsvpGoingPayload,
-  useActivityRsvpGoing,
-} from "@/api/activities/custom/useActivityRsvpGoing";
+import { useActivityRsvpGoing } from "@/api/activities/custom/useActivityRsvpGoing";
+import { useUser } from "@/contexts/user";
 import { Box, Icon, Text, useToast } from "@/design-system";
 import { Avatar } from "@/design-system/components/avatars/avatar";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import type { ModelsActivityAPIResponse } from "@/types/types.gen";
+import { modelsRSVPStatus } from "@/types/types.gen";
 import {
   getActivityProposerProfilePictureUrl,
   getActivityThumbnailUrl,
@@ -75,6 +74,11 @@ export function MoodBoardCard({
   const rsvpMutation = useActivityRsvpGoing(tripID);
   const toast = useToast();
   const columnWidth = useMoodBoardColumnWidth();
+  const { currentUser } = useUser();
+  const isGoing = useMemo(() => {
+    if (!currentUser?.id || !activity.going_users) return false;
+    return activity.going_users.some((u) => u.user_id === currentUser.id);
+  }, [currentUser?.id, activity.going_users]);
 
   return (
     <Pressable
@@ -105,7 +109,11 @@ export function MoodBoardCard({
                 {
                   tripID,
                   activityID: activity.id,
-                  data: activityRsvpGoingPayload,
+                  data: {
+                    status: isGoing
+                      ? modelsRSVPStatus.RSVPStatusNotGoing
+                      : modelsRSVPStatus.RSVPStatusGoing,
+                  },
                 },
                 {
                   onError: () =>
@@ -114,6 +122,7 @@ export function MoodBoardCard({
               );
             }}
             rsvpPending={rsvpMutation.isPending}
+            isGoing={isGoing}
           />
         )}
 
@@ -126,13 +135,18 @@ export function MoodBoardCard({
             columnWidth={columnWidth}
             thumbnailUrl={resolvedThumbnailUrl}
             rsvpPending={rsvpMutation.isPending}
+            isGoing={isGoing}
             onRsvpGoing={() => {
               if (!activity.id) return;
               rsvpMutation.mutate(
                 {
                   tripID,
                   activityID: activity.id,
-                  data: activityRsvpGoingPayload,
+                  data: {
+                    status: isGoing
+                      ? modelsRSVPStatus.RSVPStatusNotGoing
+                      : modelsRSVPStatus.RSVPStatusGoing,
+                  },
                 },
                 {
                   onError: () =>
@@ -183,6 +197,7 @@ function MoodBoardTextCard({
   title,
   onPressRsvp,
   rsvpPending,
+  isGoing,
 }: {
   activity: ModelsActivityAPIResponse;
   proposerProfilePhoto: string | undefined;
@@ -190,6 +205,7 @@ function MoodBoardTextCard({
   title: string;
   onPressRsvp: () => void;
   rsvpPending: boolean;
+  isGoing: boolean;
 }) {
   const timeLabel = formatMoodBoardShortTime(activity.created_at);
   const name = moodBoardDisplayName(activity);
@@ -248,8 +264,12 @@ function MoodBoardTextCard({
           accessibilityLabel="Mark as going"
         >
           <Box flexDirection="row" alignItems="center" gap="xxs">
-            <Icon icon={Heart} size="xs" color="gray700" />
-            <Text variant="bodySmDefault" color="gray800">
+            <Heart
+              size={14}
+              color={isGoing ? ColorPalette.brand500 : ColorPalette.gray700}
+              fill={isGoing ? ColorPalette.brand500 : "none"}
+            />
+            <Text variant="bodySmDefault" color={isGoing ? "brand500" : "gray800"}>
               {likes}
             </Text>
           </Box>
@@ -272,6 +292,7 @@ function MoodBoardImageOuter({
   thumbnailUrl,
   onRsvpGoing,
   rsvpPending,
+  isGoing,
 }: {
   activity: ModelsActivityAPIResponse;
   proposerProfilePhoto: string | undefined;
@@ -279,6 +300,7 @@ function MoodBoardImageOuter({
   thumbnailUrl?: string;
   onRsvpGoing: () => void;
   rsvpPending: boolean;
+  isGoing: boolean;
 }) {
   const [aspect, setAspect] = useState<number | null>(null);
 
@@ -380,7 +402,11 @@ function MoodBoardImageOuter({
           accessibilityLabel="Mark as going"
         >
           <View style={styles.engagementGroup}>
-            <Icon icon={Heart} size="xs" color="white" />
+            <Heart
+              size={14}
+              color={isGoing ? ColorPalette.brand500 : ColorPalette.white}
+              fill={isGoing ? ColorPalette.brand500 : "none"}
+            />
             <Text variant="bodySmDefault" color="white">
               {likes}
             </Text>
