@@ -223,7 +223,7 @@ export default function HousingDetail() {
           onPress: () => setIsDeleteVisible(true),
         },
       ]}
-      onBack={() => router.back()}
+      onBack={() => router.replace(`/trips/${tripID}` as any)}
       onSavePrice={async (p) => {
         setPrice(p);
         await saveField({ estimated_price: p });
