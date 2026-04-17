@@ -57,7 +57,7 @@ const Layout = () => {
             headerShown: false,
             headerTitle: "",
             headerShadowVisible: false,
-            headerLeft: () => <BackButton hasBackground/>,
+            headerLeft: () => <BackButton hasBackground />,
           }}
         />
       </Stack>
