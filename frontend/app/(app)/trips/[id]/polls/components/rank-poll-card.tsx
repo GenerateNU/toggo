@@ -276,7 +276,10 @@ export default function RankPollCard({
     <Box backgroundColor="white" borderRadius="md" style={styles.card}>
       <Box style={styles.inner}>
         {/* Header */}
-        <Pressable onPress={onPress} disabled={!onPress || previewMode}>
+        <Pressable
+          onPress={onPress}
+          disabled={!onPress || poll.all_options?.length === 0 || previewMode}
+        >
           <Box gap="xxs">
             <Box flexDirection="row" alignItems="flex-start" gap="xs">
               <Text
