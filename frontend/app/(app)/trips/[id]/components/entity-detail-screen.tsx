@@ -14,6 +14,7 @@ import { ColorPalette } from "@/design-system/tokens/color";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily, FontSize } from "@/design-system/tokens/typography";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import {
   Camera,
@@ -172,10 +173,13 @@ export function EntityDetailScreen({
   const [linkDraft, setLinkDraft] = useState("");
 
   const linkEditSheetRef = useRef<BottomSheetMethods>(null);
+  const linkInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (isEditingLink) {
       linkEditSheetRef.current?.snapToIndex(0);
+      const focusTimeout = setTimeout(() => linkInputRef.current?.focus(), 250);
+      return () => clearTimeout(focusTimeout);
     } else {
       linkEditSheetRef.current?.close();
     }
@@ -420,7 +424,8 @@ export function EntityDetailScreen({
       >
         <Box style={styles.linkEditSheet}>
           <Text style={styles.linkEditTitle}>Edit link</Text>
-          <TextInput
+          <BottomSheetTextInput
+            ref={linkInputRef as unknown as React.Ref<any>}
             value={linkDraft}
             onChangeText={setLinkDraft}
             placeholder="https://"
@@ -428,7 +433,6 @@ export function EntityDetailScreen({
             style={styles.linkEditInput}
             autoCapitalize="none"
             keyboardType="url"
-            autoFocus
           />
           <Pressable
             style={styles.linkEditSave}

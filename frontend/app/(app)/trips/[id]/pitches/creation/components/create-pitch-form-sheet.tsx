@@ -2,11 +2,12 @@ import { Box, Button, Divider, Text } from "@/design-system";
 import BottomSheetComponent from "@/design-system/components/bottom-sheet/bottom-sheet";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { Typography } from "@/design-system/tokens/typography";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image } from "expo-image";
 import { ImagePlus, Link, Mic, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, TextInput } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import { PitchContentSections } from "../../components/pitch-content-sections";
 import type { RecordingResult } from "./audio-pitch-sheet";
 
@@ -207,7 +208,7 @@ export function CreatePitchFormSheet({
             </Box>
           </Pressable>
 
-          <TextInput
+          <BottomSheetTextInput
             value={descriptionValue}
             onChangeText={(value) => {
               setDescriptionValue(value);

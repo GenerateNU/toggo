@@ -12,11 +12,10 @@ import React, {
   createContext,
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
-import { Dimensions, Keyboard, Platform } from "react-native";
+import { Dimensions, Keyboard } from "react-native";
 import { CornerRadius } from "../../tokens/corner-radius";
 import { Layout } from "../../tokens/layout";
 
@@ -85,17 +84,6 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
       },
       [onChange],
     );
-
-    useEffect(() => {
-      const event =
-        Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-      const subscription = Keyboard.addListener(event, () => {
-        if (currentIndex.current >= 0) {
-          innerRef.current?.snapToIndex(currentIndex.current);
-        }
-      });
-      return () => subscription.remove();
-    }, []);
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) =>

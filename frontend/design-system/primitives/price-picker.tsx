@@ -1,12 +1,11 @@
 import { BottomSheet, Box, Button, Text } from "@/design-system";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { X } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -98,6 +97,8 @@ export function PricePicker({
       currentOffset.current = offset;
       baseOffset.current = offset;
       sheetRef.current?.snapToIndex(0);
+      const focusTimeout = setTimeout(() => inputRef.current?.focus(), 250);
+      return () => clearTimeout(focusTimeout);
     } else {
       sheetRef.current?.close();
     }
@@ -171,16 +172,14 @@ export function PricePicker({
   return (
     <BottomSheet
       ref={sheetRef}
-      snapPoints={[270]}
+      snapPoints={[270, "80%"]}
       initialIndex={-1}
+      disableScrollView
       onChange={(index) => {
         if (index < 0) onClose();
       }}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.sheet}
-      >
+      <View style={styles.sheet}>
         {/* Header */}
         <Box style={styles.header}>
           <Text variant="bodyMedium" color="gray950">
@@ -194,8 +193,8 @@ export function PricePicker({
         {/* Editable price */}
         <View style={styles.priceRow}>
           <Text style={styles.dollarSign}>$</Text>
-          <TextInput
-            ref={inputRef}
+          <BottomSheetTextInput
+            ref={inputRef as unknown as React.Ref<any>}
             value={rawText}
             onChangeText={handleTextChange}
             keyboardType="decimal-pad"
@@ -204,7 +203,6 @@ export function PricePicker({
             style={styles.priceInput}
             maxLength={7}
             selectTextOnFocus
-            autoFocus
           />
         </View>
 
@@ -223,7 +221,7 @@ export function PricePicker({
             onPress={handleConfirm}
           />
         </Box>
-      </KeyboardAvoidingView>
+      </View>
     </BottomSheet>
   );
 }

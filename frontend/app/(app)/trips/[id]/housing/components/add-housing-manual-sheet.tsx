@@ -10,6 +10,7 @@ import type {
   ModelsParsedActivityData,
 } from "@/types/types.gen";
 import { locationSelectStore } from "@/utilities/locationSelectStore";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { Calendar, DollarSign, Link, MapPin } from "lucide-react-native";
 import {
@@ -19,7 +20,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import {
   AddItemManualSheet,
   type AddItemManualSheetHandle,
@@ -254,7 +255,7 @@ export const AddHousingManualSheet = forwardRef<
                 size={16}
                 color={link ? ColorPalette.gray700 : ColorPalette.blue500}
               />
-              <TextInput
+              <BottomSheetTextInput
                 value={link}
                 onChangeText={setLink}
                 placeholder="Add link"
