@@ -7,11 +7,18 @@ import { FontFamily, FontSize } from "@/design-system/tokens/typography";
 import * as ExpoImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
+
 import { Pressable, ScrollView, Share, StyleSheet, View } from "react-native";
 import { ImageViewer } from "../media/image-viewer";
 import { MediaPopover } from "../media/media-popover";
-import { MediaTile, TILE_SIZE } from "../media/media-tile";
+import { MediaTile } from "../media/media-tile";
 import type { MediaItem } from "../media/types";
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const GRID_PADDING = Layout.spacing.sm;
+const GRID_GAP = 8;
+const NUM_COLUMNS = 2;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,9 +33,12 @@ type AllMediaScreenProps = {
 
 // ─── Add Tile ─────────────────────────────────────────────────────────────────
 
-function AddTile({ onPress }: { onPress: () => void }) {
+function AddTile({ size, onPress }: { size: number; onPress: () => void }) {
   return (
-    <Pressable style={[styles.tile, styles.addTile]} onPress={onPress}>
+    <Pressable
+      style={[styles.addTile, { width: size, height: size }]}
+      onPress={onPress}
+    >
       <Text style={styles.addIcon}>+</Text>
     </Pressable>
   );
@@ -47,6 +57,14 @@ export function AllMediaScreen({
   const toast = useToast();
   const uploadImage = useUploadImage();
   const updateActivity = useUpdateActivity();
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Measure actual container width so padding/safe areas are accounted for
+  const tileSize =
+    containerWidth > 0
+      ? (containerWidth - GRID_PADDING * 2 - GRID_GAP * (NUM_COLUMNS - 1)) /
+        NUM_COLUMNS
+      : 0;
 
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [popoverX, setPopoverX] = useState(0);
@@ -164,11 +182,13 @@ export function AllMediaScreen({
       <ScrollView
         contentContainerStyle={styles.grid}
         showsVerticalScrollIndicator={false}
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
         {mediaItems.map((item, index) => (
           <MediaTile
             key={item.imageId}
             item={item}
+            size={tileSize}
             isSelected={
               selectedItem?.imageId === item.imageId && popoverVisible
             }
@@ -176,7 +196,7 @@ export function AllMediaScreen({
             onLongPress={(x, y, layout) => handleLongPress(item, x, y, layout)}
           />
         ))}
-        <AddTile onPress={handleAddImage} />
+        <AddTile size={tileSize} onPress={handleAddImage} />
       </ScrollView>
 
       <MediaPopover
@@ -230,14 +250,9 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    padding: Layout.spacing.sm,
+    gap: GRID_GAP,
+    padding: GRID_PADDING,
     paddingTop: 12,
-  },
-  tile: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: 12,
   },
   addTile: {
     backgroundColor: ColorPalette.gray50,
