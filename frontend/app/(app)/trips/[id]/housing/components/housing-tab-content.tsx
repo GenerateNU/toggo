@@ -4,7 +4,6 @@ import { useGetImage } from "@/api/files/custom/useGetImage";
 import { useUser } from "@/contexts/user";
 import {
   Box,
-  Button,
   EmptyState,
   SkeletonRect,
   Spinner,
@@ -184,14 +183,6 @@ export const HousingTabContent = forwardRef<
             title="No housing options yet"
             description="Tap + to add the first one!"
           />
-          <Box style={styles.addButton} width="100%">
-            <Button
-              layout="textOnly"
-              label="Add a housing option"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </Box>
       ) : (
         <>
@@ -228,14 +219,6 @@ export const HousingTabContent = forwardRef<
             style={styles.flatList}
             scrollEnabled={false}
           />
-          <Box style={styles.addButton}>
-            <Button
-              layout="textOnly"
-              label="Add a housing option"
-              variant="Secondary"
-              onPress={() => entrySheetRef.current?.open()}
-            />
-          </Box>
         </>
       )}
 
@@ -290,8 +273,5 @@ const styles = StyleSheet.create({
   separator: {
     height: Layout.spacing.sm,
     backgroundColor: ColorPalette.gray50,
-  },
-  addButton: {
-    marginTop: Layout.spacing.xs,
   },
 });
