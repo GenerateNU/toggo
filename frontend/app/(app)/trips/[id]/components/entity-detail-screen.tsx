@@ -1,5 +1,5 @@
 import { ConfirmSheet } from "@/app/(app)/components/confirm-sheet";
-import { BottomSheet, Box, DateRangePicker, Text } from "@/design-system";
+import { BottomSheet, Box, Button, DateRangePicker, Text } from "@/design-system";
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -10,11 +10,8 @@ import { Layout } from "@/design-system/tokens/layout";
 import { FontFamily, FontSize } from "@/design-system/tokens/typography";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import {
-  Camera,
-  MapView,
-  PointAnnotation,
-} from "@maplibre/maplibre-react-native";
+
+
 import { router } from "expo-router";
 import {
   Calendar,
@@ -29,17 +26,12 @@ import {
   ScrollView,
   StyleSheet,
   TextInput,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DetailHeader } from "./detail-header";
 import { HeroCarousel } from "./hero-carousel";
 import { LinkPill } from "./link-pill";
 import { Divider, SectionHeader } from "./section-header";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 export type EntityDetailMenuAction = {
   label: string;
@@ -64,9 +56,6 @@ export type EntityDetailScreenProps = {
   tripID: string;
   entityID: string;
   allMediaPath: string;
-
-  // Permissions
-  canEdit: boolean;
 
   // Actions
   menuActions: EntityDetailMenuAction[];
@@ -129,7 +118,6 @@ export function EntityDetailScreen({
   tripID,
   entityID,
   allMediaPath,
-  canEdit,
   menuActions,
   onBack,
   onSavePrice,
@@ -243,29 +231,25 @@ export function EntityDetailScreen({
               <Text style={styles.priceText}>
                 {price != null ? `${price} USD` : "No price set"}
               </Text>
-              {canEdit && (
-                <Pressable
-                  onPress={() => setIsPricePickerVisible(true)}
-                  hitSlop={8}
-                >
-                  <Text style={styles.editButton}>Edit</Text>
-                </Pressable>
-              )}
+              <Pressable
+                onPress={() => setIsPricePickerVisible(true)}
+                hitSlop={8}
+              >
+                <Text style={styles.editButton}>Edit</Text>
+              </Pressable>
             </Box>
             {formattedDate ? (
               <Box style={styles.priceRow}>
                 <Calendar size={16} color={ColorPalette.gray950} />
                 <Text style={styles.priceText}>{formattedDate}</Text>
-                {canEdit && (
-                  <Pressable
-                    onPress={() => setIsDatePickerVisible(true)}
-                    hitSlop={8}
-                  >
-                    <Text style={styles.editButton}>Edit</Text>
-                  </Pressable>
-                )}
+                <Pressable
+                  onPress={() => setIsDatePickerVisible(true)}
+                  hitSlop={8}
+                >
+                  <Text style={styles.editButton}>Edit</Text>
+                </Pressable>
               </Box>
-            ) : canEdit ? (
+            ) : (
               <Pressable
                 style={styles.priceRow}
                 onPress={() => setIsDatePickerVisible(true)}
@@ -273,17 +257,14 @@ export function EntityDetailScreen({
                 <Calendar size={16} color={ColorPalette.blue500} />
                 <Text style={styles.addText}>Add date</Text>
               </Pressable>
-            ) : null}
+            )}
           </Box>
 
           <Divider />
 
           {/* Location */}
           <Box style={styles.section}>
-            <SectionHeader
-              label="Location"
-              onEdit={canEdit ? onEditLocation : undefined}
-            />
+            <SectionHeader label="Location" onEdit={onEditLocation} />
             {locationName && (
               <Box style={styles.locationRow}>
                 <MapPin size={14} color={ColorPalette.gray950} />
@@ -293,29 +274,13 @@ export function EntityDetailScreen({
               </Box>
             )}
             {coordinate && (
-              <Box style={styles.mapContainer}>
-                <MapView
-                  style={styles.map}
-                  mapStyle={MAP_STYLE_URL}
-                  logoEnabled={false}
-                  attributionEnabled={false}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
-                  rotateEnabled={false}
-                  pitchEnabled={false}
-                >
-                  <Camera centerCoordinate={coordinate} zoomLevel={11} />
-                  <PointAnnotation id="entity-pin" coordinate={coordinate}>
-                    <View style={styles.pin}>
-                      <View style={styles.pinDot} />
-                    </View>
-                  </PointAnnotation>
-                </MapView>
-                <Pressable
-                  style={StyleSheet.absoluteFill}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/map-view",
+              <Button 
+                layout="textOnly"
+                variant="Secondary"
+                label="View on map"
+                onPress={() =>
+                  router.push({
+                    pathname: "/map-view",
                       params: {
                         activities: encodeURIComponent(
                           JSON.stringify([
@@ -333,9 +298,8 @@ export function EntityDetailScreen({
                     })
                   }
                 />
-              </Box>
             )}
-            {!locationName && canEdit && (
+            {!locationName && (
               <Pressable onPress={onEditLocation}>
                 <Text style={styles.addText}>Add location</Text>
               </Pressable>
@@ -348,28 +312,20 @@ export function EntityDetailScreen({
           <Box style={styles.section}>
             <SectionHeader
               label="Link"
-              onEdit={
-                canEdit
-                  ? () => {
-                      setLinkDraft(link);
-                      setIsEditingLink(true);
-                    }
-                  : undefined
-              }
+              onEdit={() => {
+                setLinkDraft(link);
+                setIsEditingLink(true);
+              }}
             />
             {link ? (
               <LinkPill
                 url={link}
-                onEdit={
-                  canEdit
-                    ? () => {
-                        setLinkDraft(link);
-                        setIsEditingLink(true);
-                      }
-                    : undefined
-                }
+                onEdit={() => {
+                  setLinkDraft(link);
+                  setIsEditingLink(true);
+                }}
               />
-            ) : canEdit ? (
+            ) : (
               <Pressable
                 onPress={() => {
                   setLinkDraft("");
@@ -378,7 +334,7 @@ export function EntityDetailScreen({
               >
                 <Text style={styles.addText}>Add link</Text>
               </Pressable>
-            ) : null}
+            )}
           </Box>
 
           <Divider />
