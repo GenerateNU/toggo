@@ -5,10 +5,9 @@ import { Elevation } from "@/design-system/tokens/elevation";
 import { Layout } from "@/design-system/tokens/layout";
 import { getActivityThumbnailUrl } from "@/utils/activity-helpers";
 import { GripVertical, ImageIcon, MapPin } from "lucide-react-native";
-import { Image } from "react-native";
+import { Image, ScrollView } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
-import { THUMBNAIL_SIZE } from "../constants";
 import { useActivityCardGestures } from "../hooks/useActivityCardGestures";
 import type { ItineraryActivityCardProps } from "../types";
 import { formatPrice } from "../utils";
@@ -80,8 +79,7 @@ export function ItineraryActivityCard({
         accessibilityLabel={activity.name ?? "Activity"}
       >
         <Box
-          width={THUMBNAIL_SIZE}
-          height={THUMBNAIL_SIZE}
+          style={thumbnailContainerStyle}
           borderRadius="md"
           overflow="hidden"
           backgroundColor="gray100"
@@ -89,7 +87,7 @@ export function ItineraryActivityCard({
           {thumbnailUrl ? (
             <Image
               source={{ uri: thumbnailUrl }}
-              style={thumbnailStyle}
+              style={thumbnailDynamicStyle}
               resizeMode="cover"
             />
           ) : (
@@ -104,17 +102,20 @@ export function ItineraryActivityCard({
             {activity.name ?? "Unnamed Activity"}
           </Text>
 
-          <Box flexDirection="row" alignItems="center" gap="xxs">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: Layout.spacing.xs }}
+          >
             <Tag label={priceLabel ?? "Free"} />
-
             {activity.location_name && (
               <Tag
                 icon={<MapPin size={12} color={ColorPalette.gray500} />}
                 label={activity.location_name}
-                truncate
+                truncate={false}
               />
             )}
-          </Box>
+          </ScrollView>
 
           {activity.description && (
             <Text variant="bodyXsDefault" color="gray400" numberOfLines={1}>
@@ -129,21 +130,34 @@ export function ItineraryActivityCard({
   );
 }
 
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const containerStyle = {
   flexDirection: "row" as const,
-  alignItems: "center" as const,
+  alignItems: "stretch" as const,
   gap: Layout.spacing.xs,
   padding: Layout.spacing.xs,
   backgroundColor: ColorPalette.white,
   borderRadius: CornerRadius.lg,
   ...Elevation.sm,
+  minHeight: 80, // ensure card is tall enough for image
 };
 
-const thumbnailStyle = {
-  width: THUMBNAIL_SIZE,
-  height: THUMBNAIL_SIZE,
+
+// 1:1 aspect ratio (square)
+const thumbnailContainerStyle = {
+  aspectRatio: 1,
+  height: '100%' as const,
+  minWidth: 48,
+  maxWidth: 96,
+  justifyContent: 'center' as const,
+  alignItems: 'center' as const,
+};
+
+const thumbnailDynamicStyle = {
+  width: '100%' as const,
+  height: '100%' as const,
 };
 
 export default ItineraryActivityCard;
