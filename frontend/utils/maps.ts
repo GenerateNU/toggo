@@ -48,6 +48,15 @@ export async function openInMaps({
 
   const nativeGoogleURL = `comgooglemaps://?q=${lat},${lng}`;
   const webGoogleURL = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  const canOpenNative = await Linking.canOpenURL(nativeGoogleURL);
-  await Linking.openURL(canOpenNative ? nativeGoogleURL : webGoogleURL);
+  let canOpenNative = false;
+  try {
+    canOpenNative = await Linking.canOpenURL(nativeGoogleURL);
+  } catch {
+    // In case canOpenURL throws an error, we default to opening the web URL
+  }
+  if (canOpenNative) {
+    await Linking.openURL(nativeGoogleURL);
+  } else {
+    await Linking.openURL(webGoogleURL);
+  }
 }

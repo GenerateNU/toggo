@@ -17,6 +17,7 @@ import {
   resolveMapViewActivitiesInput,
   type MapViewActivityForMap,
 } from "@/utils/map-view-activities";
+import { mapProviderLabel, openInMaps, resolveMapProvider } from "@/utils/maps";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import {
   Camera,
@@ -27,7 +28,6 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { Calendar, MapPin } from "lucide-react-native";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { mapProviderLabel, openInMaps, resolveMapProvider } from "@/utils/maps";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -78,6 +78,10 @@ function ActivityDetailSheetBody({
 }) {
   const imageUri = activity.thumbnail_url ?? activity.media_url;
   const scheduleLine = formatMapViewActivityScheduleLine(activity);
+
+  const handlePressDirections = () => {
+    onOpenDirections();
+  };
 
   return (
     <Box padding="lg" gap="md">
@@ -131,7 +135,7 @@ function ActivityDetailSheetBody({
         layout="textOnly"
         variant="Primary"
         label={`Open in ${providerLabel}`}
-        onPress={onOpenDirections}
+        onPress={handlePressDirections}
       />
       <SafeAreaView edges={["bottom"]} />
     </Box>
@@ -162,6 +166,20 @@ export default function MapViewScreen() {
   const cameraConfig = useMemo(
     () => computeMapCameraForActivities(activityItems),
     [activityItems],
+  );
+
+  const mapProvider = useMemo(
+    () =>
+      resolveMapProvider(
+        currentUser?.apple_maps_enabled,
+        currentUser?.google_maps_enabled,
+      ),
+    [currentUser?.apple_maps_enabled, currentUser?.google_maps_enabled],
+  );
+
+  const providerLabel = useMemo(
+    () => mapProviderLabel(mapProvider),
+    [mapProvider],
   );
 
   useEffect(() => {
@@ -263,21 +281,15 @@ export default function MapViewScreen() {
     setSelectedActivity(activity);
   };
 
-  const mapProvider = resolveMapProvider(
-    currentUser?.apple_maps_enabled,
-    currentUser?.google_maps_enabled,
-  );
-
-  const providerLabel = mapProviderLabel(mapProvider);
-
   const openDirections = async (activity: MapViewActivityForMap) => {
+    const params = {
+      lat: activity.location_lat,
+      lng: activity.location_lng,
+      label: activity.location_name?.trim() || activity.name,
+      provider: mapProvider,
+    };
     try {
-      await openInMaps({
-        lat: activity.location_lat,
-        lng: activity.location_lng,
-        label: activity.location_name?.trim() || activity.name,
-        provider: mapProvider,
-      });
+      await openInMaps(params);
     } catch {
       toast.show({ message: "Couldn't open maps. Please try again." });
     }
@@ -339,6 +351,7 @@ export default function MapViewScreen() {
           <BottomSheet
             ref={detailSheetRef}
             initialIndex={-1}
+            snapPoints={["60%"]}
             onChange={handleSheetIndexChange}
             disableScrollView
           >
