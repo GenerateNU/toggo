@@ -3,8 +3,8 @@ import {
   searchPlacesTypeahead,
 } from "@/api/places/custom";
 import { BackButton, BottomSheet, Box, Text } from "@/design-system";
-import { CoreSize } from "@/design-system/tokens/core-size";
 import { ColorPalette } from "@/design-system/tokens/color";
+import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
 import { Layout } from "@/design-system/tokens/layout";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -73,9 +73,11 @@ export function DestinationPickerSheet({
       });
       const name =
         res.data?.name ?? res.data?.formatted_address ?? prediction.description;
-      onSelect({ name, place_id: prediction.place_id });
+      const lat = res.data?.geometry?.location?.lat ?? 0;
+      const lng = res.data?.geometry?.location?.lng ?? 0;
+      onSelect({ name, place_id: prediction.place_id, lat, lng });
     } catch {
-      onSelect({ name: prediction.description, place_id: prediction.place_id });
+      onSelect({ name: prediction.description, place_id: prediction.place_id, lat: 0, lng: 0 });
     } finally {
       handleClose();
     }
