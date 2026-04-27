@@ -17,7 +17,7 @@ export function LogoutSheet({
   };
 
   return (
-    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss}>
+    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss} snapPoints={[300]}>
       <Box paddingHorizontal="sm" paddingTop="sm" paddingBottom="lg" gap="lg">
         <Box gap="xxs">
           <Text variant="bodyLargeStrong" color="gray950">

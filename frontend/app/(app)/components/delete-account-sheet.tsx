@@ -25,7 +25,7 @@ export function DeleteAccountSheet({
   };
 
   return (
-    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss}>
+    <BottomSheet disableScrollView ref={bottomSheetRef} onClose={onDismiss} snapPoints={[400]}>
       <Box paddingTop="sm" paddingBottom="lg" paddingHorizontal="sm" gap="lg">
         <Box gap="xxs">
           <Text variant="bodyLargeStrong" color="gray950">
