@@ -16,7 +16,26 @@ const Layout = () => {
         headerTransparent: true,
         headerTitle: "",
       }}
-    ></Stack>
+    >
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: false,
+          headerTitle: "",
+          headerTransparent: true,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="activity-all-media"
+        options={{
+          headerShown: false,
+          headerTitle: "",
+          headerTransparent: true,
+          gestureEnabled: false,
+        }}
+      />
+    </Stack>
   );
 };
 
