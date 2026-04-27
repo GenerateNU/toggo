@@ -1,10 +1,10 @@
 import { Box, Icon, Text } from "@/design-system";
+import { Elevation } from "@/design-system/tokens/elevation";
 import type { ModelsTripAPIResponse } from "@/types/types.gen";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { MapPin } from "lucide-react-native";
 import { Pressable } from "react-native";
-import { Elevation } from "@/design-system/tokens/elevation";
 import { HOME_PAST_TRIP_IMAGE_SIZE } from "./constants";
 import { TripMemberPreviewRow } from "./trip-member-preview-row";
 import { tripMemberPreviews } from "./types";
@@ -32,21 +32,20 @@ export function PastTripCompactCard({
         flexDirection="row"
         gap="sm"
         style={Elevation.sm}
+        alignItems="flex-start"
       >
-        <Box borderRadius="sm" overflow="hidden">
+        <Box borderRadius="sm" overflow="hidden" flexShrink={0} alignSelf="stretch">
           {trip.cover_image_url ? (
             <Image
               source={{ uri: trip.cover_image_url }}
-              style={{
-                width: HOME_PAST_TRIP_IMAGE_SIZE,
-                height: HOME_PAST_TRIP_IMAGE_SIZE,
-              }}
+              style={{ width: HOME_PAST_TRIP_IMAGE_SIZE, height: undefined, aspectRatio: 1, flex: 1 }}
               contentFit="cover"
             />
           ) : (
             <Box
               width={HOME_PAST_TRIP_IMAGE_SIZE}
-              height={HOME_PAST_TRIP_IMAGE_SIZE}
+              flex={1}
+              aspectRatio={2}
               alignItems="center"
               justifyContent="center"
               backgroundColor="gray50"
@@ -56,7 +55,7 @@ export function PastTripCompactCard({
           )}
         </Box>
 
-        <Box flex={1} gap="xxs" justifyContent="center">
+        <Box gap="xxs" justifyContent="center">
           <Text variant="bodyStrong" color="gray950" numberOfLines={1}>
             {trip.name?.trim() || "Untitled trip"}
           </Text>
