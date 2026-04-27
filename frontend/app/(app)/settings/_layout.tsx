@@ -1,5 +1,5 @@
 import { useUser } from "@/contexts/user";
-import { BackButton } from "@/design-system/components/navigation/arrow";
+import { BackButton } from "@/design-system";
 import { Redirect, Stack } from "expo-router";
 
 const Layout = () => {
@@ -13,8 +13,6 @@ const Layout = () => {
     <Stack
       screenOptions={{
         headerShown: false,
-        headerLeft: () => <BackButton />,
-        headerBackVisible: false,
         headerTitleAlign: "center",
         headerShadowVisible: false,
         headerTitle: "",
@@ -28,6 +26,9 @@ const Layout = () => {
           headerShadowVisible: false,
           headerTransparent: false,
           gestureEnabled: false,
+          headerBackVisible: false,
+          headerBackButtonDisplayMode: "minimal",
+          headerLeft: () => <BackButton hasBackground />, 
         }}
       />
       <Stack.Screen
