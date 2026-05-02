@@ -6,4 +6,6 @@ export type Prediction = {
 export type SelectedLocation = {
   name: string;
   place_id: string;
+  lat: number;
+  lng: number;
 };

@@ -8,9 +8,9 @@ import { Text } from "@/design-system/primitives/text";
 import { ColorPalette } from "@/design-system/tokens/color";
 import { CoreSize } from "@/design-system/tokens/core-size";
 import { CornerRadius } from "@/design-system/tokens/corner-radius";
-import { Layout, ModalHandle } from "@/design-system/tokens/layout";
+import { Layout } from "@/design-system/tokens/layout";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet } from "react-native";
 import BottomSheetModal from "../bottom-sheet/bottom-sheet";
 import Comment, { CommentData } from "./comment";
 import { Spinner } from "@/design-system";
@@ -215,9 +215,6 @@ export default function CommentSection({
     >
       {/* Header */}
       <Box style={styles.header}>
-        <Pressable onPress={onClose} hitSlop={16}>
-          <View style={styles.handle} />
-        </Pressable>
         <Text variant="bodyMedium" style={styles.title}>
           Comments
         </Text>
@@ -250,10 +247,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: Layout.spacing.sm,
     paddingHorizontal: Layout.spacing.md,
-  },
-  handle: {
-    ...ModalHandle,
-    backgroundColor: ColorPalette.gray300,
   },
   title: {
     textAlign: "center",
