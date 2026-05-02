@@ -34,11 +34,21 @@ export function PastTripCompactCard({
         style={Elevation.sm}
         alignItems="flex-start"
       >
-        <Box borderRadius="sm" overflow="hidden" flexShrink={0} alignSelf="stretch">
+        <Box
+          borderRadius="sm"
+          overflow="hidden"
+          flexShrink={0}
+          alignSelf="stretch"
+        >
           {trip.cover_image_url ? (
             <Image
               source={{ uri: trip.cover_image_url }}
-              style={{ width: HOME_PAST_TRIP_IMAGE_SIZE, height: undefined, aspectRatio: 1, flex: 1 }}
+              style={{
+                width: HOME_PAST_TRIP_IMAGE_SIZE,
+                height: undefined,
+                aspectRatio: 1,
+                flex: 1,
+              }}
               contentFit="cover"
             />
           ) : (

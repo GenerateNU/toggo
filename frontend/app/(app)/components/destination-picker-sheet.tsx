@@ -77,7 +77,12 @@ export function DestinationPickerSheet({
       const lng = res.data?.geometry?.location?.lng ?? 0;
       onSelect({ name, place_id: prediction.place_id, lat, lng });
     } catch {
-      onSelect({ name: prediction.description, place_id: prediction.place_id, lat: 0, lng: 0 });
+      onSelect({
+        name: prediction.description,
+        place_id: prediction.place_id,
+        lat: 0,
+        lng: 0,
+      });
     } finally {
       handleClose();
     }

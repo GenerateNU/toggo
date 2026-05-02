@@ -105,7 +105,11 @@ export function ItineraryActivityCard({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', gap: Layout.spacing.xs }}
+            contentContainerStyle={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: Layout.spacing.xs,
+            }}
           >
             <Tag label={priceLabel ?? "Free"} />
             {activity.location_name && (
@@ -130,7 +134,6 @@ export function ItineraryActivityCard({
   );
 }
 
-
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const containerStyle = {
@@ -144,20 +147,19 @@ const containerStyle = {
   minHeight: 80, // ensure card is tall enough for image
 };
 
-
 // 1:1 aspect ratio (square)
 const thumbnailContainerStyle = {
   aspectRatio: 1,
-  height: '100%' as const,
+  height: "100%" as const,
   minWidth: 48,
   maxWidth: 96,
-  justifyContent: 'center' as const,
-  alignItems: 'center' as const,
+  justifyContent: "center" as const,
+  alignItems: "center" as const,
 };
 
 const thumbnailDynamicStyle = {
-  width: '100%' as const,
-  height: '100%' as const,
+  width: "100%" as const,
+  height: "100%" as const,
 };
 
 export default ItineraryActivityCard;

@@ -1,5 +1,11 @@
 import { ConfirmSheet } from "@/app/(app)/components/confirm-sheet";
-import { BottomSheet, Box, Button, DateRangePicker, Text } from "@/design-system";
+import {
+  BottomSheet,
+  Box,
+  Button,
+  DateRangePicker,
+  Text,
+} from "@/design-system";
 import { CommentData } from "@/design-system/components/comments/comment";
 import CommentSection from "@/design-system/components/comments/comment-section";
 import type { DateRange } from "@/design-system/primitives/date-picker";
@@ -11,7 +17,6 @@ import { FontFamily, FontSize } from "@/design-system/tokens/typography";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import type { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 
-
 import { router } from "expo-router";
 import {
   Calendar,
@@ -21,12 +26,7 @@ import {
 } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DetailHeader } from "./detail-header";
 import { HeroCarousel } from "./hero-carousel";
@@ -274,30 +274,30 @@ export function EntityDetailScreen({
               </Box>
             )}
             {coordinate && (
-              <Button 
+              <Button
                 layout="textOnly"
                 variant="Secondary"
                 label="View on map"
                 onPress={() =>
                   router.push({
                     pathname: "/map-view",
-                      params: {
-                        activities: encodeURIComponent(
-                          JSON.stringify([
-                            {
-                              id: entityID,
-                              name,
-                              location_lat: locationLat,
-                              location_lng: locationLng,
-                              location_name: locationName,
-                              description,
-                            },
-                          ]),
-                        ),
-                      },
-                    })
-                  }
-                />
+                    params: {
+                      activities: encodeURIComponent(
+                        JSON.stringify([
+                          {
+                            id: entityID,
+                            name,
+                            location_lat: locationLat,
+                            location_lng: locationLng,
+                            location_name: locationName,
+                            description,
+                          },
+                        ]),
+                      ),
+                    },
+                  })
+                }
+              />
             )}
             {!locationName && (
               <Pressable onPress={onEditLocation}>

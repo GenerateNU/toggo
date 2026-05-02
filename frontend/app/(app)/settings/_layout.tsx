@@ -28,7 +28,7 @@ const Layout = () => {
           gestureEnabled: false,
           headerBackVisible: false,
           headerBackButtonDisplayMode: "minimal",
-          headerLeft: () => <BackButton hasBackground />, 
+          headerLeft: () => <BackButton hasBackground />,
         }}
       />
       <Stack.Screen
