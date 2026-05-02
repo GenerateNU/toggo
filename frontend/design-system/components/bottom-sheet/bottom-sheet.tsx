@@ -16,8 +16,9 @@ import React, {
 } from "react";
 import { Dimensions, Keyboard } from "react-native";
 import { CornerRadius } from "../../tokens/corner-radius";
-import { Layout } from "../../tokens/layout";
+import { Layout, ModalHandle } from "../../tokens/layout";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ColorPalette } from "../../tokens/color";
 
 export const InsideBottomSheetContext = createContext(false);
 
@@ -130,7 +131,11 @@ const BottomSheetModal = forwardRef<Ref, BottomSheetModalProps>(
           keyboardBehavior={keyboardBehavior}
           enablePanDownToClose={!disableClose}
           enableHandlePanningGesture={true}
-          handleComponent={null}
+          handleIndicatorStyle={{
+            ...ModalHandle,
+            alignSelf: "center",
+            backgroundColor: ColorPalette.gray300,
+          }}
           onClose={handleClose}
           style={{
             flex: 1,
