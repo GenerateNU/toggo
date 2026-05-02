@@ -1,4 +1,4 @@
-# Toggo — Client Handoff
+# Client Handoff
 
 A collaborative travel planning mobile app. Users create and manage trips together in real time. See detailed architecture of the app [here](https://deepwiki.com/GenerateNU/toggo).
 
